@@ -31,4 +31,9 @@ class UploadDetail(APIView):
             return Song.objects.get(pk=pk)
         except Song.DoesNotExist:
             raise Http404
+    
+    def get(self, request, pk, format=NONE):
+        song = self.get_object(pk)
+        serializer = SongSerializer(song)
 
+        return Response(serializer.data)
