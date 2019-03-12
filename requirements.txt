@@ -1,4 +1,0 @@
-icarus
-django>=2.1
-djangorestframework>=3.9.1
-mysqlclient>=1.4.1
