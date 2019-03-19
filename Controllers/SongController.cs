@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace Icarus.Controllers
     public class SongController : ControllerBase
     {
 		#region Fields
+		private IConfiguration _config;
 		private SongManager _songMgr;
 		#endregion
 
@@ -27,6 +29,7 @@ namespace Icarus.Controllers
 		#region Constructor
 		public SongController(IConfiguration config)
 		{
+			_config = config;
 			_songMgr = new SongManager(config);
 		}
 		#endregion
@@ -46,7 +49,7 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public ActionResult<Song> Get(int id)
         {
-			Song song = _songMgr.RetrieveSong(id);
+			Song song = _songMgr.RetrieveSongDetails(id);
 
             return song;
         }
@@ -55,9 +58,7 @@ namespace Icarus.Controllers
         [HttpPost]
         public void Post([FromBody] Song song)
         {
-			Console.WriteLine("The song's title is: ");
-			Console.WriteLine(song.Title);
-			_songMgr.SaveSong(song);
+			_songMgr.SaveSongDetails(song);
         }
 
         // PUT api/song/5

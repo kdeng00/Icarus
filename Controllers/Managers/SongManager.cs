@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Configuration;
 
@@ -38,22 +40,103 @@ namespace Icarus.Controllers.Managers
 		}
 		public SongManager(IConfiguration config)
 		{
-			Initialize();
 			_config = config;
+			Initialize();
 		}
 		#endregion
 
 
 		#region Methods
-		public void SaveSong(Song song)
+		public void SaveSongDetails(Song song)
 		{
 			_song = song;
+			try
+			{
+				Console.WriteLine($"Connection string is: {_connectionString}");
+				using (MySqlConnection conn = new MySqlConnection(_connectionString))
+				{
+					conn.Open();
+					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration) " +
+									"VALUES(@Title, @Album, @Artist, @Year, @Genre, @Duration)";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", song.Title);
+						cmd.Parameters.AddWithValue("@Album", song.Album);
+						cmd.Parameters.AddWithValue("@Artist", song.Artist);
+						cmd.Parameters.AddWithValue("@Year", song.Year);
+						cmd.Parameters.AddWithValue("@Genre", song.Genre);
+						cmd.Parameters.AddWithValue("@Duration", song.Duration);
 
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An Error Occurred: {exMsg}");
+			}
+		}
+		public async Task SaveSong(SongData songData)
+		{
+			try
+			{
+				using (MySqlConnection conn = new MySqlConnection(_connectionString))
+				{
+					conn.Open();
+					string query = "INSERT INTO SongData(Data) VALUES(@Data)";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Data", songData.Data);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch(Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An error occurred: {exMsg}");
+			}
 		}
 
-		public Song RetrieveSong(int id)
+		public Song RetrieveSongDetails(int id)
 		{
 			return new Song();
+		}
+		public async Task<SongData> RetrieveSong(int id)
+		{
+			SongData song = new SongData();
+			DataTable results = new DataTable();
+			try
+			{
+				using (MySqlConnection conn = new MySqlConnection(_connectionString))
+				{
+					conn.Open();
+					string query = "SELECT Id, Data From SongData WHERE Id=@Id";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Id", id);
+
+						cmd.ExecuteNonQuery();
+
+						using (MySqlDataAdapter dataDump = new MySqlDataAdapter(cmd))
+						{
+							dataDump.Fill(results);
+						}
+					}
+				}
+				DataRow row = results.Rows[0];
+				song.Data = (byte[])row[1];
+
+			}
+			catch (Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An error occurred: {exMsg}");
+			}
+
+			return song;
 		}
 
 
@@ -62,7 +145,6 @@ namespace Icarus.Controllers.Managers
 			try
 			{
 				_connectionString = _config.GetConnectionString("IcarusDev");
-				Console.WriteLine(_connectionString);
 			}
 			catch (Exception ex)
 			{

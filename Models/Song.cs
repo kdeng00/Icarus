@@ -20,7 +20,5 @@ namespace Icarus.Models
 		public string Genre { get; set; }
 		[JsonProperty("duration")]
 		public int Duration { get; set; }
-		[JsonProperty("song_data")]
-		public byte[] SongFile { get; set; }
 	}
 }
