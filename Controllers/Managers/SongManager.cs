@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
+using Id3;
+using Id3.Frames;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using TagLib;
 
 using Icarus.Models;
 
@@ -20,10 +25,22 @@ namespace Icarus.Controllers.Managers
 		private Song _song;
 		private IConfiguration _config;
 		private string _connectionString;
+		private string _songRootDirectory;
 		#endregion
 
 
 		#region Properties
+		public Song SongDetails
+		{
+			get
+			{
+				return _song;
+			}
+			set
+			{
+				_song = value;
+			}
+		}
 		#endregion
 
 
@@ -43,21 +60,57 @@ namespace Icarus.Controllers.Managers
 			_config = config;
 			Initialize();
 		}
+		public SongManager(IConfiguration config, string songDirectoryRoot)
+		{
+			_config = config;
+			_songRootDirectory = songDirectoryRoot;
+			Initialize();
+		}
 		#endregion
 
 
 		#region Methods
-		public void SaveSongDetails(Song song)
+		public void SaveSongDetails()
 		{
-			_song = song;
 			try
 			{
-				Console.WriteLine($"Connection string is: {_connectionString}");
 				using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 					conn.Open();
-					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration) " +
-									"VALUES(@Title, @Album, @Artist, @Year, @Genre, @Duration)";
+					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration, " +
+									"Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
+									"@Duration, @Filename, @SongPath)";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", _song.Title);
+						cmd.Parameters.AddWithValue("@Album", _song.Album);
+						cmd.Parameters.AddWithValue("@Artist", _song.Artist);
+						cmd.Parameters.AddWithValue("@Year", _song.Year);
+						cmd.Parameters.AddWithValue("@Genre", _song.Genre);
+						cmd.Parameters.AddWithValue("@Duration", _song.Duration);
+						cmd.Parameters.AddWithValue("@Filename", _song.Filename);
+						cmd.Parameters.AddWithValue("@SongPath", _song.SongPath);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An Error Occurred: {exMsg}");
+			}
+		}
+		public void SaveSongDetails(Song song)
+		{
+			try
+			{
+				using (MySqlConnection conn = new MySqlConnection(_connectionString))
+				{
+					conn.Open();
+					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration, " +
+									", Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
+									"@Duration, @Filename, @SongPath)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", song.Title);
@@ -66,6 +119,8 @@ namespace Icarus.Controllers.Managers
 						cmd.Parameters.AddWithValue("@Year", song.Year);
 						cmd.Parameters.AddWithValue("@Genre", song.Genre);
 						cmd.Parameters.AddWithValue("@Duration", song.Duration);
+						cmd.Parameters.AddWithValue("@Filename", song.Filename);
+						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -99,25 +154,39 @@ namespace Icarus.Controllers.Managers
 				Console.WriteLine($"An error occurred: {exMsg}");
 			}
 		}
-
-		public Song RetrieveSongDetails(int id)
+		public async Task SaveSongToFileSystem(IFormFile song)
 		{
-			return new Song();
+			try
+			{
+				var filePath = Path.Combine(_songRootDirectory, song.FileName);
+				using (var fileStream = new FileStream(filePath, FileMode.Create))
+				{
+					await song.CopyToAsync(fileStream);
+					_song = RetrieveMetaData(filePath);
+					_song.Filename = song.FileName;
+					SaveSongDetails();
+				}
+			}
+			catch (Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An error occurred: {exMsg}");
+			}
 		}
-		public async Task<SongData> RetrieveSong(int id)
+
+		public async Task<Song> RetrieveSongDetails(int id)
 		{
-			SongData song = new SongData();
 			DataTable results = new DataTable();
+
 			try
 			{
 				using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 					conn.Open();
-					string query = "SELECT Id, Data From SongData WHERE Id=@Id";
+					string query = "SELECT * FROM Song WHERE Id=@Id";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Id", id);
-
 						cmd.ExecuteNonQuery();
 
 						using (MySqlDataAdapter dataDump = new MySqlDataAdapter(cmd))
@@ -126,9 +195,28 @@ namespace Icarus.Controllers.Managers
 						}
 					}
 				}
-				DataRow row = results.Rows[0];
-				song.Data = (byte[])row[1];
+			}
+			catch (Exception ex)
+			{
+				var exMsg = ex.Message;
+				Console.WriteLine($"An error occurred");
+			}
+			DataRow row = results.Rows[0];
 
+			return new Song
+			{
+				Id = Int32.Parse(row["Id"].ToString()),
+				Filename = row["Filename"].ToString(),
+				SongPath = row["SongPath"].ToString()
+			};
+		}
+		public async Task<SongData> RetrieveSong(int id)
+		{
+			SongData song = new SongData();
+			try
+			{
+				_song = await RetrieveSongDetails(id);
+				song = RetrieveSongFromFileSystem(_song);
 			}
 			catch (Exception ex)
 			{
@@ -137,6 +225,55 @@ namespace Icarus.Controllers.Managers
 			}
 
 			return song;
+		}
+
+
+		Song RetrieveMetaData(string filePath)
+		{
+			string title, artist, album, genre;
+			int year, duration;
+			
+			TagLib.File tfile = TagLib.File.Create(filePath);
+			duration = (int)tfile.Properties.Duration.TotalSeconds;
+
+
+			using (var mp3 = new Mp3(filePath))
+    		{
+        		Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+				title = tag.Title;
+				artist = tag.Artists;
+				album = tag.Album;
+				genre = "Not Implemented";
+				year = (int)tag.Year;
+        		Console.WriteLine("Title: {0}", title);
+        		Console.WriteLine("Artist: {0}", artist);
+        		Console.WriteLine("Album: {0}", album);
+				Console.WriteLine("Genre: {0}", genre);
+				Console.WriteLine("Year: {0}", year);
+				Console.WriteLine("Duration: {0}", duration);
+    		}
+
+			_song = new Song
+			{
+				Title = title,
+				Artist = artist,
+				Album = album,
+				Year = year,
+				Genre = genre,
+				Duration = duration,
+				SongPath = filePath
+			};
+
+			return _song;
+		}
+
+		SongData RetrieveSongFromFileSystem(Song details)
+		{
+			
+			return new SongData
+			{
+				Data = System.IO.File.ReadAllBytes(details.SongPath)
+			};
 		}
 
 

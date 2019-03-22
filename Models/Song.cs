@@ -20,5 +20,9 @@ namespace Icarus.Models
 		public string Genre { get; set; }
 		[JsonProperty("duration")]
 		public int Duration { get; set; }
+		[JsonProperty("filename")]
+		public string Filename { get; set; }
+		[JsonProperty("song_path")]
+		public string SongPath { get; set; }
 	}
 }

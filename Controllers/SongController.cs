@@ -49,7 +49,7 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public ActionResult<Song> Get(int id)
         {
-			Song song = _songMgr.RetrieveSongDetails(id);
+			Song song = _songMgr.RetrieveSongDetails(id).Result;
 
             return song;
         }

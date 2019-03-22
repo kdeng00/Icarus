@@ -21,7 +21,7 @@ namespace Icarus.Controllers
 		#region Fields
 		private IConfiguration _config;
 		private SongManager _songMgr;
-		private string _songDir = @"";
+		private string _songDir;
 		#endregion
 
 
@@ -33,7 +33,8 @@ namespace Icarus.Controllers
 		public SongDataController(IConfiguration config)
 		{
 			_config = config;
-			_songMgr = new SongManager(config);
+			_songDir = _config.GetValue<string>("FilePath");
+			_songMgr = new SongManager(config, _songDir);
 		}
 		#endregion
 
@@ -54,7 +55,7 @@ namespace Icarus.Controllers
 
 			song = await _songMgr.RetrieveSong(id);
 
-			return File(song.Data, "application/x-msdownload", "dfdf.mp3");
+			return File(song.Data, "application/x-msdownload", _songMgr.SongDetails.Filename);
         }
 
         [HttpPost]
@@ -64,32 +65,13 @@ namespace Icarus.Controllers
 			{
 				Console.WriteLine("Uploading song...");
 
-			    var uploads = Path.Combine(_songDir, "uploads");
-				Console.WriteLine($"Song Path {uploads}");
+			    var uploads = _songDir;
+				Console.WriteLine($"Song Root Path {uploads}");
 				foreach (var sng in songData)
 				{
 					byte[] data;
             		if (sng.Length > 0) {
-
-						using (var ms = new MemoryStream())
-						{
-      						sng.CopyTo(ms);
-      						data = ms.ToArray();
-    					}
-						SongData songD = new SongData
-						{
-							Data = data
-						};
-
-						_songMgr.SaveSong(songD);
-
-
-						/**
-               			var filePath = Path.Combine(uploads, sng.FileName);
-                		using (var fileStream = new FileStream(filePath, FileMode.Create)) {
-                   			await sng.CopyToAsync(fileStream);
-                		}
-						*/
+						await _songMgr.SaveSongToFileSystem(sng);
             		}
 				}
 			}
