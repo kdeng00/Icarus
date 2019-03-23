@@ -25,7 +25,7 @@ namespace Icarus.Controllers.Managers
 		private Song _song;
 		private IConfiguration _config;
 		private string _connectionString;
-		private string _songRootDirectory;
+		private string _tempDirectoryRoot;
 		#endregion
 
 
@@ -60,10 +60,10 @@ namespace Icarus.Controllers.Managers
 			_config = config;
 			Initialize();
 		}
-		public SongManager(IConfiguration config, string songDirectoryRoot)
+		public SongManager(IConfiguration config, string tempDirectoryRoot)
 		{
 			_config = config;
-			_songRootDirectory = songDirectoryRoot;
+			_tempDirectoryRoot = tempDirectoryRoot;
 			Initialize();
 		}
 		#endregion
@@ -158,13 +158,22 @@ namespace Icarus.Controllers.Managers
 		{
 			try
 			{
-				var filePath = Path.Combine(_songRootDirectory, song.FileName);
+				var filePath = Path.Combine(_tempDirectoryRoot, song.FileName);
+				await SaveSongToFileSystemTemp(song, filePath);
+				System.IO.File.Delete(filePath);
+
+
+				DirectoryManager dirMgr = new DirectoryManager(_config, _song);
+				dirMgr.CreateDirectory();
+				filePath = dirMgr.SongDirectory;
+
 				using (var fileStream = new FileStream(filePath, FileMode.Create))
 				{
 					await song.CopyToAsync(fileStream);
-					_song = RetrieveMetaData(filePath);
-					_song.Filename = song.FileName;
-					SaveSongDetails();
+
+
+					Console.WriteLine($"Writing song to the directory: {filePath}");
+					Console.WriteLine("Song successfully saved");
 				}
 			}
 			catch (Exception ex)
@@ -276,6 +285,17 @@ namespace Icarus.Controllers.Managers
 			};
 		}
 
+
+		async Task SaveSongToFileSystemTemp(IFormFile song, string filePath)
+		{
+			using (var fileStream = new FileStream(filePath, FileMode.Create))
+			{
+				await song.CopyToAsync(fileStream);
+				_song = RetrieveMetaData(filePath);
+				_song.Filename = song.FileName;
+				SaveSongDetails();
+			}
+		}
 
 		void Initialize()
 		{

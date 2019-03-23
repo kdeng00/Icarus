@@ -21,7 +21,7 @@ namespace Icarus.Controllers
 		#region Fields
 		private IConfiguration _config;
 		private SongManager _songMgr;
-		private string _songDir;
+		private string _songTempDir;
 		#endregion
 
 
@@ -33,8 +33,8 @@ namespace Icarus.Controllers
 		public SongDataController(IConfiguration config)
 		{
 			_config = config;
-			_songDir = _config.GetValue<string>("FilePath");
-			_songMgr = new SongManager(config, _songDir);
+			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
+			_songMgr = new SongManager(config, _songTempDir);
 		}
 		#endregion
 
@@ -65,7 +65,7 @@ namespace Icarus.Controllers
 			{
 				Console.WriteLine("Uploading song...");
 
-			    var uploads = _songDir;
+			    var uploads = _songTempDir;
 				Console.WriteLine($"Song Root Path {uploads}");
 				foreach (var sng in songData)
 				{
