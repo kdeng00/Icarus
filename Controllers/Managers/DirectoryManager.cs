@@ -48,6 +48,14 @@ namespace Icarus.Controllers.Managers
 			try
 			{
 				_songDirectory = CreateDirectoryFromSong();
+
+				if (!Directory.Exists(_songDirectory))
+				{
+					Directory.CreateDirectory(_songDirectory);
+					Console.WriteLine("The directory has been created");
+				}
+
+
 				Console.WriteLine($"The song will be saved in the following" +
 								  $" directory: {_songDirectory}");
 			}
@@ -65,7 +73,7 @@ namespace Icarus.Controllers.Managers
 		string CreateDirectoryFromSong()
 		{
 			string directory = _rootSongDirectory;
-			directory += $"{_song.Artist}//{_song.Album}//{_song.Title}.mp3";
+			directory += $"{_song.Artist}//{_song.Album}//";
 
 			return directory;
 		}

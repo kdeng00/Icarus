@@ -69,7 +69,6 @@ namespace Icarus.Controllers
 				Console.WriteLine($"Song Root Path {uploads}");
 				foreach (var sng in songData)
 				{
-					byte[] data;
             		if (sng.Length > 0) {
 						await _songMgr.SaveSongToFileSystem(sng);
             		}

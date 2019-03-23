@@ -166,10 +166,18 @@ namespace Icarus.Controllers.Managers
 				DirectoryManager dirMgr = new DirectoryManager(_config, _song);
 				dirMgr.CreateDirectory();
 				filePath = dirMgr.SongDirectory;
+				if (!song.FileName.EndsWith(".mp3"))
+					filePath += $"{song.FileName}.mp3";
+				else
+					filePath += $"{song.FileName}";
+
+				Console.WriteLine($"Full path {filePath}");
 
 				using (var fileStream = new FileStream(filePath, FileMode.Create))
 				{
 					await song.CopyToAsync(fileStream);
+					_song.SongPath = filePath;
+					SaveSongDetails();
 
 
 					Console.WriteLine($"Writing song to the directory: {filePath}");
@@ -293,7 +301,6 @@ namespace Icarus.Controllers.Managers
 				await song.CopyToAsync(fileStream);
 				_song = RetrieveMetaData(filePath);
 				_song.Filename = song.FileName;
-				SaveSongDetails();
 			}
 		}
 
