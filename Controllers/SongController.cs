@@ -35,17 +35,16 @@ namespace Icarus.Controllers
 		#endregion
 
 
-        // GET api/song
         [HttpGet]
         public ActionResult<IEnumerable<Song>> Get()
         {
 			List<Song> songs = new List<Song>();
+            songs = _songMgr.RetrieveAllSongDetails().Result;
 
 
             return songs;
         }
 
-        // GET api/song/5
         [HttpGet("{id}")]
         public ActionResult<Song> Get(int id)
         {
@@ -54,20 +53,17 @@ namespace Icarus.Controllers
             return song;
         }
 
-        // POST api/song
         [HttpPost]
         public void Post([FromBody] Song song)
         {
 			_songMgr.SaveSongDetails(song);
         }
 
-        // PUT api/song/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] Song song)
         {
         }
 
-        // DELETE api/song/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

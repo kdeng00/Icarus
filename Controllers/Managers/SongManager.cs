@@ -21,6 +21,10 @@ namespace Icarus.Controllers.Managers
 	public class SongManager
 	{
 		#region Fields
+        private MySqlConnection _conn;
+        private MySqlCommand _cmd;
+        private MySqlDataAdapter _dataDump;
+        private DataTable _results;
 		private List<Song> _songs;
 		private Song _song;
 		private IConfiguration _config;
@@ -48,23 +52,27 @@ namespace Icarus.Controllers.Managers
 		public SongManager()
 		{
 			Initialize();
+            InitializeConnection();
 		}
 
 		public SongManager(Song song)
 		{
 			Initialize();
+            InitializeConnection();
 			_song = song;
 		}
 		public SongManager(IConfiguration config)
 		{
 			_config = config;
 			Initialize();
+            InitializeConnection();
 		}
 		public SongManager(IConfiguration config, string tempDirectoryRoot)
 		{
 			_config = config;
 			_tempDirectoryRoot = tempDirectoryRoot;
 			Initialize();
+            InitializeConnection();
 		}
 		#endregion
 
@@ -191,6 +199,36 @@ namespace Icarus.Controllers.Managers
 			}
 		}
 
+        public async Task<List<Song>> RetrieveAllSongDetails()
+        {
+            try
+            {
+                InitializeResults();
+                _songs = new List<Song>();
+                _conn.Open();
+                string query = "SELECT * FROM Song";
+
+                _cmd = new MySqlCommand(query, _conn);
+                _cmd.ExecuteNonQuery();
+
+                _dataDump = new MySqlDataAdapter(_cmd);
+                _dataDump.Fill(_results);
+                _dataDump.Dispose();
+
+                await PopulateSongDetails();
+
+
+                _conn.Close();
+
+            }
+            catch (Exception ex)
+            {
+                var exMsg = ex.Message;
+                Console.WriteLine($"An error ocurred: {exMsg}");
+            }
+
+            return _songs;
+        }
 		public async Task<Song> RetrieveSongDetails(int id)
 		{
 			DataTable results = new DataTable();
@@ -316,6 +354,56 @@ namespace Icarus.Controllers.Managers
 			}
 			
 		}
+        void InitializeConnection()
+        {
+            _conn = new MySqlConnection(_connectionString);
+        }
+        void InitializeResults()
+        {
+            _results = new DataTable();
+        }
+        async Task PopulateSongDetails()
+        {
+            foreach (DataRow row in _results.Rows)
+            {
+                Song song = new Song();
+                foreach (DataColumn col in _results.Columns)
+                {
+                    string colStr = col.ToString().ToUpper();
+                    switch (colStr)
+                    {
+                        case "ID":
+                            song.Id = Int32.Parse(row[col].ToString());
+                            break;
+                        case "TITLE":
+                            song.Title = row[col].ToString();
+                            break;
+                        case "ALBUM":
+                            song.Album = row[col].ToString();
+                            break;
+                        case "ARTIST":
+                            song.Artist = row[col].ToString();
+                            break;
+                        case "YEAR":
+                            song.Year = Int32.Parse(row[col].ToString());
+                            break;
+                        case "GENRE":
+                            song.Genre = row[col].ToString();
+                            break;
+                        case "DURATION":
+                            song.Duration = Int32.Parse(row[col].ToString());
+                            break;
+                        case "FILENAME":
+                            song.Filename = row[col].ToString();
+                            break;
+                        case "SONGPATH":
+                            song.SongPath = row[col].ToString();
+                            break;
+                    }
+                }
+                _songs.Add(song);
+            }
+        }
 		#endregion	
 	}
 }
