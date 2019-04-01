@@ -15,6 +15,7 @@ using MySql.Data.MySqlClient;
 using TagLib;
 
 using Icarus.Models;
+using Icarus.Controllers.Utilities;
 
 namespace Icarus.Controllers.Managers
 {
@@ -281,6 +282,20 @@ namespace Icarus.Controllers.Managers
 
 			return song;
 		}
+        public async Task<SongData> RetrieveCompressedSong(int id)
+        {
+            SongData song = new SongData();
+            try
+            {
+                _song = await RetrieveSongDetails(id);
+            }
+            catch (Exception ex)
+            {
+                var exMsg = ex.Message;
+                Console.WriteLine($"An error occurred: {exMsg}");
+            }
+            return song;
+        }
 
 
 		Song RetrieveMetaData(string filePath)
@@ -324,10 +339,11 @@ namespace Icarus.Controllers.Managers
 
 		SongData RetrieveSongFromFileSystem(Song details)
 		{
+            byte[] uncompressedSong = System.IO.File.ReadAllBytes(details.SongPath);
 			
 			return new SongData
 			{
-				Data = System.IO.File.ReadAllBytes(details.SongPath)
+				Data = uncompressedSong
 			};
 		}
 

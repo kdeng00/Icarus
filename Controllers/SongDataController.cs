@@ -56,6 +56,7 @@ namespace Icarus.Controllers
 			song = await _songMgr.RetrieveSong(id);
 
 			return File(song.Data, "application/x-msdownload", _songMgr.SongDetails.Filename);
+			//return File(song.Data, "application/x-msdownload", "demo.zip");
         }
 
         [HttpPost]
