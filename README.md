@@ -1,24 +1,24 @@
 # Icarus
 
-Icarus is a music streaming API that interacts with [Mear](https://github.com/amazing-username/mear).
+Icarus is a music streaming API Server that interacts with [Mear](https://github.com/amazing-username/mear).
 
 ### Interfacing With Icarus
 
 One can interface with Icarus the music server either by:
 
 * [Mear](https://github.com/amazing-username/mear) - Feature not implemented (under development)
-* [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager) - Implemented (under development)
+* [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager) - Partially Implemented (under development)
 
-### Prerequisites
-* dotnet-core-sdk
-* dotnet-core-runtime
-* dotnet-core-host
 
 ## Built With
 
 * C#
-* .NET Core
+* [.NET Core](https://dotnet.microsoft.com/) 2.2
 * .NET Web RESTful API
+* [MySql](https://www.nuget.org/packages/MySql.Data/)
+* [Newtonsoft.Json](https://www.newtonsoft.com/json)
+* [TagLib#](https://github.com/mono/taglib-sharp)
+* [ID3](https://github.com/JeevanJames/Id3)
 
 ## Contributing
 
