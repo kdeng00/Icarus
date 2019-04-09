@@ -22,6 +22,7 @@ namespace Icarus.Controllers
         private IConfiguration _config;
 		private SongManager _songMgr;
 		private string _songTempDir;
+		private string _archiveDir;
 		#endregion
 
 
@@ -34,60 +35,26 @@ namespace Icarus.Controllers
 		{
 			_config = config;
 			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
+			_archiveDir = _config.GetValue<string>("ArchivePath");
 			_songMgr = new SongManager(config, _songTempDir);
+			_songMgr.ArchiveDirectoryRoot = _archiveDir;
 		}
 		#endregion
 
 
-        [HttpGet]
-        public ActionResult<IEnumerable<SongData>> Get()
-        {
-			List<SongData> songs = new List<SongData>();
-
-            return songs;
-        }
-
+		#region API Routes
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
 			SongData song = new SongData();
 
+			Console.WriteLine($"Archive directory root: {_archiveDir}");
+
 			Console.WriteLine("Starting process of retrieving comrpessed song");
 			song = await _songMgr.RetrieveCompressedSong(id);
 
-			return File(song.Data, "application/x-msdownload", "demo.zip");
+			return File(song.Data, "application/x-msdownload", _songMgr.CompressedSongFilename);
         }
-
-        [HttpPost]
-        public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
-        {
-			try
-			{
-				Console.WriteLine("Uploading song...");
-
-			    var uploads = _songTempDir;
-				Console.WriteLine($"Song Root Path {uploads}");
-				foreach (var sng in songData)
-				{
-            		if (sng.Length > 0) {
-						await _songMgr.SaveSongToFileSystem(sng);
-            		}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"An error occurred: {ex.Message}");
-			}
-        }
-
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] SongData song)
-        {
-        }
-
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+		#endregion
     }
 }

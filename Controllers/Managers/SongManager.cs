@@ -31,6 +31,8 @@ namespace Icarus.Controllers.Managers
 		private IConfiguration _config;
 		private string _connectionString;
 		private string _tempDirectoryRoot;
+		private string _archiveDirectoryRoot;
+		private string _compressedSongFilename;
 		#endregion
 
 
@@ -39,6 +41,17 @@ namespace Icarus.Controllers.Managers
 		{
 			get => _song;
 			set => _song = value;
+		}
+
+		public string ArchiveDirectoryRoot
+		{
+			get => _archiveDirectoryRoot;
+			set => _archiveDirectoryRoot = value;
+		}
+		public string CompressedSongFilename
+		{
+			get => _compressedSongFilename;
+			set => _compressedSongFilename = value;
 		}
 		#endregion
 
@@ -283,10 +296,19 @@ namespace Icarus.Controllers.Managers
             {
                 _song = await RetrieveSongDetails(id);
 				Console.WriteLine("Retrieved details of song");
+
 				song = RetrieveSongFromFileSystem(_song);
 				Console.WriteLine("Retrieved song from filesystem");
-				SongCompression compressed = new SongCompression();
-				song.Data = compressed.CompressedSong(song.Data);
+
+				SongCompression compressed = new SongCompression(_archiveDirectoryRoot);
+				Console.WriteLine("SongCompression Initialized");
+
+				var compressedPath = compressed.RetrieveCompressesSongPath(_song);
+				Console.WriteLine($"Path of compressed song: {compressedPath}");
+
+				song.Data = System.IO.File.ReadAllBytes(compressedPath);
+
+				_compressedSongFilename = compressed.CompressedSongFilename;
             }
             catch (Exception ex)
             {
