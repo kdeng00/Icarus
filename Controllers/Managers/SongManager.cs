@@ -37,14 +37,8 @@ namespace Icarus.Controllers.Managers
 		#region Properties
 		public Song SongDetails
 		{
-			get
-			{
-				return _song;
-			}
-			set
-			{
-				_song = value;
-			}
+			get => _song;
+			set => _song = value;
 		}
 		#endregion
 
@@ -288,6 +282,11 @@ namespace Icarus.Controllers.Managers
             try
             {
                 _song = await RetrieveSongDetails(id);
+				Console.WriteLine("Retrieved details of song");
+				song = RetrieveSongFromFileSystem(_song);
+				Console.WriteLine("Retrieved song from filesystem");
+				SongCompression compressed = new SongCompression();
+				song.Data = compressed.CompressedSong(song.Data);
             }
             catch (Exception ex)
             {

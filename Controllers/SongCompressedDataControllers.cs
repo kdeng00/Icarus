@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -14,9 +14,9 @@ using Icarus.Models;
 
 namespace Icarus.Controllers
 {
-    [Route("api/song/data")]
+    [Route("api/song/compressed/data")]
     [ApiController]
-    public class SongDataController : ControllerBase
+    public class SongCompressedDataController : ControllerBase
     {
         #region Fields
         private IConfiguration _config;
@@ -30,7 +30,7 @@ namespace Icarus.Controllers
 
 
 		#region Constructor
-		public SongDataController(IConfiguration config)
+		public SongCompressedDataController(IConfiguration config)
 		{
 			_config = config;
 			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
@@ -44,7 +44,6 @@ namespace Icarus.Controllers
         {
 			List<SongData> songs = new List<SongData>();
 
-
             return songs;
         }
 
@@ -53,9 +52,10 @@ namespace Icarus.Controllers
         {
 			SongData song = new SongData();
 
-			song = await _songMgr.RetrieveSong(id);
+			Console.WriteLine("Starting process of retrieving comrpessed song");
+			song = await _songMgr.RetrieveCompressedSong(id);
 
-			return File(song.Data, "application/x-msdownload", _songMgr.SongDetails.Filename);
+			return File(song.Data, "application/x-msdownload", "demo.zip");
         }
 
         [HttpPost]

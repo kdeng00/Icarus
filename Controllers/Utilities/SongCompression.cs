@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 
-
 using SevenZip.Compression.LZMA;
 
 namespace Icarus.Controllers.Utilities
@@ -31,19 +30,41 @@ namespace Icarus.Controllers.Utilities
 
 
         #region Methods
-        //public async Task<byte[]> CompressedSong(byte[] uncompressedSong)
-        public async Task<byte[]> CompressedSong(byte[] uncompressedSong)
+        public byte[] CompressedSong(byte[] uncompressedSong)
         {
             byte[] compressedSong = null;
             try
             {
-                //compressedSong = SevenZip.Compression.LZMA.SevenZipHelper.Compress(uncompressedSong);
+				/**
                 MemoryStream output = new MemoryStream();
                 using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
                 {
                     dstream.Write(uncompressedSong, 0, uncompressedSong.Length);
                     compressedSong = output.ToArray();
                 }
+				*/
+
+				// TODO: Implement song compression
+
+				FileStream sourceFile = File.ReadAllBytes(uncompressedSong);
+    			FileStream destinationFile = File.Create(path + ".gz");
+
+			    byte[] buffer = new byte[sourceFile.Length];
+    			sourceFile.Read(uncompressedSong, 0, uncompressedSong.Length);
+
+    			using (GZipStream output = new GZipStream(destinationFile,
+        			   CompressionMode.Compress))
+    			{
+       				 Console.WriteLine("Compressing {0} to {1}.", sourceFile.Name,
+            							destinationFile.Name, false);
+
+        			output.Write(buffer, 0, buffer.Length);
+    			}
+
+    			sourceFile.Close();
+    			destinationFile.Close();
+
+				Console.WriteLine("Song has been successfully compressed");
             }
             catch (Exception ex)
             {

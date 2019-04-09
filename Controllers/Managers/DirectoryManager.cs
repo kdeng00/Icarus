@@ -20,14 +20,8 @@ namespace Icarus.Controllers.Managers
 		#region Properties
 		public string SongDirectory
 		{
-			get
-			{
-				return _songDirectory;
-			}
-			set
-			{
-				_songDirectory = value;
-			}
+			get => _songDirectory;
+			set => _songDirectory = value;
 		}
 		#endregion
 
