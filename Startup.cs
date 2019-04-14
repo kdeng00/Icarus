@@ -11,8 +11,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using MySql.Data;
+using MySql.Data.EntityFrameworkCore.Extensions;
+using MySql.Data.MySqlClient;    
 
 using Icarus.Models;
+using Icarus.Models.Context;
 
 namespace Icarus
 {
@@ -30,8 +35,13 @@ namespace Icarus
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 			services.AddSingleton<IConfiguration>(Configuration);
+			var connString = Configuration.GetConnectionString("DefaultConnection");
 
-	    services.Add(new ServiceDescriptor(typeof(MusicStoreContext), new MusicStoreContext(Configuration.GetConnectionString("DefaultConnection"))));  
+	    	services.Add(new ServiceDescriptor(typeof(MusicStoreContext), 
+											   new MusicStoreContext(Configuration
+												   					 .GetConnectionString("DefaultConnection"))));  
+
+			services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

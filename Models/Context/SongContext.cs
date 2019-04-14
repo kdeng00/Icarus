@@ -14,15 +14,14 @@ namespace Icarus.Models.Context
     {
         public DbSet<Song> Songs { get; set; }
 
+
+		public SongContext(DbContextOptions<SongContext> options)
+            : base(options)
+        { }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Song>();
         }
-
-		    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    		{
-      			optionsBuilder.UseMySQL("server=;database=;user=;password=");
-    		}
-
     }
 }  
