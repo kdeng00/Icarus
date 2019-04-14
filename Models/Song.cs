@@ -6,6 +6,9 @@ namespace Icarus.Models
 {
 	public class Song
 	{
+		[JsonIgnore]
+		private MusicStoreContext _context;
+
 		[JsonProperty("id")]
 		public int Id { get; set; }
 		[JsonProperty("title")]

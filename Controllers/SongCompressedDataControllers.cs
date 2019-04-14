@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 using Icarus.Controllers.Managers;
+using Icarus.Controllers.Utilities;
 using Icarus.Models;
 
 namespace Icarus.Controllers
@@ -20,41 +21,41 @@ namespace Icarus.Controllers
     {
         #region Fields
         private IConfiguration _config;
-		private SongManager _songMgr;
-		private string _songTempDir;
-		private string _archiveDir;
-		#endregion
+	private SongManager _songMgr;
+	private string _songTempDir;
+	private string _archiveDir;
+	#endregion
 
 
-		#region Properties
-		#endregion
+	#region Properties
+	#endregion
 
 
-		#region Constructor
-		public SongCompressedDataController(IConfiguration config)
-		{
-			_config = config;
-			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
-			_archiveDir = _config.GetValue<string>("ArchivePath");
-			_songMgr = new SongManager(config, _songTempDir);
-			_songMgr.ArchiveDirectoryRoot = _archiveDir;
-		}
-		#endregion
+	#region Constructor
+	public SongCompressedDataController(IConfiguration config)
+	{
+	    _config = config;
+	    _songTempDir = _config.GetValue<string>("TemporaryMusicPath");
+	    _archiveDir = _config.GetValue<string>("ArchivePath");
+	}
+	#endregion
 
 
-		#region API Routes
+	#region API Routes
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-			SongData song = new SongData();
+	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 
-			Console.WriteLine($"Archive directory root: {_archiveDir}");
+  	    SongCompression cmp = new SongCompression(_archiveDir);
+	    
+            Console.WriteLine($"Archive directory root: {_archiveDir}");
 
-			Console.WriteLine("Starting process of retrieving comrpessed song");
-			song = await _songMgr.RetrieveCompressedSong(id);
+	    Console.WriteLine("Starting process of retrieving comrpessed song");
+	    SongData song = await cmp.RetrieveCompressedSong(context.GetSong(id));
 
-			return File(song.Data, "application/x-msdownload", _songMgr.CompressedSongFilename);
+	    return File(song.Data, "application/x-msdownload", cmp.CompressedSongFilename);
         }
-		#endregion
+        #endregion
     }
 }

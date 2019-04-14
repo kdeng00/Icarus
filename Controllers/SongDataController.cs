@@ -20,29 +20,29 @@ namespace Icarus.Controllers
     {
         #region Fields
         private IConfiguration _config;
-		private SongManager _songMgr;
-		private string _songTempDir;
-		#endregion
+	private SongManager _songMgr;
+	private string _songTempDir;
+	#endregion
 
 
-		#region Properties
-		#endregion
+	#region Properties
+	#endregion
 
 
-		#region Constructor
-		public SongDataController(IConfiguration config)
-		{
-			_config = config;
-			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
-			_songMgr = new SongManager(config, _songTempDir);
-		}
-		#endregion
+	#region Constructor
+	public SongDataController(IConfiguration config)
+	{
+	    _config = config;
+       	    _songTempDir = _config.GetValue<string>("TemporaryMusicPath");
+	    _songMgr = new SongManager(config, _songTempDir);
+	}
+	#endregion
 
 
         [HttpGet]
         public ActionResult<IEnumerable<SongData>> Get()
         {
-			List<SongData> songs = new List<SongData>();
+	    List<SongData> songs = new List<SongData>();
 
 
             return songs;
@@ -51,33 +51,38 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-			SongData song = new SongData();
+	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    var songMetaData = context.GetSong(id); 
 
-			song = await _songMgr.RetrieveSong(id);
+	    SongData song = await _songMgr.RetrieveSong(songMetaData);
 
-			return File(song.Data, "application/x-msdownload", _songMgr.SongDetails.Filename);
+	    return File(song.Data, "application/x-msdownload", songMetaData.Filename);
         }
 
         [HttpPost]
         public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
-			try
-			{
-				Console.WriteLine("Uploading song...");
+	    try
+	    {
+	        MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	        Console.WriteLine("Uploading song...");
 
-			    var uploads = _songTempDir;
-				Console.WriteLine($"Song Root Path {uploads}");
-				foreach (var sng in songData)
-				{
-            		if (sng.Length > 0) {
-						await _songMgr.SaveSongToFileSystem(sng);
-            		}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"An error occurred: {ex.Message}");
-			}
+	        var uploads = _songTempDir;
+		Console.WriteLine($"Song Root Path {uploads}");
+		foreach (var sng in songData)
+		{
+            	    if (sng.Length > 0) {
+		        await _songMgr.SaveSongToFileSystem(sng);
+			var song = _songMgr.SongDetails;
+			context.SaveSong(song);
+			Console.WriteLine("Song successfully saved");
+            	    }
+		}
+	    }
+	    catch (Exception ex)
+	    {
+	        Console.WriteLine($"An error occurred: {ex.Message}");
+	    }
         }
 
         [HttpPut("{id}")]

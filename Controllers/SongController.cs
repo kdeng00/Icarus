@@ -16,30 +16,35 @@ namespace Icarus.Controllers
     [ApiController]
     public class SongController : ControllerBase
     {
-		#region Fields
-		private IConfiguration _config;
-		private SongManager _songMgr;
-		#endregion
+	#region Fields
+	private IConfiguration _config;
+	private SongManager _songMgr;
+	#endregion
 
 
-		#region Properties
-		#endregion
+	#region Properties
+	#endregion
 
 
-		#region Constructor
-		public SongController(IConfiguration config)
-		{
-			_config = config;
-			_songMgr = new SongManager(config);
-		}
-		#endregion
+	#region Constructor
+	public SongController(IConfiguration config)
+	{
+	    _config = config;
+	    _songMgr = new SongManager(config);
+	}
+	#endregion
 
 
         [HttpGet]
         public ActionResult<IEnumerable<Song>> Get()
         {
-			List<Song> songs = new List<Song>();
+	    List<Song> songs = new List<Song>();
             songs = _songMgr.RetrieveAllSongDetails().Result;
+	    Console.WriteLine("Attemtping to retrieve songs");
+
+	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+
+	    songs = context.GetAllSongs();
 
 
             return songs;
@@ -48,7 +53,8 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public ActionResult<Song> Get(int id)
         {
-			Song song = _songMgr.RetrieveSongDetails(id).Result;
+	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    Song song = context.GetSong(id);
 
             return song;
         }
@@ -56,7 +62,8 @@ namespace Icarus.Controllers
         [HttpPost]
         public void Post([FromBody] Song song)
         {
-			_songMgr.SaveSongDetails(song);
+	    // TODO: Replace this call with the one in the MusicContext class
+	    _songMgr.SaveSongDetails(song);
         }
 
         [HttpPut("{id}")]
