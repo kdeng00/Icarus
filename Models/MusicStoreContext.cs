@@ -49,6 +49,29 @@ namespace Icarus.Models
 		Console.WriteLine($"An error occurred:\n{exMsg}");
 	    }
 	}
+	public void DeleteSong(int id)
+	{
+	    try
+	    {
+	        using (MySqlConnection conn = GetConnection())
+		{
+		    conn.Open();
+		    string query = "DELETE FROM Songs WHERE Id=@Id";
+				   
+		    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+		    {
+		        cmd.Parameters.AddWithValue("@Id", id);
+
+			cmd.ExecuteNonQuery();
+		    }
+		}
+	    }
+	    catch (Exception ex)
+	    {
+	        var exMsg = ex.Message;
+		Console.WriteLine($"An error occurred:\n{exMsg}");
+	    }
+	}
 
 	public List<Song> GetAllSongs()
 	{

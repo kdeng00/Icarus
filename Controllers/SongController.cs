@@ -18,6 +18,7 @@ namespace Icarus.Controllers
     {
 	#region Fields
 	private IConfiguration _config;
+	private MusicStoreContext _context;
 	private SongManager _songMgr;
 	#endregion
 
@@ -39,7 +40,7 @@ namespace Icarus.Controllers
         public ActionResult<IEnumerable<Song>> Get()
         {
 	    List<Song> songs = new List<Song>();
-            songs = _songMgr.RetrieveAllSongDetails().Result;
+            //songs = _songMgr.RetrieveAllSongDetails().Result;
 	    Console.WriteLine("Attemtping to retrieve songs");
 
 	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
@@ -74,6 +75,8 @@ namespace Icarus.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    context.DeleteSong(id);
         }
     }
 }
