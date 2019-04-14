@@ -93,7 +93,7 @@ namespace Icarus.Controllers.Managers
 				using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 					conn.Open();
-					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration, " +
+					string query = "INSERT INTO Songs(Title, Album, Artist, Year, Genre, Duration, " +
 									"Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
 									"@Duration, @Filename, @SongPath)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -124,7 +124,7 @@ namespace Icarus.Controllers.Managers
 				using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 					conn.Open();
-					string query = "INSERT INTO Song(Title, Album, Artist, Year, Genre, Duration, " +
+					string query = "INSERT INTO Songs(Title, Album, Artist, Year, Genre, Duration, " +
 									", Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
 									"@Duration, @Filename, @SongPath)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -214,7 +214,7 @@ namespace Icarus.Controllers.Managers
                 InitializeResults();
                 _songs = new List<Song>();
                 _conn.Open();
-                string query = "SELECT * FROM Song";
+                string query = "SELECT * FROM Songs";
 
                 _cmd = new MySqlCommand(query, _conn);
                 _cmd.ExecuteNonQuery();
@@ -246,7 +246,7 @@ namespace Icarus.Controllers.Managers
 				using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 					conn.Open();
-					string query = "SELECT * FROM Song WHERE Id=@Id";
+					string query = "SELECT * FROM Songs WHERE Id=@Id";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Id", id);
