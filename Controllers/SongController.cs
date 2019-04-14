@@ -43,7 +43,9 @@ namespace Icarus.Controllers
             //songs = _songMgr.RetrieveAllSongDetails().Result;
 	    Console.WriteLine("Attemtping to retrieve songs");
 
-	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
 
 	    songs = context.GetAllSongs();
 
@@ -54,7 +56,9 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public ActionResult<Song> Get(int id)
         {
-	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
 	    Song song = context.GetSong(id);
 
             return song;
@@ -63,8 +67,11 @@ namespace Icarus.Controllers
         [HttpPost]
         public void Post([FromBody] Song song)
         {
-	    // TODO: Replace this call with the one in the MusicContext class
-	    _songMgr.SaveSongDetails(song);
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
+
+	    context.SaveSong(song);
         }
 
         [HttpPut("{id}")]
@@ -75,7 +82,10 @@ namespace Icarus.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
-	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
+
 	    context.DeleteSong(id);
         }
     }

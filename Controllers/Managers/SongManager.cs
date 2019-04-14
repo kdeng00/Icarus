@@ -67,7 +67,7 @@ namespace Icarus.Controllers.Managers
 	{
 	    Initialize();
             InitializeConnection();
-			_song = song;
+	    _song = song;
 	}
 	public SongManager(IConfiguration config)
 	{
@@ -86,6 +86,26 @@ namespace Icarus.Controllers.Managers
 
 
 	#region Methods
+	public bool DeleteSongFromFileSystem(Song songMetaData)
+	{
+	    bool successful = false;
+	    try
+	    {
+	        var songPath = songMetaData.SongPath;
+		System.IO.File.Delete(songPath);
+		successful = true;
+		DirectoryManager dirMgr = new DirectoryManager(_config, songMetaData);
+		dirMgr.DeleteEmptyDirectories();
+		Console.WriteLine("Song successfully deleted");
+	    }
+	    catch (Exception ex)
+	    {
+	        var exMsg = ex.Message;
+	    }
+
+	    return successful;
+	}
+
 	public void SaveSongDetails()
 	{
 	    try

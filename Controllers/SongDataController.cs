@@ -39,19 +39,12 @@ namespace Icarus.Controllers
 	#endregion
 
 
-        [HttpGet]
-        public ActionResult<IEnumerable<SongData>> Get()
-        {
-	    List<SongData> songs = new List<SongData>();
-
-
-            return songs;
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
 	    var songMetaData = context.GetSong(id); 
 
 	    SongData song = await _songMgr.RetrieveSong(songMetaData);
@@ -64,7 +57,10 @@ namespace Icarus.Controllers
         {
 	    try
 	    {
-	        MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	        MusicStoreContext context = HttpContext.RequestServices
+						       .GetService(typeof(MusicStoreContext)) 
+						       as MusicStoreContext;
+
 	        Console.WriteLine("Uploading song...");
 
 	        var uploads = _songTempDir;
@@ -93,6 +89,18 @@ namespace Icarus.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+	    MusicStoreContext context = HttpContext.RequestServices
+		     				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
+
+	    var songMetaData = context.GetSong(id);
+
+	    var result = _songMgr.DeleteSongFromFileSystem(songMetaData);
+
+	    if (result)
+	    {
+	        context.DeleteSong(songMetaData.Id);
+	    }
         }
     }
 }

@@ -45,7 +45,9 @@ namespace Icarus.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-	    MusicStoreContext context = HttpContext.RequestServices.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+	    MusicStoreContext context = HttpContext.RequestServices
+		    				   .GetService(typeof(MusicStoreContext)) 
+						   as MusicStoreContext;
 
   	    SongCompression cmp = new SongCompression(_archiveDir);
 	    
