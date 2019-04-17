@@ -12,6 +12,7 @@ One can interface with Icarus the music server either by:
 
 ## Built With
 
+
 * C#
 * [.NET Core](https://dotnet.microsoft.com/) 2.2
 * .NET Web RESTful API
@@ -19,6 +20,8 @@ One can interface with Icarus the music server either by:
 * [Newtonsoft.Json](https://www.newtonsoft.com/json)
 * [TagLib#](https://github.com/mono/taglib-sharp)
 * [ID3](https://github.com/JeevanJames/Id3)
+
+![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 
 ## Contributing
 
