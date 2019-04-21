@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
+using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
