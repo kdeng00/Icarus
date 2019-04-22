@@ -9,6 +9,11 @@ One can interface with Icarus the music server either by:
 * [Mear](https://github.com/amazing-username/mear) - Feature not implemented (under development)
 * [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager) - Partially Implemented (under development)
 
+## Getting started
+``
+Not implemented
+``
+
 
 ## Built With
 
