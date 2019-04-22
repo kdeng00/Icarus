@@ -41,6 +41,8 @@ namespace Icarus.Controllers
 
 
         [HttpGet("{id}")]
+		//[Route("private-scoped")]
+		//[Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
 	    MusicStoreContext context = HttpContext.RequestServices

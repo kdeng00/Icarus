@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -16,7 +19,8 @@ using MySql.Data;
 using MySql.Data.EntityFrameworkCore.Extensions;
 using MySql.Data.MySqlClient;    
 
-using Icarus.Models;
+using Icarus.Authorization;
+using Icarus.Authorization.Handlers;
 using Icarus.Models.Context;
 
 namespace Icarus
@@ -35,13 +39,40 @@ namespace Icarus
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 			services.AddSingleton<IConfiguration>(Configuration);
+
+			string domain = $"https://{Configuration["Auth0:Domain"]}/";
+
+			services.AddAuthentication(options =>
+			{
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			}).AddJwtBearer(options =>
+			{
+				options.Authority = domain;
+				options.Audience = Configuration["Auth0:ApiIdentifier"];
+			});
+
+			services.AddAuthorization(options =>
+			{
+				options.AddPolicy("download:songs", policy => 
+								  policy.Requirements.Add(new HasScopeRequirement
+									  				     ("download:songs", domain)));
+			});
+
+
+			services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+
 			var connString = Configuration.GetConnectionString("DefaultConnection");
 
 	    	services.Add(new ServiceDescriptor(typeof(MusicStoreContext), 
 											   new MusicStoreContext(Configuration
 												   					 .GetConnectionString("DefaultConnection"))));  
+			services.Add(new ServiceDescriptor(typeof(UserStoreContext),
+											   new UserStoreContext(Configuration
+												   					.GetConnectionString("DefaultConnection"))));
 
 			services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
+			services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +87,8 @@ namespace Icarus
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+			app.UseAuthentication();
 
             app.UseHttpsRedirection();
             app.UseMvc();

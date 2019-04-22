@@ -14,10 +14,6 @@ namespace Icarus.Models.Context
             this.ConnectionString = connectionString;    
         }    
 
-		public void InsertSongDetails()
-		{
-		}
-
 
 		public void SaveSong(Song song)
 		{
