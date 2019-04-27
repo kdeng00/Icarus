@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
+using BCrypt.Net;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 using Icarus.Models;
@@ -22,22 +23,19 @@ namespace Icarus.Controllers.Utilities
 
 
 		#region Methods
-		public User HashPassword(User user)
+		public string HashPassword(User user)
 		{
 			try
 			{
-				var userSalt = GenerateSalt();
-				var userHash = GenerateHash(user.Password, userSalt);
+				string hashedPassword = string.Empty;
+				hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-				user.Password = userHash;
-				user.Salt = userSalt;
+				return hashedPassword;
 
-				return user;
 			}
 			catch (Exception ex)
 			{
 				var exMsg = ex.Message;
-				Console.WriteLine($"An error occurred {exMsg}");
 			}
 
 			return null;

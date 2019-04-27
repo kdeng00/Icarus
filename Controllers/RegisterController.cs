@@ -42,7 +42,7 @@ namespace Icarus.Controllers
 			Console.WriteLine($"Password: {user.Password}");
 
 			PasswordEncryption pe = new PasswordEncryption();
-			user = pe.HashPassword(user);
+			user.Password = pe.HashPassword(user);
 			Console.WriteLine($"Hashed Password: {user.Password}");
 
 			UserStoreContext context = HttpContext.RequestServices

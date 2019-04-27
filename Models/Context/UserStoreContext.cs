@@ -33,16 +33,17 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					string query = "INSERT INTO Users(Username, Password, Salt, " +
+					string query = "INSERT INTO Users(Username, Password, Nickname," +
 									"Email, PhoneNumber, Firstname, Lastname, " +
 									"DateCreated, LastLogin) VALUES(@Username, " +
-									"@Password, @Salt, @Email, @PhoneNumber, " +
+									"@Password, @Nickname, @Email, @PhoneNumber, " +
 									"@Firstname, @Lastname, @DateCreated, @LastLogin)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Username", user.Username);
 						cmd.Parameters.AddWithValue("@Password", user.Password);
-						cmd.Parameters.AddWithValue("@Salt", user.Salt);
+						//cmd.Parameters.AddWithValue("@Salt", user.Salt);
+						cmd.Parameters.AddWithValue("@Nickname", user.Nickname);
 						cmd.Parameters.AddWithValue("@Email", user.Email);
 						cmd.Parameters.AddWithValue("@PhoneNumber", user.PhoneNumber);
 						cmd.Parameters.AddWithValue("@Firstname", user.Firstname);
@@ -80,6 +81,7 @@ namespace Icarus.Models.Context
 							while (reader.Read())
 							{
 								user.Id = Convert.ToInt32(reader["Id"]);
+								user.Nickname = reader["Nickname"].ToString();
 								user.Email = reader["Email"].ToString();
 								user.PhoneNumber = reader["PhoneNumber"].ToString();
 								user.Firstname = reader["Firstname"].ToString();

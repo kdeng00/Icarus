@@ -10,10 +10,10 @@ namespace Icarus.Models
 		public int Id { get; set; }
 		[JsonProperty("username")]
 		public string Username { get; set; }
+		[JsonProperty("nickname")]
+		public string Nickname { get; set; }
 		[JsonProperty("password")]
 		public string Password { get; set; }
-		[JsonIgnore]
-		public byte[] Salt { get; set; }
 		[JsonProperty("email")]
 		public string Email { get; set; }
 		[JsonProperty("phone_number")]
