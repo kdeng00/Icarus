@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using MySql.Data.MySqlClient;
 
@@ -81,19 +82,25 @@ namespace Icarus.Models.Context
 						{
 							while (reader.Read())
 							{
+								var dateCreated = reader["DateCreated"].ToString();
+								var lastLogin = reader["LastLogin"].ToString();
+								var parsedC = DateTime.Parse(dateCreated);
+								var parsedL = DateTime.Parse(lastLogin);
+
 								user.Id = Convert.ToInt32(reader["Id"]);
 								user.Nickname = reader["Nickname"].ToString();
 								user.Email = reader["Email"].ToString();
 								user.PhoneNumber = reader["PhoneNumber"].ToString();
-								user.EmailVerified = Boolean.Parse(reader["EmailVerified"].ToString());
+								user.EmailVerified = (reader["EmailVerified"].ToString()) == "1";
 								user.Firstname = reader["Firstname"].ToString();
 								user.Lastname = reader["Lastname"].ToString();
-								user.DateCreated = DateTime.ParseExact(reader["DateCreated"].ToString(), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-								user.LastLogin = DateTime.ParseExact(reader["LastLogin"].ToString(), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+								user.DateCreated = DateTime.Parse(parsedC.ToString("yyyy-MM-dd HH:mm:ss"));
+								user.LastLogin = DateTime.Parse(parsedL.ToString("yyyy-MM-dd HH:mm:ss"));
 							}
 						}
 					}
 				}
+				return user;
 			}
 			catch (Exception ex)
 			{

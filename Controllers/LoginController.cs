@@ -38,6 +38,12 @@ namespace Icarus.Controllers
 		#region HTTP endpoints
 		public IActionResult Post([FromBody] User user)
 		{
+			UserStoreContext context = HttpContext
+									   .RequestServices
+									   .GetService(typeof(UserStoreContext))
+												  as UserStoreContext;
+
+			user = context.RetrieveUser(user);
 			Console.WriteLine($"Username: {user.Username}");
 
 			TokenManager tk = new TokenManager(_config);

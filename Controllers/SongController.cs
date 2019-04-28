@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -13,81 +14,85 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
-    [Route("api/Song")]
+    [Route("api/song")]
     [ApiController]
     public class SongController : ControllerBase
     {
-	#region Fields
-	private IConfiguration _config;
-	private MusicStoreContext _context;
-	private SongManager _songMgr;
-	#endregion
+		#region Fields
+		private IConfiguration _config;
+		private MusicStoreContext _context;
+		private SongManager _songMgr;
+		#endregion
 
 
-	#region Properties
-	#endregion
+		#region Properties
+		#endregion
 
 
-	#region Constructor
-	public SongController(IConfiguration config)
-	{
-	    _config = config;
-	    _songMgr = new SongManager(config);
-	}
-	#endregion
+		#region Constructor
+		public SongController(IConfiguration config)
+		{
+			_config = config;
+			_songMgr = new SongManager(config);
+		}
+		#endregion
 
 
         [HttpGet]
+		[Authorize("read:song_details")]
         public ActionResult<IEnumerable<Song>> Get()
         {
-	    List<Song> songs = new List<Song>();
-            //songs = _songMgr.RetrieveAllSongDetails().Result;
-	    Console.WriteLine("Attemtping to retrieve songs");
+			List<Song> songs = new List<Song>();
+			Console.WriteLine("Attemtping to retrieve songs");
+			
+			MusicStoreContext context = HttpContext
+										.RequestServices
+										.GetService(typeof(MusicStoreContext)) 
+										as MusicStoreContext;
 
-	    MusicStoreContext context = HttpContext.RequestServices
-		    				   .GetService(typeof(MusicStoreContext)) 
-						   as MusicStoreContext;
+			songs = context.GetAllSongs();
 
-	    songs = context.GetAllSongs();
-
-
-            return songs;
+			return songs;
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<Song> Get(int id)
-        {
-	    MusicStoreContext context = HttpContext.RequestServices
-		    				   .GetService(typeof(MusicStoreContext)) 
-						   as MusicStoreContext;
-	    Song song = context.GetSong(id);
+		[HttpGet("{id}")]
+		public ActionResult<Song> Get(int id)
+		{
+			MusicStoreContext context = HttpContext
+										.RequestServices
+										.GetService(typeof(MusicStoreContext)) 
+										as MusicStoreContext;
+			
+			Song song = context.GetSong(id);
+			
+			return song;
+		}
 
-            return song;
-        }
-
-        [HttpPost]
-        public void Post([FromBody] Song song)
-        {
-	    MusicStoreContext context = HttpContext.RequestServices
-		    				   .GetService(typeof(MusicStoreContext)) 
-						   as MusicStoreContext;
-
-	    context.SaveSong(song);
-        }
+		[HttpPost]
+		public void Post([FromBody] Song song)
+		{
+			MusicStoreContext context = HttpContext
+										.RequestServices
+										.GetService(typeof(MusicStoreContext)) 
+										as MusicStoreContext;
+			
+			context.SaveSong(song);
+		}
 
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] Song song)
         {
         }
 
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-	    MusicStoreContext context = HttpContext.RequestServices
-		    				   .GetService(typeof(MusicStoreContext)) 
-						   as MusicStoreContext;
-
-	    context.DeleteSong(id);
+		[HttpDelete("{id}")]
+		public void Delete(int id)
+		{
+			MusicStoreContext context = HttpContext
+										.RequestServices
+										.GetService(typeof(MusicStoreContext)) 
+										as MusicStoreContext;
+			
+			context.DeleteSong(id);
         }
     }
 }

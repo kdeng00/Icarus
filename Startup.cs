@@ -37,7 +37,7 @@ namespace Icarus
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 			services.AddSingleton<IConfiguration>(Configuration);
 
 			string domain = $"https://{Configuration["Auth0:Domain"]}/";
@@ -55,8 +55,24 @@ namespace Icarus
 			services.AddAuthorization(options =>
 			{
 				options.AddPolicy("download:songs", policy => 
-								  policy.Requirements.Add(new HasScopeRequirement
-									  				     ("download:songs", domain)));
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("download:songs", domain)));
+
+				options.AddPolicy("upload:songs", policy => 
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("upload:songs", domain)));
+
+				options.AddPolicy("delete:songs", policy =>
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("delete:songs", domain)));
+
+				options.AddPolicy("read:song_details", policy => 
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("read:song_details", domain)));
 			});
 
 
