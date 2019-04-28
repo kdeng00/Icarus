@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +45,7 @@ namespace Icarus.Controllers
 
 	#region API Routes
         [HttpGet("{id}")]
+		[Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
 	    MusicStoreContext context = HttpContext.RequestServices
