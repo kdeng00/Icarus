@@ -195,7 +195,9 @@ namespace Icarus.Controllers.Managers
 	{
 	    try
 	    {
+			Console.WriteLine("Saving song to the filesystem");
 	        var filePath = Path.Combine(_tempDirectoryRoot, song.FileName);
+			Console.WriteLine("Saving song to the filePath");
 		await SaveSongToFileSystemTemp(song, filePath);
 		System.IO.File.Delete(filePath);
 
@@ -330,41 +332,58 @@ namespace Icarus.Controllers.Managers
 
 	Song RetrieveMetaData(string filePath)
 	{
+		Song newSong = new Song
+		{
+	        Title = "Untitled",
+			Artist = "Untitled",
+			Album = "Untitled",
+			Year = 0,
+			Genre = "Untitled",
+			Duration = 0,
+			SongPath = ""
+		};
 	    string title, artist, album, genre;
 	    int year, duration;
 			
-	    TagLib.File tfile = TagLib.File.Create(filePath);
-	    duration = (int)tfile.Properties.Duration.TotalSeconds;
+		Console.WriteLine("Stripping song metadata");
+		try
+		{
+	    	TagLib.File tfile = TagLib.File.Create(filePath);
 
 
-	    using (var mp3 = new Mp3(filePath))
+	    	using (var mp3 = new Mp3(filePath))
     	    {
                 Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
-		title = tag.Title;
-		artist = tag.Artists;
-	        album = tag.Album;
-		genre = "Not Implemented";
-		year = (int)tag.Year;
-        	Console.WriteLine("Title: {0}", title);
-        	Console.WriteLine("Artist: {0}", artist);
-        	Console.WriteLine("Album: {0}", album);
-		Console.WriteLine("Genre: {0}", genre);
-		Console.WriteLine("Year: {0}", year);
-		Console.WriteLine("Duration: {0}", duration);
+				title = tag.Title;
+        		Console.WriteLine("Title: {0}", title);
+				newSong.Title = title;
+				artist = tag.Artists;
+        		Console.WriteLine("Artist: {0}", artist);
+				newSong.Artist = artist;
+	        	album = tag.Album;
+        		Console.WriteLine("Album: {0}", album);
+				newSong.Album = album;
+				genre = "Not Implemented";
+				Console.WriteLine("Genre: {0}", genre);
+				newSong.Genre = genre;
+				year = (int)tag.Year;
+				Console.WriteLine("Year: {0}", year);
+				newSong.Year = year;
+	    		duration = (int)tfile.Properties.Duration.TotalSeconds;
+				Console.WriteLine("Duration: {0}", duration);
+				newSong.Duration = duration;
     	    }
 
-	    _song = new Song
-	    {
-	        Title = title,
-		Artist = artist,
-		Album = album,
-		Year = year,
-		Genre = genre,
-		Duration = duration,
-		SongPath = filePath
-	    };
+	    	_song = newSong;
+		}
+		catch (Exception ex)
+		{
+			var msg = ex.Message;
+			Console.WriteLine($"An error occurred when stripping metadata\n{msg}");
+			_song = newSong;
+		}
 
-	    return _song;
+	    return newSong;
 	}
 
 	async Task<SongData> RetrieveSongFromFileSystem(Song details)
@@ -382,9 +401,13 @@ namespace Icarus.Controllers.Managers
 	{
 	    using (var fileStream = new FileStream(filePath, FileMode.Create))
 	    {
+			Console.WriteLine("Retrieving song and storing it in memory");
 	        await song.CopyToAsync(fileStream);
+			Console.WriteLine($"Retrieving metadata of song from filepath {filePath}");
 		_song = RetrieveMetaData(filePath);
+			Console.WriteLine("Assigning song filename");
 		_song.Filename = song.FileName;
+			Console.WriteLine($"Song filename retrieved: {song.FileName}");
 	    }
 	}
 

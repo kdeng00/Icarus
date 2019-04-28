@@ -75,6 +75,7 @@ namespace Icarus.Controllers
 				foreach (var sng in songData)
 				{
 					if (sng.Length > 0) {
+						Console.WriteLine($"Song filename {sng.FileName}");
 						await _songMgr.SaveSongToFileSystem(sng);
 						var song = _songMgr.SongDetails;
 						context.SaveSong(song);
