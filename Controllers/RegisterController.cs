@@ -43,6 +43,7 @@ namespace Icarus.Controllers
 
 			PasswordEncryption pe = new PasswordEncryption();
 			user.Password = pe.HashPassword(user);
+			user.EmailVerified = false;
 			Console.WriteLine($"Hashed Password: {user.Password}");
 
 			UserStoreContext context = HttpContext.RequestServices

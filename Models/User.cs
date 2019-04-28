@@ -22,6 +22,8 @@ namespace Icarus.Models
 		public string Firstname { get; set; }
 		[JsonProperty("last_name")]
 		public string Lastname { get; set; }
+		[JsonProperty("email_verified")]
+		public bool EmailVerified { get; set; }
 		[JsonProperty("date_created")]
 		public DateTime DateCreated { get; set; }
 		[JsonProperty("last_login")]
