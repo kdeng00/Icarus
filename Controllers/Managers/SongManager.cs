@@ -218,7 +218,6 @@ namespace Icarus.Controllers.Managers
 		    _song.SongPath = filePath;
 
 		    Console.WriteLine($"Writing song to the directory: {filePath}");
-		    Console.WriteLine("Song successfully saved");
 		}
 	    }
 	    catch (Exception ex)
@@ -404,7 +403,9 @@ namespace Icarus.Controllers.Managers
 			Console.WriteLine("Retrieving song and storing it in memory");
 	        await song.CopyToAsync(fileStream);
 			Console.WriteLine($"Retrieving metadata of song from filepath {filePath}");
-		_song = RetrieveMetaData(filePath);
+			MetadataRetriever meta = new MetadataRetriever();
+			_song = meta.RetrieveMetaData(filePath);
+		//_song = RetrieveMetaData(filePath);
 			Console.WriteLine("Assigning song filename");
 		_song.Filename = song.FileName;
 			Console.WriteLine($"Song filename retrieved: {song.FileName}");

@@ -68,20 +68,14 @@ namespace Icarus.Controllers
 			return song;
 		}
 
-		[HttpPost]
-		public void Post([FromBody] Song song)
-		{
-			MusicStoreContext context = HttpContext
-										.RequestServices
-										.GetService(typeof(MusicStoreContext)) 
-										as MusicStoreContext;
-			
-			context.SaveSong(song);
-		}
 
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Song song)
+        public IActionResult Put(int id, [FromBody] Song song)
         {
+			// TODO: Implement updating of song metadata
+			SongResult songResult = new SongResult();
+
+			return Ok(songResult);
         }
 
 		[HttpDelete("{id}")]

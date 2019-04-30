@@ -89,11 +89,6 @@ namespace Icarus.Controllers
 			}
 		}
 
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] SongData song)
-        {
-        }
-
         [HttpDelete("{id}")]
 		[Authorize("delete:songs")]
         public void Delete(int id)
