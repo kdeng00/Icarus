@@ -5,30 +5,30 @@ using MySql.Data.MySqlClient;
         
 namespace Icarus.Models.Context    
 {    
-    public class MusicStoreContext    
-    {    
-        public string ConnectionString { get; set; }    
+	public class MusicStoreContext    
+    	{    
+        	public string ConnectionString { get; set; }    
     
-        public MusicStoreContext(string connectionString)    
-        {    
-            this.ConnectionString = connectionString;    
-        }    
+        	public MusicStoreContext(string connectionString)    
+        	{    
+            		this.ConnectionString = connectionString;    
+        	}    
 
 
 		public void SaveSong(Song song)
 		{
-	    	try
-	    	{
-	     	   using (MySqlConnection conn = GetConnection())
+	    		try
+	    		{
+	     	   		using (MySqlConnection conn = GetConnection())
 				{
-		    		conn.Open();
-		    		string query = "INSERT INTO Songs(Title, Album, Artist," +
+		    			conn.Open();
+		    			string query = "INSERT INTO Songs(Title, Album, Artist," +
 						" Year, Genre, Duration, Filename, SongPath) " + 
 						"VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
 				   		"@Duration, @Filename, @SongPath)";
-		    		using (MySqlCommand cmd = new MySqlCommand(query, conn))
-		    		{
-		        		cmd.Parameters.AddWithValue("@Title", song.Title);
+		    			using (MySqlCommand cmd = new MySqlCommand(query, conn))
+		    			{
+		        			cmd.Parameters.AddWithValue("@Title", song.Title);
 						cmd.Parameters.AddWithValue("@Album", song.Album);
 						cmd.Parameters.AddWithValue("@Artist", song.Artist);
 						cmd.Parameters.AddWithValue("@Year", song.Year);
@@ -38,14 +38,47 @@ namespace Icarus.Models.Context
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
 
 						cmd.ExecuteNonQuery();
-		    		}
+		    			}
 				}
-	    	}
-	    	catch(Exception ex)
-	    	{
-	        	var exMsg = ex.Message;
+	    		}
+	    		catch(Exception ex)
+	    		{
+	        		var exMsg = ex.Message;
 				Console.WriteLine($"An error occurred:\n{exMsg}");
-	    	}
+	    		}
+		}
+		public void UpdateSong(Song song)
+		{
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+		    			string query = "UPDATE Songs SET Title=@Title, Album=@Album, " +
+						"Artist=@Artist, Year=@Year, Genre=@Genre, " +
+				   		"Duration=@Duration, Filename=@Filename, SongPath=@SongPath";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+		        			cmd.Parameters.AddWithValue("@Title", song.Title);
+						cmd.Parameters.AddWithValue("@Album", song.Album);
+						cmd.Parameters.AddWithValue("@Artist", song.Artist);
+						cmd.Parameters.AddWithValue("@Year", song.Year);
+						cmd.Parameters.AddWithValue("@Genre", song.Genre);
+						cmd.Parameters.AddWithValue("@Duration", song.Duration);
+						cmd.Parameters.AddWithValue("@Filename", song.Filename);
+						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				Console.WriteLine("An error occurred in MusicStoreContext:");
+				Console.WriteLine(msg);
+			}
 		}
 		public void DeleteSong(int id)
 		{

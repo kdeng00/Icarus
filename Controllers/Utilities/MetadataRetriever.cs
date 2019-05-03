@@ -58,6 +58,25 @@ namespace Icarus.Controllers.Utilities
 			return song;
 		}
 
+		public void UpdateMetadata(Song song)
+		{
+			try
+			{
+				Console.WriteLine("Updating song metadata"); 
+				var filePath = song.SongPath;
+				TagLib.File fileTag = TagLib.File.Create(filePath);
+				fileTag.Tag.Title = song.Title;
+				fileTag.Tag.Genres = new []{song.Genre};
+				fileTag.Save();
+				Console.WriteLine("Song metadata updated");
+
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+			}
+		}
+
 		private void PrintMetadata()
 		{
 			Console.WriteLine("\n\nMetadata of the song:");
