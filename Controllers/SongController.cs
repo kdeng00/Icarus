@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
@@ -20,6 +21,7 @@ namespace Icarus.Controllers
     	public class SongController : ControllerBase
     	{
 		#region Fields
+		private readonly ILogger<SongController> _logger;
 		private IConfiguration _config;
 		private MusicStoreContext _context;
 		private SongManager _songMgr;
@@ -31,10 +33,12 @@ namespace Icarus.Controllers
 
 
 		#region Constructor
-		public SongController(IConfiguration config)
+		public SongController(IConfiguration config, ILogger<SongController> logger)
 		{
 			_config = config;
+			_logger = logger;
 			_songMgr = new SongManager(config);
+			_logger.LogInformation("Logging is working!");
 		}
 		#endregion
 
@@ -73,19 +77,24 @@ namespace Icarus.Controllers
         	[HttpPut("{id}")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
-			// TODO: Implement updating of song metadata
 			MusicStoreContext context = HttpContext.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+			song.Id = id;
 			Console.WriteLine("Retrieving filepath of song");
-			var songPath = context.GetSong(id).SongPath;
-			song.SongPath = songPath;
+			var oldSongRecord = context.GetSong(id);
+			song.SongPath = oldSongRecord.SongPath;
 
 			MetadataRetriever updateMetadata = new MetadataRetriever();
-			updateMetadata.UpdateMetadata(song);
+			updateMetadata.UpdateMetadata(song, oldSongRecord);
 
-			context.UpdateSong(song);
+			var updatedSong = updateMetadata.UpdatedSongRecord;
+			context.UpdateSong(updatedSong);
 
-			SongResult songResult = new SongResult();
+			SongResult songResult = new SongResult
+			{
+				Message = updateMetadata.Message,
+				SongTitle = updatedSong.Title
+			};
 
 			return Ok(songResult);
         	}
