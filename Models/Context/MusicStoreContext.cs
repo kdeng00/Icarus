@@ -2,19 +2,31 @@ using System;
 using System.Collections.Generic;    
 
 using MySql.Data.MySqlClient;    
+using NLog;
         
 namespace Icarus.Models.Context    
 {    
 	public class MusicStoreContext    
     	{    
+		#region Fields
+		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+		#endregion
+
+
+		#region Properties
         	public string ConnectionString { get; set; }    
+		#endregion
     
+
+		#region Constructors
         	public MusicStoreContext(string connectionString)    
         	{    
             		this.ConnectionString = connectionString;    
         	}    
+		#endregion
 
 
+		#region Methods
 		public void SaveSong(Song song)
 		{
 	    		try
@@ -179,6 +191,7 @@ namespace Icarus.Models.Context
 						}
 		    			}
 				}
+				_logger.Info("Song found");
 	    		}
 	    		catch(Exception ex)
 	    		{
@@ -193,5 +206,6 @@ namespace Icarus.Models.Context
         	{    
             		return new MySqlConnection(ConnectionString);    
         	}  
+		#endregion
     	}    
 }  

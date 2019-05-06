@@ -38,7 +38,6 @@ namespace Icarus.Controllers
 			_config = config;
 			_logger = logger;
 			_songMgr = new SongManager(config);
-			_logger.LogInformation("Logging is working!");
 		}
 		#endregion
 
@@ -49,11 +48,11 @@ namespace Icarus.Controllers
         	{
 			List<Song> songs = new List<Song>();
 			Console.WriteLine("Attemtping to retrieve songs");
+			_logger.LogInformation("Attempting to retrieve songs");
 			
 			MusicStoreContext context = HttpContext
-										.RequestServices
-										.GetService(typeof(MusicStoreContext)) 
-										as MusicStoreContext;
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 
 			songs = context.GetAllSongs();
 
@@ -64,9 +63,8 @@ namespace Icarus.Controllers
 		public ActionResult<Song> Get(int id)
 		{
 			MusicStoreContext context = HttpContext
-										.RequestServices
-										.GetService(typeof(MusicStoreContext)) 
-										as MusicStoreContext;
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			
 			Song song = context.GetSong(id);
 			
@@ -77,10 +75,13 @@ namespace Icarus.Controllers
         	[HttpPut("{id}")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
-			MusicStoreContext context = HttpContext.RequestServices
+			MusicStoreContext context = HttpContext
+				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+
 			song.Id = id;
 			Console.WriteLine("Retrieving filepath of song");
+			_logger.LogInformation("Retrieving filepath of song");
 			var oldSongRecord = context.GetSong(id);
 			song.SongPath = oldSongRecord.SongPath;
 
@@ -100,14 +101,15 @@ namespace Icarus.Controllers
         	}
 
 		[HttpDelete("{id}")]
-		public void Delete(int id)
+		public IActionResult Delete(int id)
 		{
 			MusicStoreContext context = HttpContext
-										.RequestServices
-										.GetService(typeof(MusicStoreContext)) 
-										as MusicStoreContext;
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			
 			context.DeleteSong(id);
+
+			return Ok();
         }
     }
 }

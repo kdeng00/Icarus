@@ -5,6 +5,7 @@ using System.Linq;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
 
@@ -14,6 +15,24 @@ namespace Icarus.Controllers
 	[ApiController]
 	public class ArtistController : ControllerBase
 	{
+		#region Fields
+		private readonly ILogger<ArtistController> _logger;
+		#endregion
+
+
+		#region Properties
+		#endregion
+
+
+		#region Constructors
+		public ArtistController(ILogger<ArtistController> logger)
+		{
+			_logger = logger;
+		}
+		#endregion
+
+
+		#region HTTP Routes
 		[HttpGet]
 		public IActionResult Get()
 		{
@@ -29,11 +48,6 @@ namespace Icarus.Controllers
 
 			return Ok(artist);
 		}
-
-		[HttpDelete("{id}")]
-		public IActionResult Delete(int id)
-		{
-			return Ok();
-		}
+		#endregion
 	}
 }

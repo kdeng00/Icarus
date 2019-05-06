@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+using Microsoft.Extensions.Logging;
+using NLog;
 using TagLib;
 
 using Icarus.Models;
@@ -10,6 +12,7 @@ namespace Icarus.Controllers.Utilities
 	public class MetadataRetriever
 	{
 		#region Fields
+		private static NLog.Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 		private Song _updatedSong;
 		private string _message;
 		private string _title;
@@ -66,6 +69,7 @@ namespace Icarus.Controllers.Utilities
 				var msg = ex.Message;
 				Console.WriteLine("An error occurred in MetadataRetriever");
 				Console.WriteLine(msg);
+				_logger.Error(msg, "An error occurred in MetadataRetriever");
 			}
 
 			return song;
@@ -76,18 +80,21 @@ namespace Icarus.Controllers.Utilities
 			try
 			{
 				Console.WriteLine("Updating song metadata"); 
+				_logger.Info("Updating song metadata");
 				var filePath = song.SongPath;
 				TagLib.File fileTag = TagLib.File.Create(filePath);
 				fileTag.Tag.Title = song.Title;
 				fileTag.Tag.Genres = new []{song.Genre};
 				fileTag.Save();
 				Console.WriteLine("Song metadata updated");
+				_logger.Info("Song metadata updated");
 
 			}
 			catch (Exception ex)
 			{
 				var msg = ex.Message;
 				Console.WriteLine($"An error occurred: \n{msg}");
+				_logger.Error(msg, "An error occurred");
 			}
 		}
 		public void UpdateMetadata(Song updatedSong, Song oldSong)
@@ -103,6 +110,7 @@ namespace Icarus.Controllers.Utilities
 			{
 				var msg = ex.Message;
 				Console.WriteLine($"An error occurred: {msg}");
+				_logger.Error(msg, "An error occurred");
 				Message = "Failed to update metadata";
 			}
 		}
@@ -119,6 +127,7 @@ namespace Icarus.Controllers.Utilities
 			try
 			{
 				Console.WriteLine($"Updating metadata of {title}");
+				_logger.Info($"Updating metadata of {title}");
 				foreach (var key in checkedValues.Keys)
 				{
 					bool result = checkedValues[key];
@@ -151,11 +160,13 @@ namespace Icarus.Controllers.Utilities
 				}
 				fileTag.Save();
 				Console.WriteLine("Successfully updated metadata");
+				_logger.Info("Successfully updated metadata");
 			}
 			catch (Exception ex)
 			{
 				var msg = ex.Message;
 				Console.WriteLine($"An error occurred:\n{msg}");
+				_logger.Error(msg, "An error occurred");
 			}
 		}
 		private void InitializeUpdatedSong(Song song)
@@ -182,6 +193,14 @@ namespace Icarus.Controllers.Utilities
 			Console.WriteLine($"Genre: {_genre}");
 			Console.WriteLine($"Year: {_year}");
 			Console.WriteLine($"Duration: {_duration}\n\n");
+
+			_logger.Info("Metadata of the song");
+			_logger.Info($"Title: {_title}");
+			_logger.Info($"Artist: {_artist}");
+			_logger.Info($"Album: {_album}");
+			_logger.Info($"Genre: {_genre}");
+			_logger.Info($"Year: {_year}");
+			_logger.Info($"Duration: {_duration}");
 		}
 		private void PrintMetadata(Song song, string message)
 		{
@@ -192,12 +211,21 @@ namespace Icarus.Controllers.Utilities
 			Console.WriteLine($"Genre: {song.Genre}");
 			Console.WriteLine($"Year: {song.Year}");
 			Console.WriteLine($"Duration: {song.Duration}\n\n");
+
+			_logger.Info(message);
+			_logger.Info($"Title: {_title}");
+			_logger.Info($"Artist: {_artist}");
+			_logger.Info($"Album: {_album}");
+			_logger.Info($"Genre: {_genre}");
+			_logger.Info($"Year: {_year}");
+			_logger.Info($"Duration: {_duration}");
 		}
 
 		private SortedDictionary<string, bool> CheckSongValues(Song song)
 		{
 			var songValues = new SortedDictionary<string, bool>();
 			Console.WriteLine("Checking for null data");
+			_logger.Info("Checking for null data");
 			try
 			{
 				songValues["Title"] = String.IsNullOrEmpty(song.Title);
@@ -213,11 +241,13 @@ namespace Icarus.Controllers.Utilities
 					songValues["Year"] = false;
 				}
 				Console.WriteLine("Checking for null data completed");
+				_logger.Info("Checking for null data completed");
 			}
 			catch (Exception ex)
 			{
 				var msg = ex.Message;
 				Console.WriteLine($"An error occurred: \n{msg}");
+				_logger.Error(msg, "An error occurred");
 			}
 
 			return songValues;

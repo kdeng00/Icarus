@@ -87,6 +87,14 @@ namespace Icarus
 						new MusicStoreContext(Configuration
 							.GetConnectionString("DefaultConnection"))));  
 
+			services.Add(new ServiceDescriptor(typeof(AlbumStoreContext),
+						new AlbumStoreContext(Configuration
+							.GetConnectionString("DefaultConnection"))));
+
+			services.Add(new ServiceDescriptor(typeof(ArtistStoreContext),
+						new ArtistStoreContext(Configuration
+							.GetConnectionString("DefaultConnection"))));
+
 			services.Add(new ServiceDescriptor(typeof(UserStoreContext), 
 						new UserStoreContext(Configuration
 							.GetConnectionString("DefaultConnection"))));
