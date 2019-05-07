@@ -69,6 +69,87 @@ namespace Icarus.Models.Context
 
 			return albums;
 		}
+
+		public bool DoesAlbumExist(Album album)
+		{
+			try
+			{
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+			return false;
+		}
+
+		public void SaveAlbum(Album album)
+		{
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+					var query = "INSERT INTO Album(Title, AlbumArtist, " +
+						"SongCount) VALUES (@Title, @AlbumArtist, " +
+						"SongCount)";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", album.Title);
+						cmd.Parameters.AddWithValue("@AlbumArtist", album.AlbumArtist);
+						cmd.Parameters.AddWithValue("@SongCount", album.SongCount);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
+
+		private List<Album> ParseData(MySqlDataReader reader)
+		{
+			List<Album> albums = new List<Album>();
+			while (reader.Read())
+			{
+				var id = Convert.ToInt32(reader["Id"]);
+				var title = reader["Title"].ToString();
+				var albumArtist = reader["AlbumArtist"].ToString();
+				var songCount = Convert.ToInt32(reader["SongCount"]);
+				albums.Add(new Album
+				{
+					Id = id,
+					Title = title,
+					AlbumArtist = albumArtist,
+					SongCount = songCount
+				});
+			}
+
+			return albums;
+		}
+		private Album ParseSingleData(MySqlDataReader reader)
+		{
+			Album album = new Album();
+			while (reader.Read())
+			{
+				var id = Convert.ToInt32(reader["Id"]);
+				var title = reader["Title"].ToString();
+				var albumArtist = reader["AlbumArtist"].ToString();
+				var songCount = Convert.ToInt32(reader["SongCount"]);
+				album = new Album
+				{
+					Id = id,
+					Title = title,
+					AlbumArtist = albumArtist,
+					SongCount = songCount
+				};
+			}
+
+			return album;
+		}
 		#endregion
 	}
 }

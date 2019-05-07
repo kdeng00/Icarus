@@ -100,6 +100,8 @@ namespace Icarus
 							.GetConnectionString("DefaultConnection"))));
 
 			services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
+			services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
+			services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
 			services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
         	}
 

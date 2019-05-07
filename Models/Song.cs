@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
 
@@ -29,5 +30,9 @@ namespace Icarus.Models
 		public string Filename { get; set; }
 		[JsonProperty("song_path")]
 		public string SongPath { get; set; }
+		[JsonIgnore]
+		public Album AlbumObject { get; set; }
+		[JsonIgnore]
+		public int AlbumId { get; set; }
 	}
 }

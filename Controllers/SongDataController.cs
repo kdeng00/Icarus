@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Models;
@@ -16,12 +17,13 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
-    [Route("api/song/data")]
-    [ApiController]
-    public class SongDataController : ControllerBase
-    {
-        #region Fields
-        private IConfiguration _config;
+	[Route("api/song/data")]
+	[ApiController]
+	public class SongDataController : ControllerBase
+	{
+		#region Fields
+        	private IConfiguration _config;
+		private ILogger<SongDataController> _logger;
 		private SongManager _songMgr;
 		private string _songTempDir;
 		#endregion
@@ -32,24 +34,24 @@ namespace Icarus.Controllers
 
 
 		#region Constructor
-		public SongDataController(IConfiguration config)
+		public SongDataController(IConfiguration config, ILogger<SongDataController> logger)
 		{
 			_config = config;
+			_logger = logger;
 			_songTempDir = _config.GetValue<string>("TemporaryMusicPath");
 			_songMgr = new SongManager(config, _songTempDir);
 		}
 		#endregion
 
 
-        [HttpGet("{id}")]
+        	[HttpGet("{id}")]
 		[Route("private-scoped")]
 		[Authorize("download:songs")]
-        public async Task<IActionResult> Get(int id)
-        {
+        	public async Task<IActionResult> Get(int id)
+        	{
 			MusicStoreContext context = HttpContext
-										.RequestServices
-		    				   			.GetService(typeof(MusicStoreContext)) 
-						   				as MusicStoreContext;
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			var songMetaData = context.GetSong(id); 
 			
 			SongData song = await _songMgr.RetrieveSong(songMetaData);
@@ -57,46 +59,55 @@ namespace Icarus.Controllers
 			return File(song.Data, "application/x-msdownload", songMetaData.Filename);
 		}
 
-        [HttpPost]
+        	[HttpPost]
 		[Authorize("upload:songs")]
-        public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
-        {
+        	public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
+        	{
 			try
 			{
-				MusicStoreContext context = HttpContext
-											.RequestServices
-											.GetService(typeof(MusicStoreContext)) 
-											as MusicStoreContext;
+				MusicStoreContext songStoreContext = HttpContext
+					.RequestServices
+					.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+				AlbumStoreContext albumStoreContext = HttpContext
+					.RequestServices
+					.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+				ArtistStoreContext artistStoreContext = HttpContext
+					.RequestServices
+					.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
 
 				Console.WriteLine("Uploading song...");
+				_logger.LogInformation("Uploading song...");
 
 				var uploads = _songTempDir;
 				Console.WriteLine($"Song Root Path {uploads}");
+				_logger.LogInformation($"Song root path {uploads}");
 				foreach (var sng in songData)
 				{
 					if (sng.Length > 0) {
 						Console.WriteLine($"Song filename {sng.FileName}");
-						await _songMgr.SaveSongToFileSystem(sng);
+						_logger.LogInformation($"Song filename {sng.FileName}");
+						// TODO: Add functionality for overloaded method
+						await _songMgr.SaveSongToFileSystem(sng, songStoreContext,
+								albumStoreContext, artistStoreContext);
 						var song = _songMgr.SongDetails;
-						context.SaveSong(song);
-						Console.WriteLine("Song successfully saved");
+						songStoreContext.SaveSong(song);
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"An error occurred: {ex.Message}");
+				var msg = ex.Message;
+				_logger.LogError(msg, "An error occurred");
 			}
 		}
 
-        [HttpDelete("{id}")]
+        	[HttpDelete("{id}")]
 		[Authorize("delete:songs")]
-        public void Delete(int id)
-        {
+        	public void Delete(int id)
+        	{
 			MusicStoreContext context = HttpContext
-										.RequestServices
-										.GetService(typeof(MusicStoreContext)) 
-										as MusicStoreContext;
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			
 			var songMetaData = context.GetSong(id);
 			
@@ -107,5 +118,5 @@ namespace Icarus.Controllers
 				context.DeleteSong(songMetaData.Id);
 			}
 		}
-    }
+    	}
 }

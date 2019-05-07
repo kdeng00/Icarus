@@ -21,7 +21,11 @@ namespace Icarus.Models.Context
 
         	protected override void OnModelCreating(ModelBuilder modelBuilder)
         	{
-            		modelBuilder.Entity<Song>();
+            		modelBuilder.Entity<Song>()
+				.HasOne(s => s.AlbumObject)
+				.WithMany(a => a.Songs)
+				.HasForeignKey(s => s.AlbumId)
+				.HasConstraintName("ForeignKey_Song_Album");
         	}
     	}
 }  

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
 
@@ -14,5 +16,7 @@ namespace Icarus.Models
 		public string AlbumArtist { get; set; }
 		[JsonProperty("song_count")]
 		public int SongCount { get; set; }
+		[JsonIgnore]
+		public List<Song> Songs { get; set; }
 	}
 }

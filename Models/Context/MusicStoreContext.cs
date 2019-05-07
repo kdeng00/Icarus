@@ -6,7 +6,7 @@ using NLog;
         
 namespace Icarus.Models.Context    
 {    
-	public class MusicStoreContext    
+	public class MusicStoreContext : BaseStoreContext
     	{    
 		#region Fields
 		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
@@ -14,14 +14,13 @@ namespace Icarus.Models.Context
 
 
 		#region Properties
-        	public string ConnectionString { get; set; }    
 		#endregion
     
 
 		#region Constructors
         	public MusicStoreContext(string connectionString)    
         	{    
-            		this.ConnectionString = connectionString;    
+            		_connectionString = connectionString;    
         	}    
 		#endregion
 
@@ -202,10 +201,53 @@ namespace Icarus.Models.Context
 	    		return song;
 		}
         
-        	private MySqlConnection GetConnection()    
-        	{    
-            		return new MySqlConnection(ConnectionString);    
-        	}  
+		private List<Song> ParseData(MySqlDataReader reader)
+		{
+
+			List<Song> songs = new List<Song>();
+			while (reader.Read())
+			{
+		        	songs.Add(new Song
+			    	{
+			    		Id = Convert.ToInt32(reader["Id"]),
+			        	Title = reader["Title"].ToString(),
+			        	Album = reader["Album"].ToString(),
+			        	Artist = reader["Artist"].ToString(),
+			        	Year = Convert.ToInt32(reader["Year"]),
+			        	Genre = reader["Genre"].ToString(),
+			        	Duration = Convert.ToInt32(reader["Duration"]),
+			        	Filename = reader["Filename"].ToString(),
+			        	SongPath = reader["SongPath"].ToString()
+			    	});
+			}
+
+			return songs;
+		}
+
+		private Song ParseSingleData(MySqlDataReader reader)
+		{
+			Song song = new Song();
+
+
+			while (reader.Read())
+			{
+		        	song = new Song
+			    	{
+			    		Id = Convert.ToInt32(reader["Id"]),
+			        	Title = reader["Title"].ToString(),
+			        	Album = reader["Album"].ToString(),
+			        	Artist = reader["Artist"].ToString(),
+			        	Year = Convert.ToInt32(reader["Year"]),
+			        	Genre = reader["Genre"].ToString(),
+			        	Duration = Convert.ToInt32(reader["Duration"]),
+			        	Filename = reader["Filename"].ToString(),
+			        	SongPath = reader["SongPath"].ToString()
+			    	};
+			}
+
+			return song;
+		}
+
 		#endregion
     	}    
 }  
