@@ -229,7 +229,7 @@ namespace Icarus.Controllers.Managers
 				Console.WriteLine($"An error occurred: {exMsg}");
 	    		}
 		}
-		public async Task SaveSongToFileSystem(IFormFile song, MusicStoreContext sStoreContext,
+		public async Task SaveSongToFileSystem(IFormFile songFile, MusicStoreContext sStoreContext,
 				AlbumStoreContext alStoreContext,
 				ArtistStoreContext arStoreContext) 
 		{
@@ -238,6 +238,30 @@ namespace Icarus.Controllers.Managers
 				// TODO: Define and implement method that will take care of the
 				// song and album records, eventually will address the artist
 				// records. Make use of helper functions
+				_logger.Info("Starting process to save song to the filesystem");
+				var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
+				//await SaveSongToFileSystemTemp(song, fileTempPath);
+				var song = await SaveSongTemp(songFile, fileTempPath);
+				System.IO.File.Delete(fileTempPath);
+
+				DirectoryManager dirMgr = new DirectoryManager(_config, song);
+				dirMgr.CreateDirectory();
+				var filePath = dirMgr.SongDirectory;
+				if (!songFile.FileName.EndsWith(".mp3"))
+					filePath += $"{songFile.FileName}.mp3";
+				else
+					filePath += $"{songFile.FileName}";
+
+				_logger.Info($"Absolute song path: {filePath}");
+
+				using (var fileStream = new FileStream(filePath, FileMode.Create))
+				{
+					await (songFile.CopyToAsync(fileStream));
+					song.SongPath = filePath;
+
+					_logger.Info("Song Successfully saved");
+				}
+				SaveSongToDatabase(song, sStoreContext, alStoreContext, arStoreContext);
 			}
 			catch (Exception ex)
 			{
@@ -413,15 +437,34 @@ namespace Icarus.Controllers.Managers
 	        		Data = uncompressedSong
 	    		};
 		}
+		private async Task<Song> SaveSongTemp(IFormFile songFile, string filePath)
+		{
+			var song = new Song();
 
 
-		async Task SaveSongToFileSystemTemp(IFormFile song, string filePath)
+			using (var filestream = new FileStream(filePath, FileMode.Create))
+			{
+				_logger.Info("Saving song to temporary directory");
+				await songFile.CopyToAsync(filestream);
+				MetadataRetriever meta = new MetadataRetriever();
+				song =  meta.RetrieveMetaData(filePath);
+
+				_logger.Info("Assigning song filename");
+				song.Filename = songFile.FileName;
+			}
+
+			return song;
+		}
+
+		private async Task SaveSongToFileSystemTemp(IFormFile song, string filePath)
 		{
 	    		using (var fileStream = new FileStream(filePath, FileMode.Create))
 	    		{
 				Console.WriteLine("Retrieving song and storing it in memory");
+				_logger.Info("Retrieving song and storing it in memory");
 	        		await song.CopyToAsync(fileStream);
 				Console.WriteLine($"Retrieving metadata of song from filepath {filePath}");
+				_logger.Info($"Retrieving metadata of song from filepath {filePath}");
 				MetadataRetriever meta = new MetadataRetriever();
 				_song = meta.RetrieveMetaData(filePath);
 	
@@ -431,7 +474,7 @@ namespace Icarus.Controllers.Managers
 	    		}
 		}
 
-		void Initialize()
+		private void Initialize()
 		{
 	    		try
 	    		{
@@ -443,15 +486,45 @@ namespace Icarus.Controllers.Managers
 	    		}
 			
 		}
-        	void InitializeConnection()
+        	private void InitializeConnection()
         	{
             		_conn = new MySqlConnection(_connectionString);
         	}
-       	 	void InitializeResults()
+       	 	private void InitializeResults()
         	{
             		_results = new DataTable();
         	}
-        	async Task PopulateSongDetails()
+		private void SaveSongToDatabase(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
+				ArtistStoreContext artistStore)
+		{
+			// TODO: Not finished and have not been tested
+			var album = new Album();
+			album.Title = song.Album;
+			album.AlbumArtist = song.Artist;
+			if (!albumStore.DoesAlbumExist(song))
+			{
+				album.SongCount = 1;
+				_logger.Info("Saving album to database");
+				albumStore.SaveAlbum(album);
+				_logger.Info("Album suuccessfully saved to database");
+				album = albumStore.GetAlbum(album);
+			}
+			else
+			{
+				var albumRetrieved = albumStore.GetAlbum(song);
+				album.Id = albumRetrieved.Id;
+				album.SongCount = albumRetrieved.SongCount + 1;
+
+				// TODO: Add functionality to the method below
+				albumStore.UpdateAlbum(album);
+			}
+			
+			song.AlbumId = album.Id;
+			// TODO: Update the method below to save the newly added AlbumId value
+			songStore.SaveSong(song);
+		}
+
+        	private async Task PopulateSongDetails()
         	{
             		foreach (DataRow row in _results.Rows)
             		{

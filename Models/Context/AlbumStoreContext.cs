@@ -70,10 +70,148 @@ namespace Icarus.Models.Context
 			return albums;
 		}
 
+		public Album GetAlbum(Album album)
+		{
+
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+					var query = "SELECT * FROM Album WHERE Id=@Id";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Id", album.Id);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							while (reader.Read())
+							{
+								var id = Convert.ToInt32(reader["Id"]);
+								var title = reader["Title"].ToString();
+								var albumArtist = reader["AlbumArtist"].ToString();
+								var songCount = Convert.ToInt32(reader["SongCount"]);
+								album =new Album
+								{
+									Id = id,
+									Title = title,
+									AlbumArtist = albumArtist,
+									SongCount = songCount
+								};
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return album;
+		}
+		public Album GetAlbum(Song song)
+		{
+			var album = new Album();
+
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+					var query = "SELECT * FROM Album WHERE Title=@Title";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", song.Album);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							while (reader.Read())
+							{
+								var id = Convert.ToInt32(reader["Id"]);
+								var title = reader["Title"].ToString();
+								var albumArtist = reader["AlbumArtist"].ToString();
+								var songCount = Convert.ToInt32(reader["SongCount"]);
+								album = new Album
+								{
+									Id = id,
+									Title = title,
+									AlbumArtist = albumArtist,
+									SongCount = songCount
+								};
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return album;
+		}
+
 		public bool DoesAlbumExist(Album album)
 		{
 			try
 			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Album WHERE Id=@Id";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Id", album.Id);
+						
+						using (var reader = cmd.ExecuteReader())
+						{
+							album =  ParseSingleData(reader);
+
+							if (album != null)
+							{
+								_logger.Info($"Album {album.Title} exists");
+								return true;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+			return false;
+		}
+		public bool DoesAlbumExist(Song song)
+		{
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Album WHERE Title=@Title";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", song.Album);
+						
+						using (var reader = cmd.ExecuteReader())
+						{
+							var album =  ParseSingleData(reader);
+
+							if (!String.IsNullOrEmpty(album.Title))
+							{
+								_logger.Info($"Album {album.Title} exists");
+								return true;
+							}
+						}
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -102,6 +240,17 @@ namespace Icarus.Models.Context
 						cmd.ExecuteNonQuery();
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
+		public void UpdateAlbum(Album album)
+		{
+			try
+			{
 			}
 			catch (Exception ex)
 			{
