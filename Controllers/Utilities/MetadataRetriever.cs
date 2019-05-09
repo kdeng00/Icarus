@@ -59,7 +59,7 @@ namespace Icarus.Controllers.Utilities
 
 				song.Title = _title;
 				song.Artist = _artist;
-				song.Album = _album;
+				song.AlbumTitle = _album;
 				song.Genre = _genre;
 				song.Year = _year;
 				song.Duration = _duration;
@@ -120,7 +120,7 @@ namespace Icarus.Controllers.Utilities
 			var filePath = updatedSong.SongPath;
 			var title = updatedSong.Title;
 			var artist = updatedSong.Artist;
-			var album = updatedSong.Album;
+			var album = updatedSong.AlbumTitle;
 			var genre = updatedSong.Genre;
 			var year = updatedSong.Year;
 			TagLib.File fileTag = TagLib.File.Create(filePath);
@@ -144,7 +144,7 @@ namespace Icarus.Controllers.Utilities
 								fileTag.Tag.Artists = new []{artist};
 								break;
 							case "album":
-								_updatedSong.Album = album;
+								_updatedSong.AlbumTitle = album;
 								fileTag.Tag.Album = album;
 								break;
 							case "genre":
@@ -175,7 +175,7 @@ namespace Icarus.Controllers.Utilities
 			{
 				Id = song.Id,
 				Title = song.Title,
-			     	Album = song.Album,
+			     	AlbumTitle = song.AlbumTitle,
 		     	     	Artist = song.Artist,
 				Genre = song.Genre,
 				Year = song.Year,
@@ -230,7 +230,7 @@ namespace Icarus.Controllers.Utilities
 			{
 				songValues["Title"] = String.IsNullOrEmpty(song.Title);
 				songValues["Artists"] = String.IsNullOrEmpty(song.Artist);
-				songValues["Album"] = String.IsNullOrEmpty(song.Album);
+				songValues["Album"] = String.IsNullOrEmpty(song.AlbumTitle);
 				songValues["Genre"] = String.IsNullOrEmpty(song.Genre);
 				if (song.Year==0)
 				{

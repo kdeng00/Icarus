@@ -20,7 +20,8 @@ namespace Icarus.Models.Context
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<Album>();
+			modelBuilder.Entity<Album>()
+				.ToTable("Album");
 		}
 	}
 }

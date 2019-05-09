@@ -45,13 +45,13 @@ namespace Icarus.Models.Context
 						{
 							while (reader.Read())
 							{
-								var id = Convert.ToInt32(reader["Id"]);
+								var id = Convert.ToInt32(reader["AlbumId"]);
 								var title = reader["Title"].ToString();
 								var albumArtist = reader["AlbumArtist"].ToString();
 								var songCount = Convert.ToInt32(reader["SongCount"]);
 								albums.Add(new Album
 								{
-									Id = id,
+									AlbumId = id,
 									Title = title,
 									AlbumArtist = albumArtist,
 									SongCount = songCount
@@ -78,22 +78,22 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT * FROM Album WHERE Id=@Id";
+					var query = "SELECT * FROM Album WHERE AlbumId=@AlbumId";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Id", album.Id);
+						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
 
 						using (var reader = cmd.ExecuteReader())
 						{
 							while (reader.Read())
 							{
-								var id = Convert.ToInt32(reader["Id"]);
+								var id = Convert.ToInt32(reader["AlbumId"]);
 								var title = reader["Title"].ToString();
 								var albumArtist = reader["AlbumArtist"].ToString();
 								var songCount = Convert.ToInt32(reader["SongCount"]);
 								album =new Album
 								{
-									Id = id,
+									AlbumId = id,
 									Title = title,
 									AlbumArtist = albumArtist,
 									SongCount = songCount
@@ -121,21 +121,22 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 					var query = "SELECT * FROM Album WHERE Title=@Title";
+					_logger.Info($"Song title to rerieve album:\n{song.AlbumTitle}");
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Title", song.Album);
+						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
 
 						using (var reader = cmd.ExecuteReader())
 						{
 							while (reader.Read())
 							{
-								var id = Convert.ToInt32(reader["Id"]);
+								var id = Convert.ToInt32(reader["AlbumId"]);
 								var title = reader["Title"].ToString();
 								var albumArtist = reader["AlbumArtist"].ToString();
 								var songCount = Convert.ToInt32(reader["SongCount"]);
 								album = new Album
 								{
-									Id = id,
+									AlbumId = id,
 									Title = title,
 									AlbumArtist = albumArtist,
 									SongCount = songCount
@@ -162,10 +163,10 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Album WHERE Id=@Id";
+					var query = "SELECT * FROM Album WHERE AlbumId=@AlbumId";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Id", album.Id);
+						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
 						
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -198,7 +199,7 @@ namespace Icarus.Models.Context
 					var query = "SELECT * FROM Album WHERE Title=@Title";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Title", song.Album);
+						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
 						
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -230,7 +231,7 @@ namespace Icarus.Models.Context
 					conn.Open();
 					var query = "INSERT INTO Album(Title, AlbumArtist, " +
 						"SongCount) VALUES (@Title, @AlbumArtist, " +
-						"SongCount)";
+						"@SongCount)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", album.Title);
@@ -251,6 +252,22 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+					var query = "UPDATE Album SET Title=@Title, AlbumArtist=" +
+						"@AlbumArtist, SongCount=@SongCount WHERE AlbumId=@AlbumId";
+
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", album.Title);
+						cmd.Parameters.AddWithValue("@AlbumArtist", album.AlbumArtist);
+						cmd.Parameters.AddWithValue("@SongCount", album.SongCount);
+						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -264,13 +281,13 @@ namespace Icarus.Models.Context
 			List<Album> albums = new List<Album>();
 			while (reader.Read())
 			{
-				var id = Convert.ToInt32(reader["Id"]);
+				var id = Convert.ToInt32(reader["AlbumId"]);
 				var title = reader["Title"].ToString();
 				var albumArtist = reader["AlbumArtist"].ToString();
 				var songCount = Convert.ToInt32(reader["SongCount"]);
 				albums.Add(new Album
 				{
-					Id = id,
+					AlbumId = id,
 					Title = title,
 					AlbumArtist = albumArtist,
 					SongCount = songCount
@@ -282,20 +299,22 @@ namespace Icarus.Models.Context
 		private Album ParseSingleData(MySqlDataReader reader)
 		{
 			Album album = new Album();
+			_logger.Info("Retrieving single album record");
 			while (reader.Read())
 			{
-				var id = Convert.ToInt32(reader["Id"]);
+				var id = Convert.ToInt32(reader["AlbumId"]);
 				var title = reader["Title"].ToString();
 				var albumArtist = reader["AlbumArtist"].ToString();
 				var songCount = Convert.ToInt32(reader["SongCount"]);
 				album = new Album
 				{
-					Id = id,
+					AlbumId = id,
 					Title = title,
 					AlbumArtist = albumArtist,
 					SongCount = songCount
 				};
 			}
+			_logger.Info("Single ablum retreived");
 
 			return album;
 		}

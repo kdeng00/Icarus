@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
+using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
@@ -37,6 +38,13 @@ namespace Icarus.Controllers
 		{
 			List<Album> albums = new List<Album>();
 
+			AlbumStoreContext albumStoreContext = HttpContext
+				.RequestServices
+				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+
+			albums = albumStoreContext.GetAlbums();
+
+
 			return Ok(albums);
 		}
 
@@ -44,6 +52,13 @@ namespace Icarus.Controllers
 		public IActionResult Get(int id)
 		{
 			Album album = new Album();
+			album.AlbumId = id;
+
+			AlbumStoreContext albumStoreContext = HttpContext
+				.RequestServices
+				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+
+			album = albumStoreContext.GetAlbum(album);
 
 			return Ok(album);
 		}

@@ -86,11 +86,9 @@ namespace Icarus.Controllers
 					if (sng.Length > 0) {
 						Console.WriteLine($"Song filename {sng.FileName}");
 						_logger.LogInformation($"Song filename {sng.FileName}");
-						// TODO: Add functionality for overloaded method
+
 						await _songMgr.SaveSongToFileSystem(sng, songStoreContext,
 								albumStoreContext, artistStoreContext);
-						var song = _songMgr.SongDetails;
-						songStoreContext.SaveSong(song);
 					}
 				}
 			}

@@ -116,13 +116,13 @@ namespace Icarus.Controllers.Managers
 	        		using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 		    			conn.Open();
-		    			string query = "INSERT INTO Songs(Title, Album, Artist, Year, Genre, Duration, " +
-					   "Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
+		    			string query = "INSERT INTO Songs(Title, AlbumTitle, Artist, Year, Genre, Duration, " +
+					   "Filename, SongPath) VALUES(@Title, @AlbumTitle, @Artist, @Year, @Genre, " +
 					   "@Duration, @Filename, @SongPath)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    			{
 		        			cmd.Parameters.AddWithValue("@Title", _song.Title);
-						cmd.Parameters.AddWithValue("@Album", _song.Album);
+						cmd.Parameters.AddWithValue("@AlbumTitle", _song.AlbumTitle);
 						cmd.Parameters.AddWithValue("@Artist", _song.Artist);
 						cmd.Parameters.AddWithValue("@Year", _song.Year);
 						cmd.Parameters.AddWithValue("@Genre", _song.Genre);
@@ -147,13 +147,13 @@ namespace Icarus.Controllers.Managers
 	        		using (MySqlConnection conn = new MySqlConnection(_connectionString))
 				{
 		    			conn.Open();
-		    			string query = "INSERT INTO Songs(Title, Album, Artist, Year, Genre, Duration, " +
-					   ", Filename, SongPath) VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
+		    			string query = "INSERT INTO Songs(Title, AlbumTitle, Artist, Year, Genre, Duration, " +
+					   ", Filename, SongPath) VALUES(@Title, @AlbumTitle, @Artist, @Year, @Genre, " +
 					   "@Duration, @Filename, @SongPath)";
 		    			using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    			{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
-						cmd.Parameters.AddWithValue("@Album", song.Album);
+						cmd.Parameters.AddWithValue("@AlbumTitle", song.AlbumTitle);
 						cmd.Parameters.AddWithValue("@Artist", song.Artist);
 						cmd.Parameters.AddWithValue("@Year", song.Year);
 						cmd.Parameters.AddWithValue("@Genre", song.Genre);
@@ -235,12 +235,8 @@ namespace Icarus.Controllers.Managers
 		{
 			try
 			{
-				// TODO: Define and implement method that will take care of the
-				// song and album records, eventually will address the artist
-				// records. Make use of helper functions
 				_logger.Info("Starting process to save song to the filesystem");
 				var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
-				//await SaveSongToFileSystemTemp(song, fileTempPath);
 				var song = await SaveSongTemp(songFile, fileTempPath);
 				System.IO.File.Delete(fileTempPath);
 
@@ -372,13 +368,13 @@ namespace Icarus.Controllers.Managers
 		}
 
 
-		Song RetrieveMetaData(string filePath)
+		private Song RetrieveMetaData(string filePath)
 		{
 			Song newSong = new Song
 			{
 	        		Title = "Untitled",
 				Artist = "Untitled",
-				Album = "Untitled",
+				AlbumTitle = "Untitled",
 				Year = 0,
 				Genre = "Untitled",
 				Duration = 0,
@@ -404,7 +400,7 @@ namespace Icarus.Controllers.Managers
 					newSong.Artist = artist;
 	        			album = tag.Album;
         				Console.WriteLine("Album: {0}", album);
-					newSong.Album = album;
+					newSong.AlbumTitle = album;
 					genre = "Not Implemented";
 					Console.WriteLine("Genre: {0}", genre);
 					newSong.Genre = genre;
@@ -428,7 +424,7 @@ namespace Icarus.Controllers.Managers
 	    		return newSong;
 		}
 
-		async Task<SongData> RetrieveSongFromFileSystem(Song details)
+		private async Task<SongData> RetrieveSongFromFileSystem(Song details)
 		{
             		byte[] uncompressedSong = System.IO.File.ReadAllBytes(details.SongPath);
 			
@@ -497,31 +493,36 @@ namespace Icarus.Controllers.Managers
 		private void SaveSongToDatabase(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
 				ArtistStoreContext artistStore)
 		{
-			// TODO: Not finished and have not been tested
+			song.AlbumId = 1;
 			var album = new Album();
-			album.Title = song.Album;
+			album.Title = song.AlbumTitle;
 			album.AlbumArtist = song.Artist;
 			if (!albumStore.DoesAlbumExist(song))
 			{
 				album.SongCount = 1;
 				_logger.Info("Saving album to database");
+				_logger.Info($"Ablum song count before retrieving from store: {album.SongCount}");
+				_logger.Info($"Ablum Id before retrieving from store: {album.AlbumId}");
 				albumStore.SaveAlbum(album);
 				_logger.Info("Album suuccessfully saved to database");
-				album = albumStore.GetAlbum(album);
+				album = albumStore.GetAlbum(song);
+				_logger.Info($"Ablum song count after retrieving from store: {album.SongCount}");
+				_logger.Info($"Ablum Id after retrieving from store: {album.AlbumId}");
 			}
 			else
 			{
 				var albumRetrieved = albumStore.GetAlbum(song);
-				album.Id = albumRetrieved.Id;
+				album.AlbumId = albumRetrieved.AlbumId;
 				album.SongCount = albumRetrieved.SongCount + 1;
 
-				// TODO: Add functionality to the method below
 				albumStore.UpdateAlbum(album);
 			}
 			
-			song.AlbumId = album.Id;
-			// TODO: Update the method below to save the newly added AlbumId value
+			song.AlbumId = album.AlbumId;
+			_logger.Info($"Song;\nTitle {song.Title}\nAlbum {song.AlbumTitle}\nAlbum Id {song.AlbumId}");
+
 			songStore.SaveSong(song);
+			_logger.Info("Successfully saved song to database");
 		}
 
         	private async Task PopulateSongDetails()
@@ -541,7 +542,7 @@ namespace Icarus.Controllers.Managers
                             				song.Title = row[col].ToString();
                             				break;
                         			case "ALBUM":
-                            				song.Album = row[col].ToString();
+                            				song.AlbumTitle = row[col].ToString();
                             				break;
                         			case "ARTIST":
                             				song.Artist = row[col].ToString();

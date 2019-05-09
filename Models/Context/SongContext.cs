@@ -22,7 +22,8 @@ namespace Icarus.Models.Context
         	protected override void OnModelCreating(ModelBuilder modelBuilder)
         	{
             		modelBuilder.Entity<Song>()
-				.HasOne(s => s.AlbumObject)
+				.ToTable("Song")
+				.HasOne(s => s.Album)
 				.WithMany(a => a.Songs)
 				.HasForeignKey(s => s.AlbumId)
 				.HasConstraintName("ForeignKey_Song_Album");

@@ -33,20 +33,21 @@ namespace Icarus.Models.Context
 	     	   		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
-		    			string query = "INSERT INTO Songs(Title, Album, Artist," +
-						" Year, Genre, Duration, Filename, SongPath) " + 
-						"VALUES(@Title, @Album, @Artist, @Year, @Genre, " +
-				   		"@Duration, @Filename, @SongPath)";
+		    			string query = "INSERT INTO Song(Title, AlbumTitle, Artist," +
+						" Year, Genre, Duration, Filename, SongPath, AlbumId) " + 
+						"VALUES(@Title, @AlbumTitle, @Artist, @Year, @Genre, " +
+				   		"@Duration, @Filename, @SongPath, @AlbumId)";
 		    			using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    			{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
-						cmd.Parameters.AddWithValue("@Album", song.Album);
+						cmd.Parameters.AddWithValue("@AlbumTitle", song.AlbumTitle);
 						cmd.Parameters.AddWithValue("@Artist", song.Artist);
 						cmd.Parameters.AddWithValue("@Year", song.Year);
 						cmd.Parameters.AddWithValue("@Genre", song.Genre);
 						cmd.Parameters.AddWithValue("@Duration", song.Duration);
 						cmd.Parameters.AddWithValue("@Filename", song.Filename);
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
+						cmd.Parameters.AddWithValue("@AlbumId", song.AlbumId);
 
 						cmd.ExecuteNonQuery();
 		    			}
@@ -56,8 +57,10 @@ namespace Icarus.Models.Context
 	    		{
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An error occurred:\n{exMsg}");
+				_logger.Error(exMsg, "An error occurred");
 	    		}
 		}
+		// TODO: Update this method to be compatible with the new AlbumId field
 		public void UpdateSong(Song song)
 		{
 			try
@@ -66,14 +69,14 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-		    			string query = "UPDATE Songs SET Title=@Title, Album=@Album, " +
+		    			string query = "UPDATE Song SET Title=@Title, AlbumTitle=@AlbumTitle, " +
 							"Artist=@Artist, Year=@Year, Genre=@Genre, " +
 				   			"Duration=@Duration, Filename=@Filename, " +
 							"SongPath=@SongPath WHERE Id=@Id";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
-						cmd.Parameters.AddWithValue("@Album", song.Album);
+						cmd.Parameters.AddWithValue("@AlbumTitle", song.AlbumTitle);
 						cmd.Parameters.AddWithValue("@Artist", song.Artist);
 						cmd.Parameters.AddWithValue("@Year", song.Year);
 						cmd.Parameters.AddWithValue("@Genre", song.Genre);
@@ -91,6 +94,7 @@ namespace Icarus.Models.Context
 				var msg = ex.Message;
 				Console.WriteLine("An error occurred in MusicStoreContext:");
 				Console.WriteLine(msg);
+				_logger.Error(msg, "An error occurred");
 			}
 		}
 		public void DeleteSong(int id)
@@ -100,7 +104,7 @@ namespace Icarus.Models.Context
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
-			    		string query = "DELETE FROM Songs WHERE Id=@Id";
+			    		string query = "DELETE FROM Song WHERE Id=@Id";
 				   
 			    		using (MySqlCommand cmd = new MySqlCommand(query, conn))
 			    		{
@@ -114,6 +118,7 @@ namespace Icarus.Models.Context
 	    		{
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An error occurred:\n{exMsg}");
+				_logger.Error(exMsg, "An error occurred");
 	    		}
 		}
 
@@ -125,7 +130,7 @@ namespace Icarus.Models.Context
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
-		    			var query = "SELECT * FROM Songs";
+		    			var query = "SELECT * FROM Song";
 		    			MySqlCommand cmd = new MySqlCommand(query, conn);
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
@@ -135,7 +140,7 @@ namespace Icarus.Models.Context
 			    				{
 			        				Id = Convert.ToInt32(reader["Id"]),
 			        				Title = reader["Title"].ToString(),
-			        				Album = reader["Album"].ToString(),
+			        				AlbumTitle = reader["AlbumTitle"].ToString(),
 			        				Artist = reader["Artist"].ToString(),
 			        				Year = Convert.ToInt32(reader["Year"]),
 			        				Genre = reader["Genre"].ToString(),
@@ -152,6 +157,7 @@ namespace Icarus.Models.Context
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An error ocurred:\n{exMsg}");
 				songs.Clear();
+				_logger.Error(exMsg, "An error occurred");
 	    		}
 
 	    		return songs;
@@ -166,7 +172,7 @@ namespace Icarus.Models.Context
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
-		    			var query = "SELECT * FROM Songs WHERE Id=@Id";
+		    			var query = "SELECT * FROM Song WHERE Id=@Id";
 
 		    			MySqlCommand cmd = new MySqlCommand(query, conn);
 		    			cmd.Parameters.AddWithValue("@Id", id);
@@ -179,7 +185,7 @@ namespace Icarus.Models.Context
 			    				{
 			        				Id = Convert.ToInt32(reader["Id"]),
 			        				Title = reader["Title"].ToString(),
-			        				Album = reader["Album"].ToString(),
+			        				AlbumTitle = reader["AlbumTitle"].ToString(),
 			        				Artist = reader["Artist"].ToString(),
 			        				Year = Convert.ToInt32(reader["Year"]),
 			        				Genre = reader["Genre"].ToString(),
@@ -196,6 +202,7 @@ namespace Icarus.Models.Context
 	    		{
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An error ocurred: {exMsg}");
+				_logger.Error(exMsg, "An error occurred");
 	    		}
 
 	    		return song;
@@ -211,7 +218,7 @@ namespace Icarus.Models.Context
 			    	{
 			    		Id = Convert.ToInt32(reader["Id"]),
 			        	Title = reader["Title"].ToString(),
-			        	Album = reader["Album"].ToString(),
+			        	AlbumTitle = reader["AlbumTitle"].ToString(),
 			        	Artist = reader["Artist"].ToString(),
 			        	Year = Convert.ToInt32(reader["Year"]),
 			        	Genre = reader["Genre"].ToString(),
@@ -235,7 +242,7 @@ namespace Icarus.Models.Context
 			    	{
 			    		Id = Convert.ToInt32(reader["Id"]),
 			        	Title = reader["Title"].ToString(),
-			        	Album = reader["Album"].ToString(),
+			        	AlbumTitle = reader["AlbumTitle"].ToString(),
 			        	Artist = reader["Artist"].ToString(),
 			        	Year = Convert.ToInt32(reader["Year"]),
 			        	Genre = reader["Genre"].ToString(),

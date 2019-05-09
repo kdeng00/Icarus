@@ -17,7 +17,7 @@ namespace Icarus.Models
 		[JsonProperty("title")]
 		public string Title { get; set; }
 		[JsonProperty("album")]
-		public string Album { get; set; }
+		public string AlbumTitle { get; set; }
 		[JsonProperty("artist")]
 		public string Artist { get; set; }
 		[JsonProperty("year")]
@@ -30,8 +30,9 @@ namespace Icarus.Models
 		public string Filename { get; set; }
 		[JsonProperty("song_path")]
 		public string SongPath { get; set; }
+
 		[JsonIgnore]
-		public Album AlbumObject { get; set; }
+		public Album Album { get; set; }
 		[JsonIgnore]
 		public int AlbumId { get; set; }
 	}
