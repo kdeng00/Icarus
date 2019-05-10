@@ -24,9 +24,15 @@ namespace Icarus.Models.Context
             		modelBuilder.Entity<Song>()
 				.ToTable("Song")
 				.HasOne(s => s.Album)
-				.WithMany(a => a.Songs)
+				.WithMany(al => al.Songs)
 				.HasForeignKey(s => s.AlbumId)
 				.HasConstraintName("ForeignKey_Song_Album");
+
+			modelBuilder.Entity<Song>()
+				.HasOne(sa => sa.SongArtist)
+				.WithMany(ar => ar.Songs)
+				.HasForeignKey(s => s.ArtistId)
+				.HasConstraintName("ForeignKey_Song_Artist");
         	}
     	}
 }  

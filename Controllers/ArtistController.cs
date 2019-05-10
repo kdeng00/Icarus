@@ -37,6 +37,7 @@ namespace Icarus.Controllers
 		public IActionResult Get()
 		{
 			List<Artist> artists = new List<Artist>();
+			// TODO: Implement functionality
 
 			return Ok(artists);
 		}
@@ -45,6 +46,7 @@ namespace Icarus.Controllers
 		public IActionResult Get(int id)
 		{
 			Artist artist = new Artist();
+			// TODO: Implement functionality
 
 			return Ok(artist);
 		}

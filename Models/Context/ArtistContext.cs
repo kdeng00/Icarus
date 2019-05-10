@@ -12,7 +12,7 @@ namespace Icarus.Models.Context
 {
 	public class ArtistContext : DbContext
 	{
-		public DbSet<Artist> Artist { get; set; }
+		public DbSet<Artist> Artists { get; set; }
 
 		public ArtistContext(DbContextOptions<ArtistContext> options)
 			: base (options)
@@ -20,7 +20,8 @@ namespace Icarus.Models.Context
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<Artist>();
+			modelBuilder.Entity<Artist>()
+				.ToTable("Artist");
 		}
 	}
 }
