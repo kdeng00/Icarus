@@ -44,23 +44,38 @@ namespace Icarus.Controllers
 
 			albums = albumStoreContext.GetAlbums();
 
-
-			return Ok(albums);
+			if (albums.Count > 0)
+			{
+				return Ok(albums);
+			}
+			else
+			{
+				return NotFound();
+			}
 		}
 
 		[HttpGet("{id}")]
 		public IActionResult Get(int id)
 		{
-			Album album = new Album();
-			album.AlbumId = id;
+			Album album = new Album
+			{
+				AlbumId = id
+			};
 
 			AlbumStoreContext albumStoreContext = HttpContext
 				.RequestServices
 				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
 
-			album = albumStoreContext.GetAlbum(album);
+			if (albumStoreContext.DoesAlbumExist(album))
+			{
+				album = albumStoreContext.GetAlbum(album);
 
-			return Ok(album);
+				return Ok(album);
+			}
+			else
+			{
+				return NotFound();
+			}
 		}
 		#endregion
 	}

@@ -172,7 +172,7 @@ namespace Icarus.Models.Context
 						{
 							album =  ParseSingleData(reader);
 
-							if (album != null)
+							if (album.Title != null)
 							{
 								_logger.Info($"Album {album.Title} exists");
 								return true;
