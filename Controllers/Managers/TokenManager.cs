@@ -59,7 +59,8 @@ namespace Icarus.Controllers.Managers
 				Username = user.Username,
 				Token = tokenResult.AccessToken,
 				TokenType = tokenResult.TokenType,
-				Expiration = tokenResult.Expiration
+				Expiration = tokenResult.Expiration,
+				Message = "Successfully retrieved token"
 			};
 		}
 		

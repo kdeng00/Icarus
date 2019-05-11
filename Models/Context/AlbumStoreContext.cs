@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 
 using MySql.Data.MySqlClient;
-using NLog;
+//using NLog;
 
 using Icarus.Models;
 
@@ -12,7 +12,7 @@ namespace Icarus.Models.Context
 	public class AlbumStoreContext : BaseStoreContext
 	{
 		#region Fields
-		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+		//private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 

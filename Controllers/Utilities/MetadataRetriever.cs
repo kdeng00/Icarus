@@ -51,7 +51,7 @@ namespace Icarus.Controllers.Utilities
 			{
 				TagLib.File fileTag = TagLib.File.Create(filePath);
 				_title = fileTag.Tag.Title;
-				_artist = string.Join("", fileTag.Tag.Artists);
+				_artist = string.Join("", fileTag.Tag.Performers);
 				_album = fileTag.Tag.Album;
 				_genre = string.Join("", fileTag.Tag.Genres);
 				_year = (int)fileTag.Tag.Year;
@@ -141,7 +141,7 @@ namespace Icarus.Controllers.Utilities
 								break;
 							case "artists":
 								_updatedSong.Artist = artist;
-								fileTag.Tag.Artists = new []{artist};
+								fileTag.Tag.Performers = new []{artist};
 								break;
 							case "album":
 								_updatedSong.AlbumTitle = album;

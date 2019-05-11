@@ -4,7 +4,7 @@ using System.Globalization;
 
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using NLog;
+//using NLog;
 
 using Icarus.Models;
 
@@ -13,7 +13,7 @@ namespace Icarus.Models.Context
 	public class ArtistStoreContext : BaseStoreContext
 	{
 		#region Fields
-		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+		//private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 

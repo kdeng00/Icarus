@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
@@ -20,6 +21,7 @@ namespace Icarus.Controllers
 	{
 		#region Fields
 		private IConfiguration _config;
+		private ILogger<LoginController> _logger;
 		#endregion
 
 
@@ -28,9 +30,10 @@ namespace Icarus.Controllers
 
 
 		#region Contructors
-		public LoginController(IConfiguration config)
+		public LoginController(IConfiguration config, ILogger<LoginController> logger)
 		{
 			_config = config;
+			_logger = logger;
 		}
 		#endregion
 
@@ -38,26 +41,48 @@ namespace Icarus.Controllers
 		#region HTTP endpoints
 		public IActionResult Post([FromBody] User user)
 		{
-			// TODO: Secure this HTTP endpoint. #38
-			// Currently there is no check done to determine whether or not the 
-			// user's password sent with the request matches the password stored
-			// in the database. In fact there is not check if the user credentials
-			// sent with this request even exist in the database. I knowingly left
-			// this bug in here for the sole purpose of making it easier to test
-			// but it should now be addressed.
-
 			UserStoreContext context = HttpContext
 				.RequestServices
 				.GetService(typeof(UserStoreContext)) as UserStoreContext;
 
-			user = context.RetrieveUser(user);
-			Console.WriteLine($"Username: {user.Username}");
+			_logger.LogInformation("Starting process of validating credentials");
+			
+			var message = "Invalid credentials";
+			var password = user.Password;
 
-			TokenManager tk = new TokenManager(_config);
+			var loginRes = new LoginResult
+			{
+				Username = user.Username
+			};
 
-			LoginResult loginRes = tk.RetrieveLoginResult(user);
+			if (context.DoesUserExist(user))
+			{
+				user = context.RetrieveUser(user);
 
-			return Ok(loginRes);
+				var validatePass = new PasswordEncryption();
+				var validated = validatePass.VerifyPassword(user, password);
+				if (!validated)
+				{
+					loginRes.Message = message;
+					_logger.LogInformation(message);
+
+					return Ok(loginRes);
+				}
+
+				_logger.LogInformation("Successfully validated user credentials");
+
+				TokenManager tk = new TokenManager(_config);
+
+				loginRes = tk.RetrieveLoginResult(user);
+
+				return Ok(loginRes);
+			}
+			else
+			{
+				loginRes.Message = message;
+
+				return NotFound(loginRes);
+			}
 		}
 		#endregion
 	}

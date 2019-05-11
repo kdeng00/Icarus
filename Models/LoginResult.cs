@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Icarus.Models
 {
-	public class LoginResult
+	public class LoginResult : BaseResult
 	{
 		[JsonProperty("id")]
 		public int UserId { get; set; }

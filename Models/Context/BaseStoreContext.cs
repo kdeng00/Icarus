@@ -1,6 +1,7 @@
 using System;
 
 using MySql.Data.MySqlClient;
+using NLog;
 
 namespace Icarus.Models.Context
 {
@@ -8,6 +9,7 @@ namespace Icarus.Models.Context
 	{
 		#region Fields
 		protected string _connectionString;
+		protected static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 

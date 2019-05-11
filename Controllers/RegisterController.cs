@@ -35,21 +35,37 @@ namespace Icarus.Controllers
 		#endregion
 
 		[HttpPost]
-        	public void Post([FromBody] User user)
+        	public IActionResult Post([FromBody] User user)
         	{
-			Console.WriteLine($"Username: {user.Username}");
-			Console.WriteLine($"Password: {user.Password}");
-
 			PasswordEncryption pe = new PasswordEncryption();
 			user.Password = pe.HashPassword(user);
 			user.EmailVerified = false;
-			Console.WriteLine($"Hashed Password: {user.Password}");
 
 			UserStoreContext context = HttpContext
 				.RequestServices
 				.GetService(typeof(UserStoreContext)) as UserStoreContext;
 
 			context.SaveUser(user);
+
+			var registerResult = new RegisterResult
+			{
+				Username = user.Username
+			};
+
+			if (context.DoesUserExist(user))
+			{
+				registerResult.Message = "Successful registration";
+				registerResult.SuccessfullyRegistered = true;
+
+				return Ok(registerResult);
+			}
+			else
+			{
+				registerResult.Message = "Registration failed";
+				registerResult.SuccessfullyRegistered = false;
+
+				return Ok(registerResult);
+			}
         	}
     	}
 }

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 
 using BCrypt.Net;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using NLog;
 
 using Icarus.Models;
 
@@ -11,6 +12,7 @@ namespace Icarus.Controllers.Utilities
 	public class PasswordEncryption
 	{
 		#region Fields
+		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 
@@ -23,6 +25,23 @@ namespace Icarus.Controllers.Utilities
 
 
 		#region Methods
+		public bool VerifyPassword(User user, string password)
+		{
+			try
+			{
+				var result = BCrypt.Net.BCrypt.Verify(password, user.Password);
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return false;
+		}
+
 		public string HashPassword(User user)
 		{
 			try
@@ -30,12 +49,15 @@ namespace Icarus.Controllers.Utilities
 				string hashedPassword = string.Empty;
 				hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
+				_logger.Info("Successfully hashed password");
+
 				return hashedPassword;
 
 			}
 			catch (Exception ex)
 			{
 				var exMsg = ex.Message;
+				_logger.Error(exMsg, "An error occurred");
 			}
 
 			return null;
@@ -45,11 +67,11 @@ namespace Icarus.Controllers.Utilities
 		{
 
 			string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-							password: password,
-							salt: salt,
-							prf: KeyDerivationPrf.HMACSHA1,
-							iterationCount: 10000,
-							numBytesRequested: 256/8));
+						password: password,
+						salt: salt,
+						prf: KeyDerivationPrf.HMACSHA1,
+						iterationCount: 10000,
+						numBytesRequested: 256/8));
 
 			return hashed;
 		}

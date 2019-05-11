@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;    
 
 using MySql.Data.MySqlClient;    
-using NLog;
+//using NLog;
         
 namespace Icarus.Models.Context    
 {    
 	public class MusicStoreContext : BaseStoreContext
     	{    
 		#region Fields
-		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+		//private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 
