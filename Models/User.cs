@@ -27,6 +27,6 @@ namespace Icarus.Models
 		[JsonProperty("date_created")]
 		public DateTime DateCreated { get; set; }
 		[JsonProperty("last_login")]
-		public DateTime LastLogin { get; set; }
+		public DateTime? LastLogin { get; set; }
 	}
 }

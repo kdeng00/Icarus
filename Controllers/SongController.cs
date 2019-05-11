@@ -45,7 +45,7 @@ namespace Icarus.Controllers
 
         	[HttpGet]
 		[Authorize("read:song_details")]
-        	public IActionResult<IEnumerable<Song>> Get()
+        	public IActionResult Get()
         	{
 			List<Song> songs = new List<Song>();
 			Console.WriteLine("Attemtping to retrieve songs");
@@ -68,7 +68,7 @@ namespace Icarus.Controllers
         	}
 
 		[HttpGet("{id}")]
-		public IActionResult<Song> Get(int id)
+		public IActionResult Get(int id)
 		{
 			MusicStoreContext context = HttpContext
 				.RequestServices
