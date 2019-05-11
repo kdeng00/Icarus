@@ -13,6 +13,7 @@ namespace Icarus.Controllers
 {
 	[Route("api/album")]
 	[ApiController]
+	// TODO: Secure the HTTP endpoint routes with Auth0 grants. #39
 	public class AlbumController : ControllerBase
 	{
 		#region Fields

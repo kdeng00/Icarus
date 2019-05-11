@@ -8,11 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
+using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
 	[Route("api/artist")]
 	[ApiController]
+	// TODO: Secure the HTTP endpoint routes with Auth0 grants. #39
 	public class ArtistController : ControllerBase
 	{
 		#region Fields
@@ -36,19 +38,45 @@ namespace Icarus.Controllers
 		[HttpGet]
 		public IActionResult Get()
 		{
-			List<Artist> artists = new List<Artist>();
-			// TODO: Implement functionality
+			ArtistStoreContext artistStoreContext = HttpContext
+				.RequestServices
+				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
 
-			return Ok(artists);
+			var artists = artistStoreContext.GetArtists();
+
+			if (artists.Count > 0)
+			{
+				return Ok(artists);
+			}
+			else
+			{
+				return NotFound();
+			}
 		}
 
 		[HttpGet("{id}")]
 		public IActionResult Get(int id)
 		{
-			Artist artist = new Artist();
-			// TODO: Implement functionality
+			Artist artist = new Artist
+			{
+				ArtistId = id
+			};
+			
+			ArtistStoreContext artistStoreContext = HttpContext
+				.RequestServices
+				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
 
-			return Ok(artist);
+			if (artistStoreContext.DoesArtistExist(artist))
+			{
+				artist = artistStoreContext.GetArtist(artist);
+
+
+				return Ok(artist);
+			}
+			else
+			{
+				return NotFound();
+			}
 		}
 		#endregion
 	}

@@ -14,10 +14,10 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
-    [Route("api/register")]
-    [ApiController]
-    public class RegisterController : ControllerBase
-    {
+    	[Route("api/register")]
+    	[ApiController]
+    	public class RegisterController : ControllerBase
+    	{
 		#region Fields
 		private IConfiguration _config;
 		#endregion
@@ -30,14 +30,13 @@ namespace Icarus.Controllers
 		#region Constructor
 		public RegisterController(IConfiguration config)
 		{
-	    	_config = config;
+	    		_config = config;
 		}
 		#endregion
 
-
-        [HttpPost]
-        public void Post([FromBody] User user)
-        {
+		[HttpPost]
+        	public void Post([FromBody] User user)
+        	{
 			Console.WriteLine($"Username: {user.Username}");
 			Console.WriteLine($"Password: {user.Password}");
 
@@ -46,10 +45,11 @@ namespace Icarus.Controllers
 			user.EmailVerified = false;
 			Console.WriteLine($"Hashed Password: {user.Password}");
 
-			UserStoreContext context = HttpContext.RequestServices
-												  .GetService(typeof(UserStoreContext))
-												  as UserStoreContext;
+			UserStoreContext context = HttpContext
+				.RequestServices
+				.GetService(typeof(UserStoreContext)) as UserStoreContext;
+
 			context.SaveUser(user);
-        }
-    }
+        	}
+    	}
 }

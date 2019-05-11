@@ -18,6 +18,7 @@ namespace Icarus.Controllers
 {
 	[Route("api/song")]
 	[ApiController]
+	// TODO: Secure the HTTP endpoint routes with Auth0 grants. #39
     	public class SongController : ControllerBase
     	{
 		#region Fields
@@ -44,7 +45,7 @@ namespace Icarus.Controllers
 
         	[HttpGet]
 		[Authorize("read:song_details")]
-        	public ActionResult<IEnumerable<Song>> Get()
+        	public IActionResult<IEnumerable<Song>> Get()
         	{
 			List<Song> songs = new List<Song>();
 			Console.WriteLine("Attemtping to retrieve songs");
@@ -56,19 +57,33 @@ namespace Icarus.Controllers
 
 			songs = context.GetAllSongs();
 
-			return songs;
+			if (songs.Count > 0)
+			{
+				return Ok(songs);
+			}
+			else
+			{
+				return NotFound();
+			}
         	}
 
 		[HttpGet("{id}")]
-		public ActionResult<Song> Get(int id)
+		public IActionResult<Song> Get(int id)
 		{
 			MusicStoreContext context = HttpContext
 				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			
 			Song song = context.GetSong(id);
-			
-			return song;
+
+			if (song.Id != 0)
+			{
+				return Ok(song);
+			}
+			else
+			{
+				return NotFound();
+			}
 		}
 
 
@@ -99,17 +114,5 @@ namespace Icarus.Controllers
 
 			return Ok(songResult);
         	}
-
-		[HttpDelete("{id}")]
-		public IActionResult Delete(int id)
-		{
-			MusicStoreContext context = HttpContext
-				.RequestServices
-				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
-			
-			context.DeleteSong(id);
-
-			return Ok();
-        }
-    }
+    	}
 }

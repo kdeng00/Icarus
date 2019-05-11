@@ -490,24 +490,33 @@ namespace Icarus.Controllers.Managers
         	{
             		_results = new DataTable();
         	}
+
 		private void SaveSongToDatabase(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
 				ArtistStoreContext artistStore)
 		{
-			song.AlbumId = 1;
+			_logger.Info("Starting process to save the song to the database");
+			
+			SaveAlbumToDatabase(ref song, albumStore);
+			SaveArtistToDatabase(ref song, artistStore);
+			
+			_logger.Info($"Song;\nTitle {song.Title}\nAlbum {song.AlbumTitle}\nAlbum Id {song.AlbumId}\nArtist {song.ArtistId}");
+
+			songStore.SaveSong(song);
+		}
+		private void SaveAlbumToDatabase(ref Song song, AlbumStoreContext albumStore)
+		{
+			_logger.Info("Starting process to save the album record of the song to the database");
+
 			var album = new Album();
+
 			album.Title = song.AlbumTitle;
 			album.AlbumArtist = song.Artist;
+
 			if (!albumStore.DoesAlbumExist(song))
 			{
 				album.SongCount = 1;
-				_logger.Info("Saving album to database");
-				_logger.Info($"Ablum song count before retrieving from store: {album.SongCount}");
-				_logger.Info($"Ablum Id before retrieving from store: {album.AlbumId}");
 				albumStore.SaveAlbum(album);
-				_logger.Info("Album suuccessfully saved to database");
 				album = albumStore.GetAlbum(song);
-				_logger.Info($"Ablum song count after retrieving from store: {album.SongCount}");
-				_logger.Info($"Ablum Id after retrieving from store: {album.AlbumId}");
 			}
 			else
 			{
@@ -517,12 +526,34 @@ namespace Icarus.Controllers.Managers
 
 				albumStore.UpdateAlbum(album);
 			}
-			
-			song.AlbumId = album.AlbumId;
-			_logger.Info($"Song;\nTitle {song.Title}\nAlbum {song.AlbumTitle}\nAlbum Id {song.AlbumId}");
 
-			songStore.SaveSong(song);
-			_logger.Info("Successfully saved song to database");
+			song.AlbumId = album.AlbumId;
+		}
+		private void SaveArtistToDatabase(ref Song song, ArtistStoreContext artistStore)
+		{
+			_logger.Info("Starting process to save the artist record of the song to the database");
+
+			var artist = new Artist();
+
+			artist.Name = song.Artist;
+			artist.SongCount = 1;
+
+			if (!artistStore.DoesArtistExist(song))
+			{
+				artist.SongCount = 1;
+				artistStore.SaveArtist(artist);
+				artist = artistStore.GetArtist(song);
+			}
+			else
+			{
+				var artistRetrieved = artistStore.GetArtist(song);
+				artist.ArtistId = artistRetrieved.ArtistId;
+				artist.SongCount = artistRetrieved.SongCount + 1;
+
+				artistStore.UpdateArtist(artist);
+			}
+
+			song.ArtistId = artist.ArtistId;
 		}
 
         	private async Task PopulateSongDetails()

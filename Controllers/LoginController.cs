@@ -38,10 +38,17 @@ namespace Icarus.Controllers
 		#region HTTP endpoints
 		public IActionResult Post([FromBody] User user)
 		{
+			// TODO: Secure this HTTP endpoint. #38
+			// Currently there is no check done to determine whether or not the 
+			// user's password sent with the request matches the password stored
+			// in the database. In fact there is not check if the user credentials
+			// sent with this request even exist in the database. I knowingly left
+			// this bug in here for the sole purpose of making it easier to test
+			// but it should now be addressed.
+
 			UserStoreContext context = HttpContext
-									   .RequestServices
-									   .GetService(typeof(UserStoreContext))
-												  as UserStoreContext;
+				.RequestServices
+				.GetService(typeof(UserStoreContext)) as UserStoreContext;
 
 			user = context.RetrieveUser(user);
 			Console.WriteLine($"Username: {user.Username}");

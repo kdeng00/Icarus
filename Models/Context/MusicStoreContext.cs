@@ -30,13 +30,15 @@ namespace Icarus.Models.Context
 		{
 	    		try
 	    		{
+				_logger.Info("Saving song to the database");
 	     	   		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
 		    			string query = "INSERT INTO Song(Title, AlbumTitle, Artist," +
-						" Year, Genre, Duration, Filename, SongPath, AlbumId) " + 
-						"VALUES(@Title, @AlbumTitle, @Artist, @Year, @Genre, " +
-				   		"@Duration, @Filename, @SongPath, @AlbumId)";
+						" Year, Genre, Duration, Filename, SongPath, AlbumId, " +
+						"ArtistId) VALUES(@Title, @AlbumTitle, @Artist, @Year, " +
+						"@Genre, @Duration, @Filename, @SongPath, @AlbumId, " +
+						"@ArtistId)";
 		    			using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    			{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
@@ -48,10 +50,12 @@ namespace Icarus.Models.Context
 						cmd.Parameters.AddWithValue("@Filename", song.Filename);
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
 						cmd.Parameters.AddWithValue("@AlbumId", song.AlbumId);
+						cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
 
 						cmd.ExecuteNonQuery();
 		    			}
 				}
+				_logger.Info("Successfully saved song to the database");
 	    		}
 	    		catch(Exception ex)
 	    		{
@@ -125,8 +129,10 @@ namespace Icarus.Models.Context
 		public List<Song> GetAllSongs()
 		{
 	    		List<Song> songs = new List<Song>();
+
 	    		try
 	    		{
+				_logger.Info("Retrieving songs from the database");
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
@@ -134,6 +140,8 @@ namespace Icarus.Models.Context
 		    			MySqlCommand cmd = new MySqlCommand(query, conn);
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
+						songs = ParseData(reader);
+						/**
 						while (reader.Read())
 						{
 		            				songs.Add(new Song
@@ -149,6 +157,7 @@ namespace Icarus.Models.Context
 			        				SongPath = reader["SongPath"].ToString()
 			    				});
 						}
+						*/
 		    			}
 				}
 	    		}
@@ -169,6 +178,7 @@ namespace Icarus.Models.Context
 
 	    		try
 	    		{
+				_logger.Info("Retrieving song from database");
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
@@ -179,6 +189,8 @@ namespace Icarus.Models.Context
 
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
+						song = ParseSingleData(reader);
+						/**
 						while (reader.Read())
 						{
 		            				song = new Song
@@ -194,6 +206,7 @@ namespace Icarus.Models.Context
 			        				SongPath = reader["SongPath"].ToString()
 			    				};
 						}
+						*/
 		    			}
 				}
 				_logger.Info("Song found");

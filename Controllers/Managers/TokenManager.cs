@@ -43,14 +43,15 @@ namespace Icarus.Controllers.Managers
 			var tokenRequest = RetrieveTokenRequest();
 			var tokenObject = JsonConvert.SerializeObject(tokenRequest);
 			request.AddParameter("application/json; charset=utf-8", 
-								 tokenObject, ParameterType.RequestBody);
+					tokenObject, ParameterType.RequestBody);
+
 			request.RequestFormat = DataFormat.Json;
 
 			IRestResponse response = client.Execute(request);
 
 
 			var tokenResult = JsonConvert
-							  .DeserializeObject<Token>(response.Content);
+				.DeserializeObject<Token>(response.Content);
 
 			return new LoginResult
 			{
@@ -81,9 +82,9 @@ namespace Icarus.Controllers.Managers
 			_grantType = "client_credentials";
 			_url = $"https://{_config["Auth0:Domain"]}";
 
-			//PrintCredentials();
 		}
 
+		#region Testing Methods
 		// For testing purposes
 		private void PrintCredentials()
 		{
@@ -93,6 +94,7 @@ namespace Icarus.Controllers.Managers
 			Console.WriteLine($"Audience: {_audience}");
 			Console.WriteLine($"Url: {_url}");
 		}
+		#endregion
 		#endregion
 
 

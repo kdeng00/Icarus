@@ -279,6 +279,8 @@ namespace Icarus.Models.Context
 		private List<Album> ParseData(MySqlDataReader reader)
 		{
 			List<Album> albums = new List<Album>();
+			_logger.Info("Retrieving album records");
+
 			while (reader.Read())
 			{
 				var id = Convert.ToInt32(reader["AlbumId"]);
@@ -294,12 +296,15 @@ namespace Icarus.Models.Context
 				});
 			}
 
+			_logger.Info("Album records retrieved");
+
 			return albums;
 		}
 		private Album ParseSingleData(MySqlDataReader reader)
 		{
 			Album album = new Album();
 			_logger.Info("Retrieving single album record");
+
 			while (reader.Read())
 			{
 				var id = Convert.ToInt32(reader["AlbumId"]);

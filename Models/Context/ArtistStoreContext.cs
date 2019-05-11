@@ -63,6 +63,7 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				_logger.Info("Checking to see if Artist exists");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
@@ -70,7 +71,7 @@ namespace Icarus.Models.Context
 					var query = "SELECT * FROM Artist WHERE ArtistId=@ArtistId";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@AlbumId", artist.ArtistId);
+						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
 						
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -90,17 +91,21 @@ namespace Icarus.Models.Context
 				var msg = ex.Message;
 				_logger.Error(msg, "An error occurred");
 			}
+			
+			_logger.Info("Could not successfully retrieve Artist");
+
 			return false;
 		}
 		public bool DoesArtistExist(Song song)
 		{
 			try
 			{
+				_logger.Info("Checking to see if Artist exists");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Album WHERE Name=@Name";
+					var query = "SELECT * FROM Artist WHERE Name=@Name";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Name", song.Artist);
@@ -123,6 +128,9 @@ namespace Icarus.Models.Context
 				var msg = ex.Message;
 				_logger.Error(msg, "An error occurred");
 			}
+
+			_logger.Info("Could not successfully retrieve Artist");
+
 			return false;
 		}
 
@@ -131,6 +139,7 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				_logger.Info("Saving artist record");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
@@ -145,6 +154,8 @@ namespace Icarus.Models.Context
 						cmd.ExecuteNonQuery();
 					}
 				}
+
+				_logger.Info("Artist record has successfully been saved");
 			}
 			catch (Exception ex)
 			{
@@ -156,11 +167,24 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				_logger.Info("Updating artist record");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					// TODO: Implement functionality
+					var query = "UPDATE Artist SET Name=@Name, SongCount" +
+						"=@SongCount WHERE ArtistId=@ArtistId";
+
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Name", artist.Name);
+						cmd.Parameters.AddWithValue("@SongCount", artist.SongCount);
+						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
+
+						cmd.ExecuteNonQuery();
+					}
 				}
+
+				_logger.Info("Artist record has successfully been saved");
 			}
 			catch (Exception ex)
 			{
@@ -173,6 +197,7 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				_logger.Info("Retrieving artist record from the database");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
@@ -181,6 +206,7 @@ namespace Icarus.Models.Context
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
+
 						using (var reader = cmd.ExecuteReader())
 						{
 							artist = ParseSingleData(reader);
@@ -201,14 +227,16 @@ namespace Icarus.Models.Context
 			Artist artist = new Artist();
 			try
 			{
+				_logger.Info("Retrieving artist record from the database");
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Artist WHERE ArtistId=@ArtistId";
+					var query = "SELECT * FROM Artist WHERE Name=@Name";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
+						cmd.Parameters.AddWithValue("@Name", song.Artist);
+
 						using (var reader = cmd.ExecuteReader())
 						{
 							artist = ParseSingleData(reader);
@@ -243,6 +271,8 @@ namespace Icarus.Models.Context
 				});
 			}
 
+			_logger.Info("Artist records retrieved");
+
 			return artists;
 		}
 
@@ -259,6 +289,8 @@ namespace Icarus.Models.Context
 				artist.Name = name;
 				artist.SongCount = songCount;
 			}
+
+			_logger.Info("Single artist record retrieved");
 
 			return artist;
 		}
