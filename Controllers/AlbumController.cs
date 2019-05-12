@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,6 @@ namespace Icarus.Controllers
 {
 	[Route("api/album")]
 	[ApiController]
-	// TODO: Secure the HTTP endpoint routes with Auth0 grants. #39
 	public class AlbumController : ControllerBase
 	{
 		#region Fields
@@ -35,6 +35,7 @@ namespace Icarus.Controllers
 
 		#region HTTP Routes
 		[HttpGet]
+		[Authorize("read:albums")]
 		public IActionResult Get()
 		{
 			List<Album> albums = new List<Album>();
@@ -56,6 +57,7 @@ namespace Icarus.Controllers
 		}
 
 		[HttpGet("{id}")]
+		[Authorize("read:albums")]
 		public IActionResult Get(int id)
 		{
 			Album album = new Album

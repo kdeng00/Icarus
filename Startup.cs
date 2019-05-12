@@ -76,6 +76,21 @@ namespace Icarus
 						policy
 						.Requirements
 						.Add(new HasScopeRequirement("read:song_details", domain)));
+
+				options.AddPolicy("update:songs", policy =>
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("update:songs", domain)));
+
+				options.AddPolicy("read:artists", policy =>
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("read:artists", domain)));
+
+				options.AddPolicy("read:albums", policy =>
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("read:albums", domain)));
 			});
 
 

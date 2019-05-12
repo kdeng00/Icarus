@@ -18,13 +18,11 @@ namespace Icarus.Controllers
 {
 	[Route("api/song")]
 	[ApiController]
-	// TODO: Secure the HTTP endpoint routes with Auth0 grants. #39
     	public class SongController : ControllerBase
     	{
 		#region Fields
 		private readonly ILogger<SongController> _logger;
 		private IConfiguration _config;
-		private MusicStoreContext _context;
 		private SongManager _songMgr;
 		#endregion
 
@@ -68,6 +66,7 @@ namespace Icarus.Controllers
         	}
 
 		[HttpGet("{id}")]
+		[Authorize("read:song_details")]
 		public IActionResult Get(int id)
 		{
 			MusicStoreContext context = HttpContext
@@ -88,6 +87,7 @@ namespace Icarus.Controllers
 
 
         	[HttpPut("{id}")]
+		[Authorize("read:song_details")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
 			MusicStoreContext context = HttpContext
