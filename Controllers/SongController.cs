@@ -87,16 +87,36 @@ namespace Icarus.Controllers
 
 
         	[HttpPut("{id}")]
-		[Authorize("read:song_details")]
+		[Authorize("update:songs")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
 			MusicStoreContext context = HttpContext
 				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 
+			ArtistStoreContext artistStore = HttpContext
+				.RequestServices
+				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
+
+			AlbumStoreContext albumStore = HttpContext
+				.RequestServices
+				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+
 			song.Id = id;
 			Console.WriteLine("Retrieving filepath of song");
 			_logger.LogInformation("Retrieving filepath of song");
+
+			if (!context.DoesSongExist(song))
+			{
+				return NotFound(new SongResult
+					{
+						Message = "Song does not exist"
+					});
+			}
+			// TODO: Provide functionality for the UpdateSong(...) method
+			// before removing the below return statement
+			return Ok("song exists");
+
 			var oldSongRecord = context.GetSong(id);
 			song.SongPath = oldSongRecord.SongPath;
 

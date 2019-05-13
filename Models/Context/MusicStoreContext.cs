@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;    
 
 using MySql.Data.MySqlClient;    
-//using NLog;
         
 namespace Icarus.Models.Context    
 {    
 	public class MusicStoreContext : BaseStoreContext
     	{    
 		#region Fields
-		//private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 
@@ -64,7 +62,6 @@ namespace Icarus.Models.Context
 				_logger.Error(exMsg, "An error occurred");
 	    		}
 		}
-		// TODO: Update this method to be compatible with the new AlbumId field
 		public void UpdateSong(Song song)
 		{
 			try
@@ -73,10 +70,10 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-		    			string query = "UPDATE Song SET Title=@Title, AlbumTitle=@AlbumTitle, " +
-							"Artist=@Artist, Year=@Year, Genre=@Genre, " +
-				   			"Duration=@Duration, Filename=@Filename, " +
-							"SongPath=@SongPath WHERE Id=@Id";
+		    			string query = "UPDATE Song SET Title=@Title, AlbumTitle=@AlbumTitle, " + 
+						"Artist=@Artist, Year=@Year, Genre=@Genre, Duration=@Duration, " +
+						"Filename=@Filename, SongPath=@SongPath, AlbumId=@AlbumId, " +
+						"ArtistId=@ArtistId  WHERE Id=@Id";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
@@ -88,10 +85,13 @@ namespace Icarus.Models.Context
 						cmd.Parameters.AddWithValue("@Filename", song.Filename);
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
 						cmd.Parameters.AddWithValue(@"Id", song.Id);
+						cmd.Parameters.AddWithValue("@AlbumId", song.AlbumId);
+						cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
 
 						cmd.ExecuteNonQuery();
 					}
 				}
+				_logger.Info("Updated song");
 			}
 			catch (Exception ex)
 			{
@@ -141,23 +141,6 @@ namespace Icarus.Models.Context
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
 						songs = ParseData(reader);
-						/**
-						while (reader.Read())
-						{
-		            				songs.Add(new Song
-			    				{
-			        				Id = Convert.ToInt32(reader["Id"]),
-			        				Title = reader["Title"].ToString(),
-			        				AlbumTitle = reader["AlbumTitle"].ToString(),
-			        				Artist = reader["Artist"].ToString(),
-			        				Year = Convert.ToInt32(reader["Year"]),
-			        				Genre = reader["Genre"].ToString(),
-			        				Duration = Convert.ToInt32(reader["Duration"]),
-			        				Filename = reader["Filename"].ToString(),
-			        				SongPath = reader["SongPath"].ToString()
-			    				});
-						}
-						*/
 		    			}
 				}
 	    		}
@@ -172,6 +155,36 @@ namespace Icarus.Models.Context
 	    		return songs;
 		}
 
+		public Song GetSong(Song song)
+		{
+			try
+			{
+				_logger.Info("Retrieving song from database");
+
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+					var query = "SELECT * FROM Song WHERE Id=@Id";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Id", song.Id);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							song = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return song;
+		}
 		public Song GetSong(int id)
 		{
 	    		Song song = new Song();
@@ -190,23 +203,6 @@ namespace Icarus.Models.Context
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
 						song = ParseSingleData(reader);
-						/**
-						while (reader.Read())
-						{
-		            				song = new Song
-			    				{
-			        				Id = Convert.ToInt32(reader["Id"]),
-			        				Title = reader["Title"].ToString(),
-			        				AlbumTitle = reader["AlbumTitle"].ToString(),
-			        				Artist = reader["Artist"].ToString(),
-			        				Year = Convert.ToInt32(reader["Year"]),
-			        				Genre = reader["Genre"].ToString(),
-			        				Duration = Convert.ToInt32(reader["Duration"]),
-			        				Filename = reader["Filename"].ToString(),
-			        				SongPath = reader["SongPath"].ToString()
-			    				};
-						}
-						*/
 		    			}
 				}
 				_logger.Info("Song found");
@@ -219,6 +215,23 @@ namespace Icarus.Models.Context
 	    		}
 
 	    		return song;
+		}
+
+		public bool DoesSongExist(Song song)
+		{
+			_logger.Info("Checking to see if the song exists");
+			var songInDatabase = GetSong(song);
+			var title = songInDatabase.Title;
+
+			if (!string.IsNullOrEmpty(title))
+			{
+				_logger.Info("Song exists");
+				return true;
+			}
+
+			_logger.Info("Song does not exists");
+
+			return false;
 		}
         
 		private List<Song> ParseData(MySqlDataReader reader)
@@ -237,7 +250,9 @@ namespace Icarus.Models.Context
 			        	Genre = reader["Genre"].ToString(),
 			        	Duration = Convert.ToInt32(reader["Duration"]),
 			        	Filename = reader["Filename"].ToString(),
-			        	SongPath = reader["SongPath"].ToString()
+			        	SongPath = reader["SongPath"].ToString(),
+					AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
+					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString())
 			    	});
 			}
 
@@ -261,7 +276,9 @@ namespace Icarus.Models.Context
 			        	Genre = reader["Genre"].ToString(),
 			        	Duration = Convert.ToInt32(reader["Duration"]),
 			        	Filename = reader["Filename"].ToString(),
-			        	SongPath = reader["SongPath"].ToString()
+			        	SongPath = reader["SongPath"].ToString(),
+					AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
+					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString())
 			    	};
 			}
 

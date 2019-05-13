@@ -33,6 +33,9 @@ namespace Icarus.Models.Context
 				.WithMany(ar => ar.Songs)
 				.HasForeignKey(s => s.ArtistId)
 				.HasConstraintName("ForeignKey_Song_Artist");
+			modelBuilder.Entity<Song>()
+				.Property(s => s.Year)
+				.IsRequired(false);
         	}
     	}
 }  

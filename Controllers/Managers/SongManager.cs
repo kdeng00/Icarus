@@ -36,6 +36,7 @@ namespace Icarus.Controllers.Managers
 		private string _tempDirectoryRoot;
 		private string _archiveDirectoryRoot;
 		private string _compressedSongFilename;
+		private string _message;
 		#endregion
 
 
@@ -55,6 +56,11 @@ namespace Icarus.Controllers.Managers
 		{
 	 	   	get => _compressedSongFilename;
 	    		set => _compressedSongFilename = value;
+		}
+		public string Message
+		{
+			get => _message;
+			set => _message = value;
 		}
 		#endregion
 
@@ -107,6 +113,20 @@ namespace Icarus.Controllers.Managers
 	    		}
 
 	    		return successful;
+		}
+		// TODO: Implement method
+		// This method should do the following, with the help of existing methods
+		// or create helper methods to compelete to intended purpose:
+		//
+		// 1. Delete song from the filesystem
+		// 2. Delete the song record from the database
+		// 3. Decrement the SongCount value or delete the album record from the Database
+		// 4. Decrement the SongCount value or delete the artist record from the Database
+		public bool DeleteSongFromFileSystem(Song song, MusicStoreContext songStore,
+				AlbumStoreContext albumStore, ArtistStoreContext artistStore)
+		{
+
+			return false;
 		}
 
 		public void SaveSongDetails()
@@ -170,6 +190,11 @@ namespace Icarus.Controllers.Managers
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An Error Occurred: {exMsg}");
 	    		}
+		}
+		// TODO: This method should update the Song, Album, and Artist records in the database
+		public void UpdateSong(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
+				ArtistStoreContext artistStore)
+		{
 		}
 
 		public async Task SaveSong(SongData songData)
