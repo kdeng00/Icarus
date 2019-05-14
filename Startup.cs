@@ -98,6 +98,7 @@ namespace Icarus
 
 			var connString = Configuration.GetConnectionString("DefaultConnection");
 
+			// TODO: Add the Genre and Year stores #41 and #42.
 	    		services.Add(new ServiceDescriptor(typeof(MusicStoreContext), 
 						new MusicStoreContext(Configuration
 							.GetConnectionString("DefaultConnection"))));  
@@ -118,6 +119,7 @@ namespace Icarus
 			services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
 			services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
 			services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
+			// TODO: Add the Genre and Year contexts #41 and #42
         	}
 
         	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
