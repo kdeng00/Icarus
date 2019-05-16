@@ -88,6 +88,81 @@ namespace Icarus.Models.Context
 			return genre;
 		}
 
+		public bool DoesGenreExist(Genre genre)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Genre WHERE GenreId=@GenreId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							genre = ParseSingleData(reader);
+							var genreName = genre.GenreName;
+
+							if (!string.IsNullOrEmpty(genreName))
+							{
+								_logger.Info("Genre exists");
+
+								return true;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return false;
+		}
+		public bool DoesGenreExist(Song song)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							var genre = ParseSingleData(reader);
+							var genreName = genre.GenreName;
+
+							if (!string.IsNullOrEmpty(genreName))
+							{
+								_logger.Info("Genre exists");
+
+								return true;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return false;
+		}
+
 		private List<Genre> ParseData(MySqlDataReader reader)
 		{
 			var genres = new List<Genre>();

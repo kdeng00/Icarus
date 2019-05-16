@@ -28,6 +28,20 @@ namespace Icarus.Models.Context
 
 
 		#region Methods
+		public List<Year> GetSongYear()
+		{
+			var yearValues = new List<Year>();
+
+			using (var conn = GetConnection())
+			{
+				conn.Open();
+
+				var query = "SELECT * FROM Year";
+				// TODO: Left off here for the YearStore
+			}
+
+			return yearValues;
+		}
 		#endregion
 	}
 }
