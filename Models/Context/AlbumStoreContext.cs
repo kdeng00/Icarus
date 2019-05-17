@@ -273,6 +273,29 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 		}
+		public void DeleteAlbum(Album album)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+					var query = "DELETE Album WHERE AlbumId=@AlbumId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
 
 		private List<Album> ParseData(MySqlDataReader reader)
 		{

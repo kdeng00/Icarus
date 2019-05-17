@@ -192,6 +192,32 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 		}
+		public void DeleteArtist(Artist artist)
+		{
+			try
+			{
+				_logger.Info("Deleting artist record");
+
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "DELETE Artist WHERE ArtistId=@ArtistId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
 
 		public Artist GetArtist(Artist artist)
 		{

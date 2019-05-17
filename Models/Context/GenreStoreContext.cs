@@ -123,6 +123,8 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 
+			_logger.Info("Genre does not exist");
+
 			return false;
 		}
 		public bool DoesGenreExist(Song song)
@@ -133,11 +135,11 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
+					var query = "SELECT * FROM Song WHERE Genre=@Genre";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+						cmd.Parameters.AddWithValue("@Genre", song.Genre);
 
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -160,7 +162,81 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 
+			_logger.Info("Genre does not exist");
+
 			return false;
+		}
+
+		public void SaveGenre(Genre genre)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					var query = "INSERT INTO Genre(GenreName, SongCount) VALUES(" +
+						"@GenreName, @SongCount)";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreName", genre.GenreName);
+						cmd.Parameters.AddWithValue("@SongCount", genre.SongCount);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
+		public void UpdateGenre(Genre genre)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					var query = "UPDATE Genre SET GenreName=@GenreName, " +
+						"SongCount=@SongCount WHERE GenreId=@GenreId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreName", genre.GenreName);
+						cmd.Parameters.AddWithValue("@SongCount", genre.SongCount);
+						cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
+		public void DeleteGenre(Genre genre)
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					var query = "DELETE Genre WHERE GenreId=@GenreId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
 		}
 
 		private List<Genre> ParseData(MySqlDataReader reader)
