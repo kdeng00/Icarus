@@ -37,5 +37,15 @@ namespace Icarus.Models
 		public Artist SongArtist { get; set; }
 		[JsonIgnore]
 		public int ArtistId { get; set; }
+
+		[JsonIgnore]
+		public Genre SongGenre { get; set; }
+		[JsonIgnore]
+		public int GenreId { get; set; }
+
+		[JsonIgnore]
+		public Year SongYear { get; set; }
+		[JsonIgnore]
+		public int YearId { get; set; }
 	}
 }

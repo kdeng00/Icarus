@@ -42,7 +42,8 @@ namespace Icarus.Controllers
 
 
         	[HttpGet]
-		[Authorize("read:song_details")]
+		// TODO: Remember to uncomment the line below
+		//[Authorize("read:song_details")]
         	public IActionResult Get()
         	{
 			List<Song> songs = new List<Song>();
@@ -66,7 +67,8 @@ namespace Icarus.Controllers
         	}
 
 		[HttpGet("{id}")]
-		[Authorize("read:song_details")]
+		// TODO: Remember to uncomment the line below
+		//[Authorize("read:song_details")]
 		public IActionResult Get(int id)
 		{
 			MusicStoreContext context = HttpContext
@@ -101,6 +103,7 @@ namespace Icarus.Controllers
 			AlbumStoreContext albumStore = HttpContext
 				.RequestServices
 				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+			// TODO: Add the GenreStoreContext and YearStoreContext #41 and #42
 
 			song.Id = id;
 			Console.WriteLine("Retrieving filepath of song");

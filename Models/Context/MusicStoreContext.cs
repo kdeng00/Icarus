@@ -34,9 +34,9 @@ namespace Icarus.Models.Context
 		    			conn.Open();
 		    			string query = "INSERT INTO Song(Title, AlbumTitle, Artist," +
 						" Year, Genre, Duration, Filename, SongPath, AlbumId, " +
-						"ArtistId) VALUES(@Title, @AlbumTitle, @Artist, @Year, " +
-						"@Genre, @Duration, @Filename, @SongPath, @AlbumId, " +
-						"@ArtistId)";
+						"ArtistId, GenreId, YearId) VALUES(@Title, @AlbumTitle, " +
+						"@Artist, @Year, @Genre, @Duration, @Filename, @SongPath, " +
+						"@AlbumId, @ArtistId, @GenreId, @YearId)";
 		    			using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    			{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
@@ -49,6 +49,8 @@ namespace Icarus.Models.Context
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
 						cmd.Parameters.AddWithValue("@AlbumId", song.AlbumId);
 						cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
+						cmd.Parameters.AddWithValue("@GenreId", song.GenreId);
+						cmd.Parameters.AddWithValue("@YearId", song.YearId);
 
 						cmd.ExecuteNonQuery();
 		    			}

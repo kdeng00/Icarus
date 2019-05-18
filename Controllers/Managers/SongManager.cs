@@ -290,6 +290,48 @@ namespace Icarus.Controllers.Managers
 				_logger.Error(msg, "An error occurred");
 			}
 		}
+		public async Task SaveSongToFileSystem(IFormFile songFile, MusicStoreContext songStore,
+				AlbumStoreContext albumStore, ArtistStoreContext artistStore,
+				GenreStoreContext genreStore, YearStoreContext yearStore)
+		{
+			try
+			{
+				_logger.Info("Starting the process of saving the song to the filesystem");
+
+				var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
+				var song = await SaveSongTemp(songFile, fileTempPath);
+				System.IO.File.Delete(fileTempPath);
+
+				DirectoryManager dirMgr = new DirectoryManager(_config, song);
+				dirMgr.CreateDirectory();
+
+				var filePath = dirMgr.SongDirectory;
+				var songFilename = songFile.FileName;
+
+				if (!songFilename.EndsWith(".mp3"))
+					filePath += $"{songFilename}.mp3";
+				else
+					filePath += $"{songFilename}";
+
+				_logger.Info($"Absolute song path: {filePath}");
+
+				using (var fileStream = new FileStream(filePath, FileMode.Create))
+				{
+					await (songFile.CopyToAsync(fileStream));
+					song.SongPath = filePath;
+
+					_logger.Info("Song successfully saved to filesystem");
+				}
+
+				SaveSongToDatabase(song, songStore, albumStore, artistStore, genreStore,
+						yearStore);
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
 
         	public async Task<List<Song>> RetrieveAllSongDetails()
         	{
@@ -528,6 +570,21 @@ namespace Icarus.Controllers.Managers
 
 			songStore.SaveSong(song);
 		}
+		private void SaveSongToDatabase(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
+				ArtistStoreContext artistStore, GenreStoreContext genreStore, YearStoreContext yearStore)
+		{
+			_logger.Info("Starting process to save the song to the database");
+
+			SaveAlbumToDatabase(ref song, albumStore);
+			SaveArtistToDatabase(ref song, artistStore);
+			SaveGenreToDatabase(ref song, genreStore);
+			SaveYearToDatabase(ref song, yearStore);
+
+			var info = "Saving Song to DB";
+			Console.WriteLine(info);
+			_logger.Info(info);
+			songStore.SaveSong(song);
+		}
 		private void SaveAlbumToDatabase(ref Song song, AlbumStoreContext albumStore)
 		{
 			_logger.Info("Starting process to save the album record of the song to the database");
@@ -579,6 +636,62 @@ namespace Icarus.Controllers.Managers
 			}
 
 			song.ArtistId = artist.ArtistId;
+		}
+		private void SaveGenreToDatabase(ref Song song, GenreStoreContext genreStore)
+		{
+			_logger.Info("Starting process to save the genre record of the song to the database");
+
+			var genre = new Genre
+			{
+				GenreName = song.Genre,
+				SongCount = 1
+			};
+
+			if (!genreStore.DoesGenreExist(song))
+			{
+				genreStore.SaveGenre(genre);
+				genre = genreStore.GetGenre(song);
+				var genreDump = $"Genre id {genre.GenreId} GenreName {genre.GenreName}" +
+					$" Genre song Count {genre.SongCount}";
+				Console.WriteLine(genreDump);
+				_logger.Info(genreDump);
+			}
+			else
+			{
+				var genreRetrieved = genreStore.GetGenre(song);
+				genre.GenreId = genreRetrieved.GenreId;
+				genre.SongCount = genreRetrieved.SongCount + 1;
+
+				genreStore.UpdateGenre(genre);
+			}
+
+			song.GenreId = genre.GenreId;
+		}
+		private void SaveYearToDatabase(ref Song song, YearStoreContext yearStore)
+		{
+			_logger.Info("Starting process to save the year record of the song to the database");
+
+			var year = new Year
+			{
+				YearValue = song.Year.Value,
+				SongCount = 1
+			};
+
+			if (!yearStore.DoesYearExist(song))
+			{
+				yearStore.SaveYear(year);
+				year = yearStore.GetSongYear(song);
+			}
+			else
+			{
+				var yearRetrieved = yearStore.GetSongYear(song);
+				year.YearId = yearRetrieved.YearId;
+				year.SongCount = yearRetrieved.SongCount + 1;
+
+				yearStore.UpdateYear(year);
+			}
+
+			song.YearId = year.YearId;
 		}
 
         	private async Task PopulateSongDetails()

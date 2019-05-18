@@ -60,7 +60,8 @@ namespace Icarus.Controllers
 		}
 
         	[HttpPost]
-		[Authorize("upload:songs")]
+		// TODO: Remember to uncomment the line below
+		//[Authorize("upload:songs")]
         	public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
         	{
 			try
@@ -74,6 +75,12 @@ namespace Icarus.Controllers
 				ArtistStoreContext artistStoreContext = HttpContext
 					.RequestServices
 					.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
+				GenreStoreContext genreStore = HttpContext
+					.RequestServices
+					.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+				YearStoreContext yearStore = HttpContext
+					.RequestServices
+					.GetService(typeof(YearStoreContext)) as YearStoreContext;
 
 				Console.WriteLine("Uploading song...");
 				_logger.LogInformation("Uploading song...");
@@ -88,7 +95,8 @@ namespace Icarus.Controllers
 						_logger.LogInformation($"Song filename {sng.FileName}");
 
 						await _songMgr.SaveSongToFileSystem(sng, songStoreContext,
-								albumStoreContext, artistStoreContext);
+								albumStoreContext, artistStoreContext,
+								genreStore, yearStore);
 					}
 				}
 			}

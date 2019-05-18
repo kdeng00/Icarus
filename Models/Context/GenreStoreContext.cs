@@ -30,6 +30,8 @@ namespace Icarus.Models.Context
 		#region Methods
 		public List<Genre> GetGenres()
 		{
+			_logger.Info("Retrieving Genre records");
+
 			var genres = new List<Genre>();
 
 			try
@@ -60,6 +62,8 @@ namespace Icarus.Models.Context
 
 		public Genre GetGenre(Genre genre)
 		{
+			_logger.Info("Retrieving Genre record");
+
 			try
 			{
 				using (var conn = GetConnection())
@@ -87,9 +91,44 @@ namespace Icarus.Models.Context
 
 			return genre;
 		}
+		public Genre GetGenre(Song song)
+		{
+			_logger.Info("Retrieving Genre record");
+
+			var genre = new Genre();
+
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							genre = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return genre;
+		}
 
 		public bool DoesGenreExist(Genre genre)
 		{
+			_logger.Info("Checking to see if Genre record exists");
+
 			try
 			{
 				using (var conn = GetConnection())
@@ -129,17 +168,19 @@ namespace Icarus.Models.Context
 		}
 		public bool DoesGenreExist(Song song)
 		{
+			_logger.Info("Checking to see if Genre record exists");
+
 			try
 			{
 				using (var conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Song WHERE Genre=@Genre";
+					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Genre", song.Genre);
+						cmd.Parameters.AddWithValue("@GenreName", song.Genre);
 
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -169,10 +210,14 @@ namespace Icarus.Models.Context
 
 		public void SaveGenre(Genre genre)
 		{
+			_logger.Info("Saving Genre record");
+
 			try
 			{
 				using (var conn = GetConnection())
 				{
+					conn.Open();
+
 					var query = "INSERT INTO Genre(GenreName, SongCount) VALUES(" +
 						"@GenreName, @SongCount)";
 
@@ -193,10 +238,14 @@ namespace Icarus.Models.Context
 		}
 		public void UpdateGenre(Genre genre)
 		{
+			_logger.Info("Updating Genre record");
+
 			try
 			{
 				using (var conn = GetConnection())
 				{
+					conn.Open();
+
 					var query = "UPDATE Genre SET GenreName=@GenreName, " +
 						"SongCount=@SongCount WHERE GenreId=@GenreId";
 
@@ -218,10 +267,14 @@ namespace Icarus.Models.Context
 		}
 		public void DeleteGenre(Genre genre)
 		{
+			_logger.Info("Deleting Genre record");
+
 			try
 			{
 				using (var conn = GetConnection())
 				{
+					conn.Open();
+
 					var query = "DELETE Genre WHERE GenreId=@GenreId";
 
 					using (var cmd = new MySqlCommand(query, conn))

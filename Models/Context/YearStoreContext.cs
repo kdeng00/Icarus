@@ -30,6 +30,8 @@ namespace Icarus.Models.Context
 		#region Methods
 		public List<Year> GetSongYears()
 		{
+			_logger.Info("Retrieving Year records");
+
 			var yearValues = new List<Year>();
 
 			try
@@ -60,6 +62,8 @@ namespace Icarus.Models.Context
 
 		public Year GetSongYear(Year year)
 		{
+			_logger.Info("Retrieving Year record");
+
 			try
 			{
 				using (var conn = GetConnection())
@@ -87,9 +91,44 @@ namespace Icarus.Models.Context
 
 			return year;
 		}
+		public Year GetSongYear(Song song)
+		{
+			var year = new Year();
+
+			_logger.Info("Retrieving Year record");
+
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Year WHERE YearValue=@YearValue";
+
+					using(var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@YearValue", song.Year);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							year = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return year;
+		}
 
 		public bool DoesYearExist(Year year)
 		{
+			_logger.Info("Checking to see if Year record exists");
+			
 			try
 			{
 				using (var conn = GetConnection())
@@ -128,17 +167,19 @@ namespace Icarus.Models.Context
 		}
 		public bool DoesYearExist(Song song)
 		{
+			_logger.Info("Checking to see if Year record exists");
+			
 			try
 			{
 				using (var conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Song WHERE Year=@Year";
+					var query = "SELECT * FROM Year WHERE YearValue=@YearValue";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Year", song.Year);
+						cmd.Parameters.AddWithValue("@YearValue", song.Year);
 
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -167,6 +208,8 @@ namespace Icarus.Models.Context
 
 		public void SaveYear(Year year)
 		{
+			_logger.Info("Saving Year record");
+
 			try
 			{
 				using (var conn = GetConnection())
@@ -193,9 +236,26 @@ namespace Icarus.Models.Context
 		}
 		public void UpdateYear(Year year)
 		{
+			_logger.Info("Deleting Year record");
+
 			try
 			{
-				// TODO: Add functionality for updating the Year record
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "UPDATE Year SET YearValue=@YearValue, SongCount=@SongCount " +
+						"WHERE YearId=@YearId";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@YearId", year.YearId);
+						cmd.Parameters.AddWithValue("@YearValue", year.YearValue);
+						cmd.Parameters.AddWithValue("@SongCount", year.SongCount);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -205,6 +265,8 @@ namespace Icarus.Models.Context
 		}
 		public void DeleteYear(Year year)
 		{
+			_logger.Info("Deleting Year record");
+
 			try
 			{
 				using (var conn = GetConnection())
