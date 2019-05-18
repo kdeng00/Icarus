@@ -95,6 +95,29 @@ namespace Icarus.Controllers.Managers
 
 
 		#region Methods
+		// TODO: This method should update the Song, Album, and Artist records in the database
+		public SongResult UpdateSong(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
+				ArtistStoreContext artistStore, GenreStoreContext genreStore,
+				YearStoreContext yearStore)
+		{
+			var oldSongRecord = songStore.GetSong(song.Id);
+			song.SongPath = oldSongRecord.SongPath;
+
+			MetadataRetriever updateMetadata = new MetadataRetriever();
+			updateMetadata.UpdateMetadata(song, oldSongRecord);
+
+			var updatedSong = updateMetadata.UpdatedSongRecord;
+
+			// TODO: Add the following methods
+			// UpdateAlbumInDatabase(oldSongRecord, newSongRecord, albumStore)
+			// UpdateArtistInDatabase(oldSongRecord, newSongRecord, artistStore
+			// UpdateeGenreInDatabase(oldSongRecord, newSongRecord, genreStore)
+			// UpdateYearInDatabase(oldSongRecord, newSongRecord, yearStore)
+			// UpdateSongInDatabase(oldSongRecord, newSongRecord, songStore)
+
+			return new SongResult();
+		}
+
 		public bool DeleteSongFromFileSystem(Song songMetaData)
 		{
 		    	bool successful = false;
@@ -190,11 +213,6 @@ namespace Icarus.Controllers.Managers
 	        		var exMsg = ex.Message;
 				Console.WriteLine($"An Error Occurred: {exMsg}");
 	    		}
-		}
-		// TODO: This method should update the Song, Album, and Artist records in the database
-		public void UpdateSong(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
-				ArtistStoreContext artistStore)
-		{
 		}
 
 		public async Task SaveSong(SongData songData)

@@ -11,7 +11,6 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controllers
 {
-	// TODO: Implement Genre API functionality #41
 	[Route("api/genre")]
 	[ApiController]
 	public class GenreController : ControllerBase
@@ -39,7 +38,20 @@ namespace Icarus.Controllers
 		{
 			var genres = new List<Genre>();
 
-			return Ok(genres);
+			var genreStore = HttpContext
+				.RequestServices
+				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+
+			genres = genreStore.GetGenres();
+
+			if (genres.Count > 0)
+			{
+				return Ok(genres);
+			}
+			else
+			{
+				return NotFound(new List<Genre>());
+			}
 		}
 
 		[HttpGet("{id}")]
@@ -50,7 +62,20 @@ namespace Icarus.Controllers
 				GenreId = id
 			};
 
-			return Ok(genre);
+			var genreStore = HttpContext
+				.RequestServices
+				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+
+			if (genreStore.DoesGenreExist(genre))
+			{
+				genre =  genreStore.GetGenre(genre);
+
+				return Ok(genre);
+			}
+			else
+			{
+				return NotFound(new Genre());
+			}
 		}
 		#endregion
 	}

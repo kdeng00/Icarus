@@ -42,8 +42,7 @@ namespace Icarus.Controllers
 
 
         	[HttpGet]
-		// TODO: Remember to uncomment the line below
-		//[Authorize("read:song_details")]
+		[Authorize("read:song_details")]
         	public IActionResult Get()
         	{
 			List<Song> songs = new List<Song>();
@@ -67,8 +66,7 @@ namespace Icarus.Controllers
         	}
 
 		[HttpGet("{id}")]
-		// TODO: Remember to uncomment the line below
-		//[Authorize("read:song_details")]
+		[Authorize("read:song_details")]
 		public IActionResult Get(int id)
 		{
 			MusicStoreContext context = HttpContext
@@ -103,7 +101,14 @@ namespace Icarus.Controllers
 			AlbumStoreContext albumStore = HttpContext
 				.RequestServices
 				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
-			// TODO: Add the GenreStoreContext and YearStoreContext #41 and #42
+			
+			GenreStoreContext genreStore = HttpContext
+				.RequestServices
+				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+
+			YearStoreContext yearStore = HttpContext
+				.RequestServices
+				.GetService(typeof(YearStoreContext)) as YearStoreContext;
 
 			song.Id = id;
 			Console.WriteLine("Retrieving filepath of song");
@@ -118,6 +123,9 @@ namespace Icarus.Controllers
 			}
 			// TODO: Provide functionality for the UpdateSong(...) method
 			// before removing the below return statement
+			var songRes = _songMgr.UpdateSong(song, context, albumStore, artistStore, genreStore, 
+					yearStore);
+
 			return Ok("song exists");
 
 			var oldSongRecord = context.GetSong(id);

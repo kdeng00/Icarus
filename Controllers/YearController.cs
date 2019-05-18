@@ -11,7 +11,6 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controller
 {
-	// TODO: Implemnt Year API functionality #42
 	[Route("api/year")]
 	[ApiController]
 	public class YearController : ControllerBase
@@ -39,7 +38,20 @@ namespace Icarus.Controller
 		{
 			var yearValues = new List<Year>();
 
-			return Ok();
+			var yearStore = HttpContext
+				.RequestServices
+				.GetService(typeof(YearStoreContext)) as YearStoreContext;
+
+			yearValues = yearStore.GetSongYears();
+
+			if (yearValues.Count > 0)
+			{
+				return Ok(yearValues);
+			}
+			else
+			{
+				return NotFound(new List<Year>());
+			}
 		}
 
 		[HttpGet("{id}")]
@@ -50,7 +62,20 @@ namespace Icarus.Controller
 				YearId = id
 			};
 
-			return Ok(year);
+			var yearStore = HttpContext
+				.RequestServices
+				.GetService(typeof(YearStoreContext)) as YearStoreContext;
+
+			if (yearStore.DoesYearExist(year))
+			{
+				year = yearStore.GetSongYear(year);
+
+				return Ok(year);
+			}
+			else
+			{
+				return NotFound(new Year());
+			}
 		}
 		#endregion
 	}
