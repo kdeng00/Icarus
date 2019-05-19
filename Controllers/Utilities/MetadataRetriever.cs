@@ -128,9 +128,12 @@ namespace Icarus.Controllers.Utilities
 			{
 				Console.WriteLine($"Updating metadata of {title}");
 				_logger.Info($"Updating metadata of {title}");
+
 				foreach (var key in checkedValues.Keys)
 				{
 					bool result = checkedValues[key];
+
+
 					if (!result)
 					{
 						switch (key.ToLower())
@@ -158,7 +161,9 @@ namespace Icarus.Controllers.Utilities
 						}
 					}
 				}
+
 				fileTag.Save();
+
 				Console.WriteLine("Successfully updated metadata");
 				_logger.Info("Successfully updated metadata");
 			}
@@ -232,7 +237,11 @@ namespace Icarus.Controllers.Utilities
 				songValues["Artists"] = String.IsNullOrEmpty(song.Artist);
 				songValues["Album"] = String.IsNullOrEmpty(song.AlbumTitle);
 				songValues["Genre"] = String.IsNullOrEmpty(song.Genre);
-				if (song.Year==0)
+				if (song.Year == null)
+				{
+					songValues["Year"] = true;
+				}
+				else if (song.Year==0)
 				{
 					songValues["Year"] = true;
 				}

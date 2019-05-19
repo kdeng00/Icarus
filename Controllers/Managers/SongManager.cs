@@ -100,20 +100,28 @@ namespace Icarus.Controllers.Managers
 				ArtistStoreContext artistStore, GenreStoreContext genreStore,
 				YearStoreContext yearStore)
 		{
-			var oldSongRecord = songStore.GetSong(song.Id);
-			song.SongPath = oldSongRecord.SongPath;
+			try
+			{
+				var oldSongRecord = songStore.GetSong(song);
+				song.SongPath = oldSongRecord.SongPath;
 
-			MetadataRetriever updateMetadata = new MetadataRetriever();
-			updateMetadata.UpdateMetadata(song, oldSongRecord);
+				MetadataRetriever updateMetadata = new MetadataRetriever();
+				updateMetadata.UpdateMetadata(song, oldSongRecord);
 
-			var updatedSong = updateMetadata.UpdatedSongRecord;
+				var updatedSong = updateMetadata.UpdatedSongRecord;
 
-			// TODO: Add the following methods
-			// UpdateAlbumInDatabase(oldSongRecord, newSongRecord, albumStore)
-			// UpdateArtistInDatabase(oldSongRecord, newSongRecord, artistStore
-			// UpdateeGenreInDatabase(oldSongRecord, newSongRecord, genreStore)
-			// UpdateYearInDatabase(oldSongRecord, newSongRecord, yearStore)
-			// UpdateSongInDatabase(oldSongRecord, newSongRecord, songStore)
+				// TODO: Add the following methods
+				UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
+				// UpdateArtistInDatabase(oldSongRecord, newSongRecord, artistStore
+				// UpdateeGenreInDatabase(oldSongRecord, newSongRecord, genreStore)
+				// UpdateYearInDatabase(oldSongRecord, newSongRecord, yearStore)
+				// UpdateSongInDatabase(oldSongRecord, newSongRecord, songStore)
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
 
 			return new SongResult();
 		}
@@ -710,6 +718,28 @@ namespace Icarus.Controllers.Managers
 			}
 
 			song.YearId = year.YearId;
+		}
+
+		private void UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumStoreContext albumStore)
+		{
+			var albumRecord = albumStore.GetAlbum(oldSongRecord);
+			var oldAlbumTitle = oldSongRecord.AlbumTitle;
+			var newAlbumTitle = newSongRecord.AlbumTitle;
+
+			var info = string.Empty;
+
+			Console.WriteLine($"{oldAlbumTitle}\n{newAlbumTitle}");
+
+			if (!oldAlbumTitle.Equals(newAlbumTitle))
+			{
+				info = "Change to the song's album";
+				_logger.Info(info);
+			}
+			else
+			{
+				info = "No change to the song's album";
+				_logger.Info(info);
+			}
 		}
 
         	private async Task PopulateSongDetails()
