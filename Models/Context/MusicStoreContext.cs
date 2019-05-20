@@ -75,7 +75,8 @@ namespace Icarus.Models.Context
 		    			string query = "UPDATE Song SET Title=@Title, AlbumTitle=@AlbumTitle, " + 
 						"Artist=@Artist, Year=@Year, Genre=@Genre, Duration=@Duration, " +
 						"Filename=@Filename, SongPath=@SongPath, AlbumId=@AlbumId, " +
-						"ArtistId=@ArtistId  WHERE Id=@Id";
+						"ArtistId=@ArtistId, GenreId=@GenreId, YearId=@YearId  WHERE Id=@Id";
+
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 		        			cmd.Parameters.AddWithValue("@Title", song.Title);
@@ -86,9 +87,11 @@ namespace Icarus.Models.Context
 						cmd.Parameters.AddWithValue("@Duration", song.Duration);
 						cmd.Parameters.AddWithValue("@Filename", song.Filename);
 						cmd.Parameters.AddWithValue("@SongPath", song.SongPath);
-						cmd.Parameters.AddWithValue(@"Id", song.Id);
+						cmd.Parameters.AddWithValue("@Id", song.Id);
 						cmd.Parameters.AddWithValue("@AlbumId", song.AlbumId);
 						cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
+						cmd.Parameters.AddWithValue("@GenreId", song.GenreId);
+						cmd.Parameters.AddWithValue("@YearId", song.YearId);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -107,6 +110,8 @@ namespace Icarus.Models.Context
 		{
 	    		try
 	    		{
+				_logger.Info("Deleting song record");
+
 	        		using (MySqlConnection conn = GetConnection())
 				{
 		    			conn.Open();
@@ -254,7 +259,9 @@ namespace Icarus.Models.Context
 			        	Filename = reader["Filename"].ToString(),
 			        	SongPath = reader["SongPath"].ToString(),
 					AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
-					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString())
+					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString()),
+					GenreId = Convert.ToInt32(reader["GenreId"].ToString()),
+					YearId = Convert.ToInt32(reader["YearId"].ToString())
 			    	});
 			}
 
@@ -280,7 +287,9 @@ namespace Icarus.Models.Context
 			        	Filename = reader["Filename"].ToString(),
 			        	SongPath = reader["SongPath"].ToString(),
 					AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
-					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString())
+					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString()),
+					GenreId = Convert.ToInt32(reader["GenreId"].ToString()),
+					YearId = Convert.ToInt32(reader["YearId"].ToString())
 			    	};
 			}
 

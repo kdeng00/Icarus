@@ -60,7 +60,7 @@ namespace Icarus.Controllers
 		}
 
         	[HttpPost]
-		[Authorize("upload:songs")]
+		//[Authorize("upload:songs")]
         	public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
         	{
 			try

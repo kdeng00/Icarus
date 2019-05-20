@@ -87,7 +87,7 @@ namespace Icarus.Controllers
 
 
         	[HttpPut("{id}")]
-		[Authorize("update:songs")]
+		//[Authorize("update:songs")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
 			MusicStoreContext context = HttpContext

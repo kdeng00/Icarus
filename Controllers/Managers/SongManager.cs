@@ -111,10 +111,15 @@ namespace Icarus.Controllers.Managers
 				var updatedSong = updateMetadata.UpdatedSongRecord;
 
 				// TODO: Add the following methods
-				UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
-				UpdateArtistInDatabase(oldSongRecord, updatedSong, artistStore);
-				UpdateGenreInDatabase(oldSongRecord, updatedSong, genreStore);
-				UpdateYearInDatabase(oldSongRecord, updatedSong, yearStore);
+				var updatedAlbum = UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
+				oldSongRecord.AlbumId = updatedAlbum.AlbumId;
+				var updatedArtist = UpdateArtistInDatabase(oldSongRecord, updatedSong, artistStore);
+				oldSongRecord.ArtistId = updatedArtist.ArtistId;
+				var updatedGenre = UpdateGenreInDatabase(oldSongRecord, updatedSong, genreStore);
+				oldSongRecord.GenreId = updatedGenre.GenreId;
+				var updatedYear = UpdateYearInDatabase(oldSongRecord, updatedSong, yearStore);
+				oldSongRecord.YearId = updatedYear.YearId;
+
 				UpdateSongInDatabase(oldSongRecord, updatedSong, songStore);
 			}
 			catch (Exception ex)
@@ -738,7 +743,7 @@ namespace Icarus.Controllers.Managers
 			song.YearId = year.YearId;
 		}
 
-		private void UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumStoreContext albumStore)
+		private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumStoreContext albumStore)
 		{
 			var albumRecord = albumStore.GetAlbum(oldSongRecord);
 			var oldAlbumTitle = oldSongRecord.AlbumTitle;
@@ -752,7 +757,7 @@ namespace Icarus.Controllers.Managers
 						oldAlbumTitle.Equals(newAlbumTitle) || oldAlbumArtist.Equals(newAlbumArtist)))
 			{
 				_logger.Info("No change to the song's album");
-				return;
+				return albumRecord;
 			}
 
 			info = "Change to the song's album";
@@ -795,8 +800,10 @@ namespace Icarus.Controllers.Managers
 
 				albumStore.UpdateAlbum(existingAlbumRecord);
 			}
+
+			return albumStore.GetAlbum(newSongRecord);
 		}
-		private void UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord, ArtistStoreContext artistStore)
+		private Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord, ArtistStoreContext artistStore)
 		{
 			var oldArtistRecord = artistStore.GetArtist(oldSongRecord);
 			var oldArtistName = oldArtistRecord.Name;
@@ -805,7 +812,7 @@ namespace Icarus.Controllers.Managers
 			if (string.IsNullOrEmpty(newArtistName) || oldArtistName.Equals(newArtistName))
 			{
 				_logger.Info("No change to the song's Artist");
-				return;
+				return oldArtistRecord;
 			}
 
 			_logger.Info("Change to the song's record found");
@@ -845,8 +852,10 @@ namespace Icarus.Controllers.Managers
 
 				artistStore.UpdateArtist(existingArtistRecord);
 			}
+
+			return artistStore.GetArtist(newSongRecord);
 		}
-		private void UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord, GenreStoreContext genreStore)
+		private Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord, GenreStoreContext genreStore)
 		{
 			var oldGenreRecord = genreStore.GetGenre(oldSongRecord);
 			var oldGenreName = oldGenreRecord.GenreName;
@@ -855,7 +864,7 @@ namespace Icarus.Controllers.Managers
 			if (string.IsNullOrEmpty(newGenreName) || oldGenreName.Equals(newGenreName))
 			{
 				_logger.Info("No change to the song's Genre");
-				return;
+				return oldGenreRecord;
 			}
 
 			_logger.Info("Change to the song's genre found");
@@ -896,8 +905,10 @@ namespace Icarus.Controllers.Managers
 				genreStore.UpdateGenre(existingGenreRecord);
 			}
 
+			return genreStore.GetGenre(newSongRecord);
+
 		}
-		private void UpdateYearInDatabase(Song oldSongRecord, Song newSongRecord, YearStoreContext yearStore)
+		private Year UpdateYearInDatabase(Song oldSongRecord, Song newSongRecord, YearStoreContext yearStore)
 		{
 			var oldYearRecord = yearStore.GetSongYear(oldSongRecord);
 			var oldYearValue = oldYearRecord.YearValue;
@@ -906,7 +917,7 @@ namespace Icarus.Controllers.Managers
 			if (oldYearValue == newYearValue || newYearValue == 0 || newYearValue == null)
 			{
 				_logger.Info("No change to the song's Year");
-				return;
+				return oldYearRecord;
 			}
 
 			_logger.Info("Change to the song's year found");
@@ -946,6 +957,8 @@ namespace Icarus.Controllers.Managers
 
 				yearStore.UpdateYear(existingYearRecord);
 			}
+
+			return yearStore.GetSongYear(newSongRecord);
 		}
 		private void UpdateSongInDatabase(Song oldSongRecord, Song newSongRecord, MusicStoreContext songStore)
 		{
@@ -989,7 +1002,14 @@ namespace Icarus.Controllers.Managers
 			Console.WriteLine("Updated song values\n");
 			MetadataRetriever.PrintMetadata(updatedSongRecord);
 
-			songStore.UpdateSong(updatedSongRecord);
+			if (songStore.DoesSongExist(newSongRecord))
+			{
+				songStore.UpdateSong(updatedSongRecord);
+			}
+			else
+			{
+				songStore.SaveSong(updatedSongRecord);
+			}
 		}
 
         	private async Task PopulateSongDetails()

@@ -46,6 +46,7 @@ namespace Icarus.Controllers.Utilities
 		public static void PrintMetadata(Song song)
 		{
 			Console.WriteLine("\n\nMetadata of the song:");
+			Console.WriteLine($"Id: {song.Id}");
 			Console.WriteLine($"Title: {song.Title}");
 			Console.WriteLine($"Artist: {song.Artist}");
 			Console.WriteLine($"Album: {song.AlbumTitle}");
@@ -56,6 +57,8 @@ namespace Icarus.Controllers.Utilities
 			Console.WriteLine($"ArtistId: {song.ArtistId}");
 			Console.WriteLine($"GenreId: {song.GenreId}");
 			Console.WriteLine($"YearId: {song.YearId}");
+			Console.WriteLine($"Song Path: {song.SongPath}");
+			Console.WriteLine($"Filename: {song.Filename}");
 			Console.WriteLine("\n");
 
 			_logger.Info("Metadata of the song");
