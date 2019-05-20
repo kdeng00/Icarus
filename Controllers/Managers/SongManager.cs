@@ -753,8 +753,17 @@ namespace Icarus.Controllers.Managers
 
 			var info = string.Empty;
 
-			if ((string.IsNullOrEmpty(newAlbumTitle) || string.IsNullOrEmpty(newAlbumArtist) || 
-						oldAlbumTitle.Equals(newAlbumTitle) || oldAlbumArtist.Equals(newAlbumArtist)))
+			if (string.IsNullOrEmpty(newAlbumArtist))
+			{
+				newAlbumArtist = oldAlbumArtist;
+			}
+			if (string.IsNullOrEmpty(newAlbumTitle))
+			{
+				newAlbumTitle = oldAlbumTitle;
+			}
+
+			if ((string.IsNullOrEmpty(newAlbumTitle) && string.IsNullOrEmpty(newAlbumArtist) || 
+						oldAlbumTitle.Equals(newAlbumTitle) && oldAlbumArtist.Equals(newAlbumArtist)))
 			{
 				_logger.Info("No change to the song's album");
 				return albumRecord;
