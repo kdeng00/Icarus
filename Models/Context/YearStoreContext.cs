@@ -273,7 +273,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "DELETE Year WHERE YearId=@YearId";
+					var query = "DELETE FROM Year WHERE YearId=@YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{

@@ -127,23 +127,6 @@ namespace Icarus.Controllers
 					yearStore);
 
 			return Ok("song exists");
-
-			var oldSongRecord = context.GetSong(id);
-			song.SongPath = oldSongRecord.SongPath;
-
-			MetadataRetriever updateMetadata = new MetadataRetriever();
-			updateMetadata.UpdateMetadata(song, oldSongRecord);
-
-			var updatedSong = updateMetadata.UpdatedSongRecord;
-			context.UpdateSong(updatedSong);
-
-			SongResult songResult = new SongResult
-			{
-				Message = updateMetadata.Message,
-				SongTitle = updatedSong.Title
-			};
-
-			return Ok(songResult);
         	}
     	}
 }

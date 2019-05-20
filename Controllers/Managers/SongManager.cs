@@ -112,10 +112,10 @@ namespace Icarus.Controllers.Managers
 
 				// TODO: Add the following methods
 				UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
-				// UpdateArtistInDatabase(oldSongRecord, newSongRecord, artistStore
-				// UpdateeGenreInDatabase(oldSongRecord, newSongRecord, genreStore)
-				// UpdateYearInDatabase(oldSongRecord, newSongRecord, yearStore)
-				// UpdateSongInDatabase(oldSongRecord, newSongRecord, songStore)
+				UpdateArtistInDatabase(oldSongRecord, updatedSong, artistStore);
+				UpdateGenreInDatabase(oldSongRecord, updatedSong, genreStore);
+				UpdateYearInDatabase(oldSongRecord, updatedSong, yearStore);
+				UpdateSongInDatabase(oldSongRecord, updatedSong, songStore);
 			}
 			catch (Exception ex)
 			{
@@ -563,6 +563,24 @@ namespace Icarus.Controllers.Managers
 	    		}
 		}
 
+		private bool SongRecordChanged(Song currentSong, Song songUpdates)
+		{
+			var currentTitle = currentSong.Title;
+			var currentArtist = currentSong.Artist;
+			var currentAlbum = currentSong.AlbumTitle;
+			var currentGenre = currentSong.Genre;
+			var currentYear = currentSong.Year;
+
+			if (!currentTitle.Equals(songUpdates.Title) || !currentArtist.Equals(songUpdates.Artist) ||
+					!currentAlbum.Equals(songUpdates.AlbumTitle) ||
+					!currentGenre.Equals(songUpdates.Genre) || currentYear != songUpdates.Year)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		private void Initialize()
 		{
 	    		try
@@ -724,22 +742,254 @@ namespace Icarus.Controllers.Managers
 		{
 			var albumRecord = albumStore.GetAlbum(oldSongRecord);
 			var oldAlbumTitle = oldSongRecord.AlbumTitle;
+			var oldAlbumArtist = oldSongRecord.Artist;
 			var newAlbumTitle = newSongRecord.AlbumTitle;
+			var newAlbumArtist = newSongRecord.Artist;
 
 			var info = string.Empty;
 
-			Console.WriteLine($"{oldAlbumTitle}\n{newAlbumTitle}");
-
-			if (!oldAlbumTitle.Equals(newAlbumTitle))
+			if ((string.IsNullOrEmpty(newAlbumTitle) || string.IsNullOrEmpty(newAlbumArtist) || 
+						oldAlbumTitle.Equals(newAlbumTitle) || oldAlbumArtist.Equals(newAlbumArtist)))
 			{
-				info = "Change to the song's album";
-				_logger.Info(info);
+				_logger.Info("No change to the song's album");
+				return;
+			}
+
+			info = "Change to the song's album";
+			_logger.Info(info);
+
+			if (albumRecord.SongCount > 1)
+			{
+				_logger.Info("Decrementing existing album's song count");
+
+				albumRecord.SongCount -= 1;
+				albumStore.UpdateAlbum(albumRecord);
 			}
 			else
 			{
-				info = "No change to the song's album";
-				_logger.Info(info);
+				_logger.Info("Deleting existing album record that no longer has any songs");
+
+				albumStore.DeleteAlbum(albumRecord);
 			}
+
+			if (!albumStore.DoesAlbumExist(newSongRecord))
+			{
+				_logger.Info("Creating new album record");
+
+				var newAlbumRecord = new Album
+				{
+					Title = newAlbumTitle,
+					AlbumArtist = newAlbumArtist,
+					SongCount = 1
+				};
+
+				albumStore.SaveAlbum(newAlbumRecord);
+			}
+			else
+			{
+				_logger.Info("Updating existing album record");
+
+				var existingAlbumRecord = albumStore.GetAlbum(newSongRecord);
+				existingAlbumRecord.AlbumArtist = newAlbumArtist;
+				existingAlbumRecord.SongCount += 1;
+
+				albumStore.UpdateAlbum(existingAlbumRecord);
+			}
+		}
+		private void UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord, ArtistStoreContext artistStore)
+		{
+			var oldArtistRecord = artistStore.GetArtist(oldSongRecord);
+			var oldArtistName = oldArtistRecord.Name;
+			var newArtistName = newSongRecord.Artist;
+
+			if (string.IsNullOrEmpty(newArtistName) || oldArtistName.Equals(newArtistName))
+			{
+				_logger.Info("No change to the song's Artist");
+				return;
+			}
+
+			_logger.Info("Change to the song's record found");
+
+			if (oldArtistRecord.SongCount > 1)
+			{
+				_logger.Info("Decrementing existing artist's song count");
+
+				oldArtistRecord.SongCount -= 1;
+				artistStore.UpdateArtist(oldArtistRecord);
+			}
+			else
+			{
+				_logger.Info("Deleting artist record that no longer has any songs");
+
+				artistStore.DeleteArtist(oldArtistRecord);
+			}
+
+			if (!artistStore.DoesArtistExist(newSongRecord))
+			{
+				_logger.Info("Creating new artist record");
+
+				var newArtistRecord = new Artist
+				{
+					Name = newArtistName,
+					SongCount = 1
+				};
+
+				artistStore.SaveArtist(newArtistRecord);
+			}
+			else
+			{
+				_logger.Info("Updating existing artist record");
+
+				var existingArtistRecord = artistStore.GetArtist(newSongRecord);
+				existingArtistRecord.SongCount += 1;
+
+				artistStore.UpdateArtist(existingArtistRecord);
+			}
+		}
+		private void UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord, GenreStoreContext genreStore)
+		{
+			var oldGenreRecord = genreStore.GetGenre(oldSongRecord);
+			var oldGenreName = oldGenreRecord.GenreName;
+			var newGenreName = newSongRecord.Genre;
+
+			if (string.IsNullOrEmpty(newGenreName) || oldGenreName.Equals(newGenreName))
+			{
+				_logger.Info("No change to the song's Genre");
+				return;
+			}
+
+			_logger.Info("Change to the song's genre found");
+
+			if (oldGenreRecord.SongCount > 1)
+			{
+				_logger.Info("Decrementing exisiting genre song count");
+
+				oldGenreRecord.SongCount -= 1;
+				genreStore.UpdateGenre(oldGenreRecord);
+			}
+			else
+			{
+				_logger.Info("Deleting genre record");
+
+				genreStore.DeleteGenre(oldGenreRecord);
+			}
+
+			if (!genreStore.DoesGenreExist(newSongRecord))
+			{
+				_logger.Info("Creating new genre record");
+
+				var newGenreRecord = new Genre
+				{
+					GenreName = newGenreName,
+					SongCount = 1
+				};
+
+				genreStore.SaveGenre(newGenreRecord);
+			}
+			else
+			{
+				_logger.Info("Updating existing genre record");
+
+				var existingGenreRecord = genreStore.GetGenre(newSongRecord);
+				existingGenreRecord.SongCount += 1;
+
+				genreStore.UpdateGenre(existingGenreRecord);
+			}
+
+		}
+		private void UpdateYearInDatabase(Song oldSongRecord, Song newSongRecord, YearStoreContext yearStore)
+		{
+			var oldYearRecord = yearStore.GetSongYear(oldSongRecord);
+			var oldYearValue = oldYearRecord.YearValue;
+			var newYearValue = newSongRecord.Year;
+
+			if (oldYearValue == newYearValue || newYearValue == 0 || newYearValue == null)
+			{
+				_logger.Info("No change to the song's Year");
+				return;
+			}
+
+			_logger.Info("Change to the song's year found");
+
+			if (oldYearRecord.SongCount > 1)
+			{
+				_logger.Info("Decrementing song count of year record");
+
+				oldYearRecord.SongCount -= 1;
+				yearStore.UpdateYear(oldYearRecord);
+			}
+			else
+			{
+				_logger.Info("Deleting year record");
+
+				yearStore.DeleteYear(oldYearRecord);
+			}
+
+			if(!yearStore.DoesYearExist(newSongRecord))
+			{
+				_logger.Info("Creating new year record");
+
+				var newYearRecord = new Year
+				{
+					YearValue = newYearValue.Value,
+					SongCount = 1
+				};
+
+				yearStore.SaveYear(newYearRecord);
+			}
+			else
+			{
+				_logger.Info("Updating existing year record");
+
+				var existingYearRecord = yearStore.GetSongYear(newSongRecord);
+				existingYearRecord.SongCount += 1;
+
+				yearStore.UpdateYear(existingYearRecord);
+			}
+		}
+		private void UpdateSongInDatabase(Song oldSongRecord, Song newSongRecord, MusicStoreContext songStore)
+		{
+			var updatedSongRecord = oldSongRecord;
+
+			if (!SongRecordChanged(updatedSongRecord, newSongRecord))
+			{
+				_logger.Info("No change to the song record");
+				return;
+			}
+
+			_logger.Info("Changes to song record found");
+			Console.WriteLine($"Song id {updatedSongRecord.Id}");
+			Console.WriteLine("Before updated song values");
+
+			MetadataRetriever.PrintMetadata(updatedSongRecord);
+
+			if (!string.IsNullOrEmpty(newSongRecord.Title))
+			{
+				updatedSongRecord.Title = newSongRecord.Title;
+			}
+			if (!string.IsNullOrEmpty(newSongRecord.AlbumTitle))
+			{
+				updatedSongRecord.AlbumTitle = newSongRecord.AlbumTitle;
+			}
+			if (!string.IsNullOrEmpty(newSongRecord.Artist))
+			{
+				updatedSongRecord.Artist = newSongRecord.Artist;
+			}
+			if (!string.IsNullOrEmpty(newSongRecord.Genre))
+			{
+				updatedSongRecord.Genre = newSongRecord.Genre;
+			}
+			if (newSongRecord.Year != null || newSongRecord.Year > 0)
+			{
+				updatedSongRecord.Year = newSongRecord.Year;
+			}
+
+			_logger.Info("Applied changes to song record");
+
+			Console.WriteLine("Updated song values\n");
+			MetadataRetriever.PrintMetadata(updatedSongRecord);
+
+			songStore.UpdateSong(updatedSongRecord);
 		}
 
         	private async Task PopulateSongDetails()

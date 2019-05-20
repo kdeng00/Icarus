@@ -119,7 +119,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 					var query = "SELECT * FROM Album WHERE Title=@Title";
-					_logger.Info($"Song title to rerieve album:\n{song.AlbumTitle}");
+					
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
@@ -280,7 +280,7 @@ namespace Icarus.Models.Context
 				using (var conn = GetConnection())
 				{
 					conn.Open();
-					var query = "DELETE Album WHERE AlbumId=@AlbumId";
+					var query = "DELETE FROM Album WHERE AlbumId=@AlbumId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{

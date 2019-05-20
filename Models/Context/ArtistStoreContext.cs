@@ -202,7 +202,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "DELETE Artist WHERE ArtistId=@ArtistId";
+					var query = "DELETE FROM Artist WHERE ArtistId=@ArtistId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{

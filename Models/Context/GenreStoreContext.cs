@@ -275,7 +275,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "DELETE Genre WHERE GenreId=@GenreId";
+					var query = "DELETE FROM Genre WHERE GenreId=@GenreId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
