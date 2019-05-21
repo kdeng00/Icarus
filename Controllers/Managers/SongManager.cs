@@ -21,10 +21,9 @@ using Icarus.Models.Context;
 
 namespace Icarus.Controllers.Managers
 {
-	public class SongManager
+	public class SongManager : BaseManager
     	{
         	#region Fields
-		private static Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
         	private MySqlConnection _conn;
         	private MySqlCommand _cmd;
         	private MySqlDataAdapter _dataDump;
@@ -972,6 +971,7 @@ namespace Icarus.Controllers.Managers
 		private void UpdateSongInDatabase(Song oldSongRecord, Song newSongRecord, MusicStoreContext songStore)
 		{
 			var updatedSongRecord = oldSongRecord;
+			var artistOrAlbumChanged = false;
 
 			if (!SongRecordChanged(updatedSongRecord, newSongRecord))
 			{
@@ -992,10 +992,12 @@ namespace Icarus.Controllers.Managers
 			if (!string.IsNullOrEmpty(newSongRecord.AlbumTitle))
 			{
 				updatedSongRecord.AlbumTitle = newSongRecord.AlbumTitle;
+				artistOrAlbumChanged = true;
 			}
 			if (!string.IsNullOrEmpty(newSongRecord.Artist))
 			{
 				updatedSongRecord.Artist = newSongRecord.Artist;
+				artistOrAlbumChanged = true;
 			}
 			if (!string.IsNullOrEmpty(newSongRecord.Genre))
 			{
@@ -1010,6 +1012,32 @@ namespace Icarus.Controllers.Managers
 
 			Console.WriteLine("Updated song values\n");
 			MetadataRetriever.PrintMetadata(updatedSongRecord);
+
+			if (artistOrAlbumChanged)
+			{
+				_logger.Info("Change to song's album or artist");
+
+				DirectoryManager dirMgr = new DirectoryManager(_config);
+				var newSongPath = dirMgr.GenerateSongPath(updatedSongRecord);
+
+				Console.WriteLine($"Old song path {updatedSongRecord.SongPath}");
+				Console.WriteLine($"New song path {newSongPath}");
+
+				System.IO.File.Copy(updatedSongRecord.SongPath, newSongPath, true);
+
+				if (!System.IO.File.Exists(newSongPath))
+				{
+					Console.WriteLine("New path does not exist when it should");
+				}
+				if (System.IO.File.Exists(updatedSongRecord.SongPath))
+				{
+					Console.WriteLine("Old path exists when it should");
+				}
+
+				updatedSongRecord.SongPath = newSongPath;
+				
+				System.IO.File.Delete(updatedSongRecord.SongPath);
+			}
 
 			if (songStore.DoesSongExist(newSongRecord))
 			{
