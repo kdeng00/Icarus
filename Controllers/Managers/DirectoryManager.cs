@@ -113,7 +113,7 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Created album path");
 			}
 
-			songPath = $@"{albumPath}{song.Filename}";
+			songPath = albumPath;
 
 			return songPath;
 		}

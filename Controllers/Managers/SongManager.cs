@@ -1018,26 +1018,39 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Change to song's album or artist");
 
 				DirectoryManager dirMgr = new DirectoryManager(_config);
+				var oldSongPath = updatedSongRecord.SongPath;
 				var newSongPath = dirMgr.GenerateSongPath(updatedSongRecord);
+				var filename = updatedSongRecord.Filename;
 
-				Console.WriteLine($"Old song path {updatedSongRecord.SongPath}");
+				Console.WriteLine($"Old song path {oldSongPath}");
 				Console.WriteLine($"New song path {newSongPath}");
 
-				System.IO.File.Copy(updatedSongRecord.SongPath, newSongPath, true);
+				_logger.Info("Copying song to the new path");
 
-				if (!System.IO.File.Exists(newSongPath))
+				System.IO.File.Copy(oldSongPath, newSongPath + filename, true);
+
+				_logger.Info("Checking to see if song successfully copied");
+
+				if (!System.IO.File.Exists(newSongPath + filename))
 				{
+					_logger.Info("Song did not successfully copy");
+
 					Console.WriteLine("New path does not exist when it should");
 				}
-				if (System.IO.File.Exists(updatedSongRecord.SongPath))
-				{
-					Console.WriteLine("Old path exists when it should");
-				}
 
-				updatedSongRecord.SongPath = newSongPath;
+				updatedSongRecord.SongPath = newSongPath + filename;
 				
-				System.IO.File.Delete(updatedSongRecord.SongPath);
+				_logger.Info("Deleting old song path");
+
+				System.IO.File.Delete(oldSongPath);
+
+				if (System.IO.File.Exists(oldSongPath))
+				{
+					Console.WriteLine("Old path exists when it should not");
+				}
 			}
+
+			_logger.Info("Saving song metadata to the database");
 
 			if (songStore.DoesSongExist(newSongRecord))
 			{
