@@ -121,12 +121,11 @@ namespace Icarus.Controllers
 						Message = "Song does not exist"
 					});
 			}
-			// TODO: Provide functionality for the UpdateSong(...) method
-			// before removing the below return statement
+
 			var songRes = _songMgr.UpdateSong(song, context, albumStore, artistStore, genreStore, 
 					yearStore);
 
-			return Ok("song exists");
+			return Ok(songRes);
         	}
     	}
 }

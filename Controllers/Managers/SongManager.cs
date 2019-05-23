@@ -94,11 +94,12 @@ namespace Icarus.Controllers.Managers
 
 
 		#region Methods
-		// TODO: This method should update the Song, Album, and Artist records in the database
 		public SongResult UpdateSong(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
 				ArtistStoreContext artistStore, GenreStoreContext genreStore,
 				YearStoreContext yearStore)
 		{
+			var result = new SongResult();
+
 			try
 			{
 				var oldSongRecord = songStore.GetSong(song);
@@ -109,7 +110,6 @@ namespace Icarus.Controllers.Managers
 
 				var updatedSong = updateMetadata.UpdatedSongRecord;
 
-				// TODO: Add the following methods
 				var updatedAlbum = UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
 				oldSongRecord.AlbumId = updatedAlbum.AlbumId;
 				var updatedArtist = UpdateArtistInDatabase(oldSongRecord, updatedSong, artistStore);
@@ -119,15 +119,20 @@ namespace Icarus.Controllers.Managers
 				var updatedYear = UpdateYearInDatabase(oldSongRecord, updatedSong, yearStore);
 				oldSongRecord.YearId = updatedYear.YearId;
 
-				UpdateSongInDatabase(oldSongRecord, updatedSong, songStore);
+				UpdateSongInDatabase(ref oldSongRecord, ref updatedSong, songStore, ref result);
+
+				DeleteEmptyDirectories(ref oldSongRecord, ref updatedSong);
 			}
 			catch (Exception ex)
 			{
 				var msg = ex.Message;
 				_logger.Error(msg, "An error occurred");
+
+				result.Message = $"An error occurred: {msg}";
+				result.SongTitle = song.Title;
 			}
 
-			return new SongResult();
+			return result;
 		}
 
 		public bool DeleteSongFromFileSystem(Song songMetaData)
@@ -585,6 +590,14 @@ namespace Icarus.Controllers.Managers
 			return false;
 		}
 
+		private void DeleteEmptyDirectories(ref Song oldSong, ref Song updatedSong)
+		{
+			DirectoryManager mgr = new DirectoryManager(_config);
+
+			_logger.Info("Checking to see if there are any directories to delete");
+			mgr.DeleteEmptyDirectories(oldSong);
+		}
+
 		private void Initialize()
 		{
 	    		try
@@ -968,22 +981,34 @@ namespace Icarus.Controllers.Managers
 
 			return yearStore.GetSongYear(newSongRecord);
 		}
-		private void UpdateSongInDatabase(Song oldSongRecord, Song newSongRecord, MusicStoreContext songStore)
+		private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, MusicStoreContext songStore,
+				ref SongResult result)
 		{
-			var updatedSongRecord = oldSongRecord;
+			var updatedSongRecord = new Song
+			{
+				Id = oldSongRecord.Id,
+				Title = oldSongRecord.Title,
+				Artist = oldSongRecord.Artist,
+				AlbumTitle = oldSongRecord.AlbumTitle,
+				Genre = oldSongRecord.Genre,
+				Year = oldSongRecord.Year,
+				Filename = oldSongRecord.Filename,
+				SongPath = oldSongRecord.SongPath,
+				ArtistId = oldSongRecord.ArtistId,
+				AlbumId = oldSongRecord.AlbumId,
+				GenreId = oldSongRecord.GenreId,
+				YearId = oldSongRecord.YearId
+
+			};
 			var artistOrAlbumChanged = false;
 
-			if (!SongRecordChanged(updatedSongRecord, newSongRecord))
+			if (!SongRecordChanged(oldSongRecord, newSongRecord))
 			{
 				_logger.Info("No change to the song record");
 				return;
 			}
 
 			_logger.Info("Changes to song record found");
-			Console.WriteLine($"Song id {updatedSongRecord.Id}");
-			Console.WriteLine("Before updated song values");
-
-			MetadataRetriever.PrintMetadata(updatedSongRecord);
 
 			if (!string.IsNullOrEmpty(newSongRecord.Title))
 			{
@@ -1009,9 +1034,6 @@ namespace Icarus.Controllers.Managers
 			}
 
 			_logger.Info("Applied changes to song record");
-
-			Console.WriteLine("Updated song values\n");
-			MetadataRetriever.PrintMetadata(updatedSongRecord);
 
 			if (artistOrAlbumChanged)
 			{
@@ -1060,6 +1082,11 @@ namespace Icarus.Controllers.Managers
 			{
 				songStore.SaveSong(updatedSongRecord);
 			}
+
+			newSongRecord = updatedSongRecord;
+
+			result.Message = "Successfully updated song";
+			result.SongTitle = updatedSongRecord.Title;
 		}
 
         	private async Task PopulateSongDetails()

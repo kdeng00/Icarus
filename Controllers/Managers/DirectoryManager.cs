@@ -87,7 +87,49 @@ namespace Icarus.Controllers.Managers
 				Console.WriteLine($"An error occurred {exMsg}");
 	    		}
 		}
+		public void DeleteEmptyDirectories(Song song)
+		{
+			try
+			{
+				var albumDirectory = AlbumDirectory(song);
+				var artistDirectory = ArtistDirectory(song);
 
+				if (IsDirectoryEmpty(albumDirectory))
+				{
+		    			Directory.Delete(albumDirectory);
+					_logger.Info("Album directory deleted");
+				}
+				if (IsDirectoryEmpty(artistDirectory))
+				{
+		    			Directory.Delete(artistDirectory);
+					_logger.Info("Artist directory deleted");
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
+
+		public string RetrieveAlbumPath(Song song)
+		{
+			_logger.Info("Retrieving album song path");
+
+			var albumPath = string.Empty;
+			albumPath = AlbumDirectory(song);
+
+			return albumPath;
+		}
+		public string RetrieveArtistPath(Song song)
+		{
+			_logger.Info("Retrieving artist path");
+
+			var artistPath = string.Empty;
+			artistPath = ArtistDirectory(song);
+
+			return artistPath;
+		}
 		public string GenerateSongPath(Song song)
 		{
 			_logger.Info("Generating song path");
