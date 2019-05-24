@@ -544,12 +544,13 @@ namespace Icarus.Controllers.Managers
 			{
 				_logger.Info("Saving song to temporary directory");
 				await songFile.CopyToAsync(filestream);
+			}
+
 				MetadataRetriever meta = new MetadataRetriever();
 				song =  meta.RetrieveMetaData(filePath);
 
 				_logger.Info("Assigning song filename");
 				song.Filename = songFile.FileName;
-			}
 
 			return song;
 		}
