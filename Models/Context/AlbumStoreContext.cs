@@ -27,6 +27,36 @@ namespace Icarus.Models.Context
 
 
 		#region Methods
+		public List<Album> GetAlbumWithoutCount()
+		{
+			var albums = new List<Album>();
+
+			if (AnyAlbums())
+			{
+				try
+				{
+					using (MySqlConnection conn = GetConnection())
+					{
+						conn.Open();
+						var query = "SELECT * FROM Album";
+						using (MySqlCommand cmd = new MySqlCommand(query, conn))
+						{
+							using (var reader = cmd.ExecuteReader())
+							{
+								albums = ParseData(reader);
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
+			}
+
+			return albums;
+		}
 		public List<Album> GetAlbums()
 		{
 			List<Album> albums = new List<Album>();
@@ -96,13 +126,54 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT alb.*, COUNT(*) AS SongCount FROM Album alb " +
-						"LEFT JOIN Song sng ON alb.AlbumId=sng.AlbumId WHERE " +
-						"sng.Id=@Id LIMIT 1";
+					var query = "SELECT alb.*, 0 AS SongCount FROM Album alb " +
+						"WHERE alb.Title=@Title LIMIT 1";
 					
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Id", song.Id);
+						Console.WriteLine($"Album title {song.AlbumTitle}");
+						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							album = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return album;
+		}
+		public Album GetAlbum(Song song, bool retrieveCount)
+		{
+			var album = new Album();
+
+			try
+			{
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+					var query = string.Empty;
+					if (retrieveCount)
+					{
+						query = "SELECT alb.*, COUNT(*) AS SongCount FROM Album alb " +
+							"LEFT JOIN Song sng ON alb.AlbumId=sng.AlbumId WHERE " +
+							"alb.Title=@Title GROUP BY alb.AlbumId LIMIT 1";
+					}
+					else
+					{
+						query = "SELECT alb.*, 0 AS SongCount FROM Album alb WHERE " +
+							"alb.Title=@Title LIMIT 1";
+					}
+					
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
 
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -124,23 +195,11 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
-				album = GetAlbum(album);
-
-				if (!string.IsNullOrEmpty(album.Title))
-				{
-					_logger.Info("Album exists");
-					return true;
-				}
-				else
-				{
-					_logger.Info("Album does not exist");
-				}
-				/**
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Album WHERE AlbumId=@AlbumId";
+					var query = "SELECT alb.*, 0 AS SongCount FROM Album alb WHERE alb.AlbumId=@AlbumId";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
@@ -157,7 +216,6 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
-				*/
 			}
 			catch (Exception ex)
 			{
@@ -170,23 +228,11 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
-				var album = GetAlbum(song);
-
-				if (!string.IsNullOrEmpty(album.Title))
-				{
-					_logger.Info("Album exists");
-					return true;
-				}
-				else
-				{
-					_logger.Info("Album does not exist");
-				}
-				/**
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Album WHERE Title=@Title";
+					var query = "SELECT alb.*, 0 AS SongCount FROM Album alb WHERE alb.Title=@Title";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
@@ -203,7 +249,6 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
-				*/
 			}
 			catch (Exception ex)
 			{
@@ -333,6 +378,33 @@ namespace Icarus.Models.Context
 			_logger.Info("Single ablum retreived");
 
 			return album;
+		}
+
+		private bool AnyAlbums()
+		{
+			var albums = new List<Album>();
+
+			using (var conn = GetConnection())
+			{
+				conn.Open();
+
+				var query = "SELECT * FROM Album";
+
+				using (var cmd = new MySqlCommand(query, conn))
+				{
+					using (var reader = cmd.ExecuteReader())
+					{
+						albums = ParseData(reader);
+					}
+				}
+			}
+
+			if (albums.Count > 0)
+			{
+				return true;
+			}
+
+			return false;
 		}
 		#endregion
 	}

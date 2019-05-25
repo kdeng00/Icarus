@@ -673,6 +673,7 @@ namespace Icarus.Controllers.Managers
 				album.SongCount = 1;
 				albumStore.SaveAlbum(album);
 				album = albumStore.GetAlbum(song);
+				Console.WriteLine($"Album Id {album.AlbumId}");
 			}
 			else
 			{
@@ -724,6 +725,7 @@ namespace Icarus.Controllers.Managers
 			if (!genreStore.DoesGenreExist(song))
 			{
 				genreStore.SaveGenre(genre);
+				Console.WriteLine("Going to find genre");
 				genre = genreStore.GetGenre(song);
 				var genreDump = $"Genre id {genre.GenreId} GenreName {genre.GenreName}" +
 					$" Genre song Count {genre.SongCount}";
@@ -807,7 +809,7 @@ namespace Icarus.Controllers.Managers
 
 		private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumStoreContext albumStore)
 		{
-			var albumRecord = albumStore.GetAlbum(oldSongRecord);
+			var albumRecord = albumStore.GetAlbum(oldSongRecord, true);
 			var oldAlbumTitle = oldSongRecord.AlbumTitle;
 			var oldAlbumArtist = oldSongRecord.Artist;
 			var newAlbumTitle = newSongRecord.AlbumTitle;
@@ -838,7 +840,7 @@ namespace Icarus.Controllers.Managers
 			{
 				_logger.Info("Decrementing existing album's song count");
 
-				albumRecord.SongCount -= 1;
+				//albumRecord.SongCount -= 1;
 				albumStore.UpdateAlbum(albumRecord);
 			}
 			else
@@ -867,16 +869,16 @@ namespace Icarus.Controllers.Managers
 
 				var existingAlbumRecord = albumStore.GetAlbum(newSongRecord);
 				existingAlbumRecord.AlbumArtist = newAlbumArtist;
-				existingAlbumRecord.SongCount += 1;
+				//existingAlbumRecord.SongCount += 1;
 
 				albumStore.UpdateAlbum(existingAlbumRecord);
 			}
 
-			return albumStore.GetAlbum(newSongRecord);
+			return albumStore.GetAlbum(newSongRecord, true);
 		}
 		private Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord, ArtistStoreContext artistStore)
 		{
-			var oldArtistRecord = artistStore.GetArtist(oldSongRecord);
+			var oldArtistRecord = artistStore.GetArtist(oldSongRecord, true);
 			var oldArtistName = oldArtistRecord.Name;
 			var newArtistName = newSongRecord.Artist;
 
@@ -892,7 +894,7 @@ namespace Icarus.Controllers.Managers
 			{
 				_logger.Info("Decrementing existing artist's song count");
 
-				oldArtistRecord.SongCount -= 1;
+				//oldArtistRecord.SongCount -= 1;
 				artistStore.UpdateArtist(oldArtistRecord);
 			}
 			else
@@ -919,16 +921,16 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing artist record");
 
 				var existingArtistRecord = artistStore.GetArtist(newSongRecord);
-				existingArtistRecord.SongCount += 1;
+				//existingArtistRecord.SongCount += 1;
 
 				artistStore.UpdateArtist(existingArtistRecord);
 			}
 
-			return artistStore.GetArtist(newSongRecord);
+			return artistStore.GetArtist(newSongRecord, true);
 		}
 		private Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord, GenreStoreContext genreStore)
 		{
-			var oldGenreRecord = genreStore.GetGenre(oldSongRecord);
+			var oldGenreRecord = genreStore.GetGenre(oldSongRecord, true);
 			var oldGenreName = oldGenreRecord.GenreName;
 			var newGenreName = newSongRecord.Genre;
 
@@ -971,17 +973,17 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing genre record");
 
 				var existingGenreRecord = genreStore.GetGenre(newSongRecord);
-				existingGenreRecord.SongCount += 1;
+				//existingGenreRecord.SongCount += 1;
 
 				genreStore.UpdateGenre(existingGenreRecord);
 			}
 
-			return genreStore.GetGenre(newSongRecord);
+			return genreStore.GetGenre(newSongRecord, true);
 
 		}
 		private Year UpdateYearInDatabase(Song oldSongRecord, Song newSongRecord, YearStoreContext yearStore)
 		{
-			var oldYearRecord = yearStore.GetSongYear(oldSongRecord);
+			var oldYearRecord = yearStore.GetSongYear(oldSongRecord, true);
 			var oldYearValue = oldYearRecord.YearValue;
 			var newYearValue = newSongRecord.Year;
 
@@ -1024,12 +1026,12 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing year record");
 
 				var existingYearRecord = yearStore.GetSongYear(newSongRecord);
-				existingYearRecord.SongCount += 1;
+				//existingYearRecord.SongCount += 1;
 
 				yearStore.UpdateYear(existingYearRecord);
 			}
 
-			return yearStore.GetSongYear(newSongRecord);
+			return yearStore.GetSongYear(newSongRecord, true);
 		}
 		private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, MusicStoreContext songStore,
 				ref SongResult result)

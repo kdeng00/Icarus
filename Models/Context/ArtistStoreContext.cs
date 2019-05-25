@@ -37,7 +37,10 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT * FROM Artist";
+					var query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " +
+						"art LEFT JOIN Song sng ON art.ArtistId=sng.ArtistId " +
+						"GROUPY BY art.ArtistId";
+
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						using (var reader = cmd.ExecuteReader())
@@ -57,6 +60,113 @@ namespace Icarus.Models.Context
 			return artists;
 		}
 
+		public Artist GetArtist(Artist artist)
+		{
+			try
+			{
+				_logger.Info("Retrieving artist record from the database");
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " +
+						"art LEFT JOIN Song sng ON art.ArtistId=sng.ArtistId " +
+						"WHERE ArtistId=@ArtistId";
+
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							artist = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return artist;
+		}
+		public Artist GetArtist(Song song)
+		{
+			Artist artist = new Artist();
+			try
+			{
+				_logger.Info("Retrieving artist record from the database");
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT art.*, 0 AS SongCount FROM Artist " +
+						"art WHERE Name=@Name";
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Name", song.Artist);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							artist = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return artist;
+		}
+		public Artist GetArtist(Song song, bool retrieveCount)
+		{
+			var artist = new Artist();
+
+			try
+			{
+				_logger.Info("Retrieving artist record from the database");
+				using (MySqlConnection conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = string.Empty;
+
+					if (retrieveCount)
+					{
+						query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " +
+							"art LEFT JOIN Song sng ON art.ArtistId=sng.ArtistId " +
+							"WHERE art.Name=@Name GROUP BY art.ArtistId LIMIT 1";
+					}
+					else
+					{
+						query = "SELECT art.*, 0 AS SongCount FROM Artist art " +
+							"WHERE art.Name=@Name LIMIT 1";
+					}
+
+					using (MySqlCommand cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Name", song.Artist);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							artist = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return artist;
+		}
 
 		public bool DoesArtistExist(Artist artist)
 		{
@@ -67,7 +177,8 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Artist WHERE ArtistId=@ArtistId";
+					var query = "SELECT art.*, 0 AS SongCount FROM Artist art WHERE art.ArtistId=@ArtistId";
+
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
@@ -104,7 +215,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Artist WHERE Name=@Name";
+					var query = "SELECT art.*, 0 AS SongCount FROM Artist art WHERE art.Name=@Name";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Name", song.Artist);
@@ -213,67 +324,6 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 		}
-
-		public Artist GetArtist(Artist artist)
-		{
-			try
-			{
-				_logger.Info("Retrieving artist record from the database");
-				using (MySqlConnection conn = GetConnection())
-				{
-					conn.Open();
-
-					var query = "SELECT * FROM Artist WHERE ArtistId=@ArtistId";
-					using (MySqlCommand cmd = new MySqlCommand(query, conn))
-					{
-						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
-
-						using (var reader = cmd.ExecuteReader())
-						{
-							artist = ParseSingleData(reader);
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
-			}
-
-			return artist;
-		}
-		public Artist GetArtist(Song song)
-		{
-			Artist artist = new Artist();
-			try
-			{
-				_logger.Info("Retrieving artist record from the database");
-				using (MySqlConnection conn = GetConnection())
-				{
-					conn.Open();
-
-					var query = "SELECT * FROM Artist WHERE Name=@Name";
-					using (MySqlCommand cmd = new MySqlCommand(query, conn))
-					{
-						cmd.Parameters.AddWithValue("@Name", song.Artist);
-
-						using (var reader = cmd.ExecuteReader())
-						{
-							artist = ParseSingleData(reader);
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
-			}
-
-			return artist;
-		}
-
 
 		private List<Artist> ParseData(MySqlDataReader reader)
 		{

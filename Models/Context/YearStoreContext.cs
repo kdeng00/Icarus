@@ -40,7 +40,9 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Year";
+					var query = "SELECT yr.*, COUNT(*) AS SongCount FROM Year " +
+						"yr LEFT JOIN Song sng ON yr.YearId=sng.YearId " +
+						"GROUP BY gnr.YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -70,7 +72,9 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Year WHERE YearId=@YearId";
+					var query = "SELECT yr.*, COUNT(*) AS SongCount FROM Year " +
+						"yr LEFT JOIN Song sng ON yr.YearId=sng.YearId WHERE " +
+						"YearId=@YearId GROUP BY yr.YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -103,7 +107,53 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Year WHERE YearValue=@YearValue";
+					var query = "SELECT yr.*, 0 AS SongCount FROM Year " +
+						"yr WHERE yr.YearValue=@YearValue";
+
+					using(var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@YearValue", song.Year);
+
+						using (var reader = cmd.ExecuteReader())
+						{
+							year = ParseSingleData(reader);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			return year;
+		}
+		public Year GetSongYear(Song song, bool retrieveCount)
+		{
+			var year = new Year();
+
+			_logger.Info("Retrieving year record");
+
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = string.Empty;
+
+					if (retrieveCount)
+					{
+						query = "SELECT yr.*, COUNT(*) AS SongCount FROM Year yr " +
+							"LEFT JOIN Song sng ON yr.YearValue=sng.Year WHERE " +
+							"yr.YearValue=@YearValue GROUP BY yr.YearId LIMIT 1";
+					}
+					else
+					{
+						query = "SELECT yr.*, 0 AS SongCount FROM Year yr " +
+							"WHERE yr.YearValue=@YearValue LIMIT 1";
+					}
 
 					using(var cmd = new MySqlCommand(query, conn))
 					{
@@ -135,7 +185,8 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Year WHERE YearId=@YearId";
+					var query = "SELECT yr.*, 0 AS SongCount FROM Year yr WHERE " +
+						"yr.YearId=@YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -175,7 +226,8 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Year WHERE YearValue=@YearValue";
+					var query = "SELECT yr.*, 0 AS SongCount FROM Year yr WHERE " +
+						"yr.YearValue=@YearValue";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{

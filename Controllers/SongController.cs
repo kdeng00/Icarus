@@ -75,6 +75,8 @@ namespace Icarus.Controllers
 			
 			Song song = context.GetSong(id);
 
+			Console.WriteLine("Here");
+
 			if (song.Id != 0)
 			{
 				return Ok(song);
@@ -85,9 +87,8 @@ namespace Icarus.Controllers
 			}
 		}
 
-
-        	[HttpPut("{id}")]
 		[Authorize("update:songs")]
+        	[HttpPut("{id}")]
 		public IActionResult Put(int id, [FromBody] Song song)
         	{
 			MusicStoreContext context = HttpContext

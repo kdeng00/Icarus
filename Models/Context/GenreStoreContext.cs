@@ -28,33 +28,74 @@ namespace Icarus.Models.Context
 
 
 		#region Methods
+		public List<Genre> GetGenresWithoutCount()
+		{
+			_logger.Info("Retrieving all genre records without song counts");
+
+			var genres = new List<Genre>();
+
+			if (AnyGenre())
+			{
+
+				try
+				{
+					using (var conn = GetConnection())
+					{
+						conn.Open();
+
+						var query = "SELECT * FROM Genre";
+
+						using (var cmd = new MySqlCommand(query, conn))
+						{
+							using (var reader = cmd.ExecuteReader())
+							{
+								genres = ParseData(reader);
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
+			}
+
+			return genres;
+		}
 		public List<Genre> GetGenres()
 		{
 			_logger.Info("Retrieving Genre records");
 
 			var genres = new List<Genre>();
 
-			try
+			if (AnyGenre())
 			{
-				using (var conn = GetConnection())
+
+				try
 				{
-					conn.Open();
-
-					var query = "SELECT * FROM Genre";
-
-					using (var cmd = new MySqlCommand(query, conn))
+					using (var conn = GetConnection())
 					{
-						using (var reader = cmd.ExecuteReader())
+						conn.Open();
+
+						var query = "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre " + 
+							"gnr LEFt JOIN Song sng ON gnr.GenreId=sng.GenreId " +
+							"GROUP BY gnr.GenreId";
+
+						using (var cmd = new MySqlCommand(query, conn))
 						{
-							genres = ParseData(reader);
+							using (var reader = cmd.ExecuteReader())
+							{
+								genres = ParseData(reader);
+							}
 						}
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
 			}
 
 			return genres;
@@ -64,29 +105,34 @@ namespace Icarus.Models.Context
 		{
 			_logger.Info("Retrieving Genre record");
 
-			try
+			if (DoesGenreExist(genre))
 			{
-				using (var conn = GetConnection())
+				try
 				{
-					conn.Open();
-
-					var query = "SELECT * FROM Genre WHERE GenreId=@GenreId";
-
-					using (var cmd = new MySqlCommand(query, conn))
+					using (var conn = GetConnection())
 					{
-						cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
+						conn.Open();
 
-						using (var reader = cmd.ExecuteReader())
+						var query = "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre " +
+							"gnr LEFT JOIN Song sng ON gnr.GenreId=sng.GenreId  " +
+						       "WHERE gnr.GenreId=@GenreId";
+
+						using (var cmd = new MySqlCommand(query, conn))
 						{
-							genre = ParseSingleData(reader);
+							cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
+
+							using (var reader = cmd.ExecuteReader())
+							{
+								genre = ParseSingleData(reader);
+							}
 						}
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
 			}
 
 			return genre;
@@ -97,29 +143,84 @@ namespace Icarus.Models.Context
 
 			var genre = new Genre();
 
-			try
+			if (DoesGenreExist(song))
 			{
-				using (var conn = GetConnection())
+				try
 				{
-					conn.Open();
-
-					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
-
-					using (var cmd = new MySqlCommand(query, conn))
+					using (var conn = GetConnection())
 					{
-						cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+						conn.Open();
 
-						using (var reader = cmd.ExecuteReader())
+						var query = "SELECT gnr.*, 0 AS SongCount FROM Genre " +
+							"gnr WHERE gnr.GenreName=@GenreName";
+
+						using (var cmd = new MySqlCommand(query, conn))
 						{
-							genre = ParseSingleData(reader);
+							cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+							_logger.Info($"Song genre:\n\n\n {song.Genre}");
+
+							using (var reader = cmd.ExecuteReader())
+							{
+								genre = ParseSingleData(reader);
+							}
 						}
 					}
 				}
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
 			}
-			catch (Exception ex)
+
+			return genre;
+		}
+		public Genre GetGenre(Song song, bool retrieveCount)
+		{
+			_logger.Info("Retrieving Genre record");
+
+			var genre = new Genre();
+
+			if (DoesGenreExist(song))
 			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
+				try
+				{
+					using (var conn = GetConnection())
+					{
+						conn.Open();
+
+						var query = string.Empty;
+
+						if (retrieveCount)
+						{
+							query = "SELECT gnr.*, 0 AS SongCount FROM Genre gnr " +
+								"LEFT JOIN Song sng ON gnr.GenreId=sng.GenreId " +
+								"WHERE gnr.GenreName=@GenreName GROUP BY gnr.GenreId " +
+								"LIMIT 1";
+						}
+						else
+						{
+							query = "SELECT gnr.*, 0 AS SongCount FROM Genre gnr " +
+								"WHERE gnr.GenreName=@GenreName LIMIT 1";
+						}
+
+						using (var cmd = new MySqlCommand(query, conn))
+						{
+							cmd.Parameters.AddWithValue("@GenreName", song.Genre);
+							_logger.Info($"Song genre:\n\n\n {song.Genre}");
+
+							using (var reader = cmd.ExecuteReader())
+							{
+								genre = ParseSingleData(reader);
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					var msg = ex.Message;
+					_logger.Error(msg, "An error occurred");
+				}
 			}
 
 			return genre;
@@ -135,7 +236,8 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Genre WHERE GenreId=@GenreId";
+					var query = "SELECT gnr.*, 0 AS SongCount FROM Genre gnr WHERE " +
+						"gnr.GenreId=@GenreId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -172,13 +274,12 @@ namespace Icarus.Models.Context
 
 			try
 			{
-				var genre = ParseSingleData(song);
-
 				using (var conn = GetConnection())
 				{
 					conn.Open();
 
-					var query = "SELECT * FROM Genre WHERE GenreName=@GenreName";
+					var query = "SELECT gnr.*, 0 AS SongCount FROM Genre gnr WHERE " +
+						"gnr.GenreName=@GenreName";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -198,7 +299,6 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
-				*/
 			}
 			catch (Exception ex)
 			{
@@ -334,6 +434,42 @@ namespace Icarus.Models.Context
 			_logger.Info("Single genre record retrieved");
 
 			return genre;
+		}
+
+		private bool AnyGenre()
+		{
+			try
+			{
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "SELECT * FROM Genre";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						using (var reader = cmd.ExecuteReader())
+						{
+							var genres = ParseData(reader);
+
+							if (genres.Count > 0)
+							{
+								_logger.Info("Genres records");
+								return true;
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+
+			_logger.Info("No genre records found");
+
+			return false;
 		}
 		#endregion
 	}

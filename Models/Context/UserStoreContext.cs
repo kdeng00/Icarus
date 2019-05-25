@@ -40,6 +40,7 @@ namespace Icarus.Models.Context
 						", PhoneNumber, Firstname, Lastname, EmailVerified) " +
 						"VALUES(@Username, @Password, @Nickname, @Email, @PhoneNumber," +
 						" @Firstname, @Lastname, @EmailVerified)";
+
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Username", user.Username);
