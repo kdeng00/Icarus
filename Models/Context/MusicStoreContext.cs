@@ -106,6 +106,32 @@ namespace Icarus.Models.Context
 				_logger.Error(msg, "An error occurred");
 			}
 		}
+		public void DeleteSong(Song song)
+		{
+			try
+			{
+				_logger.Info("Deleting song record");
+
+				using (var conn = GetConnection())
+				{
+					conn.Open();
+
+					var query = "DELETE FROM Song WHERE Id=@Id";
+
+					using (var cmd = new MySqlCommand(query, conn))
+					{
+						cmd.Parameters.AddWithValue("@Id", song.Id);
+
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
+		}
 		public void DeleteSong(int id)
 		{
 	    		try

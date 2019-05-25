@@ -60,7 +60,7 @@ namespace Icarus.Controllers
 		}
 
         	[HttpPost]
-		//[Authorize("upload:songs")]
+		[Authorize("upload:songs")]
         	public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
         	{
 			try
@@ -108,19 +108,39 @@ namespace Icarus.Controllers
 
         	[HttpDelete("{id}")]
 		[Authorize("delete:songs")]
-        	public void Delete(int id)
+        	public IActionResult Delete(int id)
         	{
 			MusicStoreContext context = HttpContext
 				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+			AlbumStoreContext albumStore = HttpContext
+				.RequestServices
+				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+			ArtistStoreContext artistStore = HttpContext
+				.RequestServices
+				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
+			GenreStoreContext genreStore = HttpContext
+				.RequestServices
+				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+			YearStoreContext yearStore = HttpContext
+				.RequestServices
+				.GetService(typeof(YearStoreContext)) as YearStoreContext;
 			
 			var songMetaData = context.GetSong(id);
-			
-			var result = _songMgr.DeleteSongFromFileSystem(songMetaData);
-			
-			if (result)
+
+			if (string.IsNullOrEmpty(songMetaData.Title))
 			{
-				context.DeleteSong(songMetaData.Id);
+				_logger.LogInformation("Song does not exist");
+				return NotFound("Song does not exist");
+			}
+			else
+			{
+				_logger.LogInformation("Starting process of deleting song from the filesystem and database");
+
+				_songMgr.DeleteSong(songMetaData, context, albumStore, 
+						artistStore, genreStore, yearStore);
+
+				return Ok();
 			}
 		}
     	}

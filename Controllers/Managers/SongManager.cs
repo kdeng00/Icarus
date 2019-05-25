@@ -154,19 +154,28 @@ namespace Icarus.Controllers.Managers
 
 	    		return successful;
 		}
-		// TODO: Implement method
-		// This method should do the following, with the help of existing methods
-		// or create helper methods to compelete to intended purpose:
-		//
-		// 1. Delete song from the filesystem
-		// 2. Delete the song record from the database
-		// 3. Decrement the SongCount value or delete the album record from the Database
-		// 4. Decrement the SongCount value or delete the artist record from the Database
-		public bool DeleteSongFromFileSystem(Song song, MusicStoreContext songStore,
-				AlbumStoreContext albumStore, ArtistStoreContext artistStore)
-		{
 
-			return false;
+		public void DeleteSong(Song song, MusicStoreContext songStore,
+				AlbumStoreContext albumStore, ArtistStoreContext artistStore,
+				GenreStoreContext genreStore, YearStoreContext yearStore)
+		{
+			try
+			{
+				if (DeleteSongFromFilesystem(song))
+				{
+					_logger.Info("Failed to delete the song");
+
+					throw new Exception("Failed to delete the song");
+				}
+
+				DeleteSongFromDatabase(song, songStore, albumStore, artistStore,
+						genreStore, yearStore);
+			}
+			catch (Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred");
+			}
 		}
 
 		public void SaveSongDetails()
@@ -756,6 +765,43 @@ namespace Icarus.Controllers.Managers
 			song.YearId = year.YearId;
 		}
 
+		private bool DeleteSongFromFilesystem(Song song)
+		{
+			var songPath = song.SongPath;
+
+			_logger.Info("Deleting song from the filesystem");
+
+			try
+			{
+				System.IO.File.Delete(songPath);
+			}
+			catch(Exception ex)
+			{
+				var msg = ex.Message;
+				_logger.Error(msg, "An error occurred when attempting to delete the song from the filesystem");
+				return false;
+			}
+
+			var result = DoesSongExistOnFilesystem(song);
+
+			return result;
+		}
+		private bool DoesSongExistOnFilesystem(Song song)
+		{
+			var songPath = song.SongPath;
+
+			if (!System.IO.File.Exists(songPath))
+			{
+				_logger.Info("Song does not exist on the filesystem");
+
+				return false;
+			}
+
+			_logger.Info("Song exists on the filesystem");
+
+			return true;
+		}
+
 		private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumStoreContext albumStore)
 		{
 			var albumRecord = albumStore.GetAlbum(oldSongRecord);
@@ -1088,6 +1134,79 @@ namespace Icarus.Controllers.Managers
 
 			result.Message = "Successfully updated song";
 			result.SongTitle = updatedSongRecord.Title;
+		}
+
+		private void DeleteSongFromDatabase(Song song, MusicStoreContext songStore, AlbumStoreContext albumStore,
+				ArtistStoreContext artistStore, GenreStoreContext genreStore, YearStoreContext yearStore)
+		{
+			_logger.Info("Starting process to delete records related to the song from the database");
+
+			DeleteAlbumFromDatabase(song, albumStore);
+			DeleteArtistFromDatabase(song, artistStore);
+			DeleteGenreFromDatabase(song, genreStore);
+			DeleteYearFromDatabase(song, yearStore);
+
+			songStore.DeleteSong(song);
+		}
+		private void DeleteAlbumFromDatabase(Song song, AlbumStoreContext albumStore)
+		{
+			if (!albumStore.DoesAlbumExist(song))
+			{
+				_logger.Info("Cannot delete the album record because it does not exist");
+				return;
+			}
+
+			var album = albumStore.GetAlbum(song);
+
+			if (album.SongCount <= 1)
+			{
+				albumStore.DeleteAlbum(album);
+			}
+		}
+		private void DeleteArtistFromDatabase(Song song, ArtistStoreContext artistStore)
+		{
+			if (!artistStore.DoesArtistExist(song))
+			{
+				_logger.Info("Cannot delete the artist record because it does not exist");
+				return;
+			}
+
+			var artist = artistStore.GetArtist(song);
+
+			if (artist.SongCount <= 1)
+			{
+				artistStore.DeleteArtist(artist);
+			}
+		}
+		private void DeleteGenreFromDatabase(Song song, GenreStoreContext genreStore)
+		{
+			if (!genreStore.DoesGenreExist(song))
+			{
+				_logger.Info("Cannot delete the genre record because it does not exist");
+				return;
+			}
+
+			var genre = genreStore.GetGenre(song);
+
+			if (genre.SongCount <= 1)
+			{
+				genreStore.DeleteGenre(genre);
+			}
+		}
+		private void DeleteYearFromDatabase(Song song, YearStoreContext yearStore)
+		{
+			if (!yearStore.DoesYearExist(song))
+			{
+				_logger.Info("Cannot delete the year record because it does not exist");
+				return;
+			}
+
+			var year = yearStore.GetSongYear(song);
+
+			if (year.SongCount <= 1)
+			{
+				yearStore.DeleteYear(year);
+			}
 		}
 
         	private async Task PopulateSongDetails()

@@ -41,20 +41,7 @@ namespace Icarus.Models.Context
 					{
 						using (var reader = cmd.ExecuteReader())
 						{
-							while (reader.Read())
-							{
-								var id = Convert.ToInt32(reader["AlbumId"]);
-								var title = reader["Title"].ToString();
-								var albumArtist = reader["AlbumArtist"].ToString();
-								var songCount = Convert.ToInt32(reader["SongCount"]);
-								albums.Add(new Album
-								{
-									AlbumId = id,
-									Title = title,
-									AlbumArtist = albumArtist,
-									SongCount = songCount
-								});
-							}
+							albums = ParseData(reader);
 						}
 					}
 				}
@@ -83,20 +70,7 @@ namespace Icarus.Models.Context
 
 						using (var reader = cmd.ExecuteReader())
 						{
-							while (reader.Read())
-							{
-								var id = Convert.ToInt32(reader["AlbumId"]);
-								var title = reader["Title"].ToString();
-								var albumArtist = reader["AlbumArtist"].ToString();
-								var songCount = Convert.ToInt32(reader["SongCount"]);
-								album =new Album
-								{
-									AlbumId = id,
-									Title = title,
-									AlbumArtist = albumArtist,
-									SongCount = songCount
-								};
-							}
+							album = ParseSingleData(reader);
 						}
 					}
 				}
@@ -126,20 +100,7 @@ namespace Icarus.Models.Context
 
 						using (var reader = cmd.ExecuteReader())
 						{
-							while (reader.Read())
-							{
-								var id = Convert.ToInt32(reader["AlbumId"]);
-								var title = reader["Title"].ToString();
-								var albumArtist = reader["AlbumArtist"].ToString();
-								var songCount = Convert.ToInt32(reader["SongCount"]);
-								album = new Album
-								{
-									AlbumId = id,
-									Title = title,
-									AlbumArtist = albumArtist,
-									SongCount = songCount
-								};
-							}
+							album = ParseSingleData(reader);
 						}
 					}
 				}
