@@ -634,8 +634,11 @@ namespace Icarus.Controllers.Managers
 		{
 			_logger.Info("Starting process to save the song to the database");
 			
+			MetadataRetriever.PrintMetadata(song);
 			SaveAlbumToDatabase(ref song, albumStore);
+			MetadataRetriever.PrintMetadata(song);
 			SaveArtistToDatabase(ref song, artistStore);
+			MetadataRetriever.PrintMetadata(song);
 			
 			_logger.Info($"Song;\nTitle {song.Title}\nAlbum {song.AlbumTitle}\nAlbum Id {song.AlbumId}\nArtist {song.ArtistId}");
 

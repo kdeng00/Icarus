@@ -13,7 +13,6 @@ namespace Icarus.Models.Context
 	public class ArtistStoreContext : BaseStoreContext
 	{
 		#region Fields
-		//private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 
@@ -143,13 +142,11 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "INSERT INTO Artist(Name, SongCount) " +
-						"VALUES(@Name, @SongCount)";
+					var query = "INSERT INTO Artist(Name) VALUES(@Name)";
 
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Name", artist.Name);
-						cmd.Parameters.AddWithValue("@SongCount", artist.SongCount);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -171,13 +168,11 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "UPDATE Artist SET Name=@Name, SongCount" +
-						"=@SongCount WHERE ArtistId=@ArtistId";
+					var query = "UPDATE Artist SET Name=@Name WHERE ArtistId=@ArtistId";
 
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Name", artist.Name);
-						cmd.Parameters.AddWithValue("@SongCount", artist.SongCount);
 						cmd.Parameters.AddWithValue("@ArtistId", artist.ArtistId);
 
 						cmd.ExecuteNonQuery();

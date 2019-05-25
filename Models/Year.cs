@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
 
@@ -12,6 +13,7 @@ namespace Icarus.Models
 		[JsonProperty("year")]
 		public int YearValue { get; set; }
 		[JsonProperty("song_count")]
+		[NotMapped]
 		public int SongCount { get; set; }
 
 		[JsonIgnore]

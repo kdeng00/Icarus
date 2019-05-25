@@ -172,6 +172,8 @@ namespace Icarus.Models.Context
 
 			try
 			{
+				var genre = ParseSingleData(song);
+
 				using (var conn = GetConnection())
 				{
 					conn.Open();
@@ -196,6 +198,7 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
+				*/
 			}
 			catch (Exception ex)
 			{
@@ -218,13 +221,11 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "INSERT INTO Genre(GenreName, SongCount) VALUES(" +
-						"@GenreName, @SongCount)";
+					var query = "INSERT INTO Genre(GenreName) VALUES(@GenreName)";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@GenreName", genre.GenreName);
-						cmd.Parameters.AddWithValue("@SongCount", genre.SongCount);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -246,13 +247,12 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "UPDATE Genre SET GenreName=@GenreName, " +
-						"SongCount=@SongCount WHERE GenreId=@GenreId";
+					var query = "UPDATE Genre SET GenreName=@GenreName " +
+						"WHERE GenreId=@GenreId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@GenreName", genre.GenreName);
-						cmd.Parameters.AddWithValue("@SongCount", genre.SongCount);
 						cmd.Parameters.AddWithValue("@GenreId", genre.GenreId);
 
 						cmd.ExecuteNonQuery();

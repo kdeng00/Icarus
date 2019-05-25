@@ -216,13 +216,11 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "INSERT INTO Year(YearValue, SongCount) VALUES(" +
-						"@YearValue, @SongCount)";
+					var query = "INSERT INTO Year(YearValue) VALUES(@YearValue)";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@YearValue", year.YearValue);
-						cmd.Parameters.AddWithValue("@SongCount", year.SongCount);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -244,14 +242,12 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "UPDATE Year SET YearValue=@YearValue, SongCount=@SongCount " +
-						"WHERE YearId=@YearId";
+					var query = "UPDATE Year SET YearValue=@YearValue WHERE YearId=@YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@YearId", year.YearId);
 						cmd.Parameters.AddWithValue("@YearValue", year.YearValue);
-						cmd.Parameters.AddWithValue("@SongCount", year.SongCount);
 
 						cmd.ExecuteNonQuery();
 					}

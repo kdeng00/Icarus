@@ -36,7 +36,9 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT * FROM Album";
+					var query = "SELECT alb.*,COUNT(*) AS SongCount FROM Album alb " +
+						"LEFT JOIN Song sng ON alb.AlbumId=sng.AlbumId WHERE " +
+						"alb.AlbumId=sng.AlbumId GROUP BY alb.AlbumId";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						using (var reader = cmd.ExecuteReader())
@@ -63,7 +65,9 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT * FROM Album WHERE AlbumId=@AlbumId";
+					var query = "SELECT alb.*, COUNT(*) AS SongCount FROM Album alb " + 
+						"LEFT JOIN Song sng ON alb.AlbumId=sng.AlbumId WHERE "+
+						"alb.AlbumId=@AlbumId LIMIT 1";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
@@ -92,11 +96,13 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT * FROM Album WHERE Title=@Title";
+					var query = "SELECT alb.*, COUNT(*) AS SongCount FROM Album alb " +
+						"LEFT JOIN Song sng ON alb.AlbumId=sng.AlbumId WHERE " +
+						"sng.Id=@Id LIMIT 1";
 					
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
-						cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
+						cmd.Parameters.AddWithValue("@Id", song.Id);
 
 						using (var reader = cmd.ExecuteReader())
 						{
@@ -118,6 +124,18 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				album = GetAlbum(album);
+
+				if (!string.IsNullOrEmpty(album.Title))
+				{
+					_logger.Info("Album exists");
+					return true;
+				}
+				else
+				{
+					_logger.Info("Album does not exist");
+				}
+				/**
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
@@ -139,6 +157,7 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
+				*/
 			}
 			catch (Exception ex)
 			{
@@ -151,6 +170,18 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				var album = GetAlbum(song);
+
+				if (!string.IsNullOrEmpty(album.Title))
+				{
+					_logger.Info("Album exists");
+					return true;
+				}
+				else
+				{
+					_logger.Info("Album does not exist");
+				}
+				/**
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
@@ -172,6 +203,7 @@ namespace Icarus.Models.Context
 						}
 					}
 				}
+				*/
 			}
 			catch (Exception ex)
 			{
@@ -188,14 +220,12 @@ namespace Icarus.Models.Context
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "INSERT INTO Album(Title, AlbumArtist, " +
-						"SongCount) VALUES (@Title, @AlbumArtist, " +
-						"@SongCount)";
+					var query = "INSERT INTO Album(Title, AlbumArtist)" +
+						" VALUES (@Title, @AlbumArtist)";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", album.Title);
 						cmd.Parameters.AddWithValue("@AlbumArtist", album.AlbumArtist);
-						cmd.Parameters.AddWithValue("@SongCount", album.SongCount);
 
 						cmd.ExecuteNonQuery();
 					}
@@ -215,13 +245,12 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 					var query = "UPDATE Album SET Title=@Title, AlbumArtist=" +
-						"@AlbumArtist, SongCount=@SongCount WHERE AlbumId=@AlbumId";
+						"@AlbumArtist WHERE AlbumId=@AlbumId";
 
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Title", album.Title);
 						cmd.Parameters.AddWithValue("@AlbumArtist", album.AlbumArtist);
-						cmd.Parameters.AddWithValue("@SongCount", album.SongCount);
 						cmd.Parameters.AddWithValue("@AlbumId", album.AlbumId);
 
 						cmd.ExecuteNonQuery();
