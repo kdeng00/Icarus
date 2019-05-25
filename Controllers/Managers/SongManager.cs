@@ -836,14 +836,7 @@ namespace Icarus.Controllers.Managers
 			info = "Change to the song's album";
 			_logger.Info(info);
 
-			if (albumRecord.SongCount > 1)
-			{
-				_logger.Info("Decrementing existing album's song count");
-
-				//albumRecord.SongCount -= 1;
-				albumStore.UpdateAlbum(albumRecord);
-			}
-			else
+			if (albumRecord.SongCount <= 1)
 			{
 				_logger.Info("Deleting existing album record that no longer has any songs");
 
@@ -857,8 +850,7 @@ namespace Icarus.Controllers.Managers
 				var newAlbumRecord = new Album
 				{
 					Title = newAlbumTitle,
-					AlbumArtist = newAlbumArtist,
-					SongCount = 1
+					AlbumArtist = newAlbumArtist
 				};
 
 				albumStore.SaveAlbum(newAlbumRecord);
@@ -869,7 +861,6 @@ namespace Icarus.Controllers.Managers
 
 				var existingAlbumRecord = albumStore.GetAlbum(newSongRecord);
 				existingAlbumRecord.AlbumArtist = newAlbumArtist;
-				//existingAlbumRecord.SongCount += 1;
 
 				albumStore.UpdateAlbum(existingAlbumRecord);
 			}
@@ -890,14 +881,7 @@ namespace Icarus.Controllers.Managers
 
 			_logger.Info("Change to the song's record found");
 
-			if (oldArtistRecord.SongCount > 1)
-			{
-				_logger.Info("Decrementing existing artist's song count");
-
-				//oldArtistRecord.SongCount -= 1;
-				artistStore.UpdateArtist(oldArtistRecord);
-			}
-			else
+			if (oldArtistRecord.SongCount <= 1)
 			{
 				_logger.Info("Deleting artist record that no longer has any songs");
 
@@ -910,8 +894,7 @@ namespace Icarus.Controllers.Managers
 
 				var newArtistRecord = new Artist
 				{
-					Name = newArtistName,
-					SongCount = 1
+					Name = newArtistName
 				};
 
 				artistStore.SaveArtist(newArtistRecord);
@@ -921,7 +904,6 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing artist record");
 
 				var existingArtistRecord = artistStore.GetArtist(newSongRecord);
-				//existingArtistRecord.SongCount += 1;
 
 				artistStore.UpdateArtist(existingArtistRecord);
 			}
@@ -942,14 +924,7 @@ namespace Icarus.Controllers.Managers
 
 			_logger.Info("Change to the song's genre found");
 
-			if (oldGenreRecord.SongCount > 1)
-			{
-				_logger.Info("Decrementing exisiting genre song count");
-
-				oldGenreRecord.SongCount -= 1;
-				genreStore.UpdateGenre(oldGenreRecord);
-			}
-			else
+			if (oldGenreRecord.SongCount <= 1)
 			{
 				_logger.Info("Deleting genre record");
 
@@ -962,8 +937,7 @@ namespace Icarus.Controllers.Managers
 
 				var newGenreRecord = new Genre
 				{
-					GenreName = newGenreName,
-					SongCount = 1
+					GenreName = newGenreName
 				};
 
 				genreStore.SaveGenre(newGenreRecord);
@@ -973,7 +947,6 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing genre record");
 
 				var existingGenreRecord = genreStore.GetGenre(newSongRecord);
-				//existingGenreRecord.SongCount += 1;
 
 				genreStore.UpdateGenre(existingGenreRecord);
 			}
@@ -995,14 +968,7 @@ namespace Icarus.Controllers.Managers
 
 			_logger.Info("Change to the song's year found");
 
-			if (oldYearRecord.SongCount > 1)
-			{
-				_logger.Info("Decrementing song count of year record");
-
-				oldYearRecord.SongCount -= 1;
-				yearStore.UpdateYear(oldYearRecord);
-			}
-			else
+			if (oldYearRecord.SongCount <= 1)
 			{
 				_logger.Info("Deleting year record");
 
@@ -1015,8 +981,7 @@ namespace Icarus.Controllers.Managers
 
 				var newYearRecord = new Year
 				{
-					YearValue = newYearValue.Value,
-					SongCount = 1
+					YearValue = newYearValue.Value
 				};
 
 				yearStore.SaveYear(newYearRecord);
@@ -1026,7 +991,6 @@ namespace Icarus.Controllers.Managers
 				_logger.Info("Updating existing year record");
 
 				var existingYearRecord = yearStore.GetSongYear(newSongRecord);
-				//existingYearRecord.SongCount += 1;
 
 				yearStore.UpdateYear(existingYearRecord);
 			}
@@ -1079,6 +1043,8 @@ namespace Icarus.Controllers.Managers
 			if (!string.IsNullOrEmpty(newSongRecord.Genre))
 			{
 				updatedSongRecord.Genre = newSongRecord.Genre;
+				Console.WriteLine("Genre changed");
+				Console.WriteLine($"{updatedSongRecord.Genre} {newSongRecord.Genre}");
 			}
 			if (newSongRecord.Year != null || newSongRecord.Year > 0)
 			{

@@ -28,28 +28,40 @@ namespace Icarus.Models.Context
 				.HasOne(s => s.Album)
 				.WithMany(al => al.Songs)
 				.HasForeignKey(s => s.AlbumId)
-				.HasConstraintName("ForeignKey_Song_Album");
+				.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(sa => sa.SongArtist)
 				.WithMany(ar => ar.Songs)
 				.HasForeignKey(s => s.ArtistId)
-				.HasConstraintName("ForeignKey_Song_Artist");
+				.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.SongGenre)
 				.WithMany(gnr => gnr.Songs)
 				.HasForeignKey(s => s.GenreId)
-				.HasConstraintName("HasForeignKey_Song_Genre");
+				.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.SongYear)
 				.WithMany(yr => yr.Songs)
 				.HasForeignKey(s => s.YearId)
-				.HasConstraintName("HasForeignKey_Song_Year");
+				.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.Property(s => s.Year)
+				.IsRequired(false);
+			modelBuilder.Entity<Song>()
+				.Property(s => s.YearId)
+				.IsRequired(false);
+			modelBuilder.Entity<Song>()
+				.Property(s => s.GenreId)
+				.IsRequired(false);
+			modelBuilder.Entity<Song>()
+				.Property(s => s.ArtistId)
+				.IsRequired(false);
+			modelBuilder.Entity<Song>()
+				.Property(s => s.AlbumId)
 				.IsRequired(false);
         	}
     	}

@@ -31,21 +31,21 @@ namespace Icarus.Models
 		[JsonIgnore]
 		public Album Album { get; set; }
 		[JsonIgnore]
-		public int AlbumId { get; set; }
+		public int? AlbumId { get; set; }
 
 		[JsonIgnore]
 		public Artist SongArtist { get; set; }
 		[JsonIgnore]
-		public int ArtistId { get; set; }
+		public int? ArtistId { get; set; }
 
 		[JsonIgnore]
 		public Genre SongGenre { get; set; }
 		[JsonIgnore]
-		public int GenreId { get; set; }
+		public int? GenreId { get; set; }
 
 		[JsonIgnore]
 		public Year SongYear { get; set; }
 		[JsonIgnore]
-		public int YearId { get; set; }
+		public int? YearId { get; set; }
 	}
 }

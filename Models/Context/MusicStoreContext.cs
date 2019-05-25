@@ -116,7 +116,7 @@ namespace Icarus.Models.Context
 				{
 					conn.Open();
 
-					var query = "DELETE FROM Song WHERE Id=@Id";
+					var query = "Delete FROM Song WHERE Id=@Id";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
@@ -170,6 +170,7 @@ namespace Icarus.Models.Context
 				{
 		    			conn.Open();
 		    			var query = "SELECT * FROM Song";
+					Console.WriteLine("ffff");
 		    			MySqlCommand cmd = new MySqlCommand(query, conn);
 		    			using (var reader = cmd.ExecuteReader())
 		    			{
@@ -192,17 +193,21 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
+				Console.WriteLine("dddd");
 				_logger.Info("Retrieving song from database");
 
 				using (var conn = GetConnection())
 				{
 					conn.Open();
 					var query = "SELECT * FROM Song WHERE Id=@Id";
+					Console.WriteLine("Transfer");
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
+						Console.WriteLine("Temperment");
 						cmd.Parameters.AddWithValue("@Id", song.Id);
 
+						Console.WriteLine("Lost");
 						using (var reader = cmd.ExecuteReader())
 						{
 							song = ParseSingleData(reader);
@@ -298,26 +303,25 @@ namespace Icarus.Models.Context
 		{
 			Song song = new Song();
 
-
+			Console.WriteLine("ddddddddddddd");
 			while (reader.Read())
 			{
-		        	song = new Song
-			    	{
-			    		Id = Convert.ToInt32(reader["Id"]),
-			        	Title = reader["Title"].ToString(),
-			        	AlbumTitle = reader["AlbumTitle"].ToString(),
-			        	Artist = reader["Artist"].ToString(),
-			        	Year = Convert.ToInt32(reader["Year"]),
-			        	Genre = reader["Genre"].ToString(),
-			        	Duration = Convert.ToInt32(reader["Duration"]),
-			        	Filename = reader["Filename"].ToString(),
-			        	SongPath = reader["SongPath"].ToString(),
-					AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
-					ArtistId = Convert.ToInt32(reader["ArtistId"].ToString()),
-					GenreId = Convert.ToInt32(reader["GenreId"].ToString()),
-					YearId = Convert.ToInt32(reader["YearId"].ToString())
-			    	};
+		        	song.Id = Convert.ToInt32(reader["Id"]);
+				song.Title = reader["Title"].ToString();
+				song.AlbumTitle = reader["AlbumTitle"].ToString();
+				song.Artist = reader["Artist"].ToString();
+				song.Year = Convert.ToInt32(reader["Year"].ToString());
+				song.Genre = reader["Genre"].ToString();
+				song.Duration = Convert.ToInt32(reader["Duration"]);
+				song.Filename = reader["Filename"].ToString();
+				song.SongPath = reader["SongPath"].ToString();
+				song.AlbumId = Convert.ToInt32(reader["AlbumId"].ToString());
+				song.ArtistId = Convert.ToInt32(reader["ArtistId"].ToString());
+				song.GenreId = Convert.ToInt32(reader["GenreId"].ToString());
+				song.YearId = Convert.ToInt32(reader["YearId"].ToString());
 			}
+
+			Console.WriteLine("Panic");
 
 			return song;
 		}

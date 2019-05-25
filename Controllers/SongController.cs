@@ -73,7 +73,8 @@ namespace Icarus.Controllers
 				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 			
-			Song song = context.GetSong(id);
+			Song song = new Song { Id = id };
+			song = context.GetSong(song);
 
 			Console.WriteLine("Here");
 

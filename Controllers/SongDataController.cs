@@ -126,7 +126,9 @@ namespace Icarus.Controllers
 				.RequestServices
 				.GetService(typeof(YearStoreContext)) as YearStoreContext;
 			
-			var songMetaData = context.GetSong(id);
+			var songMetaData = new Song{ Id = id };
+			Console.WriteLine($"Id {songMetaData.Id}");
+			songMetaData = context.GetSong(songMetaData);
 
 			if (string.IsNullOrEmpty(songMetaData.Title))
 			{
