@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Configuration;
+using System.Configuration;
 
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
