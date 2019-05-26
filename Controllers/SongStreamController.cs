@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Web;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
@@ -37,23 +39,19 @@ namespace Icarus.Controllers
 
 		#region HTTP endpoints
 		[HttpGet("{id}")]
-		public IActionResult Get(int id)
+		public async Task<IActionResult> Get(int id)
 		{
 			var songStore= HttpContext
 				.RequestServices
 				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
 
-			var song = songStore.GetSong(new Song
-			{
-				Id = id
-			});
-
+			var song = songStore.GetSong(new Song { Id = id });
 
 			var mem =  new MemoryStream();
 
 			using (var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read))
 			{
-				stream.CopyToAsync(mem);
+				await stream.CopyToAsync(mem);
 			}
 
 			mem.Position = 0;

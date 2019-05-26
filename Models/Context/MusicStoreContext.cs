@@ -193,21 +193,17 @@ namespace Icarus.Models.Context
 		{
 			try
 			{
-				Console.WriteLine("dddd");
 				_logger.Info("Retrieving song from database");
 
 				using (var conn = GetConnection())
 				{
 					conn.Open();
 					var query = "SELECT * FROM Song WHERE Id=@Id";
-					Console.WriteLine("Transfer");
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{
-						Console.WriteLine("Temperment");
 						cmd.Parameters.AddWithValue("@Id", song.Id);
 
-						Console.WriteLine("Lost");
 						using (var reader = cmd.ExecuteReader())
 						{
 							song = ParseSingleData(reader);
@@ -303,7 +299,6 @@ namespace Icarus.Models.Context
 		{
 			Song song = new Song();
 
-			Console.WriteLine("ddddddddddddd");
 			while (reader.Read())
 			{
 		        	song.Id = Convert.ToInt32(reader["Id"]);
@@ -320,8 +315,6 @@ namespace Icarus.Models.Context
 				song.GenreId = Convert.ToInt32(reader["GenreId"].ToString());
 				song.YearId = Convert.ToInt32(reader["YearId"].ToString());
 			}
-
-			Console.WriteLine("Panic");
 
 			return song;
 		}

@@ -1131,7 +1131,7 @@ namespace Icarus.Controllers.Managers
 				return;
 			}
 
-			var album = albumStore.GetAlbum(song);
+			var album = albumStore.GetAlbum(song, true);
 
 			if (album.SongCount <= 1)
 			{
@@ -1146,7 +1146,7 @@ namespace Icarus.Controllers.Managers
 				return;
 			}
 
-			var artist = artistStore.GetArtist(song);
+			var artist = artistStore.GetArtist(song, true);
 
 			if (artist.SongCount <= 1)
 			{
@@ -1161,7 +1161,7 @@ namespace Icarus.Controllers.Managers
 				return;
 			}
 
-			var genre = genreStore.GetGenre(song);
+			var genre = genreStore.GetGenre(song, true);
 
 			if (genre.SongCount <= 1)
 			{
@@ -1176,7 +1176,7 @@ namespace Icarus.Controllers.Managers
 				return;
 			}
 
-			var year = yearStore.GetSongYear(song);
+			var year = yearStore.GetSongYear(song, true);
 
 			if (year.SongCount <= 1)
 			{
