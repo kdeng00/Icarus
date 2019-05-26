@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,6 +31,37 @@ namespace Icarus.Controllers
 		public SongStreamController(ILogger<SongStreamController> logger)
 		{
 			_logger = logger;
+		}
+		#endregion
+
+
+		#region HTTP endpoints
+		[HttpGet("{id}")]
+		public IActionResult Get(int id)
+		{
+			var songStore= HttpContext
+				.RequestServices
+				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+
+			var song = songStore.GetSong(new Song
+			{
+				Id = id
+			});
+
+
+			var mem =  new MemoryStream();
+
+			using (var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read))
+			{
+				stream.CopyToAsync(mem);
+			}
+
+			mem.Position = 0;
+
+			_logger.LogInformation("Starting to stream song...>");
+			Console.WriteLine("Starting to streamsong...");
+
+			return File(mem, "application/octet-stream", Path.GetFileName(song.SongPath));
 		}
 		#endregion
 	}

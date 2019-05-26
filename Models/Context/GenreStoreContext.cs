@@ -193,7 +193,7 @@ namespace Icarus.Models.Context
 
 						if (retrieveCount)
 						{
-							query = "SELECT gnr.*, 0 AS SongCount FROM Genre gnr " +
+							query = "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre gnr " +
 								"LEFT JOIN Song sng ON gnr.GenreId=sng.GenreId " +
 								"WHERE gnr.GenreName=@GenreName GROUP BY gnr.GenreId " +
 								"LIMIT 1";
