@@ -6,10 +6,9 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Repositories
 {
-	// TODO: Implement Year store #42
-	public class YearStoreContext : BaseStoreContext
+	public class YearRepository : BaseRepository
 	{
 		#region Fields
 		#endregion
@@ -20,7 +19,7 @@ namespace Icarus.Models.Context
 
 
 		#region Constructors
-		public YearStoreContext(string connectionString)
+		public YearRepository(string connectionString)
 		{
 			_connectionString = connectionString;
 		}

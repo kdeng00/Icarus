@@ -24,7 +24,8 @@ using NLog.Web.AspNetCore;
 
 using Icarus.Authorization;
 using Icarus.Authorization.Handlers;
-using Icarus.Models.Context;
+using Icarus.Database.Contexts;
+using Icarus.Database.Repositories;
 
 namespace Icarus
 {
@@ -98,28 +99,28 @@ namespace Icarus
 
 			var connString = Configuration.GetConnectionString("DefaultConnection");
 
-	    		services.Add(new ServiceDescriptor(typeof(MusicStoreContext), 
-						new MusicStoreContext(Configuration
+	    		services.Add(new ServiceDescriptor(typeof(SongRepository), 
+						new SongRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));  
 
-			services.Add(new ServiceDescriptor(typeof(AlbumStoreContext),
-						new AlbumStoreContext(Configuration
+			services.Add(new ServiceDescriptor(typeof(AlbumRepository),
+						new AlbumRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));
 
-			services.Add(new ServiceDescriptor(typeof(ArtistStoreContext),
-						new ArtistStoreContext(Configuration
+			services.Add(new ServiceDescriptor(typeof(ArtistRepository),
+						new ArtistRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));
 
-			services.Add(new ServiceDescriptor(typeof(GenreStoreContext),
-						new GenreStoreContext(Configuration
+			services.Add(new ServiceDescriptor(typeof(GenreRepository),
+						new GenreRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));
 
-			services.Add(new ServiceDescriptor(typeof(YearStoreContext),
-						new YearStoreContext(Configuration
+			services.Add(new ServiceDescriptor(typeof(YearRepository),
+						new YearRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));
 
-			services.Add(new ServiceDescriptor(typeof(UserStoreContext), 
-						new UserStoreContext(Configuration
+			services.Add(new ServiceDescriptor(typeof(UserRepository), 
+						new UserRepository(Configuration
 							.GetConnectionString("DefaultConnection"))));
 
 			services.AddDbContext<SongContext>(options => options.UseMySQL(connString));

@@ -13,11 +13,11 @@ using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/song/data")]
+	[Route("api/v1/song/data")]
 	[ApiController]
 	public class SongDataController : ControllerBase
 	{
@@ -49,9 +49,9 @@ namespace Icarus.Controllers
 		[Authorize("download:songs")]
         	public async Task<IActionResult> Get(int id)
         	{
-			MusicStoreContext context = HttpContext
+			SongRepository context = HttpContext
 				.RequestServices
-				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+				.GetService(typeof(SongRepository)) as SongRepository;
 			var songMetaData = context.GetSong(id); 
 			
 			SongData song = await _songMgr.RetrieveSong(songMetaData);
@@ -65,21 +65,21 @@ namespace Icarus.Controllers
         	{
 			try
 			{
-				MusicStoreContext songStoreContext = HttpContext
+				SongRepository songRepository = HttpContext
 					.RequestServices
-					.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
-				AlbumStoreContext albumStoreContext = HttpContext
+					.GetService(typeof(SongRepository)) as SongRepository;
+				AlbumRepository albumStoreContext = HttpContext
 					.RequestServices
-					.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
-				ArtistStoreContext artistStoreContext = HttpContext
+					.GetService(typeof(AlbumRepository)) as AlbumRepository;
+				ArtistRepository artistStoreContext = HttpContext
 					.RequestServices
-					.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
-				GenreStoreContext genreStore = HttpContext
+					.GetService(typeof(ArtistRepository)) as ArtistRepository;
+				GenreRepository genreStore = HttpContext
 					.RequestServices
-					.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
-				YearStoreContext yearStore = HttpContext
+					.GetService(typeof(GenreRepository)) as GenreRepository;
+				YearRepository yearStore = HttpContext
 					.RequestServices
-					.GetService(typeof(YearStoreContext)) as YearStoreContext;
+					.GetService(typeof(YearRepository)) as YearRepository;
 
 				Console.WriteLine("Uploading song...");
 				_logger.LogInformation("Uploading song...");
@@ -93,7 +93,7 @@ namespace Icarus.Controllers
 						Console.WriteLine($"Song filename {sng.FileName}");
 						_logger.LogInformation($"Song filename {sng.FileName}");
 
-						await _songMgr.SaveSongToFileSystem(sng, songStoreContext,
+						await _songMgr.SaveSongToFileSystem(sng, songRepository,
 								albumStoreContext, artistStoreContext,
 								genreStore, yearStore);
 					}
@@ -110,21 +110,21 @@ namespace Icarus.Controllers
 		[Authorize("delete:songs")]
         	public IActionResult Delete(int id)
         	{
-			MusicStoreContext context = HttpContext
+			SongRepository context = HttpContext
 				.RequestServices
-				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
-			AlbumStoreContext albumStore = HttpContext
+				.GetService(typeof(SongRepository)) as SongRepository;
+			AlbumRepository albumStore = HttpContext
 				.RequestServices
-				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
-			ArtistStoreContext artistStore = HttpContext
+				.GetService(typeof(AlbumRepository)) as AlbumRepository;
+			ArtistRepository artistStore = HttpContext
 				.RequestServices
-				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
-			GenreStoreContext genreStore = HttpContext
+				.GetService(typeof(ArtistRepository)) as ArtistRepository;
+			GenreRepository genreStore = HttpContext
 				.RequestServices
-				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
-			YearStoreContext yearStore = HttpContext
+				.GetService(typeof(GenreRepository)) as GenreRepository;
+			YearRepository yearStore = HttpContext
 				.RequestServices
-				.GetService(typeof(YearStoreContext)) as YearStoreContext;
+				.GetService(typeof(YearRepository)) as YearRepository;
 			
 			var songMetaData = new Song{ Id = id };
 			Console.WriteLine($"Id {songMetaData.Id}");

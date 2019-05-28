@@ -13,11 +13,11 @@ using Microsoft.Extensions.Configuration;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/song/compressed/data")]
+	[Route("api/v1/song/compressed/data")]
 	[ApiController]
 	public class SongCompressedDataController : ControllerBase
 	{
@@ -48,9 +48,9 @@ namespace Icarus.Controllers
 		[Authorize("download:songs")]
         	public async Task<IActionResult> Get(int id)
         	{
-	   		 MusicStoreContext context = HttpContext
+	   		 SongRepository context = HttpContext
 				 .RequestServices
-				 .GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+				 .GetService(typeof(SongRepository)) as SongRepository;
 
   	    		SongCompression cmp = new SongCompression(_archiveDir);
 	    

@@ -6,9 +6,9 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Repositories
 {
-	public class UserStoreContext: BaseStoreContext
+	public class UserRepository: BaseRepository
 	{
 		#region Fields
 		#endregion
@@ -19,7 +19,7 @@ namespace Icarus.Models.Context
 
 
 		#region Constructor
-		public UserStoreContext(string connectionString)
+		public UserRepository(string connectionString)
 		{
 			_connectionString = connectionString;
 		}

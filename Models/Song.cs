@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
 
-using Icarus.Models.Context;
-
 namespace Icarus.Models
 {
 	public class Song

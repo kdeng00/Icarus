@@ -8,20 +8,20 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Contexts
 {
-	public class AlbumContext : DbContext
+	public class YearContext : DbContext
 	{
-		public DbSet<Album> Albums { get; set; }
+		public DbSet<Year> YearValues { get; set; }
 
-		public AlbumContext(DbContextOptions<AlbumContext> options)
+		public YearContext(DbContextOptions<YearContext> options)
 			: base(options)
 		{ }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<Album>()
-				.ToTable("Album");
+			modelBuilder.Entity<Year>()
+				.ToTable("Year");
 		}
 	}
 }

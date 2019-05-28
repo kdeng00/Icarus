@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 using MySql.Data.MySqlClient;    
         
-namespace Icarus.Models.Context    
+using Icarus.Models;
+
+namespace Icarus.Database.Repositories
 {    
-	public class MusicStoreContext : BaseStoreContext
+	public class SongRepository : BaseRepository
     	{    
 		#region Fields
 		#endregion
@@ -16,7 +18,7 @@ namespace Icarus.Models.Context
     
 
 		#region Constructors
-        	public MusicStoreContext(string connectionString)    
+        	public SongRepository(string connectionString)    
         	{    
             		_connectionString = connectionString;    
         	}    
@@ -101,7 +103,7 @@ namespace Icarus.Models.Context
 			catch (Exception ex)
 			{
 				var msg = ex.Message;
-				Console.WriteLine("An error occurred in MusicStoreContext:");
+				Console.WriteLine("An error occurred in SongRepository:");
 				Console.WriteLine(msg);
 				_logger.Error(msg, "An error occurred");
 			}

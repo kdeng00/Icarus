@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Contexts
 {
 	public class ArtistContext : DbContext
 	{

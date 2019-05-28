@@ -9,11 +9,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/artist")]
+	[Route("api/v1/artist")]
 	[ApiController]
 	public class ArtistController : ControllerBase
 	{
@@ -39,9 +39,9 @@ namespace Icarus.Controllers
 		[Authorize("read:artists")]
 		public IActionResult Get()
 		{
-			ArtistStoreContext artistStoreContext = HttpContext
+			ArtistRepository artistStoreContext = HttpContext
 				.RequestServices
-				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
+				.GetService(typeof(ArtistRepository)) as ArtistRepository;
 
 			var artists = artistStoreContext.GetArtists();
 
@@ -64,9 +64,9 @@ namespace Icarus.Controllers
 				ArtistId = id
 			};
 			
-			ArtistStoreContext artistStoreContext = HttpContext
+			ArtistRepository artistStoreContext = HttpContext
 				.RequestServices
-				.GetService(typeof(ArtistStoreContext)) as ArtistStoreContext;
+				.GetService(typeof(ArtistRepository)) as ArtistRepository;
 
 			if (artistStoreContext.DoesArtistExist(artist))
 			{

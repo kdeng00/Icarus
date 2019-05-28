@@ -6,10 +6,9 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Repositories
 {
-	// TODO: Implement Genre store #41
-	public class GenreStoreContext : BaseStoreContext
+	public class GenreRepository : BaseRepository
 	{
 		#region Fields
 		#endregion
@@ -20,7 +19,7 @@ namespace Icarus.Models.Context
 
 
 		#region Constructors
-		public GenreStoreContext(string connectionString)
+		public GenreRepository(string connectionString)
 		{
 			_connectionString = connectionString;
 		}

@@ -7,11 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controller
+namespace Icarus.Controller.V1
 {
-	[Route("api/year")]
+	[Route("api/v1/year")]
 	[ApiController]
 	public class YearController : ControllerBase
 	{
@@ -40,7 +40,7 @@ namespace Icarus.Controller
 
 			var yearStore = HttpContext
 				.RequestServices
-				.GetService(typeof(YearStoreContext)) as YearStoreContext;
+				.GetService(typeof(YearRepository)) as YearRepository;
 
 			yearValues = yearStore.GetSongYears();
 
@@ -64,7 +64,7 @@ namespace Icarus.Controller
 
 			var yearStore = HttpContext
 				.RequestServices
-				.GetService(typeof(YearStoreContext)) as YearStoreContext;
+				.GetService(typeof(YearRepository)) as YearRepository;
 
 			if (yearStore.DoesYearExist(year))
 			{

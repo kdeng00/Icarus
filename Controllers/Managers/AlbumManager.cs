@@ -4,7 +4,7 @@ using System.Configuration;
 
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.Managers
 {

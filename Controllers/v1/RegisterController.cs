@@ -10,11 +10,11 @@ using Microsoft.Extensions.Configuration;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-    	[Route("api/register")]
+    	[Route("api/v1/register")]
     	[ApiController]
     	public class RegisterController : ControllerBase
     	{
@@ -41,9 +41,9 @@ namespace Icarus.Controllers
 			user.Password = pe.HashPassword(user);
 			user.EmailVerified = false;
 
-			UserStoreContext context = HttpContext
+			UserRepository context = HttpContext
 				.RequestServices
-				.GetService(typeof(UserStoreContext)) as UserStoreContext;
+				.GetService(typeof(UserRepository)) as UserRepository;
 
 			context.SaveUser(user);
 

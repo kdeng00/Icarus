@@ -8,11 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/album")]
+	[Route("api/v1/album")]
 	[ApiController]
 	public class AlbumController : ControllerBase
 	{
@@ -40,9 +40,9 @@ namespace Icarus.Controllers
 		{
 			List<Album> albums = new List<Album>();
 
-			AlbumStoreContext albumStoreContext = HttpContext
+			AlbumRepository albumStoreContext = HttpContext
 				.RequestServices
-				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+				.GetService(typeof(AlbumRepository)) as AlbumRepository;
 
 			albums = albumStoreContext.GetAlbums();
 
@@ -65,9 +65,9 @@ namespace Icarus.Controllers
 				AlbumId = id
 			};
 
-			AlbumStoreContext albumStoreContext = HttpContext
+			AlbumRepository albumStoreContext = HttpContext
 				.RequestServices
-				.GetService(typeof(AlbumStoreContext)) as AlbumStoreContext;
+				.GetService(typeof(AlbumRepository)) as AlbumRepository;
 
 			if (albumStoreContext.DoesAlbumExist(album))
 			{

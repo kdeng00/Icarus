@@ -7,11 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/genre")]
+	[Route("api/v1/genre")]
 	[ApiController]
 	public class GenreController : ControllerBase
 	{
@@ -40,7 +40,7 @@ namespace Icarus.Controllers
 
 			var genreStore = HttpContext
 				.RequestServices
-				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+				.GetService(typeof(GenreRepository)) as GenreRepository;
 
 			genres = genreStore.GetGenres();
 
@@ -64,7 +64,7 @@ namespace Icarus.Controllers
 
 			var genreStore = HttpContext
 				.RequestServices
-				.GetService(typeof(GenreStoreContext)) as GenreStoreContext;
+				.GetService(typeof(GenreRepository)) as GenreRepository;
 
 			if (genreStore.DoesGenreExist(genre))
 			{

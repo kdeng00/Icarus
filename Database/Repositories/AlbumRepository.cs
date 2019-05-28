@@ -6,9 +6,9 @@ using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Repositories
 {
-	public class AlbumStoreContext : BaseStoreContext
+	public class AlbumRepository : BaseRepository
 	{
 		#region Fields
 		#endregion
@@ -19,7 +19,7 @@ namespace Icarus.Models.Context
 
 
 		#region Constructors
-		public AlbumStoreContext(string connectionString)
+		public AlbumRepository(string connectionString)
 		{
 			_connectionString = connectionString;
 		}

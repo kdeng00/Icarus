@@ -11,11 +11,11 @@ using Microsoft.Extensions.Logging;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/login")]
+	[Route("api/v1/login")]
 	[ApiController]
 	public class LoginController : ControllerBase
 	{
@@ -41,9 +41,9 @@ namespace Icarus.Controllers
 		#region HTTP endpoints
 		public IActionResult Post([FromBody] User user)
 		{
-			UserStoreContext context = HttpContext
+			UserRepository context = HttpContext
 				.RequestServices
-				.GetService(typeof(UserStoreContext)) as UserStoreContext;
+				.GetService(typeof(UserRepository)) as UserRepository;
 
 			_logger.LogInformation("Starting process of validating credentials");
 			

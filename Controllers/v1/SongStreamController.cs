@@ -12,11 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Models.Context;
+using Icarus.Database.Repositories;
 
-namespace Icarus.Controllers
+namespace Icarus.Controllers.V1
 {
-	[Route("api/song/stream")]
+	[Route("api/v1/song/stream")]
 	[ApiController]
 	public class SongStreamController : ControllerBase
 	{
@@ -43,7 +43,7 @@ namespace Icarus.Controllers
 		{
 			var songStore= HttpContext
 				.RequestServices
-				.GetService(typeof(MusicStoreContext)) as MusicStoreContext;
+				.GetService(typeof(SongRepository)) as SongRepository;
 
 			var song = songStore.GetSong(new Song { Id = id });
 

@@ -3,9 +3,9 @@ using System;
 using MySql.Data.MySqlClient;
 using NLog;
 
-namespace Icarus.Models.Context
+namespace Icarus.Database.Repositories
 {
-	public class BaseStoreContext
+	public class BaseRepository
 	{
 		#region Fields
 		protected string _connectionString;
