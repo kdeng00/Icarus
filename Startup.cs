@@ -92,6 +92,11 @@ namespace Icarus
 						policy
 						.Requirements
 						.Add(new HasScopeRequirement("read:albums", domain)));
+
+				options.AddPolicy("stream:songs", policy =>
+						policy
+						.Requirements
+						.Add(new HasScopeRequirement("stream:songs", domain)));
 			});
 
 
