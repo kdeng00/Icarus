@@ -37,9 +37,9 @@ namespace Icarus.Database.Repositories
 				using (MySqlConnection conn = GetConnection())
 				{
 					conn.Open();
-					var query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " +
+					var query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " + 
 						"art LEFT JOIN Song sng ON art.ArtistId=sng.ArtistId " +
-						"GROUPY BY art.ArtistId";
+						"GROUP BY art.ArtistId";
 
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
@@ -71,7 +71,7 @@ namespace Icarus.Database.Repositories
 
 					var query = "SELECT art.*, COUNT(*) AS SongCount FROM Artist " +
 						"art LEFT JOIN Song sng ON art.ArtistId=sng.ArtistId " +
-						"WHERE ArtistId=@ArtistId";
+						"WHERE art.ArtistId=@ArtistId";
 
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
@@ -103,7 +103,7 @@ namespace Icarus.Database.Repositories
 					conn.Open();
 
 					var query = "SELECT art.*, 0 AS SongCount FROM Artist " +
-						"art WHERE Name=@Name";
+						"art WHERE art.Name=@Name";
 					using (MySqlCommand cmd = new MySqlCommand(query, conn))
 					{
 						cmd.Parameters.AddWithValue("@Name", song.Artist);
