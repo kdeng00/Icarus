@@ -41,7 +41,7 @@ namespace Icarus.Database.Repositories
 
 					var query = "SELECT yr.*, COUNT(*) AS SongCount FROM Year " +
 						"yr LEFT JOIN Song sng ON yr.YearId=sng.YearId " +
-						"GROUP BY gnr.YearId";
+						"GROUP BY yr.YearId";
 
 					using (var cmd = new MySqlCommand(query, conn))
 					{

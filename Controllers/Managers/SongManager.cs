@@ -247,7 +247,7 @@ namespace Icarus.Controllers.Managers
 	    		}
 		}
 
-		public async Task SaveSong(SongData songData)
+		public void SaveSong(SongData songData)
 		{
 	    		try
 	    		{
@@ -413,7 +413,7 @@ namespace Icarus.Controllers.Managers
 
             		return _songs;
         	}
-		public async Task<Song> RetrieveSongDetails(int id)
+		public Song RetrieveSongDetails(int id)
 		{
 	    		DataTable results = new DataTable();
 
@@ -456,7 +456,7 @@ namespace Icarus.Controllers.Managers
 	    		SongData song = new SongData();
 	    		try
 	    		{
-	        		_song = await RetrieveSongDetails(id);
+	        		_song = RetrieveSongDetails(id);
 				song = await RetrieveSongFromFileSystem(_song);
 	    		}
 	    		catch (Exception ex)

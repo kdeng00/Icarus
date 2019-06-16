@@ -13,7 +13,6 @@ namespace Icarus.Controllers.Utilities
     public class SongCompression
     {
         #region Fields
-	string _archiveDirectory;
 	string _compressedSongFilename;
 	string _tempDirectory;
         byte[] _uncompressedSong;
