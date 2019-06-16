@@ -34,6 +34,7 @@ namespace Icarus.Controllers.V1
 
 		#region HTTP Routes
 		[HttpGet]
+		[Authorize("read:genre")]
 		public IActionResult Get()
 		{
 			var genres = new List<Genre>();
@@ -55,6 +56,7 @@ namespace Icarus.Controllers.V1
 		}
 
 		[HttpGet("{id}")]
+		[Authorize("read:genre")]
 		public IActionResult Get(int id)
 		{
 			var genre = new Genre

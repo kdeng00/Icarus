@@ -78,7 +78,7 @@ namespace Icarus.Database.Repositories
 						conn.Open();
 
 						var query = "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre " + 
-							"gnr LEFt JOIN Song sng ON gnr.GenreId=sng.GenreId " +
+							"gnr LEFT JOIN Song sng ON gnr.GenreId=sng.GenreId " +
 							"GROUP BY gnr.GenreId";
 
 						using (var cmd = new MySqlCommand(query, conn))
@@ -449,13 +449,7 @@ namespace Icarus.Database.Repositories
 					{
 						using (var reader = cmd.ExecuteReader())
 						{
-							var genres = ParseData(reader);
-
-							if (genres.Count > 0)
-							{
-								_logger.Info("Genres records");
-								return true;
-							}
+							return reader.HasRows;
 						}
 					}
 				}

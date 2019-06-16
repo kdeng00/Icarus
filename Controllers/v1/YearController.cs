@@ -34,6 +34,7 @@ namespace Icarus.Controller.V1
 
 		#region HTTP Routes
 		[HttpGet]
+		[Authorize("read:year")]
 		public IActionResult Get()
 		{
 			var yearValues = new List<Year>();
@@ -55,6 +56,7 @@ namespace Icarus.Controller.V1
 		}
 
 		[HttpGet("{id}")]
+		[Authorize("read:year")]
 		public IActionResult Get(int id)
 		{
 			var year = new Year

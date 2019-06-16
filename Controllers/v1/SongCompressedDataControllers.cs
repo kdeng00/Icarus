@@ -23,7 +23,6 @@ namespace Icarus.Controllers.V1
 	{
 		#region Fields
         	private IConfiguration _config;
-		private SongManager _songMgr;
 		private string _songTempDir;
 		private string _archiveDir;
 		#endregion
