@@ -9,10 +9,6 @@ One can interface with Icarus the music server either by:
 * [Mear](https://github.com/amazing-username/mear) - Feature not implemented (under development)
 * [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager) - Partially Implemented (under development)
 
-## Getting started
-``
-Not implemented
-``
 
 
 ## Built With
@@ -24,9 +20,40 @@ Not implemented
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
 * [Newtonsoft.Json](https://www.newtonsoft.com/json)
 * [TagLib#](https://github.com/mono/taglib-sharp)
-* [ID3](https://github.com/JeevanJames/Id3)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
+
+## Getting started
+There are several things that need to be completed to properly setup and secure the API.
+1. Auth0 API configuration
+2. API filesystem paths
+3. Database connection string
+4. Migrations
+
+### Auth0 API configuration
+
+### API filesystem paths
+
+### Database connection string
+
+In order for Database functionality to be operable, there must be a valid connection string and credentials with appropriate permissions. At the moment there is only support for MySQL. Depending on your environment `Release` or `Debug` you will need to edit the appsettings.json or appsettings.Development.json accordingly. An example of the fields to change are below:
+```Json
+{
+
+  "ConnectionStrings": {
+	  "DefaultConnection": "Server=;Database=;Uid=;Pwd=;"
+  }
+ 
+}
+```
+* Server - The address or domain name of the MySQL server
+* Database - The database name
+* Uid - Username
+* Password - Self-explanatory
+
+The only requirement of the User is that the user should have full permissions to the database as well as permissions to create a database. Other than that, that is all that is required.
+
+### Migrations
 
 ## Contributing
 
