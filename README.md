@@ -6,8 +6,8 @@ Icarus is a music streaming API Server that interacts with [Mear](https://github
 
 One can interface with Icarus the music server either by:
 
-* [Mear](https://github.com/amazing-username/mear) - Feature not implemented (under development)
-* [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager) - Partially Implemented (under development)
+* [Mear](https://github.com/amazing-username/mear) - Partially implemented (under development)
+* [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager)
 
 
 
@@ -34,14 +34,29 @@ There are several things that need to be completed to properly setup and secure 
 
 ### API filesystem paths
 
+For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. What is meant by this is that the `RootMusicPath` directory where all music will be stored must exist as well as the `ArchivePath` and `TemporaryMusicPath` paths. An example on a Linux system:
+```Json
+{
+  "RootMusicPath": "/home/dev/null/music/",
+  "TemporaryMusicPath": "/home/dev/null/music/temp/",
+  "ArchivePath": "/home/dev/null/music/archive/"
+}
+```
+* RootMusicPath - Where music will be stored in the following convention: *`Artist/Album/Songs`*
+* TemporaryMusicPath - Where music will be stored when uploding songs to the server until the metadata has been fully parsed and entered into the database. Upon completion the files will be deleted and moved to the appropriate path in the `RootMusicPath`
+* ArchivePath - When downloading compressed songs this is the path where songs will be compressed prior to dataa being read into memory, deleting the compressed file, and sending the compressed file from memory to the client
+
+
+**Note**: The `TemporaryMusic` or `ArchivePath` does not have to be located in the `RootMusicPath`. Ensure that the permissions are properly set for all of the paths.
+
 ### Database connection string
 
-In order for Database functionality to be operable, there must be a valid connection string and credentials with appropriate permissions. At the moment there is only support for MySQL. Depending on your environment `Release` or `Debug` you will need to edit the appsettings.json or appsettings.Development.json accordingly. An example of the fields to change are below:
+In order for Database functionality to be operable, there must be a valid connection string and credentials with appropriate permissions. **At the moment there is only support for MySQL**. Depending on your environment `Release` or `Debug` you will need to edit the appsettings.json or appsettings.Development.json accordingly. An example of the fields to change are below:
 ```Json
 {
 
   "ConnectionStrings": {
-	  "DefaultConnection": "Server=;Database=;Uid=;Pwd=;"
+	  "DefaultConnection": "Server=localhost;Database=my_db;Uid=admin;Pwd=toughpassword;"
   }
  
 }
