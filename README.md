@@ -70,6 +70,30 @@ The only requirement of the User is that the user should have full permissions t
 
 ### Migrations
 
+Prior to starting the API, the Migrations must be applied. There are 6 tables with migrations being applied and thy are:
+* Users
+* Song
+* Album
+* Artist
+* Year
+* Genre
+
+There is a script for Linux systems to apply these migrations, it can be found in the [Scripts/Migrations/Linux](https://github.com/amazing-username/Icarus/blob/master/Scripts/Migrations/Linux/AddUpdate.sh) directory. Just merely execute:
+```shell
+scripts/Migrations/Linux/AddUpdate.sh
+```
+Or you can manually add the migrations like so for each migration:
+```shell
+dotnet ef migrations Add [Migration] --context [Migration]Context
+```
+Then update the migrations to the database like so<sup>*</sup>:
+```shell
+dotnet ef database update --context [Migration]Context
+```
+From this point the database has been successfully configured. Metadata and song filesystem locations can be saved.
+
+<sup>*</sup> Will only need to execute this for UserContext and SongContext because the Song table has relational constraints with Album, Artist, Year, and Genre.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the code of conduct, and the process for submitting pull requests to the project.
