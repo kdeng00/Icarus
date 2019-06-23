@@ -150,7 +150,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the code of conduc
 
 ## Versioning
 
-Currently under development. No version has been released
+* [v0.1](https://github.com/amazing-username/Icarus/releases/tag/v0.1)
 
 ## Authors
 
