@@ -32,6 +32,56 @@ There are several things that need to be completed to properly setup and secure 
 
 ### Auth0 API configuration
 
+Securing Icarus is required, preventing the API from being publicly accessible. To do so, create an Auth0 account (it's free), for the sake of this section of the documentation, I will not go over how to create an Auth0 account. Once created, create a tentant and proceed to create an API
+<h1 align=center>
+    <img src="Images/Configuration/create_api.png" width=100%>
+</h1>
+
+Create the API and enter an approrpiate name and identified. For the identified, append **api** like in the example
+<h1 align="center">
+    <img src="Images/Configuration/enter_api_info.png" width=100%>
+</h1>
+Replace [domain] with the domain name of the created tenant. This can be found in the Default App from the Application menu. Replace [identifier] with the identifer root name in the appsettings environment file. Not the friendly name but the root name of the identifier, omitting the http protocol and the *api* path.
+
+```Json
+  "Auth0": {
+	  "Domain": "[domain].auth0.com", 
+	  "ApiIdentifier": "https://[identifier]/api"
+  },
+```
+
+For the sake of this section, I will not go over configuring the API to accept the signing algorithm since it has already been configured in the [Startip](Startup.cs).cs file. Click on permissions to create the permissions for the API.
+<h1 align "center">
+    <img src="Images/Configuration/configure_api.png" width=100%>
+</h1>
+
+The permissions ensure that a validated user can interact with the API with a token that has not expired. Ensure that the permissions match, the description can change but the permission identifier must match.
+<h1 align="center">
+    <img src="Images/Configuration/permissions.png" width=100%>
+</h1>
+
+On the left side, click on Application and create a new Application. Choose the Machine to Machine Application
+<h1 align="center">
+    <img src="Images/Configuration/create_m2m.png" width=100%>
+</h1>
+
+With the grant permissions you created from the API, enable all the permissions. This is important because if they are not enabled then even with a valid token the request will return 403 (unauthorized)
+<h1 align="center">
+    <img src="Images/Configuration/authorize_app.png" width=100%>
+</h1>
+
+From the Application page, copy the client id and client secret. These values will be used for the API to interact with API.
+<h1 align="center">
+    <img src="Images/Configuration/api_cred.png" width=100%>
+</h1>
+Enter the information in the corresponding appsettings json file
+```Json
+  "Auth0": {
+	  "ClientId":"",
+	  "ClientSecret":""
+  },
+```
+
 ### API filesystem paths
 
 For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. What is meant by this is that the `RootMusicPath` directory where all music will be stored must exist as well as the `ArchivePath` and `TemporaryMusicPath` paths. An example on a Linux system:
