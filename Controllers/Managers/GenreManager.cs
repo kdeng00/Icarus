@@ -8,21 +8,21 @@ using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.Managers
 {
-	public class GenreManager : BaseManager
-	{
-		#region Fields
-		#endregion
+    public class GenreManager : BaseManager
+    {
+    	#region Fields
+    	#endregion
 
 
-		#region Properties
-		#endregion
+    	#region Properties
+    	#endregion
 
 
-		#region Constructors
-		#endregion
+    	#region Constructors
+    	#endregion
 
 
-		#region Methods
-		#endregion
-	}
+    	#region Methods
+    	#endregion
+    }
 }

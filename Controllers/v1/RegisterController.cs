@@ -14,58 +14,57 @@ using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
 {
-    	[Route("api/v1/register")]
-    	[ApiController]
-    	public class RegisterController : ControllerBase
-    	{
-		#region Fields
-		private IConfiguration _config;
-		#endregion
+    [Route("api/v1/register")]
+    [ApiController]
+    public class RegisterController : ControllerBase
+    {
+        #region Fields
+        private IConfiguration _config;
+        #endregion
 
 
-		#region Properties
-		#endregion
+        #region Properties
+        #endregion
 
 
-		#region Constructor
-		public RegisterController(IConfiguration config)
-		{
-	    		_config = config;
-		}
-		#endregion
+        #region Constructor
+        public RegisterController(IConfiguration config)
+        {
+            _config = config;
+        }
+        #endregion
 
-		[HttpPost]
-        	public IActionResult Post([FromBody] User user)
-        	{
-			PasswordEncryption pe = new PasswordEncryption();
-			user.Password = pe.HashPassword(user);
-			user.EmailVerified = false;
+        [HttpPost]
+        public IActionResult Post([FromBody] User user)
+        {
+            PasswordEncryption pe = new PasswordEncryption();
+            user.Password = pe.HashPassword(user);
+            user.EmailVerified = false;
 
-			UserRepository context = HttpContext
-				.RequestServices
-				.GetService(typeof(UserRepository)) as UserRepository;
+            UserRepository context = HttpContext.RequestServices
+                .GetService(typeof(UserRepository)) as UserRepository;
 
-			context.SaveUser(user);
+            context.SaveUser(user);
 
-			var registerResult = new RegisterResult
-			{
-				Username = user.Username
-			};
+            var registerResult = new RegisterResult
+            {
+                Username = user.Username
+            };
 
-			if (context.DoesUserExist(user))
-			{
-				registerResult.Message = "Successful registration";
-				registerResult.SuccessfullyRegistered = true;
+            if (context.DoesUserExist(user))
+            {
+                registerResult.Message = "Successful registration";
+                registerResult.SuccessfullyRegistered = true;
 
-				return Ok(registerResult);
-			}
-			else
-			{
-				registerResult.Message = "Registration failed";
-				registerResult.SuccessfullyRegistered = false;
+                return Ok(registerResult);
+            }
+            else
+            {
+                registerResult.Message = "Registration failed";
+                registerResult.SuccessfullyRegistered = false;
 
-				return Ok(registerResult);
-			}
-        	}
-    	}
+                return Ok(registerResult);
+            }
+        }
+    }
 }

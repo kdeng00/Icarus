@@ -12,74 +12,66 @@ using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
 {
-	[Route("api/v1/album")]
-	[ApiController]
-	public class AlbumController : ControllerBase
-	{
-		#region Fields
-		private readonly ILogger<AlbumController> _logger;
-		#endregion
+    [Route("api/v1/album")]
+    [ApiController]
+    public class AlbumController : ControllerBase
+    {
+        #region Fields
+        private readonly ILogger<AlbumController> _logger;
+        #endregion
 
 
-		#region Properties
-		#endregion
+        #region Properties
+        #endregion
 
 
-		#region Constructors
-		public AlbumController(ILogger<AlbumController> logger)
-		{
-			_logger = logger;
-		}
-		#endregion
+        #region Constructors
+        public AlbumController(ILogger<AlbumController> logger)
+        {
+            _logger = logger;
+        }
+        #endregion
 
 
-		#region HTTP Routes
-		[HttpGet]
-		[Authorize("read:albums")]
-		public IActionResult Get()
-		{
-			List<Album> albums = new List<Album>();
+        #region HTTP Routes
+        [HttpGet]
+        [Authorize("read:albums")]
+        public IActionResult Get()
+        {
+            List<Album> albums = new List<Album>();
 
-			AlbumRepository albumStoreContext = HttpContext
-				.RequestServices
-				.GetService(typeof(AlbumRepository)) as AlbumRepository;
+            AlbumRepository albumStoreContext = HttpContext.RequestServices
+                .GetService(typeof(AlbumRepository)) as AlbumRepository;
 
-			albums = albumStoreContext.GetAlbums();
+            albums = albumStoreContext.GetAlbums();
 
-			if (albums.Count > 0)
-			{
-				return Ok(albums);
-			}
-			else
-			{
-				return NotFound();
-			}
-		}
+            if (albums.Count > 0)
+                return Ok(albums);
+            else
+                return NotFound();
+        }
 
-		[HttpGet("{id}")]
-		[Authorize("read:albums")]
-		public IActionResult Get(int id)
-		{
-			Album album = new Album
-			{
-				AlbumId = id
-			};
+        [HttpGet("{id}")]
+        [Authorize("read:albums")]
+        public IActionResult Get(int id)
+        {
+            Album album = new Album
+            {
+                AlbumId = id
+            };
 
-			AlbumRepository albumStoreContext = HttpContext
-				.RequestServices
-				.GetService(typeof(AlbumRepository)) as AlbumRepository;
+            AlbumRepository albumStoreContext = HttpContext.RequestServices
+                .GetService(typeof(AlbumRepository)) as AlbumRepository;
 
-			if (albumStoreContext.DoesAlbumExist(album))
-			{
-				album = albumStoreContext.GetAlbum(album);
+            if (albumStoreContext.DoesAlbumExist(album))
+            {
+                album = albumStoreContext.GetAlbum(album);
 
-				return Ok(album);
-			}
-			else
-			{
-				return NotFound();
-			}
-		}
-		#endregion
-	}
+                return Ok(album);
+            }
+            else
+                return NotFound();
+        }
+        #endregion
+    }
 }

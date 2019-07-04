@@ -11,74 +11,66 @@ using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
 {
-	[Route("api/v1/genre")]
-	[ApiController]
-	public class GenreController : ControllerBase
-	{
-		#region Fields
-		private readonly ILogger<GenreController> _logger;
-		#endregion
+    [Route("api/v1/genre")]
+    [ApiController]
+    public class GenreController : ControllerBase
+    {
+        #region Fields
+        private readonly ILogger<GenreController> _logger;
+        #endregion
 
 
-		#region Properties
-		#endregion
+        #region Properties
+        #endregion
 
 
-		#region Constructors
-		public GenreController(ILogger<GenreController> logger)
-		{
-			_logger = logger;
-		}
-		#endregion
+        #region Constructors
+        public GenreController(ILogger<GenreController> logger)
+        {
+            _logger = logger;
+        }
+        #endregion
 
 
-		#region HTTP Routes
-		[HttpGet]
-		[Authorize("read:genre")]
-		public IActionResult Get()
-		{
-			var genres = new List<Genre>();
+        #region HTTP Routes
+        [HttpGet]
+        [Authorize("read:genre")]
+        public IActionResult Get()
+        {
+            var genres = new List<Genre>();
 
-			var genreStore = HttpContext
-				.RequestServices
-				.GetService(typeof(GenreRepository)) as GenreRepository;
+            var genreStore = HttpContext.RequestServices
+                .GetService(typeof(GenreRepository)) as GenreRepository;
 
-			genres = genreStore.GetGenres();
+            genres = genreStore.GetGenres();
 
-			if (genres.Count > 0)
-			{
-				return Ok(genres);
-			}
-			else
-			{
-				return NotFound(new List<Genre>());
-			}
-		}
+            if (genres.Count > 0)
+                return Ok(genres);
+            else
+                return NotFound(new List<Genre>());
+        }
 
-		[HttpGet("{id}")]
-		[Authorize("read:genre")]
-		public IActionResult Get(int id)
-		{
-			var genre = new Genre
-			{
-				GenreId = id
-			};
+        [HttpGet("{id}")]
+        [Authorize("read:genre")]
+        public IActionResult Get(int id)
+        {
+            var genre = new Genre
+            {
+                GenreId = id
+            };
 
-			var genreStore = HttpContext
-				.RequestServices
-				.GetService(typeof(GenreRepository)) as GenreRepository;
+            var genreStore = HttpContext.RequestServices
+                .GetService(typeof(GenreRepository)) as GenreRepository;
 
-			if (genreStore.DoesGenreExist(genre))
-			{
-				genre =  genreStore.GetGenre(genre);
+            if (genreStore.DoesGenreExist(genre))
+            {
+                genre =  genreStore.GetGenre(genre);
 
-				return Ok(genre);
-			}
-			else
-			{
-				return NotFound(new Genre());
-			}
-		}
-		#endregion
-	}
+                return Ok(genre);
+            }
+            else
+                return NotFound(new Genre());
+        }
+        #endregion
+    }
 }

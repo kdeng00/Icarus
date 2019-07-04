@@ -9,85 +9,82 @@ using Icarus.Models;
 
 namespace Icarus.Controllers.Utilities
 {
-	public class PasswordEncryption
-	{
-		#region Fields
-		private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-		#endregion
+    public class PasswordEncryption
+    {
+        #region Fields
+        private static Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        #endregion
 
 
-		#region Properties
-		#endregion
+        #region Properties
+        #endregion
 
 
-		#region Constructor
-		#endregion
+        #region Constructor
+        #endregion
 
 
-		#region Methods
-		public bool VerifyPassword(User user, string password)
-		{
-			try
-			{
-				var result = BCrypt.Net.BCrypt.Verify(password, user.Password);
+        #region Methods
+        public bool VerifyPassword(User user, string password)
+        {
+            try
+            {
+                var result = BCrypt.Net.BCrypt.Verify(password, user.Password);
 
-				return result;
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message;
-				_logger.Error(msg, "An error occurred");
-			}
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public string HashPassword(User user)
-		{
-			try
-			{
-				string hashedPassword = string.Empty;
-				hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+        public string HashPassword(User user)
+        {
+            try
+            {
+                string hashedPassword = string.Empty;
+                hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-				_logger.Info("Successfully hashed password");
+                _logger.Info("Successfully hashed password");
 
-				return hashedPassword;
+                return hashedPassword;
 
-			}
-			catch (Exception ex)
-			{
-				var exMsg = ex.Message;
-				_logger.Error(exMsg, "An error occurred");
-			}
+            }
+            catch (Exception ex)
+            {
+                var exMsg = ex.Message;
+                _logger.Error(exMsg, "An error occurred");
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		string GenerateHash(string password, byte[] salt)
-		{
+        string GenerateHash(string password, byte[] salt)
+        {
 
-			string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-						password: password,
-						salt: salt,
-						prf: KeyDerivationPrf.HMACSHA1,
-						iterationCount: 10000,
-						numBytesRequested: 256/8));
+            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password, salt: salt,
+                prf: KeyDerivationPrf.HMACSHA1,
+                iterationCount: 10000,
+                numBytesRequested: 256/8));
 
-			return hashed;
-		}
+            return hashed;
+        }
 
-		byte[] GenerateSalt()
-		{
-			byte[] salt = new byte[128/8];
+        byte[] GenerateSalt()
+        {
+            byte[] salt = new byte[128/8];
 
-			using (var rng = RandomNumberGenerator.Create())
-			{
-				rng.GetBytes(salt);
-			}
+            using (var rng = RandomNumberGenerator.Create())
+                rng.GetBytes(salt);
 
 
-			return salt;
-		}
-		#endregion
-	}
+            return salt;
+        }
+        #endregion
+    }
 }
