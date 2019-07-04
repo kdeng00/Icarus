@@ -10,23 +10,21 @@ using Icarus.Models;
         
 namespace Icarus.Database.Contexts
 {    
-	public class UserContext : DbContext
-	{
-        	public DbSet<User> Users { get; set; }
+    public class UserContext : DbContext
+    {
+        public DbSet<User> Users { get; set; }
 
 
-		public UserContext(DbContextOptions<UserContext> options)
-            		: base(options)
-        	{ }
+	public UserContext(DbContextOptions<UserContext> options) : base(options) { }
 
-        	protected override void OnModelCreating(ModelBuilder modelBuilder)
-        	{
-			modelBuilder.Entity<User>()
-				.ToTable("User");
-            		modelBuilder.Entity<User>()
-				.Property(u => u.LastLogin).IsRequired(false);
-			modelBuilder.Entity<User>()
-				.Property(u => u.DateCreated).HasDefaultValue(DateTime.Now);
-        	}
-    	}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+	    modelBuilder.Entity<User>()
+	        .ToTable("User");
+            modelBuilder.Entity<User>()
+	        .Property(u => u.LastLogin).IsRequired(false);
+	    modelBuilder.Entity<User>()
+		.Property(u => u.DateCreated).HasDefaultValue(DateTime.Now);
+        }
+    }
 }  

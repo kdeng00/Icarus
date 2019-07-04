@@ -10,18 +10,16 @@ using Icarus.Models;
 
 namespace Icarus.Database.Contexts
 {
-	public class YearContext : DbContext
+    public class YearContext : DbContext
+    {
+        public DbSet<Year> YearValues { get; set; }
+
+	public YearContext(DbContextOptions<YearContext> options) : base(options) { }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
-		public DbSet<Year> YearValues { get; set; }
-
-		public YearContext(DbContextOptions<YearContext> options)
-			: base(options)
-		{ }
-
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			modelBuilder.Entity<Year>()
-				.ToTable("Year");
-		}
+	    modelBuilder.Entity<Year>()
+	        .ToTable("Year");
 	}
+    }
 }

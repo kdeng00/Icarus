@@ -6,17 +6,17 @@ using Newtonsoft.Json;
 
 namespace Icarus.Models
 {
-	public class Artist
-	{
-		[JsonProperty("id")]
-		public int ArtistId { get; set; }
-		[JsonProperty("name")]
-		public string Name { get; set; }
-		[JsonProperty("song_count")]
-		[NotMapped]
-		public int SongCount { get; set; }
+    public class Artist
+    {
+        [JsonProperty("id")]
+	public int ArtistId { get; set; }
+	[JsonProperty("name")]
+	public string Name { get; set; }
+	[JsonProperty("song_count")]
+	[NotMapped]
+	public int SongCount { get; set; }
 
-		[JsonIgnore]
-		public List<Song> Songs { get; set; }
-	}
+	[JsonIgnore]
+	public List<Song> Songs { get; set; }
+    }
 }

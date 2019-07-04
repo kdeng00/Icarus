@@ -10,18 +10,16 @@ using Icarus.Models;
 
 namespace Icarus.Database.Contexts
 {
-	public class ArtistContext : DbContext
+    public class ArtistContext : DbContext
+    {
+        public DbSet<Artist> Artists { get; set; }
+
+	public ArtistContext(DbContextOptions<ArtistContext> options) : base (options) { }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
-		public DbSet<Artist> Artists { get; set; }
-
-		public ArtistContext(DbContextOptions<ArtistContext> options)
-			: base (options)
-		{ }
-
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			modelBuilder.Entity<Artist>()
-				.ToTable("Artist");
-		}
+	    modelBuilder.Entity<Artist>()
+	        .ToTable("Artist");
 	}
+    }
 }
