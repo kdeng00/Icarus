@@ -11,6 +11,8 @@ echo "Adding Genre migration"
 dotnet ef migrations add Genre --context GenreContext
 echo "Adding Year migration"
 dotnet ef migrations add Year --context YearContext
+echo "Adding Cover art migration"
+dotnet ef migrations add CoverArt --context CoverArtContext
 
 echo "Updating migrations.."
 echo "Updating User migration"
@@ -20,4 +22,5 @@ echo "Updating Album migration"
 echo "Updating Artist migration"
 echo "Updating Genre migration"
 echo "Updating Year migration"
+echo "Updating Cover art migration"
 dotnet ef database update --context SongContext

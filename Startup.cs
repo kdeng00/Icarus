@@ -119,6 +119,9 @@ namespace Icarus
 	    services.Add(new ServiceDescriptor(typeof(YearRepository),
 		new YearRepository(Configuration.GetConnectionString("DefaultConnection"))));
 
+	    services.Add(new ServiceDescriptor(typeof(CoverArtRepository),
+		new CoverArtRepository(Configuration.GetConnectionString("DefaultConnection"))));
+
 	    services.Add(new ServiceDescriptor(typeof(UserRepository), 
 		new UserRepository(Configuration.GetConnectionString("DefaultConnection"))));
 
@@ -128,6 +131,7 @@ namespace Icarus
 	    services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
 	    services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
 	    services.AddDbContext<YearContext>(options => options.UseMySQL(connString));
+	    services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
         }
 
         // Called by the runtime. Use this method to configure the HTTP request pipeline.

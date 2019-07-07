@@ -45,5 +45,10 @@ namespace Icarus.Models
 	public Year SongYear { get; set; }
 	[JsonIgnore]
 	public int? YearId { get; set; }
+
+	[JsonIgnore]
+	public CoverArt SongCoverArt { get; set; }
+	[JsonIgnore]
+	public int? CoverArtId { get; set; }
     }
 }

@@ -47,6 +47,12 @@ namespace Icarus.Database.Contexts
 		.OnDelete(DeleteBehavior.SetNull);
 
 	    modelBuilder.Entity<Song>()
+		 .HasOne(s => s.SongCoverArt)
+		 .WithMany(ca => ca.Songs)
+		 .HasForeignKey(s => s.CoverArtId)
+		 .OnDelete(DeleteBehavior.SetNull);
+
+	    modelBuilder.Entity<Song>()
 	        .Property(s => s.Year)
 		.IsRequired(false);
 	    modelBuilder.Entity<Song>()
@@ -60,6 +66,9 @@ namespace Icarus.Database.Contexts
 		.IsRequired(false);
 	    modelBuilder.Entity<Song>()
 	        .Property(s => s.AlbumId)
+		.IsRequired(false);
+	    modelBuilder.Entity<Song>()
+		.Property(s => s.CoverArtId)
 		.IsRequired(false);
 	}
     }
