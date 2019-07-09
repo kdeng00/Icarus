@@ -18,29 +18,60 @@ namespace Icarus.Database.Repositories
 
 
         #region Methods
-        public CoverArt GetCoverArt(CoverArt coverArt)
+        public CoverArt GetCoverArt(CoverArt cover)
         {
-            // TODO: Implement sql record retrieval
-            //
             try
             {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+
+                    var query = "SELECT * FROM CoverArt WHERE " +
+                        "CoverArtId=@CoverArtId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters
+                           .AddWithValue("@CoverArtId", cover.CoverArtId);
+
+                        using (var reader = cmd.ExecuteReader())
+                            cover = ParseSingleData(reader);
+
+                        return cover;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 var msg = ex.Message;
             }
+
             return null;
         }
         public CoverArt GetCoverArt(Song song)
         {
-            // TODO: Implement sql record retrieval
             try
             {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+
+                    var query = "SELECT cov.* FROM CoverArt cov LEFT JOIN " +
+                        "Song sng ON cov.CoverArtId=sng.CoverArtId WHERE " +
+                        "sng.Id=@SongId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SongId", song.Id);
+
+                        using (var reader = cmd.ExecuteReader())
+                            return ParseSingleData(reader);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 var msg = ex.Message;
             }
+
             return null;
         }
 
@@ -52,12 +83,14 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
 
-                    var query = "INSERT INTO CoverArt(SongTitle, ImagePath) VALUES(@SongTitle, " +
-                        "@ImagePath)";
+                    var query = "INSERT INTO CoverArt(SongTitle, ImagePath) " +
+                        "VALUES(@SongTitle, @ImagePath)";
                     using (var cmd = new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@SongTitle", coverArt.SongTitleA);
-                        cmd.Parameters.AddWithValue("@ImagePath", coverArt.ImagePath);
+                        cmd.Parameters
+                            .AddWithValue("@SongTitle", coverArt.SongTitle);
+                        cmd.Parameters
+                            .AddWithValue("@ImagePath", coverArt.ImagePath);
 
                         cmd.ExecuteNonQuery();
                     }
@@ -68,11 +101,24 @@ namespace Icarus.Database.Repositories
                 var msg = ex.Message;
             }
         }
-        public void DeleteCoverArt(CoverArt coverArt)
+        public void DeleteCoverArt(CoverArt cover)
         {
             try
             {
-                // TODO: Implement sql record deletion
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+
+                    var query = "DELETE CoverArt WHERE " +
+                        "CoverArtId=@CoverArtId";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters
+                            .AddWithValue("@CoverArtId", cover.CoverArtId);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
