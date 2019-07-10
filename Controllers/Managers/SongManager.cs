@@ -341,7 +341,8 @@ namespace Icarus.Controllers.Managers
         }
         public async Task SaveSongToFileSystem(IFormFile songFile, SongRepository songStore,
                 AlbumRepository albumStore, ArtistRepository artistStore,
-                GenreRepository genreStore, YearRepository yearStore)
+                GenreRepository genreStore, YearRepository yearStore,
+                CoverArtRepository coverStore)
         {
             try
             {

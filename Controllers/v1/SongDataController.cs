@@ -79,6 +79,11 @@ namespace Icarus.Controllers.V1
                 YearRepository yearStore = HttpContext.RequestServices
                     .GetService(typeof(YearRepository)) as YearRepository;
 
+                CoverArtRepository CoverArtRepository = HttpContext
+                    .RequestServices
+                    .GetService
+                    (typeof(CoverArtRepository)) as CoverArtRepository;
+
                 Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
@@ -92,7 +97,7 @@ namespace Icarus.Controllers.V1
 
                         await _songMgr.SaveSongToFileSystem(sng, songRepository,
                             	albumStoreContext, artistStoreContext,
-                            	genreStore, yearStore);
+                            	genreStore, yearStore, CoverArtRepository);
                     }
             }
             catch (Exception ex)

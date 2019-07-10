@@ -160,9 +160,17 @@ namespace Icarus.Controllers.Managers
             return songPath;
         }
 
-        private void Initialize()
+        private void Initialize(DirectoryTypes dirTypes = DirectoryTypes.Music)
         {
-            _rootSongDirectory = _config.GetValue<string>("RootMusicPath");
+            switch (dirTypes)
+            {
+                case DirectoryTypes.Music:
+                    _rootSongDirectory = _config.GetValue<string>("RootMusicPath");
+                    break;
+                case DirectoryTypes.CoverArt:
+                    _rootSongDirectory = _config.GetValue<string>("CoverArtPath");
+                    break;
+            }
         }
 
         private bool IsDirectoryEmpty(string path)
@@ -200,6 +208,15 @@ namespace Icarus.Controllers.Managers
 
             return directory;
         }
+        #endregion
+
+
+        #region enums
+        private enum DirectoryTypes
+        {
+            Music = 0,
+            CoverArt
+        };
         #endregion
     }
 }

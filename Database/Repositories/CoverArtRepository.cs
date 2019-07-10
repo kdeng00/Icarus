@@ -75,6 +75,33 @@ namespace Icarus.Database.Repositories
             return null;
         }
 
+        public bool DoesCoverArtExist(CoverArt cover)
+        {
+            try
+            {
+                // TODO: Implement this
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+            }
+
+            return false;
+        }
+        public bool DoesCoverArtExist(Song song)
+        {
+            try
+            {
+                // TODO: Implement this
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+            }
+
+            return false;
+        }
+
         public void SaveCoverArt(CoverArt coverArt)
         {
             try
