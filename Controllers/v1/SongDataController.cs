@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Models;
+using Icarus.Database.Contexts;
 using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
@@ -22,6 +23,12 @@ namespace Icarus.Controllers.V1
     public class SongDataController : ControllerBase
     {
         #region Fields
+        private SongRepository _songRepository;
+        private AlbumRepository _albumRepository;
+        private ArtistRepository _artistRepository;
+        private GenreRepository _genreRepository;
+        private YearRepository _yearRepository;
+        private CoverArtRepository _coverArtRepository;
         private IConfiguration _config;
         private ILogger<SongDataController> _logger;
         private SongManager _songMgr;
@@ -42,6 +49,26 @@ namespace Icarus.Controllers.V1
             _songMgr = new SongManager(config, _songTempDir);
         }
         #endregion
+
+        private void Initialize()
+        {
+            _songRepository = HttpContext
+                .RequestServices
+                .GetService
+                (typeof(SongRepository)) as SongRepository;
+
+            _albumRepository = HttpContext
+                .RequestServices
+                .GetService(typeof(AlbumRepository)) as AlbumRepository;
+
+            _artistRepository = HttpContext
+                .RequestServices
+                .GetService(typeof(ArtistRepository)) as ArtistRepository;
+
+            _genreRepository = HttpContext
+                .RequestServices
+                .GetService(typeof(GenreRepository)) as GenreRepository;
+        }
 
 
         [HttpGet("{id}")]
@@ -64,22 +91,12 @@ namespace Icarus.Controllers.V1
         {
             try
             {
-                SongRepository songRepository = HttpContext.RequestServices
-                    .GetService(typeof(SongRepository)) as SongRepository;
-
-                AlbumRepository albumStoreContext = HttpContext.RequestServices
-                    .GetService(typeof(AlbumRepository)) as AlbumRepository;
-
-                ArtistRepository artistStoreContext = HttpContext.RequestServices
-                    .GetService(typeof(ArtistRepository)) as ArtistRepository;
-
-                GenreRepository genreStore = HttpContext.RequestServices
-                    .GetService(typeof(GenreRepository)) as GenreRepository;
+                Initialize();
 
                 YearRepository yearStore = HttpContext.RequestServices
                     .GetService(typeof(YearRepository)) as YearRepository;
 
-                CoverArtRepository CoverArtRepository = HttpContext
+                CoverArtRepository coverArtRepository = HttpContext
                     .RequestServices
                     .GetService
                     (typeof(CoverArtRepository)) as CoverArtRepository;
@@ -95,9 +112,9 @@ namespace Icarus.Controllers.V1
                         Console.WriteLine($"Song filename {sng.FileName}");
                         _logger.LogInformation($"Song filename {sng.FileName}");
 
-                        await _songMgr.SaveSongToFileSystem(sng, songRepository,
-                            	albumStoreContext, artistStoreContext,
-                            	genreStore, yearStore, CoverArtRepository);
+                        await _songMgr.SaveSongToFileSystem(sng, _songRepository,
+                            	_albumRepository, _artistRepository,
+                            	_genreRepository, yearStore, coverArtRepository);
                     }
             }
             catch (Exception ex)
@@ -126,6 +143,9 @@ namespace Icarus.Controllers.V1
             YearRepository yearStore = HttpContext.RequestServices
                 .GetService(typeof(YearRepository)) as YearRepository;
             
+            CoverArtRepository coverArtRepository = HttpContext.RequestServices
+                .GetService(typeof(CoverArtRepository)) as CoverArtRepository;
+
             var songMetaData = new Song{ Id = id };
             Console.WriteLine($"Id {songMetaData.Id}");
             songMetaData = context.GetSong(songMetaData);
