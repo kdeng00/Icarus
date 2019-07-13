@@ -35,6 +35,7 @@ namespace Icarus.Controllers.Managers
 
             song.CoverArtId = coverArt.CoverArtId;
         }
+
         public CoverArt SaveCoverArt(Song song)
         {
             try
