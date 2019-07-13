@@ -101,6 +101,20 @@ namespace Icarus.Controllers.Utilities
             return song;
         }
 
+        public byte[] RetrieveCoverArtBytes(Song song)
+        {
+            Console.WriteLine("Fetching image");
+            var tag = TagLib.File.Create(song.SongPath);
+            byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
+            if (imgBytes == null)
+            {
+                Console.WriteLine("Null image");
+                return null;
+            }
+
+            return imgBytes;
+        }
+
         public void UpdateMetadata(Song song)
         {
             try

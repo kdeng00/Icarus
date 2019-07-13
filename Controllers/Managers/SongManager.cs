@@ -342,7 +342,7 @@ namespace Icarus.Controllers.Managers
         public async Task SaveSongToFileSystem(IFormFile songFile, SongRepository songStore,
                 AlbumRepository albumStore, ArtistRepository artistStore,
                 GenreRepository genreStore, YearRepository yearStore,
-                CoverArtRepository coverStore)
+                CoverArtRepository coverArtStore)
         {
             try
             {
@@ -350,10 +350,14 @@ namespace Icarus.Controllers.Managers
 
                 var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
                 var song = await SaveSongTemp(songFile, fileTempPath);
-                System.IO.File.Delete(fileTempPath);
+                song.SongPath = fileTempPath;
 
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
+                var coverMgr = new CoverArtManager(_config.GetValue<string>("CoverArtPath"));
+                var coverArt = coverMgr.SaveCoverArt(song);
+
+                System.IO.File.Delete(fileTempPath);
 
                 var filePath = dirMgr.SongDirectory;
                 var songFilename = songFile.FileName;
@@ -373,6 +377,8 @@ namespace Icarus.Controllers.Managers
                     _logger.Info("Song successfully saved to filesystem");
                 }
 
+                coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt, 
+                        coverArtStore);
                 SaveSongToDatabase(song, songStore, albumStore, artistStore, genreStore,
                         yearStore);
             }

@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 using Icarus.Models;
+using Icarus.Types;
 
 namespace Icarus.Controllers.Managers
 {
@@ -39,6 +40,10 @@ namespace Icarus.Controllers.Managers
             _config = config;
             Initialize();
         }
+        public DirectoryManager(string rootDirectory)
+        {
+            _rootSongDirectory = rootDirectory;
+        }
         #endregion
 
 
@@ -58,10 +63,33 @@ namespace Icarus.Controllers.Managers
 
                 Console.WriteLine($"The song will be saved in the following" +
                   $" directory: {_songDirectory}");
-                }
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred {ex.Message}");
+            }
+        }
+        public void CreateDirectory(Song song)
+        {
+            _song = song;
+
+            try
+            {
+                _songDirectory = AlbumDirectory();
+
+                if (!Directory.Exists(_songDirectory))
+                {
+                    Directory.CreateDirectory(_songDirectory);
+                    Console.WriteLine($"The directory has been created");
+                }
+
+                Console.WriteLine($"The song will be saved in the following" +
+                        $" directory: {_songDirectory}");
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
             }
         }
         public void DeleteEmptyDirectories()
@@ -160,14 +188,14 @@ namespace Icarus.Controllers.Managers
             return songPath;
         }
 
-        private void Initialize(DirectoryTypes dirTypes = DirectoryTypes.Music)
+        private void Initialize(DirectoryType dirTypes = DirectoryType.Music)
         {
             switch (dirTypes)
             {
-                case DirectoryTypes.Music:
+                case DirectoryType.Music:
                     _rootSongDirectory = _config.GetValue<string>("RootMusicPath");
                     break;
-                case DirectoryTypes.CoverArt:
+                case DirectoryType.CoverArt:
                     _rootSongDirectory = _config.GetValue<string>("CoverArtPath");
                     break;
             }
@@ -208,15 +236,6 @@ namespace Icarus.Controllers.Managers
 
             return directory;
         }
-        #endregion
-
-
-        #region enums
-        private enum DirectoryTypes
-        {
-            Music = 0,
-            CoverArt
-        };
         #endregion
     }
 }

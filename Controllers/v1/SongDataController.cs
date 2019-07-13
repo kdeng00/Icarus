@@ -68,6 +68,14 @@ namespace Icarus.Controllers.V1
             _genreRepository = HttpContext
                 .RequestServices
                 .GetService(typeof(GenreRepository)) as GenreRepository;
+
+            _yearRepository = HttpContext
+                .RequestServices
+                .GetService(typeof(YearRepository)) as YearRepository;
+
+            _coverArtRepository = HttpContext
+                .RequestServices
+                .GetService(typeof(CoverArtRepository)) as CoverArtRepository;
         }
 
 
@@ -76,9 +84,8 @@ namespace Icarus.Controllers.V1
         [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
-            SongRepository context = HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
-            var songMetaData = context.GetSong(id); 
+            Initialize();
+            var songMetaData = _songRepository.GetSong(id); 
             
             SongData song = await _songMgr.RetrieveSong(songMetaData);
             
@@ -93,14 +100,6 @@ namespace Icarus.Controllers.V1
             {
                 Initialize();
 
-                YearRepository yearStore = HttpContext.RequestServices
-                    .GetService(typeof(YearRepository)) as YearRepository;
-
-                CoverArtRepository coverArtRepository = HttpContext
-                    .RequestServices
-                    .GetService
-                    (typeof(CoverArtRepository)) as CoverArtRepository;
-
                 Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
@@ -114,7 +113,7 @@ namespace Icarus.Controllers.V1
 
                         await _songMgr.SaveSongToFileSystem(sng, _songRepository,
                             	_albumRepository, _artistRepository,
-                            	_genreRepository, yearStore, coverArtRepository);
+                            	_genreRepository, _yearRepository, _coverArtRepository);
                     }
             }
             catch (Exception ex)
