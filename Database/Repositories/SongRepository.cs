@@ -53,6 +53,7 @@ namespace Icarus.Database.Repositories
                         cmd.Parameters.AddWithValue("@ArtistId", song.ArtistId);
                         cmd.Parameters.AddWithValue("@GenreId", song.GenreId);
                         cmd.Parameters.AddWithValue("@YearId", song.YearId);
+                        cmd.Parameters.AddWithValue("@CoverArtId", song.CoverArtId);
 
                         cmd.ExecuteNonQuery();
                     }
@@ -284,7 +285,8 @@ namespace Icarus.Database.Repositories
                     AlbumId = Convert.ToInt32(reader["AlbumId"].ToString()),
                     ArtistId = Convert.ToInt32(reader["ArtistId"].ToString()),
                     GenreId = Convert.ToInt32(reader["GenreId"].ToString()),
-                    YearId = Convert.ToInt32(reader["YearId"].ToString())
+                    YearId = Convert.ToInt32(reader["YearId"].ToString()),
+                    CoverArtId = Convert.ToInt32(reader["CoverArtId"].ToString())
                 });
             }
 
@@ -310,6 +312,7 @@ namespace Icarus.Database.Repositories
                 song.ArtistId = Convert.ToInt32(reader["ArtistId"].ToString());
                 song.GenreId = Convert.ToInt32(reader["GenreId"].ToString());
                 song.YearId = Convert.ToInt32(reader["YearId"].ToString());
+                song.CoverArtId = Convert.ToInt32(reader["CoverArtId"].ToString());
             }
 
             return song;

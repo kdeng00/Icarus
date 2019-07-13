@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 
 using Icarus.Models;
+using Icarus.Types;
 
 namespace Icarus.Database.Repositories
 {
@@ -61,6 +62,41 @@ namespace Icarus.Database.Repositories
                     using (var cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@SongId", song.Id);
+
+                        using (var reader = cmd.ExecuteReader())
+                            return ParseSingleData(reader);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+            }
+
+            return null;
+        }
+        public CoverArt GetCoverArt(CoverArtField field, CoverArt cover)
+        {
+            try
+            {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+
+                    using (var cmd = new MySqlCommand(BuildQuery(field), 
+                                conn))
+                    {
+                        switch (field)
+                        {
+                            case CoverArtField.SongTitle:
+                                cmd.Parameters.AddWithValue("@SongTitle",
+                                        cover.SongTitle);
+                                break;
+                            case CoverArtField.ImagePath:
+                                cmd.Parameters.AddWithValue("@ImagePath", 
+                                        cover.ImagePath);
+                                break;
+                        }
 
                         using (var reader = cmd.ExecuteReader())
                             return ParseSingleData(reader);
@@ -165,8 +201,22 @@ namespace Icarus.Database.Repositories
                 {
                     CoverArtId = Convert.ToInt32(reader["CoverArtId"]),
                     SongTitle = reader["SongTitle"].ToString(),
-                    ImagePath = reader["ImagePath}"].ToString()
+                    ImagePath = reader["ImagePath"].ToString()
                 };
+            }
+
+            return null;
+        }
+
+        private string BuildQuery(CoverArtField field)
+        {
+            switch (field)
+            {
+                case CoverArtField.SongTitle:
+                    return "SELECT * FROM CoverArt WHERE SongTitle=@SongTitle";
+                case CoverArtField.ImagePath:
+                    return "SELECT * FROM CoverArt WHERE ImagePath=" +
+                        "@ImagePath";
             }
 
             return null;

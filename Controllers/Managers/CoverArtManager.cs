@@ -5,6 +5,7 @@ using System.IO;
 using Icarus.Controllers.Utilities;
 using Icarus.Database.Repositories;
 using Icarus.Models;
+using Icarus.Types;
 
 namespace Icarus.Controllers.Managers
 {
@@ -27,8 +28,12 @@ namespace Icarus.Controllers.Managers
         public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt, 
                 CoverArtRepository coverArtRepository)
         {
-            // TODO: Implement saving Cover Art record to
-            // the database.
+            coverArtRepository.SaveCoverArt(coverArt);
+
+            coverArt = coverArtRepository.GetCoverArt(CoverArtField.SongTitle,
+                    coverArt);
+
+            song.CoverArtId = coverArt.CoverArtId;
         }
         public CoverArt SaveCoverArt(Song song)
         {
@@ -43,11 +48,9 @@ namespace Icarus.Controllers.Managers
                     ImagePath = imagePath
                 };
 
-                Console.WriteLine($"Cover path {imagePath}");
                 var metaData = new MetadataRetriever();
                 var imgBytes = metaData.RetrieveCoverArtBytes(song);
                 
-                Console.WriteLine("Saving image");
                 File.WriteAllBytes(imagePath, imgBytes);
 
                 return coverArt;

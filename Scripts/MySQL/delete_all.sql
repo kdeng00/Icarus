@@ -1,3 +1,6 @@
-delete from Song where Id>0;
-delete from Album where AlbumId>0;
-delete from Artist where ArtistId>0;
+delete from Song;
+delete from Album;
+delete from Artist;
+delete from Genre;
+delete from Year;
+delete from CoverArt;
