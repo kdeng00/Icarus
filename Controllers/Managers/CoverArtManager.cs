@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using Icarus.Constants;
 using Icarus.Controllers.Utilities;
 using Icarus.Database.Repositories;
 using Icarus.Models;
@@ -13,6 +14,7 @@ namespace Icarus.Controllers.Managers
     {
         #region Fields
         private string _rootCoverArtPath;
+        private byte[] _stockCoverArt = null;
         #endregion
 
 
@@ -20,6 +22,7 @@ namespace Icarus.Controllers.Managers
         public CoverArtManager(string rootPath)
         {
             _rootCoverArtPath = rootPath;
+            Initialize();
         }
         #endregion
 
@@ -28,12 +31,17 @@ namespace Icarus.Controllers.Managers
         public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt, 
                 CoverArtRepository coverArtRepository)
         {
+            Console.WriteLine("Gonig to save cover art record");
             coverArtRepository.SaveCoverArt(coverArt);
+            Console.WriteLine($"tlte {coverArt.SongTitle}");
 
             coverArt = coverArtRepository.GetCoverArt(CoverArtField.SongTitle,
                     coverArt);
+            Console.WriteLine($"cover art id {coverArt.CoverArtId}");
 
             song.CoverArtId = coverArt.CoverArtId;
+            Console.WriteLine("Nothing wrong here");
+            Console.WriteLine($"song cover art id {song.CoverArtId}");
         }
 
         public CoverArt SaveCoverArt(Song song)
@@ -52,7 +60,15 @@ namespace Icarus.Controllers.Managers
                 var metaData = new MetadataRetriever();
                 var imgBytes = metaData.RetrieveCoverArtBytes(song);
                 
-                File.WriteAllBytes(imagePath, imgBytes);
+                if (imgBytes != null)
+                    File.WriteAllBytes(coverArt.ImagePath, imgBytes);
+                else
+                {
+                    Console.WriteLine("Song has no cover art");
+                    coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
+                    metaData.UpdateCoverArt(song, coverArt);
+                    File.WriteAllBytes(coverArt.ImagePath, _stockCoverArt);
+                }
 
                 return coverArt;
             }
@@ -64,6 +80,19 @@ namespace Icarus.Controllers.Managers
             }
             
             return null;
+        }
+
+        private void Initialize()
+        {
+            if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
+                _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
+
+            if (!File.Exists(_rootCoverArtPath + "/CoverArt.png"))
+            {
+                File.WriteAllBytes(_rootCoverArtPath + "/CoverArt.png", 
+                        _stockCoverArt);
+                Console.WriteLine("Copied Stock Cover Art");
+            }
         }
         #endregion
     }

@@ -103,16 +103,21 @@ namespace Icarus.Controllers.Utilities
 
         public byte[] RetrieveCoverArtBytes(Song song)
         {
-            Console.WriteLine("Fetching image");
-            var tag = TagLib.File.Create(song.SongPath);
-            byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
-            if (imgBytes == null)
+            try
             {
-                Console.WriteLine("Null image");
-                return null;
+                Console.WriteLine("Fetching image");
+                var tag = TagLib.File.Create(song.SongPath);
+                byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
+            
+                return imgBytes;
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                _logger.Error(msg, "An error occurred in MetadataRetriever");
             }
 
-            return imgBytes;
+            return null;
         }
 
         public void UpdateMetadata(Song song)
@@ -153,6 +158,22 @@ namespace Icarus.Controllers.Utilities
                 _logger.Error(msg, "An error occurred");
                 Message = "Failed to update metadata";
             }
+        }
+        public void UpdateCoverArt(Song song, CoverArt coverArt)
+        {
+            Console.WriteLine("Updating song's cover art");
+
+            var tag = TagLib.File.Create(song.SongPath);
+            var pics = tag.Tag.Pictures;
+            Array.Resize(ref pics, 1);
+
+            pics[0] = new Picture(coverArt.ImagePath)
+            {
+                Description = "Cover Art"
+            };
+
+            tag.Tag.Pictures = pics;
+            tag.Save();
         }
 
         private void PerformUpdate(Song updatedSong, SortedDictionary<string, bool> checkedValues)

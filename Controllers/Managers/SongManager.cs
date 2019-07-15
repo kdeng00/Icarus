@@ -354,8 +354,6 @@ namespace Icarus.Controllers.Managers
 
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
-                var coverMgr = new CoverArtManager(_config.GetValue<string>("CoverArtPath"));
-                var coverArt = coverMgr.SaveCoverArt(song);
 
                 System.IO.File.Delete(fileTempPath);
 
@@ -369,6 +367,7 @@ namespace Icarus.Controllers.Managers
 
                 _logger.Info($"Absolute song path: {filePath}");
 
+
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await (songFile.CopyToAsync(fileStream));
@@ -376,6 +375,9 @@ namespace Icarus.Controllers.Managers
 
                     _logger.Info("Song successfully saved to filesystem");
                 }
+
+                var coverMgr = new CoverArtManager(_config.GetValue<string>("CoverArtPath"));
+                var coverArt = coverMgr.SaveCoverArt(song);
 
                 coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt, 
                         coverArtStore);

@@ -36,9 +36,10 @@ namespace Icarus.Database.Repositories
                     conn.Open();
                     string query = "INSERT INTO Song(Title, AlbumTitle, Artist," +
                         " Year, Genre, Duration, Filename, SongPath, AlbumId, " +
-                        "ArtistId, GenreId, YearId) VALUES(@Title, @AlbumTitle, " +
-                        "@Artist, @Year, @Genre, @Duration, @Filename, @SongPath, " +
-                        "@AlbumId, @ArtistId, @GenreId, @YearId)";
+                        "ArtistId, GenreId, YearId, CoverArtId) VALUES(@Title," +
+                        " @AlbumTitle, @Artist, @Year, @Genre, @Duration, " +
+                        "@Filename, @SongPath, @AlbumId, @ArtistId, @GenreId," +
+                       " @YearId, @CoverArtId)";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Title", song.Title);
