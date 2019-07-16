@@ -43,6 +43,31 @@ namespace Icarus.Controllers.Managers
             Console.WriteLine("Nothing wrong here");
             Console.WriteLine($"song cover art id {song.CoverArtId}");
         }
+        public void DeleteCoverArtFromDatabase(CoverArt coverArt, 
+                CoverArtRepository coverArtRepository)
+        {
+            _logger.Info("Attempting to delete cover art from the database");
+            coverArtRepository.DeleteCoverArt(coverArt);
+        }
+        public void DeleteCoverArt(CoverArt coverArt)
+        {
+            try
+            {
+                var stockCoverArtPath = _rootCoverArtPath + "/CoverArt.png";
+                if (!string.Equals(stockCoverArtPath, coverArt.ImagePath, 
+                            StringComparison.CurrentCultureIgnoreCase))
+                {
+                    _logger.Info("Song does not contain the stock cover art");
+                    File.Delete(coverArt.ImagePath);
+                    _logger.Info("Cover art deleted from the database");
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
+            }
+        }
 
         public CoverArt SaveCoverArt(Song song)
         {

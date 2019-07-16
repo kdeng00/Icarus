@@ -127,27 +127,11 @@ namespace Icarus.Controllers.V1
         [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {
-            SongRepository context = HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
-
-            AlbumRepository albumStore = HttpContext.RequestServices
-                .GetService(typeof(AlbumRepository)) as AlbumRepository;
-
-            ArtistRepository artistStore = HttpContext.RequestServices
-                .GetService(typeof(ArtistRepository)) as ArtistRepository;
-
-            GenreRepository genreStore = HttpContext.RequestServices
-                .GetService(typeof(GenreRepository)) as GenreRepository;
-
-            YearRepository yearStore = HttpContext.RequestServices
-                .GetService(typeof(YearRepository)) as YearRepository;
-            
-            CoverArtRepository coverArtRepository = HttpContext.RequestServices
-                .GetService(typeof(CoverArtRepository)) as CoverArtRepository;
+            Initialize();
 
             var songMetaData = new Song{ Id = id };
             Console.WriteLine($"Id {songMetaData.Id}");
-            songMetaData = context.GetSong(songMetaData);
+            songMetaData = _songRepository.GetSong(songMetaData);
 
             if (string.IsNullOrEmpty(songMetaData.Title))
             {
@@ -158,8 +142,10 @@ namespace Icarus.Controllers.V1
             {
                 _logger.LogInformation("Starting process of deleting song from the filesystem and database");
 
-                _songMgr.DeleteSong(songMetaData, context, albumStore, 
-                        artistStore, genreStore, yearStore);
+                _songMgr.DeleteSong(songMetaData, _songRepository, 
+                        _albumRepository, _artistRepository,
+                        _genreRepository, _yearRepository, 
+                        _coverArtRepository);
 
                 return Ok();
             }

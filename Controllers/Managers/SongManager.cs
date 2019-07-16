@@ -160,8 +160,10 @@ namespace Icarus.Controllers.Managers
             return successful;
         }
 
-        public void DeleteSong(Song song, SongRepository songStore, AlbumRepository albumStore, 
-		ArtistRepository artistStore, GenreRepository genreStore, YearRepository yearStore)
+        public void DeleteSong(Song song, SongRepository songStore, 
+                AlbumRepository albumStore, ArtistRepository artistStore, 
+                GenreRepository genreStore, YearRepository yearStore, 
+                CoverArtRepository coverStore)
         {
             try
             {
@@ -171,7 +173,12 @@ namespace Icarus.Controllers.Managers
 
                     throw new Exception("Failed to delete the song");
                 }
+                var coverMgr = new CoverArtManager(_config.GetValue<string>(
+                            "CoverArtPath"));
+                var coverArt = coverStore.GetCoverArt(song);
+                coverMgr.DeleteCoverArt(coverArt);
 
+                coverMgr.DeleteCoverArtFromDatabase(coverArt, coverStore);
                 DeleteSongFromDatabase(song, songStore, albumStore, artistStore,
                         genreStore, yearStore);
             }
@@ -799,9 +806,7 @@ namespace Icarus.Controllers.Managers
                 return false;
             }
 
-            var result = DoesSongExistOnFilesystem(song);
-
-            return result;
+            return DoesSongExistOnFilesystem(song);
         }
         private bool DoesSongExistOnFilesystem(Song song)
         {
