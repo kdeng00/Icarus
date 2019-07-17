@@ -53,13 +53,17 @@ namespace Icarus.Controllers.Managers
         {
             try
             {
-                var stockCoverArtPath = _rootCoverArtPath + "/CoverArt.png";
+                var stockCoverArtPath = _rootCoverArtPath + "CoverArt.png";
                 if (!string.Equals(stockCoverArtPath, coverArt.ImagePath, 
                             StringComparison.CurrentCultureIgnoreCase))
                 {
                     _logger.Info("Song does not contain the stock cover art");
                     File.Delete(coverArt.ImagePath);
-                    _logger.Info("Cover art deleted from the database");
+                    _logger.Info("Cover art deleted from the filesystem");
+                }
+                else
+                {
+                    _logger.Info("Song contains the stock cover art");
                 }
             }
             catch (Exception ex)
@@ -89,7 +93,8 @@ namespace Icarus.Controllers.Managers
                     File.WriteAllBytes(coverArt.ImagePath, imgBytes);
                 else
                 {
-                    Console.WriteLine("Song has no cover art");
+                    Console.WriteLine("Song has no cover art, applying stock cover art");
+                    _logger.Info("Song has no cover art, applying stock cover art");
                     coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
                     metaData.UpdateCoverArt(song, coverArt);
                     File.WriteAllBytes(coverArt.ImagePath, _stockCoverArt);
@@ -112,9 +117,9 @@ namespace Icarus.Controllers.Managers
             if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
                 _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
 
-            if (!File.Exists(_rootCoverArtPath + "/CoverArt.png"))
+            if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
             {
-                File.WriteAllBytes(_rootCoverArtPath + "/CoverArt.png", 
+                File.WriteAllBytes(_rootCoverArtPath + "CoverArt.png", 
                         _stockCoverArt);
                 Console.WriteLine("Copied Stock Cover Art");
             }

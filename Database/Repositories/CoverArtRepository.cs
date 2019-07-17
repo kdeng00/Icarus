@@ -154,7 +154,7 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
 
-                    var query = "DELETE CoverArt WHERE " +
+                    var query = "DELETE FROM CoverArt WHERE " +
                         "CoverArtId=@CoverArtId";
                     using (var cmd = new MySqlCommand(query, conn))
                     {
