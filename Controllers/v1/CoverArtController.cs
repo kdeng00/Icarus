@@ -35,10 +35,7 @@ namespace Icarus.Controllers.V1
         [Authorize("download:cover_art")]
         public IActionResult Get(int id)
         {
-            var coverArt = new CoverArt
-            {
-                CoverArtId = id
-            };
+            var coverArt = new CoverArt { CoverArtId = id };
 
             var coverArtRepository = HttpContext
                 .RequestServices
@@ -49,13 +46,18 @@ namespace Icarus.Controllers.V1
 
             if (coverArt != null)
             {
+                _logger.Info("Found cover art record");
                 var coverArtBytes = System.IO.File.ReadAllBytes(
                         coverArt.ImagePath);
+
                 return File(coverArtBytes, "application/x-msdownload", 
                         coverArt.SongTitle);
             }
             else
+            {
+                _logger.Info("Cover art not found");
                 return NotFound();
+            }
         }
         #endregion
     }

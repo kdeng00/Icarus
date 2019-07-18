@@ -169,10 +169,12 @@ namespace Icarus.Controllers.Managers
             {
                 if (DeleteSongFromFilesystem(song))
                 {
-                    _logger.Info("Failed to delete the song");
+                    _logger.Error("Failed to delete the song");
 
                     throw new Exception("Failed to delete the song");
                 }
+                _logger.Info("Song deleted from the filesystem");
+
                 var coverMgr = new CoverArtManager(_config.GetValue<string>(
                             "CoverArtPath"));
                 var coverArt = coverStore.GetCoverArt(song);

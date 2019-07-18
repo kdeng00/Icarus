@@ -27,6 +27,8 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
 
+                    _logger.Info("Querying cover art record");
+
                     var query = "SELECT * FROM CoverArt WHERE " +
                         "CoverArtId=@CoverArtId";
                     using (var cmd = new MySqlCommand(query, conn))
@@ -35,15 +37,14 @@ namespace Icarus.Database.Repositories
                            .AddWithValue("@CoverArtId", cover.CoverArtId);
 
                         using (var reader = cmd.ExecuteReader())
-                            cover = ParseSingleData(reader);
-
-                        return cover;
+                            return ParseSingleData(reader);
                     }
                 }
             }
             catch (Exception ex)
             {
                 var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
             }
 
             return null;
@@ -55,6 +56,8 @@ namespace Icarus.Database.Repositories
                 using (var conn = GetConnection())
                 {
                     conn.Open();
+
+                    _logger.Info("Querying cover art record");
 
                     var query = "SELECT cov.* FROM CoverArt cov LEFT JOIN " +
                         "Song sng ON cov.CoverArtId=sng.CoverArtId WHERE " +
@@ -71,6 +74,7 @@ namespace Icarus.Database.Repositories
             catch (Exception ex)
             {
                 var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
             }
 
             return null;
@@ -83,8 +87,9 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
 
-                    using (var cmd = new MySqlCommand(BuildQuery(field), 
-                                conn))
+                    _logger.Info("Querying cover art record");
+
+                    using (var cmd = new MySqlCommand(BuildQuery(field), conn))
                     {
                         switch (field)
                         {
@@ -106,6 +111,7 @@ namespace Icarus.Database.Repositories
             catch (Exception ex)
             {
                 var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
             }
 
             return null;
@@ -128,6 +134,8 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
 
+                    _logger.Info("Saving cover art record");
+
                     var query = "INSERT INTO CoverArt(SongTitle, ImagePath) " +
                         "VALUES(@SongTitle, @ImagePath)";
                     using (var cmd = new MySqlCommand(query, conn))
@@ -144,6 +152,7 @@ namespace Icarus.Database.Repositories
             catch (Exception ex)
             {
                 var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
             }
         }
         public void DeleteCoverArt(CoverArt cover)
@@ -153,6 +162,8 @@ namespace Icarus.Database.Repositories
                 using (var conn = GetConnection())
                 {
                     conn.Open();
+
+                    _logger.Info("Deleting cover art record");
 
                     var query = "DELETE FROM CoverArt WHERE " +
                         "CoverArtId=@CoverArtId";
@@ -177,6 +188,7 @@ namespace Icarus.Database.Repositories
             if (reader.HasRows)
             {
                 var coverArtList = new List<CoverArt>();
+                _logger.Info("Parsing cover art records");
                 while (reader.Read())
                     coverArtList.Add(new CoverArt
                     {
@@ -195,6 +207,7 @@ namespace Icarus.Database.Repositories
         {
             if (reader.HasRows)
             {
+                _logger.Info("Parsing single cover art record");
                 reader.Read();
 
                 return new CoverArt
@@ -227,6 +240,9 @@ namespace Icarus.Database.Repositories
             using (var conn = GetConnection())
             {
                 conn.Open();
+
+                _logger.Info("Checking to see if there are any cover art " + 
+                        "records");
 
                 var query = "SELECT * FROM CoverArt";
                 using (var cmd = new MySqlCommand(query, conn))

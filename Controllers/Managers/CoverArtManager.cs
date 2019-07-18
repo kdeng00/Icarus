@@ -31,17 +31,13 @@ namespace Icarus.Controllers.Managers
         public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt, 
                 CoverArtRepository coverArtRepository)
         {
-            Console.WriteLine("Gonig to save cover art record");
+            _logger.Info("Saving cover art record to the database");
             coverArtRepository.SaveCoverArt(coverArt);
-            Console.WriteLine($"tlte {coverArt.SongTitle}");
 
             coverArt = coverArtRepository.GetCoverArt(CoverArtField.SongTitle,
                     coverArt);
-            Console.WriteLine($"cover art id {coverArt.CoverArtId}");
 
             song.CoverArtId = coverArt.CoverArtId;
-            Console.WriteLine("Nothing wrong here");
-            Console.WriteLine($"song cover art id {song.CoverArtId}");
         }
         public void DeleteCoverArtFromDatabase(CoverArt coverArt, 
                 CoverArtRepository coverArtRepository)
@@ -64,6 +60,7 @@ namespace Icarus.Controllers.Managers
                 else
                 {
                     _logger.Info("Song contains the stock cover art");
+                    _logger.Info("Will not delete from from the filesystem");
                 }
             }
             catch (Exception ex)
@@ -90,10 +87,12 @@ namespace Icarus.Controllers.Managers
                 var imgBytes = metaData.RetrieveCoverArtBytes(song);
                 
                 if (imgBytes != null)
+                {
+                    _logger.Info("Saving cover art to the filesystem");
                     File.WriteAllBytes(coverArt.ImagePath, imgBytes);
+                }
                 else
                 {
-                    Console.WriteLine("Song has no cover art, applying stock cover art");
                     _logger.Info("Song has no cover art, applying stock cover art");
                     coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
                     metaData.UpdateCoverArt(song, coverArt);
@@ -106,7 +105,6 @@ namespace Icarus.Controllers.Managers
             {
                 var msg = ex.Message;
                 _logger.Error(msg, "An error occurred");
-                Console.WriteLine(msg);
             }
             
             return null;
