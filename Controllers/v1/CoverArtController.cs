@@ -46,7 +46,7 @@ namespace Icarus.Controllers.V1
 
             if (coverArt != null)
             {
-                _logger.Info("Found cover art record");
+                _logger.LogInformation("Found cover art record");
                 var coverArtBytes = System.IO.File.ReadAllBytes(
                         coverArt.ImagePath);
 
@@ -55,7 +55,7 @@ namespace Icarus.Controllers.V1
             }
             else
             {
-                _logger.Info("Cover art not found");
+                _logger.LogInformation("Cover art not found");
                 return NotFound();
             }
         }
