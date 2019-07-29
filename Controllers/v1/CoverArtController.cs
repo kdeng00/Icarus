@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +32,31 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP Routes
+        public async Task<IActionResult> Get()
+        {
+            var coverArtRepository = HttpContext
+                .RequestServices
+                .GetService(
+                        typeof(CoverArtRepository)) as CoverArtRepository;
+
+            var coverArtRecords = coverArtRepository.GetCoverArtRecords();
+
+            if (coverArtRecords == null)
+            {
+                _logger.LogInformation("No cover art records");
+                return NotFound();
+            }
+            else
+            {
+                _logger.LogInformation("Found cover art records");
+                return Ok(coverArtRecords);
+            }
+
+        }
+
         [HttpGet("{id}")]
         [Authorize("download:cover_art")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             var coverArt = new CoverArt { CoverArtId = id };
 

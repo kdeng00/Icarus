@@ -19,6 +19,32 @@ namespace Icarus.Database.Repositories
 
 
         #region Methods
+        public List<CoverArt> GetCoverArtRecords()
+        {
+            try
+            {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+
+                    _logger.Info("Querying cover art records");
+
+                    var query = "SELECT cv.*, sng.Id AS SongId FROM CoverArt " +
+                        "cv LEFT JOIN Song sng ON cv.CoverArtId=sng.CoverArtId";
+
+                    using (var cmd = new MySqlCommand(query, conn))
+                        using (var reader = cmd.ExecuteReader())
+                            return ParseData(reader);
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                _logger.Error(msg, "An error occurred");
+            }
+
+            return null;
+        }
         public CoverArt GetCoverArt(CoverArt cover)
         {
             try
@@ -194,7 +220,8 @@ namespace Icarus.Database.Repositories
                     {
                         CoverArtId = Convert.ToInt32(reader["CoverArtId"]),
                         SongTitle = reader["SongTitle"].ToString(),
-                        ImagePath = reader["ImagePath"].ToString()
+                        ImagePath = reader["ImagePath"].ToString(),
+                        SongId = Convert.ToInt32(reader["SongId"].ToString())
                     });
 
                 return coverArtList;

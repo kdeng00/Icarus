@@ -11,11 +11,12 @@ namespace Icarus.Models
         [JsonProperty("id")]
         public int CoverArtId { get; set; }
         [JsonProperty("title")]
-	public string SongTitle { get; set; }
+	    public string SongTitle { get; set; }
         [JsonIgnore]
-	public string ImagePath { get; set; }
-
-	[JsonIgnore]
-	public List<Song> Songs { get; set; }
+	    public string ImagePath { get; set; }
+        [JsonProperty("song_id")]
+        public int SongId { get; set; }
+	    [JsonIgnore]
+        public List<Song> Songs { get; set; }
     }
 }
