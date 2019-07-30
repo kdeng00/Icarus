@@ -47,17 +47,14 @@ namespace Icarus.Controllers.V1
 
             var song = songStore.GetSong(new Song { Id = id });
 
-            var mem =  new MemoryStream();
-
-            using (var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read))
-                await stream.CopyToAsync(mem);
-
-            mem.Position = 0;
+            var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read);
+            stream.Position = 0;
+            var filename = $"{song.Title}.mp3";
 
             _logger.LogInformation("Starting to stream song...>");
             Console.WriteLine("Starting to streamsong...");
 
-            return File(mem, "application/octet-stream", Path.GetFileName(song.SongPath));
+            return File(stream, "application/octet-stream", filename);
         }
         #endregion
     }
