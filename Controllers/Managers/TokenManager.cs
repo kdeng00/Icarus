@@ -90,8 +90,6 @@ namespace Icarus.Controllers.Managers
             _audience = _config["Auth0:ApiIdentifier"];
             _grantType = "client_credentials";
             _url = $"https://{_config["Auth0:Domain"]}";
-
-            PrintCredentials();
         }
 
         #region Testing Methods

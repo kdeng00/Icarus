@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
@@ -364,7 +365,12 @@ namespace Icarus.Controllers.Managers
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
 
+                var sng = ConvertSongToSng(song);
+                
+                DirectoryManager.create_directory(sng);
+
                 System.IO.File.Delete(fileTempPath);
+                Environment.Exit(1);
 
                 var filePath = dirMgr.SongDirectory;
                 var songFilename = songFile.FileName;
@@ -501,7 +507,19 @@ namespace Icarus.Controllers.Managers
             return song;
         }
 
-
+        private Sng ConvertSongToSng(Song song)
+        {
+            return new Sng
+            {
+                Id = song.Id,
+                Title = song.Title,
+                Artist = song.Artist,
+                Album = song.AlbumTitle,
+                Genre = song.Genre,
+                Year = song.Year.Value
+            };
+        }
+        
         private Song RetrieveMetaData(string filePath)
         {
             Song newSong = new Song
@@ -1219,5 +1237,19 @@ namespace Icarus.Controllers.Managers
                 }
         }
         #endregion    
+
+
+        #region Structs
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Sng
+        {
+            public int Id;
+            public string Title;
+            public string Artist;
+            public string Album;
+            public string Genre;
+            public int Year;
+        };
+        #endregion
     }
 }

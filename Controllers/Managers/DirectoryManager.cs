@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Configuration;
 
@@ -92,6 +93,8 @@ namespace Icarus.Controllers.Managers
                 _logger.Error(msg, "An error occurred");
             }
         }
+        [DllImport("libicarus.so")]
+        public static extern void create_directory(SongManager.Sng song);
         public void DeleteEmptyDirectories()
         {
             try
