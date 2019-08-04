@@ -94,9 +94,15 @@ namespace Icarus.Controllers.Managers
                 _logger.Error(msg, "An error occurred");
             }
         }
+        #region C++ libs
         [DllImport("libicarus.so")]
         public static extern void create_directory(SongManager.Sng song, string root_path, StringBuilder created_dir);
-        //public static extern void create_directory(SongManager.Sng song, string root_path, string created_dir);
+        [DllImport("libicarus.so")]
+        public static extern void copy_stock_cover_art(string target_path, string source_path);
+        [DllImport("libicarus.so")]
+        public static extern void delete_cover_art(string cover_art_path, string stock_path);
+        #endregion
+
         public void DeleteEmptyDirectories()
         {
             try

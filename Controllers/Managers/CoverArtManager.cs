@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 using Icarus.Constants;
 using Icarus.Controllers.Utilities;
@@ -14,7 +15,6 @@ namespace Icarus.Controllers.Managers
     {
         #region Fields
         private string _rootCoverArtPath;
-        private byte[] _stockCoverArt = null;
         #endregion
 
 
@@ -48,36 +48,27 @@ namespace Icarus.Controllers.Managers
         }
         public void DeleteCoverArt(CoverArt coverArt)
         {
-            try
-            {
-                var stockCoverArtPath = _rootCoverArtPath + "CoverArt.png";
-                if (!string.Equals(stockCoverArtPath, coverArt.ImagePath, 
-                            StringComparison.CurrentCultureIgnoreCase))
-                {
-                    _logger.Info("Song does not contain the stock cover art");
-                    File.Delete(coverArt.ImagePath);
-                    _logger.Info("Cover art deleted from the filesystem");
-                }
-                else
-                {
-                    _logger.Info("Song contains the stock cover art");
-                    _logger.Info("Will not delete from from the filesystem");
-                }
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                _logger.Error(msg, "An error occurred");
-            }
+            var stockCoverArtPath = _rootCoverArtPath + "CoverArtPath.png";
+            DirectoryManager.delete_cover_art(coverArt.ImagePath, stockCoverArtPath);
         }
 
         public CoverArt SaveCoverArt(Song song)
         {
             try
             {
-                var dirMgr = new DirectoryManager(_rootCoverArtPath);
-                dirMgr.CreateDirectory(song);
-                var imagePath = dirMgr.SongDirectory + song.Title + ".png";
+                // TODO: Change logic so it attempts to create the directory
+                // after it has been determined that the song does not have
+                // a cover art image
+                
+                var strCount = _rootCoverArtPath.Length + song.Artist.Length + 
+                    song.AlbumTitle.Length + 2;
+                var imgPath = new StringBuilder(strCount);
+
+                DirectoryManager.create_directory(SongManager.ConvertSongToSng(song), 
+                        _rootCoverArtPath, imgPath);
+
+                var imagePath = imgPath.ToString().Substring(0, strCount);
+                imagePath += song.Title + ".png";
                 var coverArt = new CoverArt
                 {
                     SongTitle = song.Title,
@@ -97,7 +88,6 @@ namespace Icarus.Controllers.Managers
                     _logger.Info("Song has no cover art, applying stock cover art");
                     coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
                     metaData.UpdateCoverArt(song, coverArt);
-                    File.WriteAllBytes(coverArt.ImagePath, _stockCoverArt);
                 }
 
                 return coverArt;
@@ -113,15 +103,9 @@ namespace Icarus.Controllers.Managers
 
         private void Initialize()
         {
-            if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
-                _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
-
-            if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
-            {
-                File.WriteAllBytes(_rootCoverArtPath + "CoverArt.png", 
-                        _stockCoverArt);
-                Console.WriteLine("Copied Stock Cover Art");
-            }
+            var stockCover = _rootCoverArtPath + "CoverArt.png";
+            DirectoryManager.copy_stock_cover_art(stockCover, 
+                    DirectoryPaths.CoverArtPath);
         }
         #region Testing
         private void PrintCoverArtDetails(CoverArt cover)

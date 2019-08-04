@@ -32,7 +32,7 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP Routes
-        public async Task<IActionResult> Get()
+        public IActionResult Get()
         {
             var coverArtRepository = HttpContext
                 .RequestServices
@@ -70,7 +70,7 @@ namespace Icarus.Controllers.V1
             if (coverArt != null)
             {
                 _logger.LogInformation("Found cover art record");
-                var coverArtBytes = System.IO.File.ReadAllBytes(
+                var coverArtBytes = await System.IO.File.ReadAllBytesAsync(
                         coverArt.ImagePath);
 
                 return File(coverArtBytes, "application/x-msdownload", 
