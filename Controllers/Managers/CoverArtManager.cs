@@ -38,6 +38,7 @@ namespace Icarus.Controllers.Managers
                     coverArt);
 
             song.CoverArtId = coverArt.CoverArtId;
+            _logger.Info("Cover art Process saving complete");
         }
         public void DeleteCoverArtFromDatabase(CoverArt coverArt, 
                 CoverArtRepository coverArtRepository)
@@ -122,6 +123,14 @@ namespace Icarus.Controllers.Managers
                 Console.WriteLine("Copied Stock Cover Art");
             }
         }
+        #region Testing
+        private void PrintCoverArtDetails(CoverArt cover)
+        {
+            Console.WriteLine("\nCover art");
+            Console.WriteLine($"Song Title: {cover.SongTitle}");
+            Console.WriteLine($"ImagePath: {cover.ImagePath}\n");
+        }
+        #endregion
         #endregion
     }
 }

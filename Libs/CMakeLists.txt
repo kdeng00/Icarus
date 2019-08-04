@@ -2,9 +2,17 @@ cmake_minimum_required(VERSION 3.10)
 
 project(icarus)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
+
 set(SOURCES
-    src/icarus.cpp
+    src/directory_manager.cpp
+)
+set(HEADERS
+    include/models.h
+    include/directory_manager.h
 )
 
-add_library(icarus SHARED ${SOURCES})
+add_library(icarus SHARED ${SOURCES} ${HEADERS})
+include_directories(include)
+target_link_libraries(icarus "-lstdc++fs")

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
@@ -362,17 +363,21 @@ namespace Icarus.Controllers.Managers
                 var song = await SaveSongTemp(songFile, fileTempPath);
                 song.SongPath = fileTempPath;
 
-                DirectoryManager dirMgr = new DirectoryManager(_config, song);
-                dirMgr.CreateDirectory();
-
                 var sng = ConvertSongToSng(song);
                 
-                DirectoryManager.create_directory(sng);
+                var rootPath = _config.GetValue<string>("RootMusicPath");
+                var strCount = rootPath.Length + song.Artist.Length +
+                    song.AlbumTitle.Length + 2;
+                
+                var filePathSB = new StringBuilder(strCount);
+
+                DirectoryManager.create_directory(sng, 
+                        rootPath, filePathSB);
+                        
+                var filePath = filePathSB.ToString().Substring(0, strCount);
 
                 System.IO.File.Delete(fileTempPath);
-                Environment.Exit(1);
-
-                var filePath = dirMgr.SongDirectory;
+                
                 var songFilename = songFile.FileName;
 
                 if (!songFilename.EndsWith(".mp3"))

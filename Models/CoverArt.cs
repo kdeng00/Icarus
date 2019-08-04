@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 using Newtonsoft.Json;
@@ -14,6 +15,7 @@ namespace Icarus.Models
 	    public string SongTitle { get; set; }
         [JsonIgnore]
 	    public string ImagePath { get; set; }
+        [NotMapped]
         [JsonProperty("song_id")]
         public int SongId { get; set; }
 	    [JsonIgnore]

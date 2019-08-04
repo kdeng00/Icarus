@@ -14,12 +14,12 @@ namespace Icarus.Database.Contexts
     {
         public DbSet<CoverArt> CoverArtImages { get; set; }
 
-	public CoverArtContext(DbContextOptions<CoverArtContext> options) : base(options) { }
-	
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-	    modelBuilder.Entity<CoverArt>()
-	        .ToTable("CoverArt");
-	}
+    public CoverArtContext(DbContextOptions<CoverArtContext> options) : base(options) { }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CoverArt>()
+            .ToTable("CoverArt");
+    }
     }
 }

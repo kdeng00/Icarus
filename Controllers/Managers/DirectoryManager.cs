@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 using Microsoft.Extensions.Configuration;
 
@@ -94,7 +95,8 @@ namespace Icarus.Controllers.Managers
             }
         }
         [DllImport("libicarus.so")]
-        public static extern void create_directory(SongManager.Sng song);
+        public static extern void create_directory(SongManager.Sng song, string root_path, StringBuilder created_dir);
+        //public static extern void create_directory(SongManager.Sng song, string root_path, string created_dir);
         public void DeleteEmptyDirectories()
         {
             try
