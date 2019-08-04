@@ -100,6 +100,8 @@ namespace Icarus.Controllers.Managers
         [DllImport("libicarus.so")]
         public static extern void copy_stock_cover_art(string target_path, string source_path);
         [DllImport("libicarus.so")]
+        public static extern void copy_song(string target_path, string source_path);
+        [DllImport("libicarus.so")]
         public static extern void delete_cover_art(string cover_art_path, string stock_path);
         #endregion
 

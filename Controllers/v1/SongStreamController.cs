@@ -40,7 +40,7 @@ namespace Icarus.Controllers.V1
         #region HTTP endpoints
         [HttpGet("{id}")]
         [Authorize("stream:songs")]
-        public async Task<IActionResult> Get(int id)
+        public IActionResult Get(int id)
         {
             var songStore= HttpContext.RequestServices
                 .GetService(typeof(SongRepository)) as SongRepository;

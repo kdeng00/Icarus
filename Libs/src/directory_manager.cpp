@@ -73,6 +73,18 @@ void copy_stock_to_root(const char *target, const std::string buff)
 
     std::cout<<"copy finished"<<std::endl;
 }
+void copy_song_to_path(const char *target, const char *source)
+{
+    std::cout<<"starting process to copy song"<<std::endl;
+    auto target_path = fs::path(target);
+    auto src_path = fs::path(source);
+
+    std::cout<<"copting over to "<<target_path.string()<<std::endl;
+    fs::copy(src_path, target_path);
+
+    fs::remove(source);
+    std::cout<<"copy finished"<<std::endl;
+}
 void delete_cover_art_file(const std::string cov_path)
 {
     auto cov = fs::path(cov_path);
@@ -84,6 +96,7 @@ extern "C"
 
 void create_directory(Song, const char*, char*);
 void copy_stock_cover_art(const char*, const char*);
+void copy_song(const char*, const char*);
 void print_song_details(const Song);
 
 void create_directory(Song song, const char *root_path, char *dir)
@@ -96,6 +109,10 @@ void copy_stock_cover_art(const char *target, const char *source)
 {
     const auto buff = read_cover_art(source);
     copy_stock_to_root(target, buff);
+}
+void copy_song(const char *target, const char *source)
+{
+    copy_song_to_path(target, source);
 }
 void delete_cover_art(const char *cover_path, const char *stock_path)
 {

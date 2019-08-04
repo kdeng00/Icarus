@@ -98,16 +98,12 @@ namespace Icarus.Controllers.Managers
                 oldSongRecord.ArtistId = updatedArtist.ArtistId;
 
                 var updatedGenre = UpdateGenreInDatabase(oldSongRecord, updatedSong, genreStore);
-                Console.WriteLine($"Old Genre Id {oldSongRecord.GenreId}");
                 oldSongRecord.GenreId = updatedGenre.GenreId;
-                Console.WriteLine($"Updated Genre Id {updatedGenre.GenreId}");
 
                 var updatedYear = UpdateYearInDatabase(oldSongRecord, updatedSong, yearStore);
                 oldSongRecord.YearId = updatedYear.YearId;
 
                 UpdateSongInDatabase(ref oldSongRecord, ref updatedSong, songStore, ref result);
-
-                DeleteEmptyDirectories(ref oldSongRecord, ref updatedSong);
             }
             catch (Exception ex)
             {
@@ -329,7 +325,8 @@ namespace Icarus.Controllers.Managers
                 Artist = song.Artist,
                 Album = song.AlbumTitle,
                 Genre = song.Genre,
-                Year = song.Year.Value
+                Year = song.Year.Value,
+                SongPath = song.SongPath
             };
         }
         
@@ -581,6 +578,28 @@ namespace Icarus.Controllers.Managers
             return true;
         }
 
+        public Song SongCopy(Song song)
+        {
+            var updatedSongRecord = new Song
+            {
+                Id = song.Id,
+                Title = song.Title,
+                Artist = song.Artist,
+                AlbumTitle = song.AlbumTitle,
+                Genre = song.Genre,
+                Year = song.Year,
+                Duration = song.Duration,
+                Filename = song.Filename,
+                SongPath = song.SongPath,
+                ArtistId = song.ArtistId,
+                AlbumId = song.AlbumId,
+                GenreId = song.GenreId,
+                YearId = song.YearId
+            };
+
+            return updatedSongRecord;
+        }
+
         private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord, AlbumRepository albumStore)
         {
             var albumRecord = albumStore.GetAlbum(oldSongRecord, true);
@@ -769,22 +788,7 @@ namespace Icarus.Controllers.Managers
         private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, SongRepository songStore,
                 ref SongResult result)
         {
-            var updatedSongRecord = new Song
-            {
-                Id = oldSongRecord.Id,
-                Title = oldSongRecord.Title,
-                Artist = oldSongRecord.Artist,
-                AlbumTitle = oldSongRecord.AlbumTitle,
-                Genre = oldSongRecord.Genre,
-                Year = oldSongRecord.Year,
-                Filename = oldSongRecord.Filename,
-                SongPath = oldSongRecord.SongPath,
-                ArtistId = oldSongRecord.ArtistId,
-                AlbumId = oldSongRecord.AlbumId,
-                GenreId = oldSongRecord.GenreId,
-                YearId = oldSongRecord.YearId
-
-            };
+            var updatedSongRecord = SongCopy(oldSongRecord);
             var artistOrAlbumChanged = false;
 
             if (!SongRecordChanged(oldSongRecord, newSongRecord))
@@ -822,35 +826,20 @@ namespace Icarus.Controllers.Managers
             {
                 _logger.Info("Change to song's album or artist");
 
-                DirectoryManager dirMgr = new DirectoryManager(_config);
-                var oldSongPath = updatedSongRecord.SongPath;
-                var newSongPath = dirMgr.GenerateSongPath(updatedSongRecord);
-                var filename = updatedSongRecord.Filename;
+                var rootPath = _config.GetValue<string>("RootMusicPath");
+                var strCount = rootPath.Length + updatedSongRecord.Artist.Length +
+                    updatedSongRecord.AlbumTitle.Length + 2;
+                var updatedPath = new StringBuilder(strCount);
 
-                Console.WriteLine($"Old song path {oldSongPath}");
-                Console.WriteLine($"New song path {newSongPath}");
+                DirectoryManager.create_directory(ConvertSongToSng(updatedSongRecord), 
+                            rootPath, updatedPath);
 
-                _logger.Info("Copying song to the new path");
+                var newSongPath = updatedPath.ToString().Substring(0, strCount) + 
+                    updatedSongRecord.Filename;
 
-                System.IO.File.Copy(oldSongPath, newSongPath + filename, true);
+                DirectoryManager.copy_song(newSongPath, updatedSongRecord.SongPath);
 
-                _logger.Info("Checking to see if song successfully copied");
-
-                if (!System.IO.File.Exists(newSongPath + filename))
-                {
-                    _logger.Info("Song did not successfully copy");
-
-                    Console.WriteLine("New path does not exist when it should");
-                }
-
-                updatedSongRecord.SongPath = newSongPath + filename;
-                
-                _logger.Info("Deleting old song path");
-
-                System.IO.File.Delete(oldSongPath);
-
-                if (System.IO.File.Exists(oldSongPath))
-                    Console.WriteLine("Old path exists when it should not");
+                updatedSongRecord.SongPath = newSongPath;
             }
 
             _logger.Info("Saving song metadata to the database");
@@ -944,6 +933,7 @@ namespace Icarus.Controllers.Managers
             public string Album;
             public string Genre;
             public int Year;
+            public string SongPath;
         };
         #endregion
     }

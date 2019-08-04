@@ -7,4 +7,5 @@ struct Song
     char *Album;
     char *Genre;
     int Year;
+    char *SongPath;
 };
