@@ -117,25 +117,6 @@ namespace Icarus.Controllers.Managers
             return result;
         }
 
-        public bool DeleteSongFromFileSystem(Song songMetaData)
-        {
-            bool successful = false;
-            try
-            {
-                var songPath = songMetaData.SongPath;
-                System.IO.File.Delete(songPath);
-                successful = true;
-                DirectoryManager dirMgr = new DirectoryManager(_config, songMetaData);
-                dirMgr.DeleteEmptyDirectories();
-                Console.WriteLine("Song successfully deleted");
-            }
-            catch (Exception ex)
-            {
-                var exMsg = ex.Message;
-            }
-
-            return successful;
-        }
 
         public void DeleteSong(Song song, SongRepository songStore, 
                 AlbumRepository albumStore, ArtistRepository artistStore, 
@@ -144,12 +125,9 @@ namespace Icarus.Controllers.Managers
         {
             try
             {
-                if (DeleteSongFromFilesystem(song))
-                {
-                    _logger.Error("Failed to delete the song");
-
-                    throw new Exception("Failed to delete the song");
-                }
+                DirectoryManager.delete_song_empty_directories(
+                        ConvertSongToSng(song),
+                            _config.GetValue<string>("RootMusicPath"));
                 _logger.Info("Song deleted from the filesystem");
 
                 var coverMgr = new CoverArtManager(_config.GetValue<string>(
@@ -168,78 +146,6 @@ namespace Icarus.Controllers.Managers
             }
         }
 
-        public async Task SaveSongToFileSystem(IFormFile song)
-        {
-            try
-            {
-                Console.WriteLine("Saving song to the filesystem");
-                var filePath = Path.Combine(_tempDirectoryRoot, song.FileName);
-                Console.WriteLine("Saving song to the filePath");
-                await SaveSongToFileSystemTemp(song, filePath);
-                System.IO.File.Delete(filePath);
-
-
-                DirectoryManager dirMgr = new DirectoryManager(_config, _song);
-                dirMgr.CreateDirectory();
-                filePath = dirMgr.SongDirectory;
-
-                if (!song.FileName.EndsWith(".mp3"))
-                    filePath += $"{song.FileName}.mp3";
-                else
-                    filePath += $"{song.FileName}";
-
-                Console.WriteLine($"Full path {filePath}");
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await song.CopyToAsync(fileStream);
-                    _song.SongPath = filePath;
-
-                    Console.WriteLine($"Writing song to the directory: {filePath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                var exMsg = ex.Message;
-                Console.WriteLine($"An error occurred: {exMsg}");
-            }
-        }
-        public async Task SaveSongToFileSystem(IFormFile songFile, SongRepository sStoreContext,
-                AlbumRepository alStoreContext, ArtistRepository arStoreContext) 
-        {
-            try
-            {
-                _logger.Info("Starting process to save song to the filesystem");
-                var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
-                var song = await SaveSongTemp(songFile, fileTempPath);
-                System.IO.File.Delete(fileTempPath);
-
-                DirectoryManager dirMgr = new DirectoryManager(_config, song);
-                dirMgr.CreateDirectory();
-                var filePath = dirMgr.SongDirectory;
-
-                if (!songFile.FileName.EndsWith(".mp3"))
-                    filePath += $"{songFile.FileName}.mp3";
-                else
-                    filePath += $"{songFile.FileName}";
-
-                _logger.Info($"Absolute song path: {filePath}");
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await (songFile.CopyToAsync(fileStream));
-                    song.SongPath = filePath;
-
-                    _logger.Info("Song Successfully saved");
-                }
-                SaveSongToDatabase(song, sStoreContext, alStoreContext, arStoreContext);
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                _logger.Error(msg, "An error occurred");
-            }
-        }
         public async Task SaveSongToFileSystem(IFormFile songFile, SongRepository songStore,
                 AlbumRepository albumStore, ArtistRepository artistStore,
                 GenreRepository genreStore, YearRepository yearStore,
@@ -394,29 +300,6 @@ namespace Icarus.Controllers.Managers
             return false;
         }
 
-        private void DeleteEmptyDirectories(ref Song oldSong, ref Song updatedSong)
-        {
-            DirectoryManager mgr = new DirectoryManager(_config);
-
-            _logger.Info("Checking to see if there are any directories to delete");
-            mgr.DeleteEmptyDirectories(oldSong);
-        }
-
-        private void SaveSongToDatabase(Song song, SongRepository songStore, AlbumRepository albumStore,
-                ArtistRepository artistStore)
-        {
-            _logger.Info("Starting process to save the song to the database");
-            
-            MetadataRetriever.PrintMetadata(song);
-            SaveAlbumToDatabase(ref song, albumStore);
-            MetadataRetriever.PrintMetadata(song);
-            SaveArtistToDatabase(ref song, artistStore);
-            MetadataRetriever.PrintMetadata(song);
-            
-            _logger.Info($"Song;\nTitle {song.Title}\nAlbum {song.AlbumTitle}\nAlbum Id {song.AlbumId}\nArtist {song.ArtistId}");
-
-            songStore.SaveSong(song);
-        }
         private void SaveSongToDatabase(Song song, SongRepository songStore, AlbumRepository albumStore,
                 ArtistRepository artistStore, GenreRepository genreStore, YearRepository yearStore)
         {
@@ -500,10 +383,6 @@ namespace Icarus.Controllers.Managers
                 genreStore.SaveGenre(genre);
                 Console.WriteLine("Going to find genre");
                 genre = genreStore.GetGenre(song);
-                var genreDump = $"Genre id {genre.GenreId} GenreName {genre.GenreName}" +
-                    $" Genre song Count {genre.SongCount}";
-                Console.WriteLine(genreDump);
-                _logger.Info(genreDump);
             }
             else
             {
@@ -541,41 +420,6 @@ namespace Icarus.Controllers.Managers
             }
 
             song.YearId = year.YearId;
-        }
-
-        private bool DeleteSongFromFilesystem(Song song)
-        {
-            var songPath = song.SongPath;
-
-            _logger.Info("Deleting song from the filesystem");
-
-            try
-            {
-                System.IO.File.Delete(songPath);
-            }
-            catch(Exception ex)
-            {
-                var msg = ex.Message;
-                _logger.Error(msg, "An error occurred when attempting to delete the song from the filesystem");
-                return false;
-            }
-
-            return DoesSongExistOnFilesystem(song);
-        }
-        private bool DoesSongExistOnFilesystem(Song song)
-        {
-            var songPath = song.SongPath;
-
-            if (!System.IO.File.Exists(songPath))
-            {
-                _logger.Info("Song does not exist on the filesystem");
-
-                return false;
-            }
-
-            _logger.Info("Song exists on the filesystem");
-
-            return true;
         }
 
         public Song SongCopy(Song song)
@@ -814,8 +658,6 @@ namespace Icarus.Controllers.Managers
             if (!string.IsNullOrEmpty(newSongRecord.Genre))
             {
                 updatedSongRecord.Genre = newSongRecord.Genre;
-                Console.WriteLine("Genre changed");
-                Console.WriteLine($"{updatedSongRecord.Genre} {newSongRecord.Genre}");
             }
             if (newSongRecord.Year != null || newSongRecord.Year > 0)
                 updatedSongRecord.Year = newSongRecord.Year;

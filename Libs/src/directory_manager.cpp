@@ -90,6 +90,44 @@ void delete_cover_art_file(const std::string cov_path)
     auto cov = fs::path(cov_path);
     fs::remove(cov);
 }
+void delete_directories(Song song, const char *root_path)
+{
+    std::cout<<"checking to for empty directories to delete"<<std::endl;
+    const std::string art{root_path + std::string{"/"} + song.Artist};
+    const std::string alb{art + "/" + song.Album};
+
+    auto alb_path = fs::path(alb);
+    
+    if (!fs::exists(alb_path)) {
+        std::cout<<"directory does not exists"<<std::endl;
+    } else if (fs::is_empty(alb_path)) {
+        fs::remove(alb_path);
+    }
+
+    auto art_path = fs::path(art);
+    
+    if (!fs::exists(art_path)) {
+        std::cout<<"directory does not exists"<<std::endl;
+        return;
+    } else if (fs::is_empty(art_path)) {
+        fs::remove(art_path);
+    }
+
+    std::cout<<"deleted empty directory or directories"<<std::endl;
+}
+void delete_song(Song song)
+{
+    std::cout<<"deleting song"<<std::endl;
+    auto song_path = fs::path(song.SongPath);
+
+    if (!fs::exists(song_path)) {
+        std::cout<<"song does not exists"<<std::endl;
+        return;
+    }
+
+    fs::remove(song_path);
+    std::cout<<"deleted song"<<std::endl;
+}
 
 extern "C"
 {
@@ -97,6 +135,9 @@ extern "C"
 void create_directory(Song, const char*, char*);
 void copy_stock_cover_art(const char*, const char*);
 void copy_song(const char*, const char*);
+void delete_cover_art(const char*, const char*);
+void delete_empty_directories(Song, const char*);
+void delete_song_empty_directories(Song, const char*);
 void print_song_details(const Song);
 
 void create_directory(Song song, const char *root_path, char *dir)
@@ -125,6 +166,15 @@ void delete_cover_art(const char *cover_path, const char *stock_path)
     } else {
         std::cout<<"cover art is the stock path and will not be deleted"<<std::endl;
     }
+}
+void delete_empty_directories(Song song, const char *root_path)
+{
+    delete_directories(song, root_path);
+}
+void delete_song_empty_directories(Song song, const char *root_path)
+{
+    delete_song(song);
+    delete_directories(song, root_path);
 }
 void print_song_details(const Song song)
 {

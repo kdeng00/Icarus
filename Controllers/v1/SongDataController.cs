@@ -130,7 +130,6 @@ namespace Icarus.Controllers.V1
             Initialize();
 
             var songMetaData = new Song{ Id = id };
-            Console.WriteLine($"Id {songMetaData.Id}");
             songMetaData = _songRepository.GetSong(songMetaData);
 
             if (string.IsNullOrEmpty(songMetaData.Title))
