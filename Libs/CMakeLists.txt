@@ -7,12 +7,14 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
     src/directory_manager.cpp
+    src/metadata_retriever.cpp
 )
 set(HEADERS
     include/models.h
     include/directory_manager.h
+    include/metadata_retriever.h
 )
 
 add_library(icarus SHARED ${SOURCES} ${HEADERS})
 include_directories(include)
-target_link_libraries(icarus "-lstdc++fs")
+target_link_libraries(icarus "-lstdc++fs" tag)

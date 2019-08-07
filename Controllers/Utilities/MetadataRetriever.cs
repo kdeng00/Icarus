@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -100,6 +101,9 @@ namespace Icarus.Controllers.Utilities
 
             return song;
         }
+
+        [DllImport("libicarus.so")]
+        public static extern Icarus.Controllers.Managers.SongManager.Sng retrieve_metadata(string file_path);
 
         public byte[] RetrieveCoverArtBytes(Song song)
         {
