@@ -2,4 +2,4 @@
 
 #include "models.h"
 
-Song fetch_metadata(const char*);
+void fetch_metadata(Song&, const char*);

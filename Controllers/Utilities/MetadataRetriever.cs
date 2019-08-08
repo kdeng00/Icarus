@@ -103,7 +103,8 @@ namespace Icarus.Controllers.Utilities
         }
 
         [DllImport("libicarus.so")]
-        public static extern Icarus.Controllers.Managers.SongManager.Sng retrieve_metadata(string file_path);
+        //public static extern Icarus.Controllers.Managers.SongManager.Sng retrieve_metadata(string file_path);
+        public static extern void retrieve_metadata(ref Icarus.Controllers.Managers.SongManager.Sng sng, string file_path);
 
         public byte[] RetrieveCoverArtBytes(Song song)
         {

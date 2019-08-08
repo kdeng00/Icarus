@@ -235,6 +235,19 @@ namespace Icarus.Controllers.Managers
                 SongPath = song.SongPath
             };
         }
+        public static Song ConvertSngToSong(Sng song)
+        {
+            return new Song
+            {
+                Id = song.Id,
+                Title = song.Title,
+                Artist = song.Artist,
+                AlbumTitle = song.Album,
+                Genre = song.Genre,
+                Year = song.Year,
+                SongPath = song.SongPath
+            };
+        }
         
 
         private async Task<SongData> RetrieveSongFromFileSystem(Song details)
@@ -257,15 +270,26 @@ namespace Icarus.Controllers.Managers
                 await songFile.CopyToAsync(filestream);
             }
 
-            MetadataRetriever meta = new MetadataRetriever();
-            song =  meta.RetrieveMetaData(filePath);
+            //MetadataRetriever meta = new MetadataRetriever();
+            //song =  meta.RetrieveMetaData(filePath);
+            Console.WriteLine("try");
+            unsafe
+            {
+            Song *sng = new Sng();
+            MetadataRetriever.retrieve_metadata(ref sng, filePath);
+            Console.WriteLine("Hmmmm");
+            Console.WriteLine($"sng title {sng.Title}");
+            song = ConvertSngToSong(sng);
+            }
 
             _logger.Info("Assigning song filename");
             song.Filename = songFile.FileName;
 
+            Console.WriteLine("what?");
             return song;
         }
 
+        /**
         private async Task SaveSongToFileSystemTemp(IFormFile song, string filePath)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -283,6 +307,7 @@ namespace Icarus.Controllers.Managers
                 Console.WriteLine($"Song filename retrieved: {song.FileName}");
             }
         }
+        */
 
         private bool SongRecordChanged(Song currentSong, Song songUpdates)
         {
@@ -761,20 +786,24 @@ namespace Icarus.Controllers.Managers
             if (year.SongCount <= 1)
                 yearStore.DeleteYear(year);
         }
-
         #endregion    
 
 
         #region Structs
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct Sng
         {
             public int Id;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string Title;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string Artist;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string Album;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string Genre;
             public int Year;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string SongPath;
         };
         #endregion
