@@ -45,11 +45,11 @@ namespace Icarus.Controllers.V1
         [Authorize("read:song_details")]
         public IActionResult Get()
         {
-            List<Song> songs = new List<Song>();
+            var songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
             _logger.LogInformation("Attempting to retrieve songs");
             
-            SongRepository context = HttpContext.RequestServices
+            var context = HttpContext.RequestServices
                 .GetService(typeof(SongRepository)) as SongRepository;
 
             songs = context.GetAllSongs();
@@ -64,13 +64,11 @@ namespace Icarus.Controllers.V1
         [Authorize("read:song_details")]
         public IActionResult Get(int id)
         {
-            SongRepository context = HttpContext.RequestServices
+            var context = HttpContext.RequestServices
                 .GetService(typeof(SongRepository)) as SongRepository;
             
-            Song song = new Song { Id = id };
+            var song = new Song { Id = id };
             song = context.GetSong(song);
-
-            Console.WriteLine("Here");
 
             if (song.Id != 0)
                 return Ok(song);
@@ -82,19 +80,19 @@ namespace Icarus.Controllers.V1
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Song song)
         {
-            SongRepository context = HttpContext.RequestServices
+            var context = HttpContext.RequestServices
                 .GetService(typeof(SongRepository)) as SongRepository;
 
-            ArtistRepository artistStore = HttpContext.RequestServices
+            var artistStore = HttpContext.RequestServices
                 .GetService(typeof(ArtistRepository)) as ArtistRepository;
 
-            AlbumRepository albumStore = HttpContext.RequestServices
+            var albumStore = HttpContext.RequestServices
                 .GetService(typeof(AlbumRepository)) as AlbumRepository;
             
-            GenreRepository genreStore = HttpContext.RequestServices
+            var genreStore = HttpContext.RequestServices
                 .GetService(typeof(GenreRepository)) as GenreRepository;
 
-            YearRepository yearStore = HttpContext.RequestServices
+            var yearStore = HttpContext.RequestServices
                 .GetService(typeof(YearRepository)) as YearRepository;
 
             song.Id = id;

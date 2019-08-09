@@ -2,10 +2,11 @@
 struct Song
 {
     int Id;
-    char *Title;
-    char *Artist;
-    char *Album;
-    char *Genre;
+    char Title[1024];
+    char Artist[1024];
+    char Album[1024];
+    char Genre[1024];
     int Year;
-    char *SongPath;
+    int Duration;
+    char SongPath[1024];
 };

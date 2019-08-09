@@ -16,12 +16,6 @@ namespace Icarus.Controllers.Utilities
         private static NLog.Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
         private Song _updatedSong;
         private string _message;
-        private string _title;
-        private string _artist;
-        private string _album;
-        private string _genre;
-        private int _year;
-        private int _duration;
         #endregion
 
 
@@ -36,10 +30,6 @@ namespace Icarus.Controllers.Utilities
             get => _message;
             set => _message = value;
         }
-        #endregion
-
-
-        #region Constructors
         #endregion
 
 
@@ -70,41 +60,11 @@ namespace Icarus.Controllers.Utilities
             _logger.Info($"Year: {song.Year}");
             _logger.Info($"Duration: {song.Duration}");
         }
-        public Song RetrieveMetaData(string filePath)
-        {
-            Song song = new Song();
 
-            try
-            {
-                TagLib.File fileTag = TagLib.File.Create(filePath);
-                _title = fileTag.Tag.Title;
-                _artist = string.Join("", fileTag.Tag.Performers);
-                _album = fileTag.Tag.Album;
-                _genre = string.Join("", fileTag.Tag.Genres);
-                _year = (int)fileTag.Tag.Year;
-                _duration = (int)fileTag.Properties.Duration.TotalSeconds;
-
-                song.Title = _title;
-                song.Artist = _artist;
-                song.AlbumTitle = _album;
-                song.Genre = _genre;
-                song.Year = _year;
-                song.Duration = _duration;
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                Console.WriteLine("An error occurred in MetadataRetriever");
-                Console.WriteLine(msg);
-                _logger.Error(msg, "An error occurred in MetadataRetriever");
-            }
-
-            return song;
-        }
-
+        #region C++ Libs
         [DllImport("libicarus.so")]
-        //public static extern Icarus.Controllers.Managers.SongManager.Sng retrieve_metadata(string file_path);
         public static extern void retrieve_metadata(ref Icarus.Controllers.Managers.SongManager.Sng sng, string file_path);
+        #endregion
 
         public byte[] RetrieveCoverArtBytes(Song song)
         {
@@ -125,28 +85,6 @@ namespace Icarus.Controllers.Utilities
             return null;
         }
 
-        public void UpdateMetadata(Song song)
-        {
-            try
-            {
-                Console.WriteLine("Updating song metadata"); 
-                _logger.Info("Updating song metadata");
-                var filePath = song.SongPath;
-                TagLib.File fileTag = TagLib.File.Create(filePath);
-                fileTag.Tag.Title = song.Title;
-                fileTag.Tag.Genres = new []{song.Genre};
-                fileTag.Save();
-                Console.WriteLine("Song metadata updated");
-                _logger.Info("Song metadata updated");
-
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                Console.WriteLine($"An error occurred: \n{msg}");
-                _logger.Error(msg, "An error occurred");
-            }
-        }
         public void UpdateMetadata(Song updatedSong, Song oldSong)
         {
             try
@@ -252,42 +190,6 @@ namespace Icarus.Controllers.Utilities
                 Filename = song.Filename,
                 SongPath = song.SongPath
             };
-        }
-        private void PrintMetadata()
-        {
-            Console.WriteLine("\n\nMetadata of the song:");
-            Console.WriteLine($"Title: {_title}");
-            Console.WriteLine($"Artist: {_artist}");
-            Console.WriteLine($"Album: {_album}");
-            Console.WriteLine($"Genre: {_genre}");
-            Console.WriteLine($"Year: {_year}");
-            Console.WriteLine($"Duration: {_duration}\n\n");
-
-            _logger.Info("Metadata of the song");
-            _logger.Info($"Title: {_title}");
-            _logger.Info($"Artist: {_artist}");
-            _logger.Info($"Album: {_album}");
-            _logger.Info($"Genre: {_genre}");
-            _logger.Info($"Year: {_year}");
-            _logger.Info($"Duration: {_duration}");
-        }
-        private void PrintMetadata(Song song, string message)
-        {
-            Console.WriteLine($"\n\n{message}");
-            Console.WriteLine($"Title: {song.Title}");
-            Console.WriteLine($"Artist: {song.Artist}");
-            Console.WriteLine($"Album: {song.Album}");
-            Console.WriteLine($"Genre: {song.Genre}");
-            Console.WriteLine($"Year: {song.Year}");
-            Console.WriteLine($"Duration: {song.Duration}\n\n");
-
-            _logger.Info(message);
-            _logger.Info($"Title: {_title}");
-            _logger.Info($"Artist: {_artist}");
-            _logger.Info($"Album: {_album}");
-            _logger.Info($"Genre: {_genre}");
-            _logger.Info($"Year: {_year}");
-            _logger.Info($"Duration: {_duration}");
         }
 
         private SortedDictionary<string, bool> CheckSongValues(Song song)

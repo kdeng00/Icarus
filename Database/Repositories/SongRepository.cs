@@ -8,15 +8,7 @@ using Icarus.Models;
 namespace Icarus.Database.Repositories
 {    
     public class SongRepository : BaseRepository
-        {    
-        #region Fields
-        #endregion
-
-
-        #region Properties
-        #endregion
-    
-
+    {    
         #region Constructors
         public SongRepository(string connectionString)    
         {    
@@ -165,7 +157,7 @@ namespace Icarus.Database.Repositories
 
         public List<Song> GetAllSongs()
         {
-            List<Song> songs = new List<Song>();
+            var songs = new List<Song>();
 
             try
             {
@@ -174,10 +166,10 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
                     var query = "SELECT * FROM Song";
-                    Console.WriteLine("ffff");
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    using (var reader = cmd.ExecuteReader())
-                        songs = ParseData(reader);
+                    
+                    using (var cmd = new MySqlCommand(query, conn))
+                        using (var reader = cmd.ExecuteReader())
+                            songs = ParseData(reader);
                 }
             }
             catch (Exception ex)
@@ -269,7 +261,7 @@ namespace Icarus.Database.Repositories
         private List<Song> ParseData(MySqlDataReader reader)
         {
 
-            List<Song> songs = new List<Song>();
+            var songs = new List<Song>();
             while (reader.Read())
             {
                 songs.Add(new Song
@@ -296,7 +288,7 @@ namespace Icarus.Database.Repositories
 
         private Song ParseSingleData(MySqlDataReader reader)
         {
-            Song song = new Song();
+            var song = new Song();
 
             while (reader.Read())
             {
@@ -318,7 +310,6 @@ namespace Icarus.Database.Repositories
 
             return song;
         }
-
         #endregion
     }    
 }  

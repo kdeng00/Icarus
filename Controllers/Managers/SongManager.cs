@@ -58,11 +58,6 @@ namespace Icarus.Controllers.Managers
         public SongManager()
         {
         }
-
-        public SongManager(Song song)
-        {
-            _song = song;
-        }
         public SongManager(IConfiguration config)
         {
             _config = config;
@@ -232,6 +227,7 @@ namespace Icarus.Controllers.Managers
                 Album = song.AlbumTitle,
                 Genre = song.Genre,
                 Year = song.Year.Value,
+                Duration = song.Duration,
                 SongPath = song.SongPath
             };
         }
@@ -245,6 +241,7 @@ namespace Icarus.Controllers.Managers
                 AlbumTitle = song.Album,
                 Genre = song.Genre,
                 Year = song.Year,
+                Duration = song.Duration,
                 SongPath = song.SongPath
             };
         }
@@ -261,53 +258,21 @@ namespace Icarus.Controllers.Managers
         }
         private async Task<Song> SaveSongTemp(IFormFile songFile, string filePath)
         {
-            var song = new Song();
-
-
             using (var filestream = new FileStream(filePath, FileMode.Create))
             {
                 _logger.Info("Saving song to temporary directory");
                 await songFile.CopyToAsync(filestream);
             }
 
-            //MetadataRetriever meta = new MetadataRetriever();
-            //song =  meta.RetrieveMetaData(filePath);
-            Console.WriteLine("try");
-            unsafe
-            {
-            Song *sng = new Sng();
+            var sng = new Sng();
             MetadataRetriever.retrieve_metadata(ref sng, filePath);
-            Console.WriteLine("Hmmmm");
-            Console.WriteLine($"sng title {sng.Title}");
-            song = ConvertSngToSong(sng);
-            }
+            var song = ConvertSngToSong(sng);
 
             _logger.Info("Assigning song filename");
             song.Filename = songFile.FileName;
 
-            Console.WriteLine("what?");
             return song;
         }
-
-        /**
-        private async Task SaveSongToFileSystemTemp(IFormFile song, string filePath)
-        {
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                Console.WriteLine("Retrieving song and storing it in memory");
-                _logger.Info("Retrieving song and storing it in memory");
-                await song.CopyToAsync(fileStream);
-                Console.WriteLine($"Retrieving metadata of song from filepath {filePath}");
-                _logger.Info($"Retrieving metadata of song from filepath {filePath}");
-                MetadataRetriever meta = new MetadataRetriever();
-                _song = meta.RetrieveMetaData(filePath);
-    
-                Console.WriteLine("Assigning song filename");
-                _song.Filename = song.FileName;
-                Console.WriteLine($"Song filename retrieved: {song.FileName}");
-            }
-        }
-        */
 
         private bool SongRecordChanged(Song currentSong, Song songUpdates)
         {
@@ -338,23 +303,24 @@ namespace Icarus.Controllers.Managers
             var info = "Saving Song to DB";
             Console.WriteLine(info);
             _logger.Info(info);
+
             songStore.SaveSong(song);
         }
         private void SaveAlbumToDatabase(ref Song song, AlbumRepository albumStore)
         {
             _logger.Info("Starting process to save the album record of the song to the database");
 
-            var album = new Album();
-
-            album.Title = song.AlbumTitle;
-            album.AlbumArtist = song.Artist;
+            var album = new Album()
+            {
+                Title = song.AlbumTitle,
+                AlbumArtist = song.Artist
+            };
 
             if (!albumStore.DoesAlbumExist(song))
             {
                 album.SongCount = 1;
                 albumStore.SaveAlbum(album);
                 album = albumStore.GetAlbum(song);
-                Console.WriteLine($"Album Id {album.AlbumId}");
             }
             else
             {
@@ -371,10 +337,11 @@ namespace Icarus.Controllers.Managers
         {
             _logger.Info("Starting process to save the artist record of the song to the database");
 
-            var artist = new Artist();
-
-            artist.Name = song.Artist;
-            artist.SongCount = 1;
+            var artist = new Artist
+            {
+                Name = song.Artist,
+                SongCount = 1
+            };
 
             if (!artistStore.DoesArtistExist(song))
             {
@@ -794,16 +761,17 @@ namespace Icarus.Controllers.Managers
         public struct Sng
         {
             public int Id;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
             public string Title;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
             public string Artist;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
             public string Album;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
             public string Genre;
             public int Year;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public int Duration;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
             public string SongPath;
         };
         #endregion
