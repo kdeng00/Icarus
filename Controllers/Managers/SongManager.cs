@@ -80,11 +80,12 @@ namespace Icarus.Controllers.Managers
             {
                 var oldSongRecord = songStore.GetSong(song);
                 song.SongPath = oldSongRecord.SongPath;
+                var oldSng = ConvertSongToSng(oldSongRecord);
+                var updatedSng = ConvertSongToSng(song);
 
-                MetadataRetriever updateMetadata = new MetadataRetriever();
-                updateMetadata.UpdateMetadata(song, oldSongRecord);
+                MetadataRetriever.update_metadata(ref updatedSng, ref oldSng);
 
-                var updatedSong = updateMetadata.UpdatedSongRecord;
+                var updatedSong = ConvertSngToSong(updatedSng);
 
                 var updatedAlbum = UpdateAlbumInDatabase(oldSongRecord, updatedSong, albumStore);
                 oldSongRecord.AlbumId = updatedAlbum.AlbumId;
@@ -221,12 +222,16 @@ namespace Icarus.Controllers.Managers
         {
             return new Sng
             {
-                Id = song.Id,
-                Title = song.Title,
-                Artist = song.Artist,
-                Album = song.AlbumTitle,
-                Genre = song.Genre,
-                Year = song.Year.Value,
+                Id = (song.Id == 0) ? 0 : song.Id,
+                Title = (string.IsNullOrEmpty(song.Title)) ? string.Empty :
+                    song.Title,
+                Artist = (string.IsNullOrEmpty(song.Artist)) ? string.Empty : 
+                    song.Artist,
+                Album = (string.IsNullOrEmpty(song.AlbumTitle)) ? string.Empty : 
+                    song.AlbumTitle,
+                Genre = (string.IsNullOrEmpty(song.Genre)) ? string.Empty : 
+                    song.Genre,
+                Year = (song.Year == null) ? 0 : song.Year.Value,
                 Duration = song.Duration,
                 SongPath = song.SongPath
             };
@@ -240,7 +245,7 @@ namespace Icarus.Controllers.Managers
                 Artist = song.Artist,
                 AlbumTitle = song.Album,
                 Genre = song.Genre,
-                Year = song.Year,
+                Year = (song.Year == 0) ? 0 : song.Year,
                 Duration = song.Duration,
                 SongPath = song.SongPath
             };
@@ -373,7 +378,6 @@ namespace Icarus.Controllers.Managers
             if (!genreStore.DoesGenreExist(song))
             {
                 genreStore.SaveGenre(genre);
-                Console.WriteLine("Going to find genre");
                 genre = genreStore.GetGenre(song);
             }
             else
@@ -465,13 +469,13 @@ namespace Icarus.Controllers.Managers
             {
                 _logger.Info("Creating new album record");
 
-                var newAlbumRecord = new Album
+                albumStore.SaveAlbum(new Album
                 {
                     Title = newAlbumTitle,
                     AlbumArtist = newAlbumArtist
-                };
+                });
 
-                albumStore.SaveAlbum(newAlbumRecord);
+                newSongRecord.AlbumTitle = newAlbumTitle;
 
                 return albumStore.GetAlbum(newSongRecord, true);
             }
@@ -651,8 +655,10 @@ namespace Icarus.Controllers.Managers
             {
                 updatedSongRecord.Genre = newSongRecord.Genre;
             }
-            if (newSongRecord.Year != null || newSongRecord.Year > 0)
+            if (newSongRecord.Year > 0)
                 updatedSongRecord.Year = newSongRecord.Year;
+            else
+                updatedSongRecord.Year = oldSongRecord.Year;
 
             _logger.Info("Applied changes to song record");
 

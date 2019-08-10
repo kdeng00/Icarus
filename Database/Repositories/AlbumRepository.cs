@@ -156,6 +156,7 @@ namespace Icarus.Database.Repositories
 		    using (MySqlCommand cmd = new MySqlCommand(query, conn))
 		    {
 			cmd.Parameters.AddWithValue("@Title", song.AlbumTitle);
+            Console.WriteLine($"repo alb {song.AlbumTitle}");
 
 			using (var reader = cmd.ExecuteReader())
 			    album = ParseSingleData(reader);
