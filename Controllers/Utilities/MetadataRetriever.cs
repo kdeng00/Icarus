@@ -7,6 +7,7 @@ using NLog;
 using TagLib;
 
 using Icarus.Models;
+using Icarus.Controllers.Managers;
 
 namespace Icarus.Controllers.Utilities
 {
@@ -63,7 +64,9 @@ namespace Icarus.Controllers.Utilities
 
         #region C++ Libs
         [DllImport("libicarus.so")]
-        public static extern void retrieve_metadata(ref Icarus.Controllers.Managers.SongManager.Sng sng, string file_path);
+        public static extern void retrieve_metadata(ref SongManager.Sng sng, string file_path);
+        [DllImport("libicarus.so")]
+        public static extern void update_metadata(ref SongManager.Sng sng_updated, ref SongManager.Sng sng_old);
         #endregion
 
         public byte[] RetrieveCoverArtBytes(Song song)
