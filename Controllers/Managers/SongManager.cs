@@ -760,26 +760,5 @@ namespace Icarus.Controllers.Managers
                 yearStore.DeleteYear(year);
         }
         #endregion    
-
-
-        #region Structs
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        public struct Sng
-        {
-            public int Id;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-            public string Title;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-            public string Artist;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-            public string Album;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-            public string Genre;
-            public int Year;
-            public int Duration;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024)]
-            public string SongPath;
-        };
-        #endregion
     }
 }

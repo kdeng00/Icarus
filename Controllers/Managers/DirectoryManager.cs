@@ -16,7 +16,7 @@ namespace Icarus.Controllers.Managers
         #region Methods
         #region C++ libs
         [DllImport("libicarus.so")]
-        public static extern void create_directory(SongManager.Sng song, string root_path, StringBuilder created_dir);
+        public static extern void create_directory(Sng song, string root_path, StringBuilder created_dir);
 
         [DllImport("libicarus.so")]
         public static extern void copy_stock_cover_art(string target_path, string source_path);
@@ -28,10 +28,10 @@ namespace Icarus.Controllers.Managers
         public static extern void delete_cover_art(string cover_art_path, string stock_path);
 
         [DllImport("libicarus.so")]
-        public static extern void delete_empty_directories(SongManager.Sng song, string root_path);
+        public static extern void delete_empty_directories(Sng song, string root_path);
 
         [DllImport("libicarus.so")]
-        public static extern void delete_song_empty_directories(SongManager.Sng song, string root_path);
+        public static extern void delete_song_empty_directories(Sng song, string root_path);
         #endregion
         #endregion
     }

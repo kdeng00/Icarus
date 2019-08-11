@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
-#include <taglib/tag.h>
-#include <taglib/fileref.h>
 #include <string.h>
 
+#include <taglib/tag.h>
+#include <taglib/fileref.h>
+
 #include "metadata_retriever.h"
+#include "imageFile.h"
 
 extern "C"
 {
@@ -47,6 +49,21 @@ void update_metadata(Song *sng_updated, Song *sng_old)
     }
 
     file.save();
+}
+void update_cover_art(Cover *cov, const char *stock_path, const char *song_path)
+{
+    const std::string img_frame = "APIC";
+    TagLib::MPEG::File sngF(song_path);
+    TagLib::ID3v2::Tag *tag = sngF.ID3v2Tag();
+    auto frameList = tag->frameListMap()[img_frame.c_str()];
+
+    if (frameList.isEmpty()) {
+        // TODO: Apply stock cover art
+        imageFile stock_img(stock_path);
+    } else {
+        // TODO: Extract cover art from song and store it in
+        // cov->ImagePath
+    }
 }
 
 }

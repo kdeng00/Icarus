@@ -7,11 +7,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
     src/directory_manager.cpp
+    src/imageFile.cpp
     src/metadata_retriever.cpp
 )
 set(HEADERS
     include/models.h
     include/directory_manager.h
+    include/imageFile.h
     include/metadata_retriever.h
 )
 

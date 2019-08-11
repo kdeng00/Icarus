@@ -58,11 +58,17 @@ namespace Icarus.Controllers.Utilities
 
         #region C++ Libs
         [DllImport("libicarus.so")]
-        public static extern void retrieve_metadata(ref SongManager.Sng sng, string file_path);
+        public static extern void retrieve_metadata(ref Sng sng, string file_path);
+
         [DllImport("libicarus.so")]
-        public static extern void update_metadata(ref SongManager.Sng sng_updated, ref SongManager.Sng sng_old);
+        public static extern void update_metadata(ref Sng sng_updated, ref Sng sng_old);
+
+        [DllImport("libicarus.so")]
+        public static extern void update_cover_art(ref CovArt cov, string stock_cover_path, string song_path);
         #endregion
 
+        // TODO: Remove this when the update_cover_art(..) has been implemented
+        /**
         public byte[] RetrieveCoverArtBytes(Song song)
         {
             try
@@ -81,7 +87,9 @@ namespace Icarus.Controllers.Utilities
 
             return null;
         }
+        */
 
+        // TODO: Remove this when the update_cover_art(..) has been implemented
         public void UpdateCoverArt(Song song, CoverArt coverArt)
         {
             Console.WriteLine("Updating song's cover art");

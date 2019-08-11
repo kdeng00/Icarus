@@ -67,15 +67,22 @@ namespace Icarus.Controllers.Managers
                 DirectoryManager.create_directory(SongManager.ConvertSongToSng(song), 
                         _rootCoverArtPath, imgPath);
 
-                var imagePath = imgPath.ToString().Substring(0, strCount);
-                imagePath += song.Title + ".png";
+                var imagePath = imgPath.ToString().Substring(0, strCount) + 
+                    song.Title + ".png";
                 var coverArt = new CoverArt
                 {
                     SongTitle = song.Title,
                     ImagePath = imagePath
                 };
 
-                var metaData = new MetadataRetriever();
+                var cov = ConvertCoverArtToCovArt(coverArt);
+                var stock_path = _rootCoverArtPath + "CoverArt.png";
+
+                //var metaData = new MetadataRetriever();
+                // TODO: Work on the function on the c++ side
+                // I left some TODO's
+                MetadataRetriever.update_cover_art(ref cov, stock_path, song.SongPath);
+                /**
                 var imgBytes = metaData.RetrieveCoverArtBytes(song);
                 
                 if (imgBytes != null)
@@ -89,6 +96,7 @@ namespace Icarus.Controllers.Managers
                     coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
                     metaData.UpdateCoverArt(song, coverArt);
                 }
+                */
 
                 return coverArt;
             }
@@ -99,6 +107,23 @@ namespace Icarus.Controllers.Managers
             }
             
             return null;
+        }
+
+        public static CovArt ConvertCoverArtToCovArt(CoverArt cover)
+        {
+            return new CovArt
+            {
+                SongTitle = cover.SongTitle,
+                ImagePath = cover.ImagePath
+            };
+        }
+        public static CoverArt ConvertCovArtToCoverArt(CovArt cov)
+        {
+            return new CoverArt
+            {
+                SongTitle = cov.SongTitle,
+                ImagePath = cov.ImagePath
+            };
         }
 
         private void Initialize()
