@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include "directory_manager.h"
 
@@ -43,19 +44,14 @@ std::string read_cover_art(const char *source)
     
     std::fstream cov(source, std::ios::in | std::ios::binary);
 
-    if (!cov.is_open()) {
-        std::cout<<"file is not open"<<std::endl;
-    }
+    cov.seekg(0);
 
-    cov.seekg(0, cov.end);
-    int cov_len = cov.tellg();
-    cov.seekg(0, cov.beg);
+    std::stringstream buf;
+    std::copy(std::istreambuf_iterator<char>(cov),
+        std::istreambuf_iterator<char>(),
+        std::ostreambuf_iterator<char>(buf));
 
-    char buff[cov_len];
-    cov.read(buff, cov_len);
-    cov.close();
-
-    return std::string{buff};
+    return buf.str();
 }
 void copy_stock_to_root(const char *target, const std::string buff)
 {
