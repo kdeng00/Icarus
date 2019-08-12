@@ -1,10 +1,16 @@
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <string>
+#include <sstream>
 #include <string.h>
 
-#include <taglib/tag.h>
+#include <taglib/attachedpictureframe.h>
 #include <taglib/fileref.h>
+#include <taglib/mpegfile.h>
+#include <taglib/tag.h>
 
+#include "directory_manager.h"
 #include "metadata_retriever.h"
 #include "imageFile.h"
 
@@ -50,19 +56,42 @@ void update_metadata(Song *sng_updated, Song *sng_old)
 
     file.save();
 }
-void update_cover_art(Cover *cov, const char *stock_path, const char *song_path)
+void update_cover_art(Cover *cov, Song *song, const char *root_path)
 {
-    const std::string img_frame = "APIC";
-    TagLib::MPEG::File sngF(song_path);
+    TagLib::MPEG::File sngF(song->SongPath);
     TagLib::ID3v2::Tag *tag = sngF.ID3v2Tag();
-    auto frameList = tag->frameListMap()[img_frame.c_str()];
+    auto frameList = tag->frameListMap()["APIC"];
 
     if (frameList.isEmpty()) {
-        // TODO: Apply stock cover art
-        imageFile stock_img(stock_path);
+        std::string stock_path{root_path};
+        stock_path.append("CoverArt.png");
+        strcpy(cov->ImagePath, stock_path.c_str());
+
+        imageFile stock_img(stock_path.c_str());
+
+        TagLib::ID3v2::AttachedPictureFrame *pic = 
+            new TagLib::ID3v2::AttachedPictureFrame;
+        pic->setPicture(stock_img.data());
+        pic->setType(TagLib::ID3v2::AttachedPictureFrame::FrontCover);
+
+        tag->addFrame(pic);
+
+        sngF.save();
+        std::cout<<"applied stock cover art"<<std::endl;
     } else {
-        // TODO: Extract cover art from song and store it in
-        // cov->ImagePath
+        auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
+                frameList.front());
+        auto img_path = create_directory_process(*song, root_path);
+        img_path.append(song->Title);
+        img_path.append(".png");
+        strcpy(cov->ImagePath, img_path.c_str());
+        std::cout<<cov->ImagePath<<std::endl;
+
+        std::fstream img_save(cov->ImagePath, std::ios::out | 
+                std::ios::binary);
+        img_save.write(frame->picture().data(), frame->picture().size());
+        img_save.close();
+        std::cout<<"saved to "<<cov->ImagePath<<std::endl;
     }
 }
 

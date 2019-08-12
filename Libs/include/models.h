@@ -1,3 +1,5 @@
+#ifndef MODELS_H_
+#define MODELS_H_
 
 struct Song
 {
@@ -17,3 +19,5 @@ struct Cover
     char SongTitle[1024];
     char ImagePath[1024];
 };
+
+#endif

@@ -54,59 +54,18 @@ namespace Icarus.Controllers.Managers
 
         public CoverArt SaveCoverArt(Song song)
         {
-            try
+            var sng = SongManager.ConvertSongToSng(song);
+
+            var cov = ConvertCoverArtToCovArt(new CoverArt
             {
-                // TODO: Change logic so it attempts to create the directory
-                // after it has been determined that the song does not have
-                // a cover art image
-                
-                var strCount = _rootCoverArtPath.Length + song.Artist.Length + 
-                    song.AlbumTitle.Length + 2;
-                var imgPath = new StringBuilder(strCount);
+                SongTitle = song.Title,
+                ImagePath = _rootCoverArtPath
+            });
 
-                DirectoryManager.create_directory(SongManager.ConvertSongToSng(song), 
-                        _rootCoverArtPath, imgPath);
+            MetadataRetriever.update_cover_art(ref cov, 
+                    ref sng, _rootCoverArtPath);
 
-                var imagePath = imgPath.ToString().Substring(0, strCount) + 
-                    song.Title + ".png";
-                var coverArt = new CoverArt
-                {
-                    SongTitle = song.Title,
-                    ImagePath = imagePath
-                };
-
-                var cov = ConvertCoverArtToCovArt(coverArt);
-                var stock_path = _rootCoverArtPath + "CoverArt.png";
-
-                //var metaData = new MetadataRetriever();
-                // TODO: Work on the function on the c++ side
-                // I left some TODO's
-                MetadataRetriever.update_cover_art(ref cov, stock_path, song.SongPath);
-                /**
-                var imgBytes = metaData.RetrieveCoverArtBytes(song);
-                
-                if (imgBytes != null)
-                {
-                    _logger.Info("Saving cover art to the filesystem");
-                    File.WriteAllBytes(coverArt.ImagePath, imgBytes);
-                }
-                else
-                {
-                    _logger.Info("Song has no cover art, applying stock cover art");
-                    coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
-                    metaData.UpdateCoverArt(song, coverArt);
-                }
-                */
-
-                return coverArt;
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                _logger.Error(msg, "An error occurred");
-            }
-            
-            return null;
+            return ConvertCovArtToCoverArt(cov);
         }
 
         public static CovArt ConvertCoverArtToCovArt(CoverArt cover)
