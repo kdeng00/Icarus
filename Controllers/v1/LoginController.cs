@@ -47,23 +47,22 @@ namespace Icarus.Controllers.V1
 
             _logger.LogInformation("Starting process of validating credentials");
             
-            var message = "Invalid credentials";
-
             var loginRes = new LoginResult
             {
-                Username = user.Username
+                Username = user.Username,
+                Message = "Invalid credentials"
             };
 
             if (context.DoesUserExist(user))
             {
+                var password = user.Password;
                 user = context.RetrieveUser(user);
 
                 var validatePass = new PasswordEncryption();
-                var validated = validatePass.VerifyPassword(user, user.Password);
+                var validated = validatePass.VerifyPassword(user, password);
                 if (!validated)
                 {
-                    loginRes.Message = message;
-                    _logger.LogInformation(message);
+                    _logger.LogInformation(loginRes.Message);
 
                     return Ok(loginRes);
                 }
@@ -81,8 +80,7 @@ namespace Icarus.Controllers.V1
                 };
                 
                 IntPtr logRes = TokenManager.retrieve_token(ref tok);
-                LogRes lr = new LogRes();
-                lr = (LogRes)Marshal.PtrToStructure(logRes, typeof(LogRes));
+                var lr = (LogRes)Marshal.PtrToStructure(logRes, typeof(LogRes));
                 loginRes = TokenManager.ConvertLogResToLoginResult(ref lr);
                 loginRes.Username = user.Username;
                 loginRes.UserId = user.Id;
@@ -90,11 +88,7 @@ namespace Icarus.Controllers.V1
                 return Ok(loginRes);
             }
             else
-            {
-                loginRes.Message = message;
-
                 return NotFound(loginRes);
-            }
         }
         #endregion
     }
