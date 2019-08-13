@@ -17,9 +17,14 @@ One can interface with Icarus the music server either by:
 * C#
 * [.NET Core](https://dotnet.microsoft.com/) 2.2
 * .NET Web RESTful API
+* C++ >= C++17
+* GCC >= 8.0
+* conan
+* [json](https://www.github.com/nlohmann/json)
+* [cpr](https://www.github.com/whoshuu/cpr)
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
 * [Newtonsoft.Json](https://www.newtonsoft.com/json)
-* [TagLib#](https://github.com/mono/taglib-sharp)
+* [TagLib](https://github.com/taglib/taglib)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 

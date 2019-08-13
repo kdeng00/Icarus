@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Logging;
 using NLog;
-using TagLib;
+//using TagLib;
 
 using Icarus.Models;
 using Icarus.Controllers.Managers;

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using RestSharp;
+//using RestSharp;
 
 using Icarus.Models;
 
