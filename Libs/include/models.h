@@ -20,4 +20,24 @@ struct Cover
     char ImagePath[1024];
 };
 
+struct LoginRes
+{
+    int UserId;
+    char Username[1024];
+    char Token[1024];
+    char TokenType[1024];
+    char Message[1024];
+    int Expiration;
+};
+
+struct TokenReq
+{
+    char ClientId[1024];
+    char ClientSecret[1024];
+    char Audience[1024];
+    char GrantType[1024];
+    char URI[1024];
+    char Endpoint[1024];
+};
+
 #endif

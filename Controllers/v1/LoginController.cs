@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -47,7 +48,6 @@ namespace Icarus.Controllers.V1
             _logger.LogInformation("Starting process of validating credentials");
             
             var message = "Invalid credentials";
-            var password = user.Password;
 
             var loginRes = new LoginResult
             {
@@ -59,7 +59,7 @@ namespace Icarus.Controllers.V1
                 user = context.RetrieveUser(user);
 
                 var validatePass = new PasswordEncryption();
-                var validated = validatePass.VerifyPassword(user, password);
+                var validated = validatePass.VerifyPassword(user, user.Password);
                 if (!validated)
                 {
                     loginRes.Message = message;
@@ -70,9 +70,22 @@ namespace Icarus.Controllers.V1
 
                 _logger.LogInformation("Successfully validated user credentials");
 
-                TokenManager tk = new TokenManager(_config);
-
-                loginRes = tk.RetrieveLoginResult(user);
+                var tok = new TokenReq
+                {
+                    ClientId = _config["Auth0:ClientId"],
+                    ClientSecret = _config["Auth0:ClientSecret"],
+                    Audience = _config["Auth0:ApiIdentifier"],
+                    GrantType = "client_credentials",
+                    URI = $"https://{_config["Auth0:Domain"]}",
+                    Endpoint = "oauth/token"
+                };
+                
+                IntPtr logRes = TokenManager.retrieve_token(ref tok);
+                LogRes lr = new LogRes();
+                lr = (LogRes)Marshal.PtrToStructure(logRes, typeof(LogRes));
+                loginRes = TokenManager.ConvertLogResToLoginResult(ref lr);
+                loginRes.Username = user.Username;
+                loginRes.UserId = user.Id;
 
                 return Ok(loginRes);
             }
