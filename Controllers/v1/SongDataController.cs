@@ -103,9 +103,8 @@ namespace Icarus.Controllers.V1
                 Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
-                var uploads = _songTempDir;
-                Console.WriteLine($"Song Root Path {uploads}");
-                _logger.LogInformation($"Song root path {uploads}");
+                Console.WriteLine($"Song Root Path {_songTempDir}");
+                _logger.LogInformation($"Song root path {_songTempDir}");
                 foreach (var sng in songData)
                     if (sng.Length > 0) {
                         Console.WriteLine($"Song filename {sng.FileName}");

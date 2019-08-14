@@ -151,9 +151,8 @@ namespace Icarus.Controllers.Managers
             {
                 _logger.Info("Starting the process of saving the song to the filesystem");
 
-                var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
-                var song = await SaveSongTemp(songFile, fileTempPath);
-                song.SongPath = fileTempPath;
+                var song = await SaveSongTemp(songFile, 
+                        Path.Combine(_tempDirectoryRoot, songFile.FileName));
 
                 var rootPath = _config.GetValue<string>("RootMusicPath");
                 var strCount = rootPath.Length + song.Artist.Length +
@@ -164,27 +163,18 @@ namespace Icarus.Controllers.Managers
                 DirectoryManager.create_directory(ConvertSongToSng(song),
                         rootPath, filePathSB);
                         
-                var filePath = filePathSB.ToString().Substring(0, strCount);
-
-                System.IO.File.Delete(fileTempPath);
+                var tmpSongPath = song.SongPath;
                 
-                var songFilename = songFile.FileName;
-
-                if (!songFilename.EndsWith(".mp3"))
-                    filePath += $"{songFilename}.mp3";
+                song.SongPath = filePathSB.ToString().Substring(0, strCount);
+                
+                if (!songFile.FileName.EndsWith(".mp3"))
+                    song.SongPath += $"{songFile.FileName}.mp3";
                 else
-                    filePath += $"{songFilename}";
+                    song.SongPath += $"{songFile.FileName}";
 
-                _logger.Info($"Absolute song path: {filePath}");
+                _logger.Info($"Absolute song path: {song.SongPath}");
 
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await (songFile.CopyToAsync(fileStream));
-                    song.SongPath = filePath;
-
-                    _logger.Info("Song successfully saved to filesystem");
-                }
+                DirectoryManager.copy_song(song.SongPath, tmpSongPath);
 
                 var coverMgr = new CoverArtManager(_config.GetValue<string>("CoverArtPath"));
                 var coverArt = coverMgr.SaveCoverArt(song);
@@ -254,11 +244,9 @@ namespace Icarus.Controllers.Managers
 
         private async Task<SongData> RetrieveSongFromFileSystem(Song details)
         {
-            byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath);
-            
             return new SongData
             {
-                Data = uncompressedSong
+                Data = await System.IO.File.ReadAllBytesAsync(details.SongPath)
             };
         }
         private async Task<Song> SaveSongTemp(IFormFile songFile, string filePath)
@@ -275,6 +263,7 @@ namespace Icarus.Controllers.Managers
 
             _logger.Info("Assigning song filename");
             song.Filename = songFile.FileName;
+            song.SongPath = filePath;
 
             return song;
         }

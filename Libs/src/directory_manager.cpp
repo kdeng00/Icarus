@@ -37,7 +37,6 @@ std::string create_directory_process(Song song, const char *root_path)
 
     return alb_path.string() + "/";
 }
-
 std::string read_cover_art(const char *source)
 {
     auto source_path = fs::path(source);
@@ -53,6 +52,12 @@ std::string read_cover_art(const char *source)
 
     return buf.str();
 }
+
+bool delete_song(Song *song)
+{
+    return fs::remove(song->SongPath);
+}
+
 void copy_stock_to_root(const char *target, const std::string buff)
 {
     std::cout<<"starting process"<<std::endl;
@@ -133,6 +138,7 @@ void copy_stock_cover_art(const char*, const char*);
 void copy_song(const char*, const char*);
 void delete_cover_art(const char*, const char*);
 void delete_empty_directories(Song, const char*);
+void delete_from_filesystem(Song);
 void delete_song_empty_directories(Song, const char*);
 void print_song_details(const Song);
 
@@ -166,6 +172,14 @@ void delete_cover_art(const char *cover_path, const char *stock_path)
 void delete_empty_directories(Song song, const char *root_path)
 {
     delete_directories(song, root_path);
+}
+void delete_from_filesystem(Song song)
+{
+    if (delete_song(&song)) {
+        std::cout<<"successfully deleted song from filesystem"<<std::endl;
+    } else {
+        std::cout<<"failed to deleted song from filesystem"<<std::endl;
+    }
 }
 void delete_song_empty_directories(Song song, const char *root_path)
 {

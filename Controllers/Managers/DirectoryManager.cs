@@ -31,6 +31,9 @@ namespace Icarus.Controllers.Managers
         public static extern void delete_empty_directories(Sng song, string root_path);
 
         [DllImport("libicarus.so")]
+        public static extern void delete_from_filesystem(Sng song);
+
+        [DllImport("libicarus.so")]
         public static extern void delete_song_empty_directories(Sng song, string root_path);
         #endregion
         #endregion
