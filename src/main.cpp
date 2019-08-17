@@ -1,5 +1,7 @@
 #include <iostream>
+#include <filesystem>
 #include <memory>
+#include <string>
 
 #include "oatpp/network/server/Server.hpp"
 #include "oatpp/network/server/SimpleTCPConnectionProvider.hpp"
@@ -9,7 +11,9 @@
 #include "controller/loginController.hpp"
 //#include "loginHandler.hpp"
 
-void run()
+namespace fs = std::filesystem;
+
+void run(const std::string& working_path)
 {
     appComponent component;
 
@@ -17,7 +21,7 @@ void run()
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
     //router->route("GET", "/test", std::make_shared<loginHandler>());
-    auto logController = std::make_shared<loginController>();
+    auto logController = std::make_shared<loginController>(working_path);
     logController->addEndpointsToRouter(router);
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::network::server::ConnectionHandler>, connectionHandler);
@@ -31,11 +35,14 @@ void run()
     server.run();
 }
 
+
 int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
+    std::string working_path = argv[0];
+    //std::cout << fs::canonical(fs::path(working_path.c_str())).parent_path().string() << std::endl;
 
-    run();
+    run(working_path);
 
     oatpp::base::Environment::destroy();
 

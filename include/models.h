@@ -1,6 +1,8 @@
 #ifndef MODELS_H_
 #define MODELS_H_
 
+#include <string>
+
 struct Song
 {
     int Id;
@@ -28,6 +30,24 @@ struct LoginRes
     char TokenType[1024];
     char Message[1024];
     int Expiration;
+};
+
+struct loginResult
+{
+    int user_id;
+    std::string username;
+    std::string access_token;
+    std::string token_type;
+    std::string message;
+    int expiration;
+};
+
+struct auth_credentials
+{
+    std::string domain;
+    std::string api_identifier;
+    std::string client_id;
+    std::string client_secret;
 };
 
 struct TokenReq

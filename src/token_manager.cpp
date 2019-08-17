@@ -1,18 +1,48 @@
 #include <iostream>
+#include <filesystem>
 #include <string>
+#include <sstream>
 #include <cstdlib>
 
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
-#include "models.h"
+//#include "models.h"
+#include "token_manager.h"
+
+namespace fs = std::filesystem;
+
+//extern "C"
+//{
 
 
-extern "C"
+token_manager::token_manager()
 {
+}
 
+loginResult token_manager::retrieve_token()
+{
+    auto cred = parse_auth_credentials();
 
-LoginRes* retrieve_token(TokenReq *tok)
+    loginResult lr;
+    lr.access_token = "dsfdsf";
+    lr.token_type = "demo";
+
+    return lr;
+}
+
+auth_credentials token_manager::parse_auth_credentials()
+{
+    auth_credentials auth;
+    //auto ss = working_path.string();
+    //auto path = fs::canonical(fs::path("."));
+    //std::cout << "canonical path " << path.string() << std::endl;
+
+    return auth;
+}
+
+/**
+LoginRes* token_manager::retrieve_token(TokenReq *tok)
 {
     LoginRes *res = new LoginRes;
 
@@ -38,4 +68,5 @@ LoginRes* retrieve_token(TokenReq *tok)
 
     return res;
 }
-}
+*/
+//}

@@ -20,6 +20,7 @@ set(HEADERS
     include/directory_manager.h
     include/imageFile.h
     include/metadata_retriever.h
+    include/token_manager.h
 )
 
 set (TAGLIB
@@ -59,6 +60,9 @@ include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/bin/appsettings.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
 
 add_executable(icarus ${SOURCES} ${HEADERS})
 target_include_directories(icarus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jwt-cpp/include)
