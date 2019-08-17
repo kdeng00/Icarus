@@ -1,3 +1,12 @@
 [submodule "Libs/cpr"]
-	path = Libs/cpr
+	path = 3rdparty/cpr
 	url = https://github.com/whoshuu/cpr.git
+[submodule "3rdparty/taglib"]
+	path = 3rdparty/taglib
+	url = https://github.com/taglib/taglib
+[submodule "3rdparty/oatpp"]
+	path = 3rdparty/oatpp
+	url = https://github.com/oatpp/oatpp
+[submodule "build/3rdparty/jwt-cpp"]
+	path = build/3rdparty/jwt-cpp
+	url = https://github.com/Thalhammer/jwt-cpp
