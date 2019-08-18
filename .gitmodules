@@ -16,6 +16,3 @@
 [submodule "3rdparty/ormpp"]
 	path = 3rdparty/ormpp
 	url = https://github.com/qicosmos/ormpp
-[submodule "3rdparty/mysql-connector-cpp"]
-	path = 3rdparty/mysql-connector-cpp
-	url = https://github.com/mysql/mysql-connector-cpp
