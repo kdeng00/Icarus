@@ -12,7 +12,7 @@ MYSQL* base_repository::setup_mysql_connection(database_connection details)
     return connection;
 }
 
-MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, std::string& query)
+MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, const std::string& query)
 {
    // send the query to the database
    if (mysql_query(conn, query.c_str()))

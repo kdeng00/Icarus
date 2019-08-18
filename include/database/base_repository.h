@@ -12,7 +12,7 @@ class base_repository
 public:
     MYSQL* setup_mysql_connection(database_connection);
 
-    MYSQL_RES* perform_mysql_query(MYSQL*, std::string&);
+    MYSQL_RES* perform_mysql_query(MYSQL*, const std::string&);
 private:
 };
 
