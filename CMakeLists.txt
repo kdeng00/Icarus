@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(SOURCES
     src/appComponent.hpp
     src/controller/loginController.hpp
+    src/controller/songController.hpp
     src/database/base_repository.cpp
     src/directory_manager.cpp
     src/dto/loginResultDto.hpp

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <memory>
 
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
@@ -18,7 +19,7 @@ class loginController : public oatpp::web::server::api::ApiController
 {
 public:
     loginController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-        : oatpp::web::server::api::ApiController(objectMapper), exe_path(std::move(p))
+        : oatpp::web::server::api::ApiController(objectMapper), exe_path(p)
     { }
 
 
