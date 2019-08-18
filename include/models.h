@@ -48,6 +48,16 @@ struct auth_credentials
     std::string api_identifier;
     std::string client_id;
     std::string client_secret;
+    std::string uri;
+    std::string endpoint;
+};
+
+struct database_connection
+{
+    std::string server;
+    std::string username;
+    std::string password;
+    std::string database;
 };
 
 struct TokenReq

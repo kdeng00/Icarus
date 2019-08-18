@@ -12,6 +12,15 @@ class loginResultDto : public oatpp::data::mapping::type::Object
 
     DTO_FIELD(String, access_token);
     DTO_FIELD(String, token_type);
+    DTO_FIELD(Int32, expiration);
+};
+
+class userDto : public oatpp::data::mapping::type::Object
+{
+    DTO_INIT(userDto, Object)
+
+    DTO_FIELD(String, username);
+    DTO_FIELD(String, password);
 };
 
 #include OATPP_CODEGEN_END(DTO)
