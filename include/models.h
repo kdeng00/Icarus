@@ -2,6 +2,7 @@
 #define MODELS_H_
 
 #include <string>
+#include <vector>
 
 struct Song
 {
@@ -13,6 +14,7 @@ struct Song
     int Year;
     int Duration;
     char SongPath[1024];
+    std::vector<unsigned char> data;
 };
 
 struct Cover

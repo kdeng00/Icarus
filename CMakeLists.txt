@@ -14,6 +14,7 @@ set(SOURCES
     src/dto/loginResultDto.hpp
     src/imageFile.cpp
     src/main.cpp
+    src/managers/song_manager.cpp
     src/metadata_retriever.cpp
     src/token_manager.cpp
 )
@@ -21,6 +22,7 @@ set(HEADERS
     include/database/base_repository.h
     include/directory_manager.h
     include/imageFile.h
+    include/managers/song_manager.h
     include/metadata_retriever.h
     include/models.h
     include/token_manager.h

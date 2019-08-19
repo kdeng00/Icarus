@@ -12,6 +12,7 @@
 
 #include "appComponent.hpp"
 #include "controller/loginController.hpp"
+#include "controller/songController.hpp"
 #include "database/base_repository.h"
 
 namespace fs = std::filesystem;
@@ -20,12 +21,12 @@ void run(const std::string& working_path)
 {
     appComponent component;
 
-    //auto router = oatpp::web::server::HttpRouter::createShared();
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
-    //router->route("GET", "/test", std::make_shared<loginHandler>());
     auto logController = std::make_shared<loginController>(working_path);
+    auto sngController = std::make_shared<songController>(working_path);
     logController->addEndpointsToRouter(router);
+    sngController->addEndpointsToRouter(router);
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::network::server::ConnectionHandler>, connectionHandler);
 
@@ -36,31 +37,6 @@ void run(const std::string& working_path)
     OATPP_LOGI("icarus", "Server running on port %s", connectionProvider->getProperty("port").getData());
 
     server.run();
-}
-
-MYSQL* mysql_connection_setup(database_connection mysql_details)
-{
-     // first of all create a mysql instance and initialize the variables within
-    MYSQL *connection = mysql_init(NULL);
-
-    // connect to the database with the details attached.
-    if (!mysql_real_connect(connection,mysql_details.server.c_str(), mysql_details.username.c_str(), mysql_details.password.c_str(), mysql_details.database.c_str(), 0, NULL, 0)) {
-      printf("Conection error : %s\n", mysql_error(connection));
-      exit(1);
-    }
-    return connection;
-}
-
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query)
-{
-   // send the query to the database
-   if (mysql_query(connection, sql_query))
-   {
-      printf("MySQL query error : %s\n", mysql_error(connection));
-      exit(1);
-   }
-
-   return mysql_use_result(connection);
 }
 
 void test_database()
@@ -108,7 +84,7 @@ int main(int argc, char **argv)
     oatpp::base::Environment::init();
     std::string working_path = argv[0];
 
-    test_database();
+    //test_database();
     run(working_path);
 
     oatpp::base::Environment::destroy();
