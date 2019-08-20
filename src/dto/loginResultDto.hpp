@@ -10,9 +10,12 @@ class loginResultDto : public oatpp::data::mapping::type::Object
 {
     DTO_INIT(loginResultDto, Object)
 
-    DTO_FIELD(String, access_token);
+    DTO_FIELD(Int32, id);
+    DTO_FIELD(String, username);
+    DTO_FIELD(String, token);
     DTO_FIELD(String, token_type);
     DTO_FIELD(Int32, expiration);
+    DTO_FIELD(String, message);
 };
 
 class userDto : public oatpp::data::mapping::type::Object

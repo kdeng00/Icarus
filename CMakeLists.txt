@@ -26,6 +26,7 @@ set(HEADERS
     include/metadata_retriever.h
     include/models.h
     include/token_manager.h
+    include/types/scopes.h
 )
 
 set (TAGLIB
@@ -57,6 +58,10 @@ set(TAGLIB_HEADERS
     "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/xm" 
 )
 
+set(JWT_CPP_INCLUDE
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jwt-cpp/include
+)
+
 set (ORM_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ormpp
 )
@@ -75,5 +80,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_D
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
 
 add_executable(icarus ${SOURCES} ${HEADERS})
-target_include_directories(icarus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jwt-cpp/include)
+target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
 target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES})

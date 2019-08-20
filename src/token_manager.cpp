@@ -55,6 +55,18 @@ loginResult token_manager::retrieve_token(std::string_view path)
     return lr;
 }
 
+bool token_manager::is_token_valid(std::string& auth, Scope scope)
+{
+    switch (scope) {
+        case Scope::upload:
+            break;
+        default:
+            break;
+    }
+
+    return true;
+}
+
 auth_credentials token_manager::parse_auth_credentials(std::string_view path)
 {
     auto exe_path = fs::canonical(path).parent_path().string();

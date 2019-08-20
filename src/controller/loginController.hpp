@@ -29,15 +29,16 @@ public:
     {
         OATPP_LOGI("icarus", "logging in");
 
-        std::cout << "user: " << usr->username->c_str() << std::endl;
-
         token_manager tok;
         auto token = tok.retrieve_token(exe_path);
 
         auto logRes = loginResultDto::createShared();
-        logRes->access_token = token.access_token.c_str();
+        logRes->id = 0; // TODO: change this later on to something meaningful
+        logRes->username = usr->username->c_str();
+        logRes->token = token.access_token.c_str();
         logRes->token_type = token.token_type.c_str();
         logRes->expiration = token.expiration;
+        logRes->message = "Successful";
 
         return createDtoResponse(Status::CODE_200, logRes);
     }
