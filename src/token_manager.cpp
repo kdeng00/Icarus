@@ -1,12 +1,15 @@
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <filesystem>
 #include <string>
 #include <string_view>
 #include <sstream>
+#include <vector>
 #include <cstdlib>
 
 #include <cpr/cpr.h>
+#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
 #include "token_manager.h"
@@ -57,6 +60,54 @@ loginResult token_manager::retrieve_token(std::string_view path)
 
 bool token_manager::is_token_valid(std::string& auth, Scope scope)
 {
+    std::istringstream iss(auth);
+    std::vector<std::string> authHeader{std::istream_iterator<std::string>(iss),
+        std::istream_iterator<std::string>()
+    };
+
+    auto wordCount = 0;
+    /**
+    for (auto& word : authHeader) {
+        std::cout << "word " << wordCount++ << " " << word << std::endl;
+    }
+    */
+
+    if (!std::any_of(authHeader.begin(), authHeader.end(), [](std::string word)
+                { 
+                std::cout << "comparing " << word << " to Bearer" << std::endl;
+                return (word.compare("Bearer") == 0);
+                })) {
+        std::cout << "Bearer not found" << std::endl;
+        return false;
+    }
+
+    auto token = authHeader.at(authHeader.size()-1);
+    std::cout << "going to decode " << token << std::endl;
+    auto decoded = jwt::decode(token);
+
+    std::vector<std::string> scopes;
+    for (auto d : decoded.get_payload_claims()) {
+        if (d.first.compare("scope") == 0) {
+            std::cout << "found scope" << std::endl;
+            std::string all_scopes(d.second.to_json().get<std::string>());
+            std::istringstream iss(all_scopes);
+
+            scopes.assign(std::istream_iterator<std::string>(iss), 
+                    std::istream_iterator<std::string>());
+            //std::cout << scopes << std::endl;
+        }
+    }
+
+    std::cout << "printing all scopes" << std::endl;
+
+    for (auto& scope_obj : scopes) {
+        std::cout << scope_obj << std::endl;
+    }
+    
+
+    std::cout << "goodbye" << std::endl;
+    exit(1);
+
     switch (scope) {
         case Scope::upload:
             break;

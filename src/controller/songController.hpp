@@ -38,7 +38,7 @@ public:
 
         auto auth = authHeader->std_str();
         
-        std::cout << "auth " << auth << std::endl;
+        //std::cout << "auth " << auth << std::endl;
        
         token_manager tok;
         if (!tok.is_token_valid(auth, Scope::upload)) {
