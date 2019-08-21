@@ -14,8 +14,8 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 
 #include "managers/song_manager.h"
-#include "models.h"
-#include "token_manager.h"
+#include "models/models.h"
+#include "managers/token_manager.h"
 #include "types/scopes.h"
 
 class songController : public oatpp::web::server::api::ApiController
@@ -38,13 +38,8 @@ public:
 
         auto auth = authHeader->std_str();
         
-        //std::cout << "auth " << auth << std::endl;
-       
         token_manager tok;
-        if (!tok.is_token_valid(auth, Scope::upload)) {
-            // TODO: prevent user from moving forward
-            // token did not have the specified scope (permission)
-        }
+        OATPP_ASSERT_HTTP(tok.is_token_valid(auth, Scope::upload), Status::CODE_403, "Not allowed");
 
         auto mp = std::make_shared<oatpp::web::mime::multipart::Multipart>(request->getHeaders());
 

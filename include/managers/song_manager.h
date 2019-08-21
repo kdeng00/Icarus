@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "models.h"
+#include "models/models.h"
 
 class song_manager
 {

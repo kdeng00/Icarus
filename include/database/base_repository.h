@@ -1,11 +1,11 @@
 #ifndef BASE_REPOSITORY_H_
 #define BASE_REPOSITORY_H_
 
-#include<string>
+#include <string>
 
 #include <mysql/mysql.h>
 
-#include "models.h"
+#include "models/models.h"
 
 class base_repository
 {

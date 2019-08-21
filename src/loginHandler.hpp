@@ -8,7 +8,6 @@
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 
 #include "dto/loginResultDto.hpp"
-//#include "dto/loginResultDto.hpp"
 
 class loginHandler : public oatpp::web::server::HttpRequestHandler
 {

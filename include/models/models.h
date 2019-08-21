@@ -22,7 +22,7 @@ struct Cover
     int id;
     std::string songTitle;
     std::string imagePath;
-    // Currently not being used but it should
+    // Not being used but it should be
     std::vector<unsigned char> data;
 };
 

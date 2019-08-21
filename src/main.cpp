@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 
-#include "models.h"
 #include <mysql/mysql.h>
 #include "oatpp/network/server/Server.hpp"
 #include "oatpp/network/server/SimpleTCPConnectionProvider.hpp"
@@ -14,6 +13,7 @@
 #include "controller/loginController.hpp"
 #include "controller/songController.hpp"
 #include "database/base_repository.h"
+#include "models/models.h"
 
 namespace fs = std::filesystem;
 

@@ -1,14 +1,13 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
-#include <string>
 #include <sstream>
 
-#include "directory_manager.h"
+#include "managers/directory_manager.h"
 
 namespace fs = std::filesystem;
 
-std::string create_directory_process(Song song, const char *root_path)
+std::string directory_manager::create_directory_process(Song song, const std::string& root_path)
 {
     auto curr_path = fs::path(root_path);
 
@@ -19,7 +18,7 @@ std::string create_directory_process(Song song, const char *root_path)
         fs::create_directory(curr_path);
     }
 
-    auto art_path = fs::path(curr_path.string() + song.Artist);
+    auto art_path = fs::path(curr_path.string() + song.artist);
     if (fs::exists(art_path)) {
         std::cout<<"artist path exists"<<std::endl;
     } else {
@@ -27,7 +26,7 @@ std::string create_directory_process(Song song, const char *root_path)
         fs::create_directory(art_path);
     }
 
-    auto alb_path = fs::path(art_path.string() + "/" + song.Album);
+    auto alb_path = fs::path(art_path.string() + "/" + song.album);
     if (fs::exists(alb_path)) {
         std::cout<<"album path exists"<<std::endl;
     } else {
@@ -37,7 +36,7 @@ std::string create_directory_process(Song song, const char *root_path)
 
     return alb_path.string() + "/";
 }
-std::string read_cover_art(const char *source)
+std::string directory_manager::read_cover_art(const std::string& source)
 {
     auto source_path = fs::path(source);
     
@@ -53,12 +52,7 @@ std::string read_cover_art(const char *source)
     return buf.str();
 }
 
-bool delete_song(Song *song)
-{
-    return fs::remove(song->SongPath);
-}
-
-void copy_stock_to_root(const char *target, const std::string buff)
+void directory_manager::copy_stock_to_root(const std::string& target, const std::string& buff)
 {
     std::cout<<"starting process"<<std::endl;
     auto target_path = fs::path(target);
@@ -74,7 +68,7 @@ void copy_stock_to_root(const char *target, const std::string buff)
 
     std::cout<<"copy finished"<<std::endl;
 }
-void copy_song_to_path(const char *target, const char *source)
+void directory_manager::copy_song_to_path(const std::string& target, const std::string& source)
 {
     std::cout<<"starting process to copy song"<<std::endl;
     auto target_path = fs::path(target);
@@ -86,16 +80,21 @@ void copy_song_to_path(const char *target, const char *source)
     fs::remove(source);
     std::cout<<"copy finished"<<std::endl;
 }
-void delete_cover_art_file(const std::string cov_path)
+void directory_manager::delete_cover_art_file(const std::string& cov_path, const std::string& stock_cover_path)
 {
-    auto cov = fs::path(cov_path);
-    fs::remove(cov);
+    if (cov_path.compare(stock_cover_path) == 0) {
+        std::cout << "cover has stock cover art, will not deleted" << std::endl;
+    } else {
+        std::cout << "deleting song path" << std::endl;
+        auto cov = fs::path(cov_path);
+        fs::remove(cov);
+    }
 }
-void delete_directories(Song song, const char *root_path)
+void directory_manager::delete_directories(Song song, const std::string& root_path)
 {
     std::cout<<"checking to for empty directories to delete"<<std::endl;
-    const std::string art{root_path + std::string{"/"} + song.Artist};
-    const std::string alb{art + "/" + song.Album};
+    const std::string art{root_path + std::string{"/"} + song.artist};
+    const std::string alb{art + "/" + song.album};
 
     auto alb_path = fs::path(alb);
     
@@ -116,10 +115,10 @@ void delete_directories(Song song, const char *root_path)
 
     std::cout<<"deleted empty directory or directories"<<std::endl;
 }
-void delete_song(Song song)
+void directory_manager::delete_song(const Song song)
 {
     std::cout<<"deleting song"<<std::endl;
-    auto song_path = fs::path(song.SongPath);
+    auto song_path = fs::path(song.songPath);
 
     if (!fs::exists(song_path)) {
         std::cout<<"song does not exists"<<std::endl;
@@ -130,18 +129,19 @@ void delete_song(Song song)
     std::cout<<"deleted song"<<std::endl;
 }
 
-extern "C"
-{
+//extern "C"
+//{
 
-void create_directory(Song, const char*, char*);
-void copy_stock_cover_art(const char*, const char*);
-void copy_song(const char*, const char*);
-void delete_cover_art(const char*, const char*);
-void delete_empty_directories(Song, const char*);
-void delete_from_filesystem(Song);
-void delete_song_empty_directories(Song, const char*);
-void print_song_details(const Song);
+//void create_directory(Song, const char*, char*);
+//void copy_stock_cover_art(const char*, const char*);
+//void copy_song(const char*, const char*);
+//void delete_cover_art(const char*, const char*);
+//void delete_empty_directories(Song, const char*);
+//void delete_from_filesystem(Song);
+//void delete_song_empty_directories(Song, const char*);
+//void print_song_details(const Song);
 
+/**
 void create_directory(Song song, const char *root_path, char *dir)
 {
     const auto tmp = create_directory_process(song, root_path);
@@ -153,6 +153,8 @@ void copy_stock_cover_art(const char *target, const char *source)
     const auto buff = read_cover_art(source);
     copy_stock_to_root(target, buff);
 }
+*/
+/**
 void copy_song(const char *target, const char *source)
 {
     copy_song_to_path(target, source);
@@ -197,3 +199,4 @@ void print_song_details(const Song song)
 }
 
 }
+*/

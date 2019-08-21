@@ -10,22 +10,22 @@ set(SOURCES
     src/controller/loginController.hpp
     src/controller/songController.hpp
     src/database/base_repository.cpp
-    src/directory_manager.cpp
     src/dto/loginResultDto.hpp
-    src/imageFile.cpp
     src/main.cpp
+    src/managers/directory_manager.cpp
     src/managers/song_manager.cpp
-    src/metadata_retriever.cpp
-    src/token_manager.cpp
+    src/managers/token_manager.cpp
+    src/utilities/imageFile.cpp
+    src/utilities/metadata_retriever.cpp
 )
 set(HEADERS
     include/database/base_repository.h
-    include/directory_manager.h
-    include/imageFile.h
+    include/managers/directory_manager.h
     include/managers/song_manager.h
-    include/metadata_retriever.h
-    include/models.h
-    include/token_manager.h
+    include/managers/token_manager.h
+    include/models/models.h
+    include/utilities/imageFile.h
+    include/utilities/metadata_retriever.h
     include/types/scopes.h
 )
 

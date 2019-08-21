@@ -1,4 +1,4 @@
-#include "imageFile.h"
+#include "utilities/imageFile.h"
 
 imageFile::imageFile(const char *file) : TagLib::File(file)
 {

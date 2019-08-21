@@ -5,14 +5,12 @@
 #include <string>
 #include <string_view>
 #include <sstream>
-#include <vector>
 #include <cstdlib>
 
 #include <cpr/cpr.h>
-#include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
-#include "token_manager.h"
+#include "managers/token_manager.h"
 
 namespace fs = std::filesystem;
 
@@ -60,62 +58,31 @@ loginResult token_manager::retrieve_token(std::string_view path)
 
 bool token_manager::is_token_valid(std::string& auth, Scope scope)
 {
-    std::istringstream iss(auth);
-    std::vector<std::string> authHeader{std::istream_iterator<std::string>(iss),
-        std::istream_iterator<std::string>()
-    };
+    auto authPair = fetch_auth_header(auth);
 
-    auto wordCount = 0;
-    /**
-    for (auto& word : authHeader) {
-        std::cout << "word " << wordCount++ << " " << word << std::endl;
-    }
-    */
+    if (!std::get<0>(authPair)) {
+        std::cout << "no Bearer found" << std::endl;
 
-    if (!std::any_of(authHeader.begin(), authHeader.end(), [](std::string word)
-                { 
-                std::cout << "comparing " << word << " to Bearer" << std::endl;
-                return (word.compare("Bearer") == 0);
-                })) {
-        std::cout << "Bearer not found" << std::endl;
-        return false;
+        return std::get<0>(authPair);
     }
+
+    auto authHeader = std::get<1>(authPair);
 
     auto token = authHeader.at(authHeader.size()-1);
-    std::cout << "going to decode " << token << std::endl;
-    auto decoded = jwt::decode(token);
 
-    std::vector<std::string> scopes;
-    for (auto d : decoded.get_payload_claims()) {
-        if (d.first.compare("scope") == 0) {
-            std::cout << "found scope" << std::endl;
-            std::string all_scopes(d.second.to_json().get<std::string>());
-            std::istringstream iss(all_scopes);
-
-            scopes.assign(std::istream_iterator<std::string>(iss), 
-                    std::istream_iterator<std::string>());
-            //std::cout << scopes << std::endl;
-        }
-    }
-
-    std::cout << "printing all scopes" << std::endl;
-
-    for (auto& scope_obj : scopes) {
-        std::cout << scope_obj << std::endl;
-    }
-    
-
-    std::cout << "goodbye" << std::endl;
-    exit(1);
+    auto scopes = extract_scopes(jwt::decode(token));
 
     switch (scope) {
         case Scope::upload:
+            return token_supports_scope(scopes, "upload:songs");
             break;
+        case Scope::download:
+            return token_supports_scope(scopes, "download:songs");
         default:
             break;
     }
 
-    return true;
+    return false;
 }
 
 auth_credentials token_manager::parse_auth_credentials(std::string_view path)
@@ -139,4 +106,49 @@ auth_credentials token_manager::parse_auth_credentials(std::string_view path)
     auth.endpoint = "oauth/token";
 
     return auth;
+}
+
+std::vector<std::string> token_manager::extract_scopes(const jwt::decoded_jwt&& decoded)
+{
+    std::vector<std::string> scopes;
+
+    for (auto d : decoded.get_payload_claims()) {
+        if (d.first.compare("scope") == 0) {
+            std::cout << "found scope" << std::endl;
+            std::string all_scopes(d.second.to_json().get<std::string>());
+            std::istringstream iss(all_scopes);
+
+            scopes.assign(std::istream_iterator<std::string>(iss), 
+                    std::istream_iterator<std::string>());
+        }
+    }
+
+    return scopes;
+}
+
+std::pair<bool, std::vector<std::string>> token_manager::fetch_auth_header(const std::string& auth)
+{
+    std::istringstream iss(auth);
+    std::vector<std::string> authHeader{std::istream_iterator<std::string>(iss),
+        std::istream_iterator<std::string>()
+    };
+
+    bool foundBearer = false;
+    if (std::any_of(authHeader.begin(), authHeader.end(), 
+           [](std::string word) { 
+               return (word.compare("Bearer") == 0);
+           })) {
+        std::cout << "Bearer found" << std::endl;
+        foundBearer = true;
+    }
+
+    return std::make_pair(foundBearer, authHeader);
+}
+
+bool token_manager::token_supports_scope(const std::vector<std::string> scopes, const std::string&& scope)
+{
+    return std::any_of(scopes.begin(), scopes.end(), 
+        [&](std::string foundScope) {
+            return (foundScope.compare(scope) == 0);
+        });
 }
