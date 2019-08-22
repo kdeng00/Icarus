@@ -78,6 +78,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/bin/appsettings.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 
 add_executable(icarus ${SOURCES} ${HEADERS})
 target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
