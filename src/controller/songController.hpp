@@ -14,8 +14,8 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 
 #include "managers/song_manager.h"
-#include "models/models.h"
 #include "managers/token_manager.h"
+#include "models/models.h"
 #include "types/scopes.h"
 
 class songController : public oatpp::web::server::api::ApiController

@@ -36,6 +36,45 @@ std::string directory_manager::create_directory_process(Song song, const std::st
 
     return alb_path.string() + "/";
 }
+
+std::string directory_manager::configPath(std::string_view path)
+{
+    return fs::canonical(path).parent_path().string();
+}
+std::string directory_manager::contentOfPath(std::string_view path)
+{
+    std::string configPath(path);
+    std::fstream a(configPath, std::ios::in);
+    std::stringstream s;
+    s << a.rdbuf();
+    a.close();
+
+    return s.str();
+}
+
+nlohmann::json directory_manager::credentialConfigContent(const std::string& exe_path)
+{
+    auto path = configPath(exe_path);
+    path.append("/authcredentials.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
+nlohmann::json directory_manager::databaseConfigContent(const std::string& exe_path)
+{
+    auto path = configPath(exe_path);
+    path.append("/database.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
+nlohmann::json directory_manager::pathConfigContent(const std::string& exe_path)
+{
+    auto path = configPath(exe_path);
+    path.append("/paths.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
+
+/**
 std::string directory_manager::read_cover_art(const std::string& source)
 {
     auto source_path = fs::path(source);
@@ -80,6 +119,7 @@ void directory_manager::copy_song_to_path(const std::string& target, const std::
     fs::remove(source);
     std::cout<<"copy finished"<<std::endl;
 }
+*/
 void directory_manager::delete_cover_art_file(const std::string& cov_path, const std::string& stock_cover_path)
 {
     if (cov_path.compare(stock_cover_path) == 0) {
@@ -129,74 +169,3 @@ void directory_manager::delete_song(const Song song)
     std::cout<<"deleted song"<<std::endl;
 }
 
-//extern "C"
-//{
-
-//void create_directory(Song, const char*, char*);
-//void copy_stock_cover_art(const char*, const char*);
-//void copy_song(const char*, const char*);
-//void delete_cover_art(const char*, const char*);
-//void delete_empty_directories(Song, const char*);
-//void delete_from_filesystem(Song);
-//void delete_song_empty_directories(Song, const char*);
-//void print_song_details(const Song);
-
-/**
-void create_directory(Song song, const char *root_path, char *dir)
-{
-    const auto tmp = create_directory_process(song, root_path);
-    size_t tmp_sz = tmp.size();
-    tmp.copy(dir, tmp_sz, 0);
-}
-void copy_stock_cover_art(const char *target, const char *source)
-{
-    const auto buff = read_cover_art(source);
-    copy_stock_to_root(target, buff);
-}
-*/
-/**
-void copy_song(const char *target, const char *source)
-{
-    copy_song_to_path(target, source);
-}
-void delete_cover_art(const char *cover_path, const char *stock_path)
-{
-    std::cout<<"starting process to delete cover art"<<std::endl;
-    const auto cov_path = std::string{cover_path};
-    const auto s_path = std::string{stock_path};
-    if (cov_path.compare(s_path) != 0) {
-        std::cout<<"cover art is not the stock path"<<std::endl;
-        delete_cover_art_file(cov_path);
-    } else {
-        std::cout<<"cover art is the stock path and will not be deleted"<<std::endl;
-    }
-}
-void delete_empty_directories(Song song, const char *root_path)
-{
-    delete_directories(song, root_path);
-}
-void delete_from_filesystem(Song song)
-{
-    if (delete_song(&song)) {
-        std::cout<<"successfully deleted song from filesystem"<<std::endl;
-    } else {
-        std::cout<<"failed to deleted song from filesystem"<<std::endl;
-    }
-}
-void delete_song_empty_directories(Song song, const char *root_path)
-{
-    delete_song(song);
-    delete_directories(song, root_path);
-}
-void print_song_details(const Song song)
-{
-    std::cout<<"song details"<<std::endl;
-    std::cout<<"title: "<<song.Title<<std::endl;
-    std::cout<<"artist: "<<song.Artist<<std::endl;
-    std::cout<<"album: "<<song.Album<<std::endl;
-    std::cout<<"genre: "<<song.Genre<<std::endl;
-    std::cout<<"year: "<<song.Year<<std::endl;
-}
-
-}
-*/

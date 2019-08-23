@@ -1,3 +1,5 @@
+#include "managers/token_manager.h"
+
 #include <iostream>
 #include <iterator>
 #include <fstream>
@@ -10,7 +12,7 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
-#include "managers/token_manager.h"
+#include "managers/directory_manager.h"
 
 namespace fs = std::filesystem;
 
@@ -87,22 +89,26 @@ bool token_manager::is_token_valid(std::string& auth, Scope scope)
 
 auth_credentials token_manager::parse_auth_credentials(std::string_view path)
 {
-    auto exe_path = fs::canonical(path).parent_path().string();
+    auto exe_path = directory_manager::configPath(path);
     exe_path.append("/authcredentials.json");
     
+    //auto content = directory_manager::contentOfPath(exe_path);
+    /**
     std::fstream a(exe_path, std::ios::in);
     std::stringstream s;
     s << a.rdbuf();
     a.close();
+    */
 
-    auto con = nlohmann::json::parse(s.str());
+    //auto con = nlohmann::json::parse(directory_manager::contentOfPath(exe_path));
+    auto con = directory_manager::credentialConfigContent(exe_path);
 
     auth_credentials auth;
     auth.uri = "https://";
-    auth.uri.append(con["Domain"]);
-    auth.api_identifier = con["ApiIdentifier"];
-    auth.client_id = con["ClientId"];
-    auth.client_secret = con["ClientSecret"];
+    auth.uri.append(con["domain"]);
+    auth.api_identifier = con["api_identifier"];
+    auth.client_id = con["client_id"];
+    auth.client_secret = con["client_secret"];
     auth.endpoint = "oauth/token";
 
     return auth;

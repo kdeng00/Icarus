@@ -10,7 +10,7 @@ class metadata_retriever
 {
 public:
     Song retrieve_metadata(std::string&);
-    Cover update_cover_art(Cover, const Song, const std::string&);
+    Cover update_cover_art(const Song&, Cover& cov, const std::string&);
 
     void update_metadata(Song updated_song, const Song old_song);
 private:

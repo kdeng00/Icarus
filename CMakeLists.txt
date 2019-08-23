@@ -10,8 +10,11 @@ set(SOURCES
     src/controller/loginController.hpp
     src/controller/songController.hpp
     src/database/base_repository.cpp
+    #src/database/coverArtRepository.cpp
+    #src/database/songRepository.cpp
     src/dto/loginResultDto.hpp
     src/main.cpp
+    src/managers/coverArtManager.cpp
     src/managers/directory_manager.cpp
     src/managers/song_manager.cpp
     src/managers/token_manager.cpp
@@ -20,6 +23,9 @@ set(SOURCES
 )
 set(HEADERS
     include/database/base_repository.h
+    #include/database/coverArtRepository.h
+    #include/database/songRepository.h
+    include/managers/coverArtManager.h
     include/managers/directory_manager.h
     include/managers/song_manager.h
     include/managers/token_manager.h
@@ -79,6 +85,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
 
 add_executable(icarus ${SOURCES} ${HEADERS})
 target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})

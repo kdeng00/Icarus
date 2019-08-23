@@ -48,6 +48,7 @@ void test_database()
     mysqlD.database = "";	// the databse to pick
 
     base_repository base;
+    /**
     auto conn = base.setup_mysql_connection(mysqlD);
 
     // assign the results return to the MYSQL_RES pointer
@@ -72,10 +73,11 @@ void test_database()
         std::cout << std::endl;
     }
 
-    /* clean up the database result set */
+    // clean up the database result set //
     mysql_free_result(res);
-    /* clean up the database link */
+    // clean up the database link //
     mysql_close(conn);
+    */
 }
 
 
@@ -84,7 +86,6 @@ int main(int argc, char **argv)
     oatpp::base::Environment::init();
     std::string working_path = argv[0];
 
-    //test_database();
     run(working_path);
 
     oatpp::base::Environment::destroy();

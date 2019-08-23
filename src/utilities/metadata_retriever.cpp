@@ -14,6 +14,8 @@
 #include "utilities/imageFile.h"
 #include "utilities/metadata_retriever.h"
 
+namespace fs = std::filesystem;
+
 Song metadata_retriever::retrieve_metadata(std::string& song_path)
 {
     TagLib::FileRef file(song_path.c_str());
@@ -26,30 +28,23 @@ Song metadata_retriever::retrieve_metadata(std::string& song_path)
     song.duration = file.audioProperties()->lengthInSeconds();
     song.songPath = song_path;
 
-    /**
-    strcpy(sng->Title, file.tag()->title().toCString());
-    strcpy(sng->Artist, file.tag()->artist().toCString());
-    strcpy(sng->Album, file.tag()->album().toCString());
-    strcpy(sng->Genre, file.tag()->genre().toCString());
-    sng->Year = file.tag()->year();
-    sng->Duration = file.audioProperties()->lengthInSeconds();
-    strcpy(sng->SongPath, song_path);
-    */
 
     return song;
 }
 
-Cover metadata_retriever::update_cover_art(Cover cov, const Song song, const std::string& root_path)
+Cover metadata_retriever::update_cover_art(const Song& song, Cover& cov, const std::string& stockCoverPath)
 {
     TagLib::MPEG::File sngF(song.songPath.c_str());
-    TagLib::ID3v2::Tag *tag = sngF.ID3v2Tag();
+    auto tag = sngF.ID3v2Tag();
     auto frameList = tag->frameListMap()["APIC"];
 
     if (frameList.isEmpty()) {
-        std::string stock_path{root_path};
-        stock_path.append("CoverArt.png");
-        cov.imagePath = stock_path;
-        //strcpy(cov->ImagePath, stock_path.c_str());
+        cov.imagePath.append("CoverArt.png");
+        
+        if (!fs::exists(cov.imagePath)) {
+            std::cout << "copying stock cover path" << std::endl;
+            fs::copy(stockCoverPath, cov.imagePath);
+        }
 
         imageFile stock_img(cov.imagePath.c_str());
 
@@ -61,23 +56,23 @@ Cover metadata_retriever::update_cover_art(Cover cov, const Song song, const std
         tag->addFrame(pic);
 
         sngF.save();
-        std::cout<<"applied stock cover art"<<std::endl;
+        std::cout << "applied stock cover art" << std::endl;
     } else {
         auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
                 frameList.front());
         directory_manager dir;
-        auto img_path = dir.create_directory_process(song, root_path);
+        auto img_path = dir.create_directory_process(song, cov.imagePath);
         img_path.append(song.title);
         img_path.append(".png");
         cov.imagePath = img_path;
-        //strcpy(cov->ImagePath, img_path.c_str());
-        std::cout<<cov.imagePath<<std::endl;
+
+        std::cout << cov.imagePath << std::endl;
 
         std::fstream img_save(cov.imagePath, std::ios::out | 
                 std::ios::binary);
         img_save.write(frame->picture().data(), frame->picture().size());
         img_save.close();
-        std::cout<<"saved to "<<cov.imagePath<<std::endl;
+        std::cout << "saved to " << cov.imagePath << std::endl;
     }
 
     return cov;
