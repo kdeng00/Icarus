@@ -13,13 +13,6 @@ class song_manager
 public:
     song_manager(std::string&);
 
-    /**
-    std::string retrieveMusicPath();
-    std::string retrieveTempPath();
-    */
-
-    //nlohmann::json pathConfigContent();
-
     void saveSong(Song&);
 
     static void printSong(const Song&);

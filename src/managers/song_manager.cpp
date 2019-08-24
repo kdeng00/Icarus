@@ -16,31 +16,6 @@ song_manager::song_manager(std::string& x_path)
     : exe_path(x_path)
 { }
 
-/**
-std::string song_manager::retrieveMusicPath()
-{
-    std::string pathConfig = directory_manager::configPath(exe_path);
-    pathConfig.append("/paths.json");
-    nlohmann::json config = nlohmann::json::parse(directory_manager::contentOfPath(pathConfig));
-
-    return config["root_music_path"].get<std::string>();
-}
-std::string song_manager::retrieveTempPath()
-{
-    auto pathConfig = directory_manager::configPath(exe_path);
-    pathConfig.append("/paths");
-
-    return std::string();
-}
-
-nlohmann::json song_manager::pathConfigContent()
-{
-    auto path = directory_manager::configPath(exe_path);
-    path.append("/paths.json");
-
-    return nlohmann::json::parse(directory_manager::contentOfPath(path));
-}
-*/
 
 void song_manager::saveSong(Song& song)
 {
@@ -51,10 +26,13 @@ void song_manager::saveSong(Song& song)
     song.data = std::move(data);
     printSong(song);
 
-    coverArtManager covMgr;
+    coverArtManager covMgr(exe_path);
     auto coverRootPath = directory_manager::pathConfigContent(exe_path)["cover_root_path"].get<std::string>();
+    //const nlohmann::json databaseConfig = directory_manager::databaseConfigContent(exe_path);
+
     auto stockCoverPath = directory_manager::configPath(exe_path);
     stockCoverPath.append("/CoverArt.png");
+
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
 }
 
@@ -78,6 +56,7 @@ void song_manager::saveSongTemp(Song& song)
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(1,1000);
+
     tmp_song.append(std::to_string(dist(rng)));
     tmp_song.append(".mp3");
 
