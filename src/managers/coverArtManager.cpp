@@ -1,6 +1,7 @@
 #include "managers/coverArtManager.h"
 
 #include "database/coverArtRepository.h"
+#include "types/coverFilter.h"
 #include "utilities/metadata_retriever.h"
 
 coverArtManager::coverArtManager(const std::string& configPath) : path(configPath)
@@ -16,6 +17,10 @@ Cover coverArtManager::saveCover(const Song& song, std::string& rootPath, const 
     cov.songTitle = song.title;
 
     coverArtRepository covRepo(path);
+    std::cout << "saving record to the database" << std::endl;
+    covRepo.saveRecord(cov);
+    std::cout << "retrieving record from database" << std::endl;
+    cov = covRepo.retrieveRecord(cov, coverFilter::songTitle);
 
     return cov;
 }

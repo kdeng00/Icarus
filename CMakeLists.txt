@@ -11,7 +11,7 @@ set(SOURCES
     src/controller/songController.hpp
     src/database/base_repository.cpp
     src/database/coverArtRepository.cpp
-    #src/database/songRepository.cpp
+    src/database/songRepository.cpp
     src/dto/loginResultDto.hpp
     src/main.cpp
     src/managers/coverArtManager.cpp
@@ -24,7 +24,7 @@ set(SOURCES
 set(HEADERS
     include/database/base_repository.h
     include/database/coverArtRepository.h
-    #include/database/songRepository.h
+    include/database/songRepository.h
     include/managers/coverArtManager.h
     include/managers/directory_manager.h
     include/managers/song_manager.h
@@ -32,7 +32,9 @@ set(HEADERS
     include/models/models.h
     include/utilities/imageFile.h
     include/utilities/metadata_retriever.h
+    include/types/coverFilter.h
     include/types/scopes.h
+    include/types/songFilter.h
 )
 
 set (TAGLIB

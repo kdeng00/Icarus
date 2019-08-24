@@ -15,6 +15,7 @@ struct Song
     int duration;
     std::string songPath;
     std::vector<unsigned char> data;
+    int coverArtId;
 };
 
 struct Cover

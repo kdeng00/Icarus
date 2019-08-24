@@ -1,5 +1,7 @@
 #include "database/base_repository.h"
 
+#include <iostream>
+
 #include <nlohmann/json.hpp>
 
 #include "managers/directory_manager.h"
@@ -16,8 +18,10 @@ MYSQL* base_repository::setup_mysql_connection()
 {
     MYSQL *conn = mysql_init(nullptr);
 
-    auto res = mysql_real_connect(conn, details.server.c_str(), details.username.c_str(), 
-            details.password.c_str(), details.database.c_str(), 0, nullptr, 0);
+    if (!mysql_real_connect(conn, details.server.c_str(), details.username.c_str(), 
+            details.password.c_str(), details.database.c_str(), 0, nullptr, 0)) {
+        std::cout << "connection error" << std::endl;
+    }
 
     return conn;
 }
@@ -48,8 +52,9 @@ MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, const std::string& 
 void base_repository::intitalizeDetails()
 {
     auto databaseConfig = directory_manager::databaseConfigContent(path);
-    details.database = databaseConfig.get<std::string>();
-    details.password = databaseConfig.get<std::string>();
-    details.server = databaseConfig.get<std::string>();
-    details.username = databaseConfig.get<std::string>();
+    
+    details.database = databaseConfig["database"].get<std::string>();
+    details.password = databaseConfig["password"].get<std::string>();
+    details.server = databaseConfig["server"].get<std::string>();
+    details.username = databaseConfig["username"].get<std::string>();
 }

@@ -6,6 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "database/songRepository.h"
 #include "managers/coverArtManager.h"
 #include "managers/directory_manager.h"
 #include "utilities/metadata_retriever.h"
@@ -34,6 +35,10 @@ void song_manager::saveSong(Song& song)
     stockCoverPath.append("/CoverArt.png");
 
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
+    song.coverArtId = cov.id;
+
+    songRepository songRepo(exe_path);
+    songRepo.saveRecord(song);
 }
 
 void song_manager::printSong(const Song& song)
