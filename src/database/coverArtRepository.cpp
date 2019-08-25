@@ -34,7 +34,6 @@ Cover coverArtRepository::retrieveRecord(Cover& cov, coverFilter filter = coverF
     }
 
     const std::string query = qry.str();
-    std::cout << query << std::endl;
     auto results = perform_mysql_query(conn, query);
     std::cout << "the query has been performed" << std::endl;
 

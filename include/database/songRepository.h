@@ -15,15 +15,13 @@ class songRepository : public base_repository
 public:
     songRepository(const std::string&);
 
+    std::vector<Song> retrieveRecords();
+
     Song retrieveRecord(Song&, songFilter);
 
     void saveRecord(const Song&);
 private:
     std::vector<Song> parseRecords(MYSQL_RES*);
-
-    std::unique_ptr<MYSQL_BIND*> bindParams(const Song&);
-    //std::unique_ptr<MYSQL_BIND[]> bindParams(const Song&);
-    //std::shared_ptr<MYSQL_BIND> bindParams(const Song&);
 
     Song parseRecord(MYSQL_RES*);
 };

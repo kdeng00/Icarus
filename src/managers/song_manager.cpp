@@ -25,11 +25,9 @@ void song_manager::saveSong(Song& song)
     auto data = std::move(song.data);
     song = meta.retrieve_metadata(song.songPath);
     song.data = std::move(data);
-    printSong(song);
 
     coverArtManager covMgr(exe_path);
     auto coverRootPath = directory_manager::pathConfigContent(exe_path)["cover_root_path"].get<std::string>();
-    //const nlohmann::json databaseConfig = directory_manager::databaseConfigContent(exe_path);
 
     auto stockCoverPath = directory_manager::configPath(exe_path);
     stockCoverPath.append("/CoverArt.png");

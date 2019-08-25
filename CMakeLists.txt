@@ -13,6 +13,7 @@ set(SOURCES
     src/database/coverArtRepository.cpp
     src/database/songRepository.cpp
     src/dto/loginResultDto.hpp
+    src/dto/songDto.hpp
     src/main.cpp
     src/managers/coverArtManager.cpp
     src/managers/directory_manager.cpp
