@@ -27,13 +27,25 @@ void song_manager::saveSong(Song& song)
     song.data = std::move(data);
 
     coverArtManager covMgr(exe_path);
-    auto coverRootPath = directory_manager::pathConfigContent(exe_path)["cover_root_path"].get<std::string>();
+    auto pathConfigContent = directory_manager::pathConfigContent(exe_path);
+    auto coverRootPath = pathConfigContent["cover_root_path"].get<std::string>();
+    auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
     auto stockCoverPath = directory_manager::configPath(exe_path);
     stockCoverPath.append("/CoverArt.png");
 
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
     song.coverArtId = cov.id;
+
+    auto songPath = directory_manager::create_directory_process(song, musicRootPath);
+    songPath.append(song.title);
+    songPath.append(".mp3");
+    std::cout << std::endl;
+    std::cout << "temp path: " << song.songPath << std::endl;
+    std::cout << "new path: " << songPath << std::endl;
+    fs::copy(song.songPath, songPath);
+    fs::remove(song.songPath);
+    song.songPath = std::move(songPath);
 
     printSong(song);
 
@@ -43,7 +55,7 @@ void song_manager::saveSong(Song& song)
 
 void song_manager::printSong(const Song& song)
 {
-    std::cout << "song" << std::endl;
+    std::cout << std::endl << "song" << std::endl;
     std::cout << "title: " << song.title << std::endl;
     std::cout << "artist: " << song.artist << std::endl;
     std::cout << "album: " << song.album << std::endl;

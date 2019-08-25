@@ -12,7 +12,7 @@ class directory_manager
 {
 public:
 
-    std::string create_directory_process(Song, const std::string&);
+    static std::string create_directory_process(Song, const std::string&);
     static std::string configPath(std::string_view);
     static std::string contentOfPath(std::string_view);
 
