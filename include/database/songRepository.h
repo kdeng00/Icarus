@@ -1,6 +1,7 @@
 #ifndef SONGREPOSITORY_H_
 #define SONGREPOSITORY_H_
 
+#include <memory>
 #include <vector>
 
 #include <mysql/mysql.h>
@@ -19,6 +20,11 @@ public:
     void saveRecord(const Song&);
 private:
     std::vector<Song> parseRecords(MYSQL_RES*);
+
+    std::unique_ptr<MYSQL_BIND*> bindParams(const Song&);
+    //std::unique_ptr<MYSQL_BIND[]> bindParams(const Song&);
+    //std::shared_ptr<MYSQL_BIND> bindParams(const Song&);
+
     Song parseRecord(MYSQL_RES*);
 };
 

@@ -37,6 +37,8 @@ void song_manager::saveSong(Song& song)
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
     song.coverArtId = cov.id;
 
+    printSong(song);
+
     songRepository songRepo(exe_path);
     songRepo.saveRecord(song);
 }
@@ -51,6 +53,9 @@ void song_manager::printSong(const Song& song)
     std::cout << "duration: " << song.duration << std::endl;
     std::cout << "year: " << song.year << std::endl;
     std::cout << "song path: " << song.songPath << std::endl;
+    if (song.coverArtId != 0) {
+        std::cout << "cover art id: " << song.coverArtId << std::endl;
+    }
 }
 
 void song_manager::saveSongTemp(Song& song)
