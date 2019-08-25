@@ -2,7 +2,7 @@
 #define SONGCONTROLLER_H_
 
 #include <iostream>
-#include <filesystem>
+#include <limits>
 #include <string>
 #include <memory>
 #include <vector>
@@ -13,6 +13,8 @@
 #include "oatpp/web/mime/multipart/Reader.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
+#include "database/songRepository.h"
+#include "../dto/songDto.hpp"
 #include "managers/song_manager.h"
 #include "managers/token_manager.h"
 #include "models/models.h"
@@ -27,8 +29,7 @@ public:
 
     #include OATPP_CODEGEN_BEGIN(ApiController)
 
-    // TODO: work on uploading a song
-    // and clean up
+    // endpoint for uploading a song
     ENDPOINT("POST", "/api/v1/song/data", songUpload, 
             REQUEST(std::shared_ptr<IncomingRequest>, request))
     {
@@ -68,11 +69,36 @@ public:
         return createResponse(Status::CODE_200, "OK");
     }
 
+    // endpoint for retrieving all song records in json format
+    ENDPOINT("GET", "/api/v1/song", songRecords, 
+            REQUEST(std::shared_ptr<IncomingRequest>, request))
+    {
+        std::cout << "starting process of retrieving songs" << std::endl;
+        songRepository songRepo(exe_path);
+        auto songsDb = songRepo.retrieveRecords();
+        auto songs = oatpp::data::mapping::type::List<songDto::ObjectWrapper>::createShared();
+
+        std::cout << "creating object to send" << std::endl;
+        for (auto& songDb : songsDb) {
+            auto song = songDto::createShared();
+            song->id = songDb.id;
+            song->title = songDb.title.c_str();
+            song->artist = songDb.artist.c_str();
+            song->album = songDb.album.c_str();
+            song->genre = songDb.genre.c_str();
+            song->year = songDb.year;
+            song->duration = songDb.duration;
+
+            songs->pushBack(song);
+        }
+
+        return createDtoResponse(Status::CODE_200, songs);
+    }
+
     #include OATPP_CODEGEN_END(ApiController)
 private:
     std::string exe_path;
-
-    const long dataSize = 1000000000000;
+    const long dataSize = std::numeric_limits<long long int>::max();
 };
 
 #endif

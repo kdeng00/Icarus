@@ -2,7 +2,6 @@
 #define LOGINCONTROLLER_H_
 
 #include <iostream>
-#include <filesystem>
 #include <string>
 #include <memory>
 
@@ -12,8 +11,6 @@
 
 #include "../dto/loginResultDto.hpp"
 #include "managers/token_manager.h"
-
-namespace fs = std::filesystem;
 
 class loginController : public oatpp::web::server::api::ApiController
 {
