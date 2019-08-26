@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <string>
 #include <memory>
@@ -132,12 +133,39 @@ public:
         songDb.id = id;
         songDb = songRepo.retrieveRecord(songDb, songFilter::id);
 
+        std::cout << "song path " << songDb.songPath << std::endl;
+        
+        std::ifstream fl(songDb.songPath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+        //auto rawSong = oatpp::String((v_int32) fl.tellg());
+        fl.seekg(0);
+        //fl.read((char*)rawSong->getData(), rawSong->getSize());
+
+        std::stringstream buf;
+        std::copy(std::istreambuf_iterator<char>(fl),
+            std::istreambuf_iterator<char>(),
+            std::ostreambuf_iterator<char>(buf)
+            );
+        fl.close();
+
+        //std::cout << buf.str().c_str() << std::endl;
+
+        //auto raw = buf.str();
+       
+        auto rawSong = std::make_shared<oatpp::String>(oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true));
+        //std::cout << rawSong->c_str() << std::endl;
+        //std::cout << rawSong->std_str() << std::endl;
+        //std::shared_ptr<oatpp::String> rawSong = std::make_shared<oatpp::String>();
+        //rawSong->loadFromFile(songDb.songPath.c_str());
+
+        /**
         std::cout << "constructing FileInputStream" << std::endl;
         oatpp::data::stream::FileInputStream file(songDb.songPath.c_str());
         //oatpp::data::stream::FileOutputStream file(songDb.songPath.c_str());
         auto songPath = fs::path(songDb.songPath);
         auto songSize = fs::file_size(songPath);
         std::cout << "prepping data" << std::endl;
+        std::cout << "byte size " << songSize << std::endl;
         auto data = new char[songSize];
         std::cout << "data will be loaded" << std::endl;
         auto byteCount = file.read(&data, songSize);
@@ -151,8 +179,19 @@ public:
         delete[] data;
 
         std::cout << "sending file" << std::endl;
+        */
+        /**
+        auto songData = oatpp::data::stream::ChunkedBuffer::createShared();
+        songData->write(buf.str().data(), buf.str().size());
 
-        return createResponse(Status::CODE_200, songData);
+        //auto response = createResponse(Status::CODE_200, songData);
+        */
+        auto response = createResponse(Status::CODE_200, *rawSong);
+        response->putHeader("Accept-Ranges", "bytes");
+        response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
+        response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
+
+        return response;
     }
 
     #include OATPP_CODEGEN_END(ApiController)
