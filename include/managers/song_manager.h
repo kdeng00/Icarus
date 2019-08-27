@@ -14,6 +14,7 @@ public:
     song_manager(std::string&);
 
     void saveSong(Song&);
+    void deleteSong(Song&);
 
     static void printSong(const Song&);
 private:

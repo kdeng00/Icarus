@@ -19,6 +19,7 @@ public:
 
     Song retrieveRecord(Song&, songFilter);
 
+    void deleteRecord(const Song&);
     void saveRecord(const Song&);
 private:
     std::vector<Song> parseRecords(MYSQL_RES*);

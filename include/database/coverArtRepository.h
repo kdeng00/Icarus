@@ -14,6 +14,7 @@ public:
 
     Cover retrieveRecord(Cover&, coverFilter);
 
+    void deleteRecord(const Cover&);
     void saveRecord(const Cover&);
 private:
     Cover parseRecord(MYSQL_RES*);

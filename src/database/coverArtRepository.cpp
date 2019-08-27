@@ -45,6 +45,15 @@ Cover coverArtRepository::retrieveRecord(Cover& cov, coverFilter filter = coverF
     return covDb;
 }
 
+void coverArtRepository::deleteRecord(const Cover& cov)
+{
+    auto conn = setup_mysql_connection();
+    const std::string query("DELETE FROM CoverArt WHERE CoverArtId = " + std::to_string(cov.id));
+
+    auto result = perform_mysql_query(conn, query);
+
+    mysql_close(conn);
+}
 
 void coverArtRepository::saveRecord(const Cover& cov)
 {

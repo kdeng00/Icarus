@@ -6,6 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "database/coverArtRepository.h"
 #include "database/songRepository.h"
 #include "managers/coverArtManager.h"
 #include "managers/directory_manager.h"
@@ -51,6 +52,28 @@ void song_manager::saveSong(Song& song)
 
     songRepository songRepo(exe_path);
     songRepo.saveRecord(song);
+}
+
+void song_manager::deleteSong(Song& song)
+{
+    coverArtRepository covRepo(exe_path);
+    songRepository songRepo(exe_path);
+
+    song = songRepo.retrieveRecord(song, songFilter::id);
+    songRepo.deleteRecord(song);
+
+    Cover cov;
+    cov.id = song.coverArtId;
+    cov = covRepo.retrieveRecord(cov, coverFilter::id);
+    covRepo.deleteRecord(cov);
+
+
+    // TODO: only delete coverArt that is not the stock cover
+    // path
+    fs::remove(cov.imagePath);
+    fs::remove(song.songPath);
+
+    // TODO: delete empty directories
 }
 
 void song_manager::printSong(const Song& song)

@@ -194,6 +194,17 @@ public:
         return response;
     }
 
+    ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, PATH(Int32, id)) {
+
+        Song song;
+        song.id = id;
+
+        song_manager sngMgr(exe_path);
+        sngMgr.deleteSong(song);
+
+        return createResponse(Status::CODE_200, "OK");
+    }
+
     #include OATPP_CODEGEN_END(ApiController)
 private:
     std::string exe_path;

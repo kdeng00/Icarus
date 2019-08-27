@@ -57,6 +57,18 @@ Song songRepository::retrieveRecord(Song& song, songFilter filter)
     return song;
 }
 
+void songRepository::deleteRecord(const Song& song)
+{
+    auto conn = setup_mysql_connection();
+    auto status = 0;
+
+    const std::string query("DELETE FROM Song WHERE SongId = " + std::to_string(song.id));
+
+    auto result = perform_mysql_query(conn, query);
+
+    mysql_close(conn);
+}
+
 void songRepository::saveRecord(const Song& song)
 {
     auto conn = setup_mysql_connection();
@@ -64,7 +76,7 @@ void songRepository::saveRecord(const Song& song)
 
     MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
-    std::string query  = "INSERT INTO Song(Title, Artist, Album, Genre, ";
+    std::string query = "INSERT INTO Song(Title, Artist, Album, Genre, ";
     query.append("Year, Duration, SongPath, CoverArtId) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
 
     status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
