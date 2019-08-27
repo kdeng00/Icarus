@@ -67,13 +67,19 @@ void song_manager::deleteSong(Song& song)
     cov = covRepo.retrieveRecord(cov, coverFilter::id);
     covRepo.deleteRecord(cov);
 
+    auto paths = directory_manager::pathConfigContent(exe_path);
+    const auto coverArtPath = paths["cover_root_path"].get<std::string>();
+    std::string stockCoverArtPath = coverArtPath;
+    stockCoverArtPath.append("CoverArt.png");
 
-    // TODO: only delete coverArt that is not the stock cover
-    // path
-    fs::remove(cov.imagePath);
+    if (stockCoverArtPath.compare(cov.imagePath) != 0) {
+        fs::remove(cov.imagePath);
+        std::cout << "deleting cover art" << std::endl;
+    }
     fs::remove(song.songPath);
 
-    // TODO: delete empty directories
+    directory_manager::delete_directories(song, paths["root_music_path"].get<std::string>());
+    directory_manager::delete_directories(song, coverArtPath);
 }
 
 void song_manager::printSong(const Song& song)

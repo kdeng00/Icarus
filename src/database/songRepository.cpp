@@ -174,6 +174,7 @@ std::vector<Song> songRepository::parseRecords(MYSQL_RES* results)
                     break;
                 case 7:
                     song.songPath = row[i];
+                    break;
                 case 8:
                     song.coverArtId = std::stoi(row[i]);
                     break;
@@ -221,6 +222,7 @@ Song songRepository::parseRecord(MYSQL_RES* results)
                 break;
             case 8:
                 song.coverArtId = std::stoi(row[i]);
+                break;
         }
     }
     std::cout << "done parsing record" << std::endl;
