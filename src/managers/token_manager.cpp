@@ -92,15 +92,6 @@ auth_credentials token_manager::parse_auth_credentials(std::string_view path)
     auto exe_path = directory_manager::configPath(path);
     exe_path.append("/authcredentials.json");
     
-    //auto content = directory_manager::contentOfPath(exe_path);
-    /**
-    std::fstream a(exe_path, std::ios::in);
-    std::stringstream s;
-    s << a.rdbuf();
-    a.close();
-    */
-
-    //auto con = nlohmann::json::parse(directory_manager::contentOfPath(exe_path));
     auto con = directory_manager::credentialConfigContent(exe_path);
 
     auth_credentials auth;

@@ -26,7 +26,7 @@ public:
     //void copy_stock_to_root(const std::string&, const std::string&);
     //void copy_song_to_path(const std::string&, const std::string&);
     void delete_cover_art_file(const std::string&, const std::string&);
-    void delete_directories(Song, const std::string&);
+    static void delete_directories(Song, const std::string&);
 
 private:
     void delete_song(const Song);
