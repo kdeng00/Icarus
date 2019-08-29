@@ -41,8 +41,7 @@ void song_manager::saveSong(Song& song)
     auto songPath = directory_manager::create_directory_process(song, musicRootPath);
     songPath.append(song.title);
     songPath.append(".mp3");
-    std::cout << std::endl;
-    std::cout << "temp path: " << song.songPath << std::endl;
+    std::cout << "\n\ntemp path: " << song.songPath << std::endl;
     std::cout << "new path: " << songPath << std::endl;
     fs::copy(song.songPath, songPath);
     fs::remove(song.songPath);
@@ -84,13 +83,15 @@ void song_manager::deleteSong(Song& song)
 
 void song_manager::printSong(const Song& song)
 {
-    std::cout << std::endl << "song" << std::endl;
+    std::cout << "\n\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
     std::cout << "artist: " << song.artist << std::endl;
     std::cout << "album: " << song.album << std::endl;
     std::cout << "genre: " << song.genre << std::endl;
     std::cout << "duration: " << song.duration << std::endl;
     std::cout << "year: " << song.year << std::endl;
+    std::cout << "track: " << song.track << std::endl;
+    std::cout << "disc: " << song.disc << std::endl;
     std::cout << "song path: " << song.songPath << std::endl;
     if (song.coverArtId != 0) {
         std::cout << "cover art id: " << song.coverArtId << std::endl;

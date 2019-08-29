@@ -18,6 +18,8 @@ CREATE TABLE Song (
     Genre TEXT NOT NULL,
     Year INT NOT NULL,
     Duration INT NOT NULL,
+    Track INT NOT NULL,
+    Disc INT NOT NULL,
     SongPath TEXT NOT NULL,
     CoverArtId INT NOT NULL,
 

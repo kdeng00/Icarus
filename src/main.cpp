@@ -39,52 +39,10 @@ void run(const std::string& working_path)
     server.run();
 }
 
-void test_database()
-{
-    database_connection mysqlD;
-    mysqlD.server = "";  // where the mysql database is
-    mysqlD.username = "";		// the root user of mysql
-    mysqlD.password = ""; // the password of the root user in mysql
-    mysqlD.database = "";	// the databse to pick
-
-    base_repository base;
-    /**
-    auto conn = base.setup_mysql_connection(mysqlD);
-
-    // assign the results return to the MYSQL_RES pointer
-    const std::string query = "SELECT *, NULL FROM Song";
-    auto res = base.perform_mysql_query(conn, query);
-    auto num_of_fields = mysql_num_fields(res);
-
-    printf("MySQL Tables in mysql database:\n");
-    auto row_count = 1;
-    
-    for (MYSQL_ROW row = NULL; (row = mysql_fetch_row(res)) != NULL;) {
-        std::cout << " row " << row_count << std::endl;
-        for (auto i = 0; i != num_of_fields; ++i) {
-            auto val = row[i];
-
-            if ( val == NULL) {
-                std::cout << "found null value " << std::endl;
-                continue;
-            }
-            std::cout << val << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    // clean up the database result set //
-    mysql_free_result(res);
-    // clean up the database link //
-    mysql_close(conn);
-    */
-}
-
-
 int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
-    std::string working_path = argv[0];
+    const std::string working_path = argv[0];
 
     run(working_path);
 

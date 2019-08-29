@@ -13,6 +13,8 @@ struct Song
     std::string genre;
     int year;
     int duration;
+    int track;
+    int disc;
     std::string songPath;
     std::vector<unsigned char> data;
     int coverArtId;

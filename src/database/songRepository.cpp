@@ -77,11 +77,11 @@ void songRepository::saveRecord(const Song& song)
     MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
     std::string query = "INSERT INTO Song(Title, Artist, Album, Genre, ";
-    query.append("Year, Duration, SongPath, CoverArtId) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+    query.append("Year, Duration, Track, Disc, SongPath, CoverArtId) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 
-    MYSQL_BIND params[8];
+    MYSQL_BIND params[10];
     memset(params, 0, sizeof(params));
 
     params[0].buffer_type = MYSQL_TYPE_STRING;
@@ -118,16 +118,26 @@ void songRepository::saveRecord(const Song& song)
     params[5].length = 0;
     params[5].is_null = 0;
 
-    params[6].buffer_type = MYSQL_TYPE_STRING;
-    params[6].buffer = (char*)song.songPath.c_str();
-    auto pathLength = song.songPath.size();
-    params[6].length = &pathLength;
+    params[6].buffer_type = MYSQL_TYPE_LONG;
+    params[6].buffer = (char*)&song.track;
+    params[6].length = 0;
     params[6].is_null = 0;
 
     params[7].buffer_type = MYSQL_TYPE_LONG;
-    params[7].buffer = (char*)&song.coverArtId;
+    params[7].buffer = (char*)&song.disc;
     params[7].length = 0;
     params[7].is_null = 0;
+
+    params[8].buffer_type = MYSQL_TYPE_STRING;
+    params[8].buffer = (char*)song.songPath.c_str();
+    auto pathLength = song.songPath.size();
+    params[8].length = &pathLength;
+    params[8].is_null = 0;
+
+    params[9].buffer_type = MYSQL_TYPE_LONG;
+    params[9].buffer = (char*)&song.coverArtId;
+    params[9].length = 0;
+    params[9].is_null = 0;
     
     status = mysql_stmt_bind_param(stmt, params);
     status = mysql_stmt_execute(stmt);
@@ -173,9 +183,15 @@ std::vector<Song> songRepository::parseRecords(MYSQL_RES* results)
                     song.duration = std::stoi(row[i]);
                     break;
                 case 7:
-                    song.songPath = row[i];
+                    song.track = std::stoi(row[i]);
                     break;
                 case 8:
+                    song.disc = std::stoi(row[i]);
+                    break;
+                case 9:
+                    song.songPath = row[i];
+                    break;
+                case 10:
                     song.coverArtId = std::stoi(row[i]);
                     break;
             }
@@ -218,9 +234,15 @@ Song songRepository::parseRecord(MYSQL_RES* results)
                 song.duration = std::stoi(row[i]);
                 break;
             case 7:
-                song.songPath = row[i];
+                song.track = std::stoi(row[i]);
                 break;
             case 8:
+                song.disc = std::stoi(row[i]);
+                break;
+            case 9:
+                song.songPath = row[i];
+                break;
+            case 10:
                 song.coverArtId = std::stoi(row[i]);
                 break;
         }

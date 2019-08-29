@@ -94,6 +94,8 @@ public:
             song->genre = songDb.genre.c_str();
             song->year = songDb.year;
             song->duration = songDb.duration;
+            song->track = songDb.track;
+            song->disc = songDb.disc;
 
             songs->pushBack(song);
         }
@@ -119,6 +121,8 @@ public:
         song->genre = songDb.genre.c_str();
         song->year = songDb.year;
         song->duration = songDb.duration;
+        song->track = songDb.track;
+        song->disc = songDb.disc;
 
         return createDtoResponse(Status::CODE_200, song);
     }
@@ -148,6 +152,8 @@ public:
         return response;
     }
 
+    // TODO: create endpoint for updating songs
+
     ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, PATH(Int32, id)) {
 
         Song song;
@@ -158,6 +164,8 @@ public:
 
         return createResponse(Status::CODE_200, "OK");
     }
+
+    // TODO: create endpoint for streaming songs
 
     #include OATPP_CODEGEN_END(ApiController)
 private:

@@ -15,6 +15,8 @@ class songDto : public oatpp::data::mapping::type::Object
     DTO_FIELD(String, artist);
     DTO_FIELD(String, album);
     DTO_FIELD(String, genre);
+    DTO_FIELD(Int32, track);
+    DTO_FIELD(Int32, disc);
     DTO_FIELD(Int32, year);
     DTO_FIELD(Int32, duration);
 };

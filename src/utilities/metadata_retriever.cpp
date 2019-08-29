@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -25,8 +26,23 @@ Song metadata_retriever::retrieve_metadata(std::string& song_path)
     song.album = file.tag()->album().toCString();
     song.genre = file.tag()->genre().toCString();
     song.year = file.tag()->year();
+    song.track = file.tag()->track();
     song.duration = file.audioProperties()->lengthInSeconds();
     song.songPath = song_path;
+
+    // TODO: Move over to this eventually since at the moment
+    // I am only targetting mp3 files
+    // Used to retrieve disc
+    TagLib::MPEG::File sameFile(song_path.c_str());
+    auto tag = sameFile.ID3v2Tag();
+
+    auto frame = tag->frameList("TPOS");
+    if (frame.isEmpty()) {
+        song.disc = 1;
+        // TODO: set default disc to 1 if none found
+    } else {
+        song.disc = std::stoi(frame.front()->toString().toCString());
+    }
 
 
     return song;
@@ -98,6 +114,8 @@ void metadata_retriever::update_metadata(Song sng_updated, const Song sng_old)
     if (sng_updated.year > 0) {
         file.tag()->setYear(sng_updated.year);
     }
+
+    // TODO: functionality to update the track number and disc number
 
     file.save();
 }
