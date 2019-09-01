@@ -26,7 +26,7 @@ Manager::song_manager::song_manager(const Model::BinaryPath& bConf)
 void Manager::song_manager::saveSong(Model::Song& song)
 {
     saveSongTemp(song);
-    metadata_retriever meta;
+    Utility::metadata_retriever meta;
     auto data = std::move(song.data);
     song = meta.retrieve_metadata(song.songPath);
     song.data = std::move(data);
@@ -62,12 +62,12 @@ void Manager::song_manager::deleteSong(Model::Song& song)
     Database::coverArtRepository covRepo(m_bConf);
     Database::songRepository songRepo(m_bConf);
 
-    song = songRepo.retrieveRecord(song, songFilter::id);
+    song = songRepo.retrieveRecord(song, Type::songFilter::id);
     songRepo.deleteRecord(song);
 
     Model::Cover cov;
     cov.id = song.coverArtId;
-    cov = covRepo.retrieveRecord(cov, coverFilter::id);
+    cov = covRepo.retrieveRecord(cov, Type::coverFilter::id);
     covRepo.deleteRecord(cov);
 
     auto paths = Manager::directory_manager::pathConfigContent(m_bConf);

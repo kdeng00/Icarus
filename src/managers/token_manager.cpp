@@ -86,7 +86,7 @@ Model::loginResult Manager::token_manager::retrieve_token(const Model::BinaryPat
     return lr;
 }
 
-bool Manager::token_manager::is_token_valid(std::string& auth, Scope scope)
+bool Manager::token_manager::is_token_valid(std::string& auth, Type::Scope scope)
 {
     auto authPair = fetch_auth_header(auth);
 
@@ -103,10 +103,10 @@ bool Manager::token_manager::is_token_valid(std::string& auth, Scope scope)
     auto scopes = extract_scopes(jwt::decode(token));
 
     switch (scope) {
-        case Scope::upload:
+        case Type::Scope::upload:
             return token_supports_scope(scopes, "upload:songs");
             break;
-        case Scope::download:
+        case Type::Scope::download:
             return token_supports_scope(scopes, "download:songs");
         default:
             break;

@@ -17,7 +17,7 @@
 
 namespace fs = std::filesystem;
 
-Model::Song metadata_retriever::retrieve_metadata(std::string& song_path)
+Model::Song Utility::metadata_retriever::retrieve_metadata(std::string& song_path)
 {
     TagLib::FileRef file(song_path.c_str());
     Model::Song song;
@@ -48,7 +48,7 @@ Model::Song metadata_retriever::retrieve_metadata(std::string& song_path)
     return song;
 }
 
-Model::Cover metadata_retriever::update_cover_art(const Model::Song& song, Model::Cover& cov, const std::string& stockCoverPath)
+Model::Cover Utility::metadata_retriever::update_cover_art(const Model::Song& song, Model::Cover& cov, const std::string& stockCoverPath)
 {
     TagLib::MPEG::File sngF(song.songPath.c_str());
     auto tag = sngF.ID3v2Tag();
@@ -94,7 +94,7 @@ Model::Cover metadata_retriever::update_cover_art(const Model::Song& song, Model
     return cov;
 }
 
-void metadata_retriever::update_metadata(Model::Song sng_updated, const Model::Song sng_old)
+void Utility::metadata_retriever::update_metadata(Model::Song sng_updated, const Model::Song sng_old)
 {
     std::cout<<"updating metadata"<<std::endl;
     TagLib::FileRef file(sng_old.songPath.c_str());

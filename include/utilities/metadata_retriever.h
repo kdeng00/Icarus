@@ -6,14 +6,17 @@
 
 #include "models/models.h"
 
-class metadata_retriever
+namespace Utility
 {
-public:
-    Model::Song retrieve_metadata(std::string&);
-    Model::Cover update_cover_art(const Model::Song&, Model::Cover& cov, const std::string&);
+    class metadata_retriever
+    {
+    public:
+        Model::Song retrieve_metadata(std::string&);
+        Model::Cover update_cover_art(const Model::Song&, Model::Cover& cov, const std::string&);
 
-    void update_metadata(Model::Song updated_song, const Model::Song old_song);
-private:
-};
+        void update_metadata(Model::Song updated_song, const Model::Song old_song);
+    private:
+    };
+}
 
 #endif

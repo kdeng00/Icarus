@@ -11,7 +11,7 @@ Database::coverArtRepository::coverArtRepository(const std::string& path) : base
 Database::coverArtRepository::coverArtRepository(const Model::BinaryPath& bConf) : base_repository(bConf)
 { }
 
-Model::Cover Database::coverArtRepository::retrieveRecord(Model::Cover& cov, coverFilter filter = coverFilter::id)
+Model::Cover Database::coverArtRepository::retrieveRecord(Model::Cover& cov, Type::coverFilter filter = Type::coverFilter::id)
 {
     std::stringstream qry;
     auto conn = setup_mysql_connection();
@@ -19,16 +19,16 @@ Model::Cover Database::coverArtRepository::retrieveRecord(Model::Cover& cov, cov
 
     std::unique_ptr<char*> param;
     switch (filter) {
-        case coverFilter::id:
+        case Type::coverFilter::id:
             qry << "CoverArtId = " << cov.id;
             break;
-        case coverFilter::songTitle:
+        case Type::coverFilter::songTitle:
             param = std::make_unique<char*>(new char[cov.songTitle.size()]);
             mysql_real_escape_string(conn, *param, cov.songTitle.c_str(), cov.songTitle.size());
             std::cout << *param << std::endl;
             qry << "SongTitle = '" << *param << "'";
             break;
-        case coverFilter::imagePath:
+        case Type::coverFilter::imagePath:
             param = std::make_unique<char*>(new char[cov.imagePath.size()]);
             mysql_real_escape_string(conn, *param, cov.imagePath.c_str(), cov.imagePath.size());
             std::cout << *param << std::endl;

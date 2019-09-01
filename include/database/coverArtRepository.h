@@ -15,7 +15,7 @@ namespace Database
         coverArtRepository(const std::string&);
         coverArtRepository(const Model::BinaryPath&);
 
-        Model::Cover retrieveRecord(Model::Cover&, coverFilter);
+        Model::Cover retrieveRecord(Model::Cover&, Type::coverFilter);
 
         void deleteRecord(const Model::Cover&);
         void saveRecord(const Model::Cover&);

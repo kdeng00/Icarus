@@ -22,7 +22,7 @@ namespace Manager
         Model::loginResult retrieve_token(std::string_view);
         Model::loginResult retrieve_token(const Model::BinaryPath&);
 
-        bool is_token_valid(std::string&, Scope);
+        bool is_token_valid(std::string&, Type::Scope);
     private:
         Model::auth_credentials parse_auth_credentials(std::string_view);
         Model::auth_credentials parse_auth_credentials(const Model::BinaryPath&);

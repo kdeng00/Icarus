@@ -20,7 +20,7 @@ namespace Database
 
         std::vector<Model::Song> retrieveRecords();
 
-        Model::Song retrieveRecord(Model::Song&, songFilter);
+        Model::Song retrieveRecord(Model::Song&, Type::songFilter);
 
         void deleteRecord(const Model::Song&);
         void saveRecord(const Model::Song&);

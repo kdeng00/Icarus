@@ -1,10 +1,13 @@
 #ifndef SCOPES_H_
 #define SCOPES_H_
 
-enum class Scope
+namespace Type
 {
-    upload = 0,
-    download
-};
+    enum class Scope
+    {
+        upload = 0,
+        download
+    };
+}
 
 #endif

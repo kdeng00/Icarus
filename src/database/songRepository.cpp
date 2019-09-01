@@ -27,7 +27,7 @@ std::vector<Model::Song> Database::songRepository::retrieveRecords()
     return songs;
 }
 
-Model::Song Database::songRepository::retrieveRecord(Model::Song& song, songFilter filter)
+Model::Song Database::songRepository::retrieveRecord(Model::Song& song, Type::songFilter filter)
 {
     std::stringstream qry;
     auto conn = setup_mysql_connection();
@@ -35,10 +35,10 @@ Model::Song Database::songRepository::retrieveRecord(Model::Song& song, songFilt
 
     std::unique_ptr<char*> param;
     switch (filter) {
-        case songFilter::id:
+        case Type::songFilter::id:
             qry << "SongId = " << song.id;
             break;
-        case songFilter::title:
+        case Type::songFilter::title:
             param = std::make_unique<char*>(new char[song.title.size()]);
             mysql_real_escape_string(conn, *param, song.title.c_str(), song.title.size());
             std::cout << *param << std::endl;

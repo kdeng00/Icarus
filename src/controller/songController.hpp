@@ -53,7 +53,7 @@ namespace Controller
             auto auth = authHeader->std_str();
         
             Manager::token_manager tok;
-            OATPP_ASSERT_HTTP(tok.is_token_valid(auth, Scope::upload), Status::CODE_403, "Not allowed");
+            OATPP_ASSERT_HTTP(tok.is_token_valid(auth, Type::Scope::upload), Status::CODE_403, "Not allowed");
 
             auto mp = std::make_shared<oatpp::web::mime::multipart::Multipart>(request->getHeaders());
 
@@ -117,7 +117,7 @@ namespace Controller
             Model::Song songDb;
             songDb.id = id;
 
-            songDb = songRepo.retrieveRecord(songDb, songFilter::id);
+            songDb = songRepo.retrieveRecord(songDb, Type::songFilter::id);
 
             auto song = songDto::createShared();
             song->id = songDb.id;
@@ -139,7 +139,7 @@ namespace Controller
             Database::songRepository songRepo(m_bConf);
             Model::Song songDb;
             songDb.id = id;
-            songDb = songRepo.retrieveRecord(songDb, songFilter::id);
+            songDb = songRepo.retrieveRecord(songDb, Type::songFilter::id);
 
             std::ifstream fl(songDb.songPath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             fl.seekg(0);
