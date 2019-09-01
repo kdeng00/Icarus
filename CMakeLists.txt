@@ -7,8 +7,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
     src/appComponent.hpp
-    src/controller/loginController.hpp
-    src/controller/songController.hpp
     src/database/albumRepository.cpp
     src/database/artistRepository.cpp
     src/database/base_repository.cpp
@@ -29,6 +27,8 @@ set(SOURCES
     src/utilities/metadata_retriever.cpp
 )
 set(HEADERS
+    include/controller/loginController.hpp
+    include/controller/songController.hpp
     include/database/albumRepository.h
     include/database/artistRepository.h
     include/database/base_repository.h
