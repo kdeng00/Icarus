@@ -76,8 +76,8 @@ Model::Cover metadata_retriever::update_cover_art(const Model::Song& song, Model
     } else {
         auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
                 frameList.front());
-        directory_manager dir;
-        auto img_path = dir.create_directory_process(song, cov.imagePath);
+        
+        auto img_path = Manager::directory_manager::create_directory_process(song, cov.imagePath);
         img_path.append(song.title);
         img_path.append(".png");
         cov.imagePath = img_path;

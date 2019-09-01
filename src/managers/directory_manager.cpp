@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-std::string directory_manager::create_directory_process(Model::Song song, const std::string& root_path)
+std::string Manager::directory_manager::create_directory_process(Model::Song song, const std::string& root_path)
 {
     auto curr_path = fs::path(root_path);
 
@@ -37,11 +37,11 @@ std::string directory_manager::create_directory_process(Model::Song song, const 
     return alb_path.string() + "/";
 }
 
-std::string directory_manager::configPath(std::string_view path)
+std::string Manager::directory_manager::configPath(std::string_view path)
 {
     return fs::canonical(path).parent_path().string();
 }
-std::string directory_manager::contentOfPath(std::string_view path)
+std::string Manager::directory_manager::contentOfPath(std::string_view path)
 {
     std::string configPath(path);
     std::fstream a(configPath, std::ios::in);
@@ -52,21 +52,21 @@ std::string directory_manager::contentOfPath(std::string_view path)
     return s.str();
 }
 
-nlohmann::json directory_manager::credentialConfigContent(const std::string& exe_path)
+nlohmann::json Manager::directory_manager::credentialConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
     path.append("/authcredentials.json");
 
     return nlohmann::json::parse(contentOfPath(path));
 }
-nlohmann::json directory_manager::databaseConfigContent(const std::string& exe_path)
+nlohmann::json Manager::directory_manager::databaseConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
     path.append("/database.json");
 
     return nlohmann::json::parse(contentOfPath(path));
 }
-nlohmann::json directory_manager::pathConfigContent(const std::string& exe_path)
+nlohmann::json Manager::directory_manager::pathConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
     path.append("/paths.json");
@@ -74,7 +74,7 @@ nlohmann::json directory_manager::pathConfigContent(const std::string& exe_path)
     return nlohmann::json::parse(contentOfPath(path));
 }
 
-void directory_manager::delete_cover_art_file(const std::string& cov_path, const std::string& stock_cover_path)
+void Manager::directory_manager::delete_cover_art_file(const std::string& cov_path, const std::string& stock_cover_path)
 {
     if (cov_path.compare(stock_cover_path) == 0) {
         std::cout << "cover has stock cover art, will not deleted" << std::endl;
@@ -84,7 +84,7 @@ void directory_manager::delete_cover_art_file(const std::string& cov_path, const
         fs::remove(cov);
     }
 }
-void directory_manager::delete_directories(Model::Song song, const std::string& root_path)
+void Manager::directory_manager::delete_directories(Model::Song song, const std::string& root_path)
 {
     std::cout<<"checking to for empty directories to delete"<<std::endl;
     const std::string art{root_path + std::string{"/"} + song.artist};
@@ -109,7 +109,7 @@ void directory_manager::delete_directories(Model::Song song, const std::string& 
 
     std::cout<<"deleted empty directory or directories"<<std::endl;
 }
-void directory_manager::delete_song(const Model::Song song)
+void Manager::directory_manager::delete_song(const Model::Song song)
 {
     std::cout<<"deleting song"<<std::endl;
     auto song_path = fs::path(song.songPath);

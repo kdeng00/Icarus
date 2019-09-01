@@ -46,7 +46,7 @@ public:
 
         auto auth = authHeader->std_str();
         
-        token_manager tok;
+        Manager::token_manager tok;
         OATPP_ASSERT_HTTP(tok.is_token_valid(auth, Scope::upload), Status::CODE_403, "Not allowed");
 
         auto mp = std::make_shared<oatpp::web::mime::multipart::Multipart>(request->getHeaders());
@@ -69,7 +69,7 @@ public:
         Model::Song sng;
         sng.data = std::move(data);
         
-        song_manager s_mgr(m_exe_path);
+        Manager::song_manager s_mgr(m_exe_path);
         s_mgr.saveSong(sng);
 
         return createResponse(Status::CODE_200, "OK");
@@ -159,7 +159,7 @@ public:
         Model::Song song;
         song.id = id;
 
-        song_manager sngMgr(m_exe_path);
+        Manager::song_manager sngMgr(m_exe_path);
         sngMgr.deleteSong(song);
 
         return createResponse(Status::CODE_200, "OK");

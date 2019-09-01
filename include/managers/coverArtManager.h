@@ -5,14 +5,17 @@
 
 #include "models/models.h"
 
-class coverArtManager
+namespace Manager
 {
-public:
-    coverArtManager(const std::string&);
+    class coverArtManager
+    {
+    public:
+        coverArtManager(const std::string&);
 
-    Model::Cover saveCover(const Model::Song&, std::string&, const std::string&);
-private:
-    std::string path;
-};
+        Model::Cover saveCover(const Model::Song&, std::string&, const std::string&);
+    private:
+        std::string path;
+    };
+}
 
 #endif

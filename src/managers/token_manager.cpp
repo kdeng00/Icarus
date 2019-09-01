@@ -17,11 +17,11 @@
 namespace fs = std::filesystem;
 
 
-token_manager::token_manager()
+Manager::token_manager::token_manager()
 {
 }
 
-Model::loginResult token_manager::retrieve_token()
+Model::loginResult Manager::token_manager::retrieve_token()
 {
     Model::loginResult lr;
     lr.access_token = "dsfdsf";
@@ -29,7 +29,7 @@ Model::loginResult token_manager::retrieve_token()
 
     return lr;
 }
-Model::loginResult token_manager::retrieve_token(std::string_view path)
+Model::loginResult Manager::token_manager::retrieve_token(std::string_view path)
 {
     auto cred = parse_auth_credentials(path);
 
@@ -58,7 +58,7 @@ Model::loginResult token_manager::retrieve_token(std::string_view path)
     return lr;
 }
 
-bool token_manager::is_token_valid(std::string& auth, Scope scope)
+bool Manager::token_manager::is_token_valid(std::string& auth, Scope scope)
 {
     auto authPair = fetch_auth_header(auth);
 
@@ -87,12 +87,12 @@ bool token_manager::is_token_valid(std::string& auth, Scope scope)
     return false;
 }
 
-Model::auth_credentials token_manager::parse_auth_credentials(std::string_view path)
+Model::auth_credentials Manager::token_manager::parse_auth_credentials(std::string_view path)
 {
-    auto exe_path = directory_manager::configPath(path);
+    auto exe_path = Manager::directory_manager::configPath(path);
     exe_path.append("/authcredentials.json");
     
-    auto con = directory_manager::credentialConfigContent(exe_path);
+    auto con = Manager::directory_manager::credentialConfigContent(exe_path);
 
     Model::auth_credentials auth;
     auth.uri = "https://";
@@ -105,7 +105,7 @@ Model::auth_credentials token_manager::parse_auth_credentials(std::string_view p
     return auth;
 }
 
-std::vector<std::string> token_manager::extract_scopes(const jwt::decoded_jwt&& decoded)
+std::vector<std::string> Manager::token_manager::extract_scopes(const jwt::decoded_jwt&& decoded)
 {
     std::vector<std::string> scopes;
 
@@ -123,7 +123,7 @@ std::vector<std::string> token_manager::extract_scopes(const jwt::decoded_jwt&& 
     return scopes;
 }
 
-std::pair<bool, std::vector<std::string>> token_manager::fetch_auth_header(const std::string& auth)
+std::pair<bool, std::vector<std::string>> Manager::token_manager::fetch_auth_header(const std::string& auth)
 {
     std::istringstream iss(auth);
     std::vector<std::string> authHeader{std::istream_iterator<std::string>(iss),
@@ -142,7 +142,7 @@ std::pair<bool, std::vector<std::string>> token_manager::fetch_auth_header(const
     return std::make_pair(foundBearer, authHeader);
 }
 
-bool token_manager::token_supports_scope(const std::vector<std::string> scopes, const std::string&& scope)
+bool Manager::token_manager::token_supports_scope(const std::vector<std::string> scopes, const std::string&& scope)
 {
     return std::any_of(scopes.begin(), scopes.end(), 
         [&](std::string foundScope) {

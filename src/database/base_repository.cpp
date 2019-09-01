@@ -51,7 +51,7 @@ MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, const std::string& 
 
 void base_repository::intitalizeDetails()
 {
-    auto databaseConfig = directory_manager::databaseConfigContent(path);
+    auto databaseConfig = Manager::directory_manager::databaseConfigContent(path);
     
     details.database = databaseConfig["database"].get<std::string>();
     details.password = databaseConfig["password"].get<std::string>();

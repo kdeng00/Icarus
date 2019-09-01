@@ -26,7 +26,7 @@ public:
     {
         OATPP_LOGI("icarus", "logging in");
 
-        token_manager tok;
+        Manager::token_manager tok;
         auto token = tok.retrieve_token(exe_path);
 
         auto logRes = loginResultDto::createShared();

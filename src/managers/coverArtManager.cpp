@@ -4,11 +4,11 @@
 #include "types/coverFilter.h"
 #include "utilities/metadata_retriever.h"
 
-coverArtManager::coverArtManager(const std::string& configPath) : path(configPath)
+Manager::coverArtManager::coverArtManager(const std::string& configPath) : path(configPath)
 { }
 
 
-Model::Cover coverArtManager::saveCover(const Model::Song& song, std::string& rootPath, const std::string& stockCoverPath)
+Model::Cover Manager::coverArtManager::saveCover(const Model::Song& song, std::string& rootPath, const std::string& stockCoverPath)
 {
     metadata_retriever meta;
     Model::Cover cov;

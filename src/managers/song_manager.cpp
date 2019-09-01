@@ -14,12 +14,12 @@
 
 namespace fs = std::filesystem;
 
-song_manager::song_manager(std::string& x_path)
+Manager::song_manager::song_manager(std::string& x_path)
     : exe_path(x_path)
 { }
 
 
-void song_manager::saveSong(Model::Song& song)
+void Manager::song_manager::saveSong(Model::Song& song)
 {
     saveSongTemp(song);
     metadata_retriever meta;
@@ -28,17 +28,17 @@ void song_manager::saveSong(Model::Song& song)
     song.data = std::move(data);
 
     coverArtManager covMgr(exe_path);
-    auto pathConfigContent = directory_manager::pathConfigContent(exe_path);
+    auto pathConfigContent = Manager::directory_manager::pathConfigContent(exe_path);
     auto coverRootPath = pathConfigContent["cover_root_path"].get<std::string>();
     auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
-    auto stockCoverPath = directory_manager::configPath(exe_path);
+    auto stockCoverPath = Manager::directory_manager::configPath(exe_path);
     stockCoverPath.append("/CoverArt.png");
 
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
     song.coverArtId = cov.id;
 
-    auto songPath = directory_manager::create_directory_process(song, musicRootPath);
+    auto songPath = Manager::directory_manager::create_directory_process(song, musicRootPath);
     songPath.append(song.title);
     songPath.append(".mp3");
     std::cout << "\n\ntemp path: " << song.songPath << std::endl;
@@ -53,7 +53,7 @@ void song_manager::saveSong(Model::Song& song)
     songRepo.saveRecord(song);
 }
 
-void song_manager::deleteSong(Model::Song& song)
+void Manager::song_manager::deleteSong(Model::Song& song)
 {
     coverArtRepository covRepo(exe_path);
     songRepository songRepo(exe_path);
@@ -66,7 +66,7 @@ void song_manager::deleteSong(Model::Song& song)
     cov = covRepo.retrieveRecord(cov, coverFilter::id);
     covRepo.deleteRecord(cov);
 
-    auto paths = directory_manager::pathConfigContent(exe_path);
+    auto paths = Manager::directory_manager::pathConfigContent(exe_path);
     const auto coverArtPath = paths["cover_root_path"].get<std::string>();
     std::string stockCoverArtPath = coverArtPath;
     stockCoverArtPath.append("CoverArt.png");
@@ -77,11 +77,11 @@ void song_manager::deleteSong(Model::Song& song)
     }
     fs::remove(song.songPath);
 
-    directory_manager::delete_directories(song, paths["root_music_path"].get<std::string>());
-    directory_manager::delete_directories(song, coverArtPath);
+    Manager::directory_manager::delete_directories(song, paths["root_music_path"].get<std::string>());
+    Manager::directory_manager::delete_directories(song, coverArtPath);
 }
 
-void song_manager::printSong(const Model::Song& song)
+void Manager::song_manager::printSong(const Model::Song& song)
 {
     std::cout << "\n\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
@@ -98,9 +98,9 @@ void song_manager::printSong(const Model::Song& song)
     }
 }
 
-void song_manager::saveSongTemp(Model::Song& song)
+void Manager::song_manager::saveSongTemp(Model::Song& song)
 {
-    auto config = directory_manager::pathConfigContent(exe_path);
+    auto config = Manager::directory_manager::pathConfigContent(exe_path);
 
     auto tmp_song = config["temp_root_path"].get<std::string>();
     std::random_device dev;
