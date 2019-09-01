@@ -80,7 +80,7 @@ public:
             REQUEST(std::shared_ptr<IncomingRequest>, request))
     {
         std::cout << "starting process of retrieving songs" << std::endl;
-        songRepository songRepo(m_exe_path);
+        Database::songRepository songRepo(m_exe_path);
         auto songsDb = songRepo.retrieveRecords();
         auto songs = oatpp::data::mapping::type::List<songDto::ObjectWrapper>::createShared();
 
@@ -107,7 +107,7 @@ public:
     ENDPOINT("GET", "/api/v1/song/{id}", songRecord, 
             PATH(Int32, id)) {
 
-        songRepository songRepo(m_exe_path);
+        Database::songRepository songRepo(m_exe_path);
         Model::Song songDb;
         songDb.id = id;
 
@@ -130,7 +130,7 @@ public:
     ENDPOINT("GET", "/api/v1/song/data/{id}", downloadSong, 
             PATH(Int32, id)) {
 
-        songRepository songRepo(m_exe_path);
+        Database::songRepository songRepo(m_exe_path);
         Model::Song songDb;
         songDb.id = id;
         songDb = songRepo.retrieveRecord(songDb, songFilter::id);

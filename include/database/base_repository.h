@@ -7,22 +7,27 @@
 
 #include "models/models.h"
 
-class base_repository
+namespace Database
 {
-public:
-    base_repository();
-    base_repository(const std::string&);
-protected:
-    MYSQL* setup_mysql_connection();
-    MYSQL* setup_mysql_connection(Model::database_connection);
+    class base_repository
+    {
+    public:
+        base_repository();
+        base_repository(const std::string&);
+        base_repository(const BinaryPath&);
+    protected:
+        MYSQL* setup_mysql_connection();
+        MYSQL* setup_mysql_connection(Model::database_connection);
 
-    MYSQL_RES* perform_mysql_query(MYSQL*, const std::string&);
+        MYSQL_RES* perform_mysql_query(MYSQL*, const std::string&);
 
-    Model::database_connection details;
-private:
-    void intitalizeDetails();
+        Model::database_connection details;
+    private:
+        void intitalizeDetails();
 
-    std::string path;
-};
+        std::string path;
+        Model::BinaryPath m_binConf;
+    };
+}
 
 #endif

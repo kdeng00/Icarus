@@ -20,6 +20,16 @@ namespace Model
         std::string songPath;
         std::vector<unsigned char> data;
         int coverArtId;
+        int artistId;
+        int albumId;
+        int genreId;
+        int yearId;
+    };
+
+    struct Artist
+    {
+        int id;
+        std::string artist;
     };
 
     struct Album
@@ -30,6 +40,19 @@ namespace Model
         std::vector<Song> songs;
     };
 
+    struct Genre
+    {
+        int id;
+        std::string category;
+
+    };
+
+    struct Year
+    {
+        int id;
+        int year;
+    };
+
     struct Cover
     {
         int id;
@@ -37,16 +60,6 @@ namespace Model
         std::string imagePath;
         // Not being used but it should be
         std::vector<unsigned char> data;
-    };
-
-    struct LoginRes
-    {
-        int UserId;
-        char Username[1024];
-        char Token[1024];
-        char TokenType[1024];
-        char Message[1024];
-        int Expiration;
     };
 
     struct loginResult
@@ -75,6 +88,11 @@ namespace Model
         std::string username;
         std::string password;
         std::string database;
+    };
+
+    struct BinaryPath
+    {
+        std::string path;
     };
 }
 

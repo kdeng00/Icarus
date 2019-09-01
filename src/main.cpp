@@ -17,14 +17,15 @@
 
 namespace fs = std::filesystem;
 
-void run(const std::string& working_path)
+//void run(const std::string& working_path)
+void run(const Model::BinaryPath& bConf)
 {
     appComponent component;
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
-    auto logController = std::make_shared<loginController>(working_path);
-    auto sngController = std::make_shared<songController>(working_path);
+    auto logController = std::make_shared<loginController>(bConf);
+    auto sngController = std::make_shared<songController>(bConf);
     logController->addEndpointsToRouter(router);
     sngController->addEndpointsToRouter(router);
 
@@ -42,9 +43,12 @@ void run(const std::string& working_path)
 int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
-    const std::string working_path = argv[0];
+    //const std::string working_path = argv[0];
+    Model::BinaryPath bConf; 
+    bConf.path = argv[0]
 
-    run(working_path);
+    //run(working_path);
+    run(bConf);
 
     oatpp::base::Environment::destroy();
 

@@ -20,10 +20,12 @@ namespace Manager
 
         Model::loginResult retrieve_token();
         Model::loginResult retrieve_token(std::string_view);
+        Model::loginResult retrieve_token(const BinaryPath&);
 
         bool is_token_valid(std::string&, Scope);
     private:
         Model::auth_credentials parse_auth_credentials(std::string_view);
+        Model::auth_credentials parse_auth_credentials(const BinaryPath&);
 
         std::vector<std::string> extract_scopes(const jwt::decoded_jwt&&);
         std::pair<bool, std::vector<std::string>> fetch_auth_header(const std::string&);

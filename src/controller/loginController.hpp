@@ -18,6 +18,9 @@ public:
     loginController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
         : oatpp::web::server::api::ApiController(objectMapper), exe_path(p)
     { }
+    loginController(const Model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        :oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
+    { }
 
 
     #include OATPP_CODEGEN_BEGIN(ApiController)
@@ -27,7 +30,8 @@ public:
         OATPP_LOGI("icarus", "logging in");
 
         Manager::token_manager tok;
-        auto token = tok.retrieve_token(exe_path);
+        //auto token = tok.retrieve_token(exe_path);
+        auto token = tok.retrieve_token(bconf);
 
         auto logRes = loginResultDto::createShared();
         logRes->id = 0; // TODO: change this later on to something meaningful
@@ -43,6 +47,7 @@ public:
     #include OATPP_CODEGEN_END(ApiController)
 private:
     std::string exe_path;
+    Model::BinaryPath m_bConf;
 };
 
 #endif

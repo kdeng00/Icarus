@@ -9,27 +9,43 @@ set(SOURCES
     src/appComponent.hpp
     src/controller/loginController.hpp
     src/controller/songController.hpp
+    src/database/albumRepository.cpp
+    src/database/artistRepository.cpp
     src/database/base_repository.cpp
     src/database/coverArtRepository.cpp
+    src/database/genreRepository.cpp
     src/database/songRepository.cpp
+    src/database/yearRepository.cpp
     src/dto/loginResultDto.hpp
     src/dto/songDto.hpp
     src/main.cpp
+    src/managers/albumManager.cpp
+    src/managers/artistManager.cpp
     src/managers/coverArtManager.cpp
     src/managers/directory_manager.cpp
+    src/managers/genreManager.cpp
     src/managers/song_manager.cpp
     src/managers/token_manager.cpp
+    src/managers/yearManager.cpp
     src/utilities/imageFile.cpp
     src/utilities/metadata_retriever.cpp
 )
 set(HEADERS
+    include/database/albumRepository.h
+    include/database/artistRepository.h
     include/database/base_repository.h
     include/database/coverArtRepository.h
+    include/database/genreRepository.h
     include/database/songRepository.h
+    include/database/yearRepository.h
+    include/managers/albumManager.h
+    include/managers/artistManager.h
     include/managers/coverArtManager.h
     include/managers/directory_manager.h
+    include/managers/genreManager.h
     include/managers/song_manager.h
     include/managers/token_manager.h
+    include/managers/yearManager.h
     include/models/models.h
     include/utilities/imageFile.h
     include/utilities/metadata_retriever.h

@@ -49,14 +49,14 @@ void Manager::song_manager::saveSong(Model::Song& song)
 
     printSong(song);
 
-    songRepository songRepo(exe_path);
+    Database::songRepository songRepo(exe_path);
     songRepo.saveRecord(song);
 }
 
 void Manager::song_manager::deleteSong(Model::Song& song)
 {
-    coverArtRepository covRepo(exe_path);
-    songRepository songRepo(exe_path);
+    Database::coverArtRepository covRepo(exe_path);
+    Database::songRepository songRepo(exe_path);
 
     song = songRepo.retrieveRecord(song, songFilter::id);
     songRepo.deleteRecord(song);

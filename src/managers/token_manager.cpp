@@ -104,6 +104,23 @@ Model::auth_credentials Manager::token_manager::parse_auth_credentials(std::stri
 
     return auth;
 }
+Model::auth_credentials Manager::token_manager::parse_auth_credentials(const BinaryPath& bConf)
+{
+    auto exePath = Manager::directory_manager::configPath(bConf);
+    exe_path.append("/auth_credentials.json");
+
+    auto con = Manager::directory_manager::credentialConfigContent(exePath);
+
+    Model::auth_credentials auth;
+    auth.uri = "https://";
+    auth.uri.append(con["domain"]);
+    auth.api_identifier = con["api_identifier"];
+    auth.client_id = con["client_id"];
+    auth.client_secret = con["client_secret"];
+    auth.endpoint = "oauth/token";
+
+    return auth;
+}
 
 std::vector<std::string> Manager::token_manager::extract_scopes(const jwt::decoded_jwt&& decoded)
 {
