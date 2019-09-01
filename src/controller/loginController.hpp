@@ -9,7 +9,7 @@
 #include "oatpp/core/macro/component.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
-#include "../dto/loginResultDto.hpp"
+#include "dto/loginResultDto.hpp"
 #include "managers/token_manager.h"
 
 namespace Controller
@@ -27,14 +27,14 @@ namespace Controller
 
         #include OATPP_CODEGEN_BEGIN(ApiController)
     
-        ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(userDto::ObjectWrapper, usr)) {
+        ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(Dto::userDto::ObjectWrapper, usr)) {
             OATPP_LOGI("icarus", "logging in");
 
             Manager::token_manager tok;
             //auto token = tok.retrieve_token(exe_path);
             auto token = tok.retrieve_token(m_bConf);
 
-            auto logRes = loginResultDto::createShared();
+            auto logRes = Dto::loginResultDto::createShared();
             logRes->id = 0; // TODO: change this later on to something meaningful
             logRes->username = usr->username->c_str();
             logRes->token = token.access_token.c_str();

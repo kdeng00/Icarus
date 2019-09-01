@@ -16,8 +16,6 @@ set(SOURCES
     src/database/genreRepository.cpp
     src/database/songRepository.cpp
     src/database/yearRepository.cpp
-    src/dto/loginResultDto.hpp
-    src/dto/songDto.hpp
     src/main.cpp
     src/managers/albumManager.cpp
     src/managers/artistManager.cpp
@@ -38,6 +36,8 @@ set(HEADERS
     include/database/genreRepository.h
     include/database/songRepository.h
     include/database/yearRepository.h
+    include/dto/loginResultDto.hpp
+    include/dto/songDto.hpp
     include/managers/albumManager.h
     include/managers/artistManager.h
     include/managers/coverArtManager.h

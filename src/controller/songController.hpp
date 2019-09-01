@@ -18,7 +18,7 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 
 #include "database/songRepository.h"
-#include "../dto/songDto.hpp"
+#include "dto/songDto.hpp"
 #include "managers/song_manager.h"
 #include "managers/token_manager.h"
 #include "models/models.h"
@@ -88,11 +88,11 @@ namespace Controller
             std::cout << "starting process of retrieving songs" << std::endl;
             Database::songRepository songRepo(m_bConf);
             auto songsDb = songRepo.retrieveRecords();
-            auto songs = oatpp::data::mapping::type::List<songDto::ObjectWrapper>::createShared();
+            auto songs = oatpp::data::mapping::type::List<Dto::songDto::ObjectWrapper>::createShared();
 
             std::cout << "creating object to send" << std::endl;
             for (auto& songDb : songsDb) {
-                auto song = songDto::createShared();
+                auto song = Dto::songDto::createShared();
                 song->id = songDb.id;
                 song->title = songDb.title.c_str();
                 song->artist = songDb.artist.c_str();
@@ -119,7 +119,7 @@ namespace Controller
 
             songDb = songRepo.retrieveRecord(songDb, Type::songFilter::id);
 
-            auto song = songDto::createShared();
+            auto song = Dto::songDto::createShared();
             song->id = songDb.id;
             song->title = songDb.title.c_str();
             song->artist = songDb.artist.c_str();
