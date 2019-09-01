@@ -14,6 +14,7 @@ namespace Manager
     {
     public:
         song_manager(std::string&);
+        song_manager(const Model::BinaryPath&);
 
         void saveSong(Model::Song&);
         void deleteSong(Model::Song&);
@@ -22,6 +23,7 @@ namespace Manager
     private:
         void saveSongTemp(Model::Song&);
 
+        Model::BinaryPath m_bConf;
         std::string exe_path;
     };
 }

@@ -41,10 +41,13 @@ std::string Manager::directory_manager::configPath(std::string_view path)
 {
     return fs::canonical(path).parent_path().string();
 }
-std::string Manager::directory_manager::contentOfPath(std::string_view path)
+std::string Manager::directory_manager::configPath(const Model::BinaryPath& bConf)
 {
-    std::string configPath(path);
-    std::fstream a(configPath, std::ios::in);
+    return fs::canonical(bConf.path).parent_path().string();
+}
+std::string Manager::directory_manager::contentOfPath(const std::string& path)
+{
+    std::fstream a(path, std::ios::in);
     std::stringstream s;
     s << a.rdbuf();
     a.close();
@@ -59,6 +62,13 @@ nlohmann::json Manager::directory_manager::credentialConfigContent(const std::st
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+nlohmann::json Manager::directory_manager::credentialConfigContent(const Model::BinaryPath& bConf)
+{
+    auto path = configPath(bConf);
+    path.append("/authcredentials.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
 nlohmann::json Manager::directory_manager::databaseConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
@@ -66,9 +76,23 @@ nlohmann::json Manager::directory_manager::databaseConfigContent(const std::stri
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+nlohmann::json Manager::directory_manager::databaseConfigContent(const Model::BinaryPath& bConf)
+{
+    auto path = configPath(bConf);
+    path.append("/database.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
 nlohmann::json Manager::directory_manager::pathConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
+    path.append("/paths.json");
+
+    return nlohmann::json::parse(contentOfPath(path));
+}
+nlohmann::json Manager::directory_manager::pathConfigContent(const Model::BinaryPath& bConf)
+{
+    auto path = configPath(bConf);
     path.append("/paths.json");
 
     return nlohmann::json::parse(contentOfPath(path));

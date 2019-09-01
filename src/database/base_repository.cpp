@@ -6,15 +6,19 @@
 
 #include "managers/directory_manager.h"
 
-base_repository::base_repository() 
+Database::base_repository::base_repository() 
 { }
 
-base_repository::base_repository(const std::string& path) : path(path)
+Database::base_repository::base_repository(const std::string& path) : path(path)
 { 
     intitalizeDetails();
 }
+Database::base_repository::base_repository(const Model::BinaryPath& bConf)
+{
+    initializeDetails(bConf);
+}
 
-MYSQL* base_repository::setup_mysql_connection()
+MYSQL* Database::base_repository::setup_mysql_connection()
 {
     MYSQL *conn = mysql_init(nullptr);
 
@@ -25,7 +29,7 @@ MYSQL* base_repository::setup_mysql_connection()
 
     return conn;
 }
-MYSQL* base_repository::setup_mysql_connection(Model::database_connection details)
+MYSQL* Database::base_repository::setup_mysql_connection(Model::database_connection details)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -37,7 +41,7 @@ MYSQL* base_repository::setup_mysql_connection(Model::database_connection detail
     return connection;
 }
 
-MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, const std::string& query)
+MYSQL_RES* Database::base_repository::perform_mysql_query(MYSQL *conn, const std::string& query)
 {
    // send the query to the database
    if (mysql_query(conn, query.c_str()))
@@ -49,7 +53,7 @@ MYSQL_RES* base_repository::perform_mysql_query(MYSQL *conn, const std::string& 
    return mysql_use_result(conn);
 }
 
-void base_repository::intitalizeDetails()
+void Database::base_repository::intitalizeDetails()
 {
     auto databaseConfig = Manager::directory_manager::databaseConfigContent(path);
     
@@ -57,4 +61,13 @@ void base_repository::intitalizeDetails()
     details.password = databaseConfig["password"].get<std::string>();
     details.server = databaseConfig["server"].get<std::string>();
     details.username = databaseConfig["username"].get<std::string>();
+}
+void Database::base_repository::initializeDetails(const Model::BinaryPath& bConf)
+{
+    auto databaseConfig = Manager::directory_manager::databaseConfigContent(bConf);
+
+    details.database = databaseConfig["database"].get<std::string>();
+    details.server = databaseConfig["server"].get<std::string>();
+    details.username = databaseConfig["username"].get<std::string>();
+    details.password = databaseConfig["password"].get<std::string>();
 }

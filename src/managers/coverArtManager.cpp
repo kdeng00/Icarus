@@ -7,6 +7,9 @@
 Manager::coverArtManager::coverArtManager(const std::string& configPath) : path(configPath)
 { }
 
+Manager::coverArtManager::coverArtManager(const Model::BinaryPath& bConf) : m_bConf(bConf)
+{ }
+
 
 Model::Cover Manager::coverArtManager::saveCover(const Model::Song& song, std::string& rootPath, const std::string& stockCoverPath)
 {
@@ -16,7 +19,7 @@ Model::Cover Manager::coverArtManager::saveCover(const Model::Song& song, std::s
     cov = meta.update_cover_art(song, cov, stockCoverPath);
     cov.songTitle = song.title;
 
-    Database::coverArtRepository covRepo(path);
+    Database::coverArtRepository covRepo(m_bConf);
     std::cout << "saving record to the database" << std::endl;
     covRepo.saveRecord(cov);
     std::cout << "retrieving record from database" << std::endl;

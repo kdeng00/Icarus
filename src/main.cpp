@@ -24,8 +24,8 @@ void run(const Model::BinaryPath& bConf)
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
-    auto logController = std::make_shared<loginController>(bConf);
-    auto sngController = std::make_shared<songController>(bConf);
+    auto logController = std::make_shared<Controller::loginController>(bConf);
+    auto sngController = std::make_shared<Controller::songController>(bConf);
     logController->addEndpointsToRouter(router);
     sngController->addEndpointsToRouter(router);
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     oatpp::base::Environment::init();
     //const std::string working_path = argv[0];
     Model::BinaryPath bConf; 
-    bConf.path = argv[0]
+    bConf.path = argv[0];
 
     //run(working_path);
     run(bConf);

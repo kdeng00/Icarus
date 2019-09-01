@@ -10,21 +10,25 @@
 #include "models/models.h"
 #include "types/songFilter.h"
 
-class songRepository : public base_repository
+namespace Database
 {
-public:
-    songRepository(const std::string&);
+    class songRepository : public base_repository
+    {
+    public:
+        songRepository(const std::string&);
+        songRepository(const Model::BinaryPath&);
 
-    std::vector<Model::Song> retrieveRecords();
+        std::vector<Model::Song> retrieveRecords();
 
-    Model::Song retrieveRecord(Model::Song&, songFilter);
+        Model::Song retrieveRecord(Model::Song&, songFilter);
 
-    void deleteRecord(const Model::Song&);
-    void saveRecord(const Model::Song&);
-private:
-    std::vector<Model::Song> parseRecords(MYSQL_RES*);
+        void deleteRecord(const Model::Song&);
+        void saveRecord(const Model::Song&);
+    private:
+        std::vector<Model::Song> parseRecords(MYSQL_RES*);
 
-    Model::Song parseRecord(MYSQL_RES*);
-};
+        Model::Song parseRecord(MYSQL_RES*);
+    };
+}
 
 #endif

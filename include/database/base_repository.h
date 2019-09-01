@@ -14,7 +14,7 @@ namespace Database
     public:
         base_repository();
         base_repository(const std::string&);
-        base_repository(const BinaryPath&);
+        base_repository(const Model::BinaryPath&);
     protected:
         MYSQL* setup_mysql_connection();
         MYSQL* setup_mysql_connection(Model::database_connection);
@@ -24,6 +24,7 @@ namespace Database
         Model::database_connection details;
     private:
         void intitalizeDetails();
+        void initializeDetails(const Model::BinaryPath&);
 
         std::string path;
         Model::BinaryPath m_binConf;
