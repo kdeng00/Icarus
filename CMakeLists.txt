@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
-    src/appComponent.hpp
     src/database/albumRepository.cpp
     src/database/artistRepository.cpp
     src/database/base_repository.cpp
@@ -27,6 +26,7 @@ set(SOURCES
     src/utilities/metadata_retriever.cpp
 )
 set(HEADERS
+    include/component/appComponent.hpp
     include/controller/loginController.hpp
     include/controller/songController.hpp
     include/database/albumRepository.h
@@ -49,9 +49,13 @@ set(HEADERS
     include/models/models.h
     include/utilities/imageFile.h
     include/utilities/metadata_retriever.h
+    include/types/albumFilter.h
+    include/types/artistFilter.h
     include/types/coverFilter.h
+    include/types/genreFilter.h
     include/types/scopes.h
     include/types/songFilter.h
+    include/types/yearFilter.h
 )
 
 set (TAGLIB

@@ -74,6 +74,7 @@ void Database::songRepository::deleteRecord(const Model::Song& song)
 
 void Database::songRepository::saveRecord(const Model::Song& song)
 {
+    std::cout << "beginning to insert song record" << std::endl;
     auto conn = setup_mysql_connection();
     auto status = 0;
 

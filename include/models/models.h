@@ -92,6 +92,8 @@ namespace Model
 
     struct BinaryPath
     {
+        BinaryPath() = default;
+        BinaryPath(const char *p) : path(std::move(p)) { }
         std::string path;
     };
 }

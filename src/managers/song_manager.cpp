@@ -8,8 +8,12 @@
 
 #include "database/coverArtRepository.h"
 #include "database/songRepository.h"
+#include "managers/albumManager.h"
+#include "managers/artistManager.h"
 #include "managers/coverArtManager.h"
 #include "managers/directory_manager.h"
+#include "managers/genreManager.h"
+#include "managers/yearManager.h"
 #include "utilities/metadata_retriever.h"
 
 namespace fs = std::filesystem;
@@ -31,25 +35,9 @@ void Manager::song_manager::saveSong(Model::Song& song)
     song = meta.retrieve_metadata(song.songPath);
     song.data = std::move(data);
 
-    coverArtManager covMgr(m_bConf);
-    auto pathConfigContent = Manager::directory_manager::pathConfigContent(m_bConf);
-    auto coverRootPath = pathConfigContent["cover_root_path"].get<std::string>();
-    auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
-    auto stockCoverPath = Manager::directory_manager::configPath(m_bConf);
-    stockCoverPath.append("/CoverArt.png");
+    saveMisc(song);
 
-    auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
-    song.coverArtId = cov.id;
-
-    auto songPath = Manager::directory_manager::create_directory_process(song, musicRootPath);
-    songPath.append(song.title);
-    songPath.append(".mp3");
-    std::cout << "\n\ntemp path: " << song.songPath << std::endl;
-    std::cout << "new path: " << songPath << std::endl;
-    fs::copy(song.songPath, songPath);
-    fs::remove(song.songPath);
-    song.songPath = std::move(songPath);
 
     printSong(song);
 
@@ -119,4 +107,31 @@ void Manager::song_manager::saveSongTemp(Model::Song& song)
     s.close();
 
     song.songPath = tmp_song;
+}
+void Manager::song_manager::saveMisc(Model::Song& song)
+{
+    coverArtManager covMgr(m_bConf);
+    auto pathConfigContent = Manager::directory_manager::pathConfigContent(m_bConf);
+    auto coverRootPath = pathConfigContent["cover_root_path"].get<std::string>();
+    auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
+
+    auto stockCoverPath = Manager::directory_manager::configPath(m_bConf);
+    stockCoverPath.append("/CoverArt.png");
+
+    auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
+    song.coverArtId = cov.id;
+
+    auto songPath = Manager::directory_manager::create_directory_process(song, musicRootPath);
+    songPath.append(song.title);
+    songPath.append(".mp3");
+    std::cout << "\n\ntemp path: " << song.songPath << std::endl;
+    std::cout << "new path: " << songPath << std::endl;
+    fs::copy(song.songPath, songPath);
+    fs::remove(song.songPath);
+    song.songPath = std::move(songPath);
+
+    artistManager artMgr(m_bConf);
+    albumManager albMgr(m_bConf);
+    genreManager gnrMgr(m_bConf);
+    yearManager yrMgr(m_bConf);
 }

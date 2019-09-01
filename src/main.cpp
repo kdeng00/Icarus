@@ -9,7 +9,7 @@
 #include "oatpp/network/server/SimpleTCPConnectionProvider.hpp"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 
-#include "appComponent.hpp"
+#include "component/appComponent.hpp"
 #include "controller/loginController.hpp"
 #include "controller/songController.hpp"
 #include "database/base_repository.h"
@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 //void run(const std::string& working_path)
 void run(const Model::BinaryPath& bConf)
 {
-    appComponent component;
+    Component::appComponent component;
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
@@ -43,11 +43,8 @@ void run(const Model::BinaryPath& bConf)
 int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
-    //const std::string working_path = argv[0];
-    Model::BinaryPath bConf; 
-    bConf.path = argv[0];
+    Model::BinaryPath bConf(argv[0]); 
 
-    //run(working_path);
     run(bConf);
 
     oatpp::base::Environment::destroy();

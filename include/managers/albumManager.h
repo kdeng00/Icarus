@@ -9,6 +9,8 @@ namespace Manager
     {
     public:
         albumManager(const Model::BinaryPath&);
+
+        void saveAlbum(const Model::Song&);
     private:
         Model::BinaryPath m_bConf;
     };
