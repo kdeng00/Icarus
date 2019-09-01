@@ -13,12 +13,12 @@ class song_manager
 public:
     song_manager(std::string&);
 
-    void saveSong(Song&);
-    void deleteSong(Song&);
+    void saveSong(Model::Song&);
+    void deleteSong(Model::Song&);
 
-    static void printSong(const Song&);
+    static void printSong(const Model::Song&);
 private:
-    void saveSongTemp(Song&);
+    void saveSongTemp(Model::Song&);
 
     std::string exe_path;
 };

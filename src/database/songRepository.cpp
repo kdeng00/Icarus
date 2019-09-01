@@ -10,7 +10,7 @@
 songRepository::songRepository(const std::string& path) : base_repository(path)
 { }
 
-std::vector<Song> songRepository::retrieveRecords()
+std::vector<Model::Song> songRepository::retrieveRecords()
 {
     auto conn = setup_mysql_connection();
     const std::string query = "SELECT * FROM Song";
@@ -24,7 +24,7 @@ std::vector<Song> songRepository::retrieveRecords()
     return songs;
 }
 
-Song songRepository::retrieveRecord(Song& song, songFilter filter)
+Model::Song songRepository::retrieveRecord(Model::Song& song, songFilter filter)
 {
     std::stringstream qry;
     auto conn = setup_mysql_connection();
@@ -57,7 +57,7 @@ Song songRepository::retrieveRecord(Song& song, songFilter filter)
     return song;
 }
 
-void songRepository::deleteRecord(const Song& song)
+void songRepository::deleteRecord(const Model::Song& song)
 {
     auto conn = setup_mysql_connection();
     auto status = 0;
@@ -69,7 +69,7 @@ void songRepository::deleteRecord(const Song& song)
     mysql_close(conn);
 }
 
-void songRepository::saveRecord(const Song& song)
+void songRepository::saveRecord(const Model::Song& song)
 {
     auto conn = setup_mysql_connection();
     auto status = 0;
@@ -148,16 +148,16 @@ void songRepository::saveRecord(const Song& song)
     std::cout << "done inserting song record" << std::endl;
 }
 
-std::vector<Song> songRepository::parseRecords(MYSQL_RES* results)
+std::vector<Model::Song> songRepository::parseRecords(MYSQL_RES* results)
 {
     auto fieldNum = mysql_num_fields(results);
     auto numRows = mysql_num_rows(results);
 
-    std::vector<Song> songs;
+    std::vector<Model::Song> songs;
     songs.reserve(numRows);
 
     for (MYSQL_ROW row = nullptr; (row = mysql_fetch_row(results)) != nullptr; ) {
-        Song song;
+        Model::Song song;
 
         for (auto i = 0; i != fieldNum; ++i) {
             switch (i) {
@@ -203,9 +203,9 @@ std::vector<Song> songRepository::parseRecords(MYSQL_RES* results)
     return songs;
 }
 
-Song songRepository::parseRecord(MYSQL_RES* results)
+Model::Song songRepository::parseRecord(MYSQL_RES* results)
 {
-    Song song;
+    Model::Song song;
     auto fieldNum = mysql_num_fields(results);
 
     MYSQL_ROW row = mysql_fetch_row(results);

@@ -8,10 +8,10 @@ coverArtManager::coverArtManager(const std::string& configPath) : path(configPat
 { }
 
 
-Cover coverArtManager::saveCover(const Song& song, std::string& rootPath, const std::string& stockCoverPath)
+Model::Cover coverArtManager::saveCover(const Model::Song& song, std::string& rootPath, const std::string& stockCoverPath)
 {
     metadata_retriever meta;
-    Cover cov;
+    Model::Cover cov;
     cov.imagePath = rootPath;
     cov = meta.update_cover_art(song, cov, stockCoverPath);
     cov.songTitle = song.title;

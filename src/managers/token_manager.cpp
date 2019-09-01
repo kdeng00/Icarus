@@ -21,15 +21,15 @@ token_manager::token_manager()
 {
 }
 
-loginResult token_manager::retrieve_token()
+Model::loginResult token_manager::retrieve_token()
 {
-    loginResult lr;
+    Model::loginResult lr;
     lr.access_token = "dsfdsf";
     lr.token_type = "demo";
 
     return lr;
 }
-loginResult token_manager::retrieve_token(std::string_view path)
+Model::loginResult token_manager::retrieve_token(std::string_view path)
 {
     auto cred = parse_auth_credentials(path);
 
@@ -50,7 +50,7 @@ loginResult token_manager::retrieve_token(std::string_view path)
 
     auto post_res = nlohmann::json::parse(r.text);
 
-    loginResult lr;
+    Model::loginResult lr;
     lr.access_token = post_res["access_token"].get<std::string>();
     lr.token_type = post_res["token_type"].get<std::string>();
     lr.expiration = post_res["expires_in"].get<int>();
@@ -87,14 +87,14 @@ bool token_manager::is_token_valid(std::string& auth, Scope scope)
     return false;
 }
 
-auth_credentials token_manager::parse_auth_credentials(std::string_view path)
+Model::auth_credentials token_manager::parse_auth_credentials(std::string_view path)
 {
     auto exe_path = directory_manager::configPath(path);
     exe_path.append("/authcredentials.json");
     
     auto con = directory_manager::credentialConfigContent(exe_path);
 
-    auth_credentials auth;
+    Model::auth_credentials auth;
     auth.uri = "https://";
     auth.uri.append(con["domain"]);
     auth.api_identifier = con["api_identifier"];

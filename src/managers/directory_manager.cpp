@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-std::string directory_manager::create_directory_process(Song song, const std::string& root_path)
+std::string directory_manager::create_directory_process(Model::Song song, const std::string& root_path)
 {
     auto curr_path = fs::path(root_path);
 
@@ -74,52 +74,6 @@ nlohmann::json directory_manager::pathConfigContent(const std::string& exe_path)
     return nlohmann::json::parse(contentOfPath(path));
 }
 
-/**
-std::string directory_manager::read_cover_art(const std::string& source)
-{
-    auto source_path = fs::path(source);
-    
-    std::fstream cov(source, std::ios::in | std::ios::binary);
-
-    cov.seekg(0);
-
-    std::stringstream buf;
-    std::copy(std::istreambuf_iterator<char>(cov),
-        std::istreambuf_iterator<char>(),
-        std::ostreambuf_iterator<char>(buf));
-
-    return buf.str();
-}
-
-void directory_manager::copy_stock_to_root(const std::string& target, const std::string& buff)
-{
-    std::cout<<"starting process"<<std::endl;
-    auto target_path = fs::path(target);
-    if (fs::exists(target_path)) {
-        std::cout<<target_path.string()<<" exists"<<std::endl;
-        return;
-    }
-
-    std::cout<<target_path.string()<<" does not exist, copying over"<<std::endl;
-    std::fstream cov(target, std::ios::out | std::ios::binary);
-    cov.write(buff.c_str(), buff.size());
-    cov.close();
-
-    std::cout<<"copy finished"<<std::endl;
-}
-void directory_manager::copy_song_to_path(const std::string& target, const std::string& source)
-{
-    std::cout<<"starting process to copy song"<<std::endl;
-    auto target_path = fs::path(target);
-    auto src_path = fs::path(source);
-
-    std::cout<<"copting over to "<<target_path.string()<<std::endl;
-    fs::copy(src_path, target_path);
-
-    fs::remove(source);
-    std::cout<<"copy finished"<<std::endl;
-}
-*/
 void directory_manager::delete_cover_art_file(const std::string& cov_path, const std::string& stock_cover_path)
 {
     if (cov_path.compare(stock_cover_path) == 0) {
@@ -130,7 +84,7 @@ void directory_manager::delete_cover_art_file(const std::string& cov_path, const
         fs::remove(cov);
     }
 }
-void directory_manager::delete_directories(Song song, const std::string& root_path)
+void directory_manager::delete_directories(Model::Song song, const std::string& root_path)
 {
     std::cout<<"checking to for empty directories to delete"<<std::endl;
     const std::string art{root_path + std::string{"/"} + song.artist};
@@ -155,7 +109,7 @@ void directory_manager::delete_directories(Song song, const std::string& root_pa
 
     std::cout<<"deleted empty directory or directories"<<std::endl;
 }
-void directory_manager::delete_song(const Song song)
+void directory_manager::delete_song(const Model::Song song)
 {
     std::cout<<"deleting song"<<std::endl;
     auto song_path = fs::path(song.songPath);

@@ -66,7 +66,7 @@ public:
 
         std::vector<unsigned char> data(buff.get(), buff.get() + buffSize);
 
-        Song sng;
+        Model::Song sng;
         sng.data = std::move(data);
         
         song_manager s_mgr(m_exe_path);
@@ -108,7 +108,7 @@ public:
             PATH(Int32, id)) {
 
         songRepository songRepo(m_exe_path);
-        Song songDb;
+        Model::Song songDb;
         songDb.id = id;
 
         songDb = songRepo.retrieveRecord(songDb, songFilter::id);
@@ -131,7 +131,7 @@ public:
             PATH(Int32, id)) {
 
         songRepository songRepo(m_exe_path);
-        Song songDb;
+        Model::Song songDb;
         songDb.id = id;
         songDb = songRepo.retrieveRecord(songDb, songFilter::id);
 
@@ -156,7 +156,7 @@ public:
 
     ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, PATH(Int32, id)) {
 
-        Song song;
+        Model::Song song;
         song.id = id;
 
         song_manager sngMgr(m_exe_path);

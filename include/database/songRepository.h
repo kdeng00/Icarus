@@ -15,16 +15,16 @@ class songRepository : public base_repository
 public:
     songRepository(const std::string&);
 
-    std::vector<Song> retrieveRecords();
+    std::vector<Model::Song> retrieveRecords();
 
-    Song retrieveRecord(Song&, songFilter);
+    Model::Song retrieveRecord(Model::Song&, songFilter);
 
-    void deleteRecord(const Song&);
-    void saveRecord(const Song&);
+    void deleteRecord(const Model::Song&);
+    void saveRecord(const Model::Song&);
 private:
-    std::vector<Song> parseRecords(MYSQL_RES*);
+    std::vector<Model::Song> parseRecords(MYSQL_RES*);
 
-    Song parseRecord(MYSQL_RES*);
+    Model::Song parseRecord(MYSQL_RES*);
 };
 
 #endif

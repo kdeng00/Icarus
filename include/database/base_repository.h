@@ -14,11 +14,11 @@ public:
     base_repository(const std::string&);
 protected:
     MYSQL* setup_mysql_connection();
-    MYSQL* setup_mysql_connection(database_connection);
+    MYSQL* setup_mysql_connection(Model::database_connection);
 
     MYSQL_RES* perform_mysql_query(MYSQL*, const std::string&);
 
-    database_connection details;
+    Model::database_connection details;
 private:
     void intitalizeDetails();
 

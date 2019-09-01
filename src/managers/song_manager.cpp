@@ -19,7 +19,7 @@ song_manager::song_manager(std::string& x_path)
 { }
 
 
-void song_manager::saveSong(Song& song)
+void song_manager::saveSong(Model::Song& song)
 {
     saveSongTemp(song);
     metadata_retriever meta;
@@ -53,7 +53,7 @@ void song_manager::saveSong(Song& song)
     songRepo.saveRecord(song);
 }
 
-void song_manager::deleteSong(Song& song)
+void song_manager::deleteSong(Model::Song& song)
 {
     coverArtRepository covRepo(exe_path);
     songRepository songRepo(exe_path);
@@ -61,7 +61,7 @@ void song_manager::deleteSong(Song& song)
     song = songRepo.retrieveRecord(song, songFilter::id);
     songRepo.deleteRecord(song);
 
-    Cover cov;
+    Model::Cover cov;
     cov.id = song.coverArtId;
     cov = covRepo.retrieveRecord(cov, coverFilter::id);
     covRepo.deleteRecord(cov);
@@ -81,7 +81,7 @@ void song_manager::deleteSong(Song& song)
     directory_manager::delete_directories(song, coverArtPath);
 }
 
-void song_manager::printSong(const Song& song)
+void song_manager::printSong(const Model::Song& song)
 {
     std::cout << "\n\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
@@ -98,7 +98,7 @@ void song_manager::printSong(const Song& song)
     }
 }
 
-void song_manager::saveSongTemp(Song& song)
+void song_manager::saveSongTemp(Model::Song& song)
 {
     auto config = directory_manager::pathConfigContent(exe_path);
 

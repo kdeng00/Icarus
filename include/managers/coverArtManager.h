@@ -10,7 +10,7 @@ class coverArtManager
 public:
     coverArtManager(const std::string&);
 
-    Cover saveCover(const Song&, std::string&, const std::string&);
+    Model::Cover saveCover(const Model::Song&, std::string&, const std::string&);
 private:
     std::string path;
 };

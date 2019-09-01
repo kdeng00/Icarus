@@ -12,12 +12,12 @@ class coverArtRepository : public base_repository
 public:
     coverArtRepository(const std::string&);
 
-    Cover retrieveRecord(Cover&, coverFilter);
+    Model::Cover retrieveRecord(Model::Cover&, coverFilter);
 
-    void deleteRecord(const Cover&);
-    void saveRecord(const Cover&);
+    void deleteRecord(const Model::Cover&);
+    void saveRecord(const Model::Cover&);
 private:
-    Cover parseRecord(MYSQL_RES*);
+    Model::Cover parseRecord(MYSQL_RES*);
 };
 
 #endif

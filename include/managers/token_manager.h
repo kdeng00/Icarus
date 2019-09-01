@@ -16,12 +16,12 @@ class token_manager
 public:
     token_manager();
 
-    loginResult retrieve_token();
-    loginResult retrieve_token(std::string_view);
+    Model::loginResult retrieve_token();
+    Model::loginResult retrieve_token(std::string_view);
 
     bool is_token_valid(std::string&, Scope);
 private:
-    auth_credentials parse_auth_credentials(std::string_view);
+    Model::auth_credentials parse_auth_credentials(std::string_view);
 
     std::vector<std::string> extract_scopes(const jwt::decoded_jwt&&);
     std::pair<bool, std::vector<std::string>> fetch_auth_header(const std::string&);

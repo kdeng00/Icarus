@@ -25,7 +25,7 @@ MYSQL* base_repository::setup_mysql_connection()
 
     return conn;
 }
-MYSQL* base_repository::setup_mysql_connection(database_connection details)
+MYSQL* base_repository::setup_mysql_connection(Model::database_connection details)
 {
     MYSQL *connection = mysql_init(NULL);
 
