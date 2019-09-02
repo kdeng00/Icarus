@@ -9,6 +9,11 @@ namespace Manager
     {
     public:
         artistManager(const Model::BinaryPath&);
+
+        Model::Artist retrieveArtist(Model::Artist&);
+        Model::Artist saveArtist(const Model::Song&);
+
+        static void printArtist(const Model::Artist&);
     private:
         Model::BinaryPath m_bConf;
     };

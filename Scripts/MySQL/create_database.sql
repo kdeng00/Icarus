@@ -34,6 +34,7 @@ CREATE TABLE Genre (
 
 CREATE TABLE Year (
     YearId INT NOT NULL AUTO_INCREMENT,
+    Year INT NOT NULL,
 
     PRIMARY KEY (YearId)
 );

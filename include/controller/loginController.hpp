@@ -31,7 +31,6 @@ namespace Controller
             OATPP_LOGI("icarus", "logging in");
 
             Manager::token_manager tok;
-            //auto token = tok.retrieve_token(exe_path);
             auto token = tok.retrieve_token(m_bConf);
 
             auto logRes = Dto::loginResultDto::createShared();

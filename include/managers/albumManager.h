@@ -10,7 +10,10 @@ namespace Manager
     public:
         albumManager(const Model::BinaryPath&);
 
-        void saveAlbum(const Model::Song&);
+        Model::Album retrieveAlbum(Model::Album&);
+        Model::Album saveAlbum(const Model::Song&);
+
+        static void printAlbum(const Model::Album&);
     private:
         Model::BinaryPath m_bConf;
     };

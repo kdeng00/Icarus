@@ -135,7 +135,7 @@ Model::auth_credentials Manager::token_manager::parse_auth_credentials(std::stri
 Model::auth_credentials Manager::token_manager::parse_auth_credentials(const Model::BinaryPath& bConf)
 {
     auto exePath = Manager::directory_manager::configPath(bConf);
-    exePath.append("/auth_credentials.json");
+    exePath.append("/authcredentials.json");
 
     auto con = Manager::directory_manager::credentialConfigContent(exePath);
 

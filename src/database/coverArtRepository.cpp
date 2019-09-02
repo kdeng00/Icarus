@@ -25,13 +25,11 @@ Model::Cover Database::coverArtRepository::retrieveRecord(Model::Cover& cov, Typ
         case Type::coverFilter::songTitle:
             param = std::make_unique<char*>(new char[cov.songTitle.size()]);
             mysql_real_escape_string(conn, *param, cov.songTitle.c_str(), cov.songTitle.size());
-            std::cout << *param << std::endl;
             qry << "SongTitle = '" << *param << "'";
             break;
         case Type::coverFilter::imagePath:
             param = std::make_unique<char*>(new char[cov.imagePath.size()]);
             mysql_real_escape_string(conn, *param, cov.imagePath.c_str(), cov.imagePath.size());
-            std::cout << *param << std::endl;
             qry << "ImagePath = '" << *param << "'";
             break;
     }

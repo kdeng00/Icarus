@@ -9,6 +9,11 @@ namespace Manager
     {
     public:
         genreManager(const Model::BinaryPath&);
+
+        Model::Genre retrieveGenre(Model::Genre&);
+        Model::Genre saveGenre(const Model::Song&);
+
+        static void printGenre(const Model::Genre&);
     private:
         Model::BinaryPath m_bConf;
     };

@@ -20,9 +20,9 @@ Model::Cover Manager::coverArtManager::saveCover(const Model::Song& song, std::s
     cov.songTitle = song.title;
 
     Database::coverArtRepository covRepo(m_bConf);
-    std::cout << "saving record to the database" << std::endl;
+    std::cout << "saving image record to the database" << std::endl;
     covRepo.saveRecord(cov);
-    std::cout << "retrieving record from database" << std::endl;
+    std::cout << "retrieving image record from database" << std::endl;
     cov = covRepo.retrieveRecord(cov, Type::coverFilter::songTitle);
 
     return cov;

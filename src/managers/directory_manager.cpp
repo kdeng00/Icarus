@@ -55,6 +55,7 @@ std::string Manager::directory_manager::contentOfPath(const std::string& path)
     return s.str();
 }
 
+/**
 nlohmann::json Manager::directory_manager::credentialConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
@@ -62,6 +63,7 @@ nlohmann::json Manager::directory_manager::credentialConfigContent(const std::st
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+*/
 nlohmann::json Manager::directory_manager::credentialConfigContent(const Model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);
@@ -69,6 +71,7 @@ nlohmann::json Manager::directory_manager::credentialConfigContent(const Model::
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+/**
 nlohmann::json Manager::directory_manager::databaseConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
@@ -76,6 +79,7 @@ nlohmann::json Manager::directory_manager::databaseConfigContent(const std::stri
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+*/
 nlohmann::json Manager::directory_manager::databaseConfigContent(const Model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);
@@ -83,6 +87,7 @@ nlohmann::json Manager::directory_manager::databaseConfigContent(const Model::Bi
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+/**
 nlohmann::json Manager::directory_manager::pathConfigContent(const std::string& exe_path)
 {
     auto path = configPath(exe_path);
@@ -90,6 +95,7 @@ nlohmann::json Manager::directory_manager::pathConfigContent(const std::string& 
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+*/
 nlohmann::json Manager::directory_manager::pathConfigContent(const Model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);

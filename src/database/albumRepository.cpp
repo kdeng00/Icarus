@@ -21,6 +21,7 @@ std::vector<Model::Album> Database::albumRepository::retrieveRecords()
 
 Model::Album Database::albumRepository::retrieveRecord(Model::Album& album, Type::albumFilter filter)
 {
+    std::cout << "retrieving album record" << std::endl;
     std::stringstream qry;
     auto conn = setup_mysql_connection();
     qry << "SELECT alb.* FROM Album alb WHERE ";
@@ -35,11 +36,11 @@ Model::Album Database::albumRepository::retrieveRecord(Model::Album& album, Type
             mysql_real_escape_string(conn, *param, album.title.c_str(), album.title.size());
             qry << "alb.Title = '" << *param << "'";
             break;
-        case Type::albumFilter::year:
-            break;
         default:
             break;
     }
+
+    qry << " ORDER BY AlbumId DESC LIMIT 1";
 
     const std::string query = qry.str();
     auto results = perform_mysql_query(conn, query);
@@ -57,13 +58,11 @@ void Database::albumRepository::saveAlbum(const Model::Album& album)
     std::cout << "beginning to insert album record" << std::endl;
 
     auto conn = setup_mysql_connection();
-    auto status = 0;
-
     MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
-    std::string query = "INSERT INTO Album(Title, Year) VALUES(?, ?)";
+    const std::string query = "INSERT INTO Album(Title, Year) VALUES(?, ?)";
 
-    status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 
     MYSQL_BIND params[2];
     memset(params, 0, sizeof(params));
@@ -71,7 +70,7 @@ void Database::albumRepository::saveAlbum(const Model::Album& album)
     params[0].buffer_type = MYSQL_TYPE_STRING;
     params[0].buffer = (char*)album.title.c_str();
     auto titleLength = album.title.size();
-    params[0].buffer = &titleLength;
+    params[0].length= &titleLength;
     params[0].is_null = 0;
 
     params[1].buffer_type = MYSQL_TYPE_LONG;
@@ -99,9 +98,10 @@ std::vector<Model::Album> Database::albumRepository::parseRecords(MYSQL_RES* res
 
 Model::Album Database::albumRepository::parseRecord(MYSQL_RES* results)
 {
+    std::cout << "parsing album record" << std::endl;
     Model::Album album;
-    auto fieldNum = mysql_num_fields(results);
 
+    auto fieldNum = mysql_num_fields(results);
     auto row = mysql_fetch_row(results);
 
     for (auto i = 0; i != fieldNum; ++i) {

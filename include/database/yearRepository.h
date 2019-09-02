@@ -3,6 +3,7 @@
 
 #include "database/base_repository.h"
 #include "models/models.h"
+#include "types/yearFilter.h"
 
 namespace Database
 {
@@ -10,7 +11,12 @@ namespace Database
     {
     public:
         yearRepository(const Model::BinaryPath&);
+
+        Model::Year retrieveRecord(Model::Year&, Type::yearFilter);
+
+        void saveRecord(const Model::Year&);
     private:
+        Model::Year parseRecord(MYSQL_RES*);
     };
 }
 

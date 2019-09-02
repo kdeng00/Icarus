@@ -18,11 +18,11 @@ namespace Manager
         static std::string configPath(const Model::BinaryPath&);
         static std::string contentOfPath(const std::string&);
 
-        static nlohmann::json credentialConfigContent(const std::string&);
+        //static nlohmann::json credentialConfigContent(const std::string&);
         static nlohmann::json credentialConfigContent(const Model::BinaryPath&);
-        static nlohmann::json databaseConfigContent(const std::string&);
+        //static nlohmann::json databaseConfigContent(const std::string&);
         static nlohmann::json databaseConfigContent(const Model::BinaryPath&);
-        static nlohmann::json pathConfigContent(const std::string&);
+        //static nlohmann::json pathConfigContent(const std::string&);
         static nlohmann::json pathConfigContent(const Model::BinaryPath&);
 
         void delete_cover_art_file(const std::string&, const std::string&);

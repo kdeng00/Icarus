@@ -35,9 +35,7 @@ void Manager::song_manager::saveSong(Model::Song& song)
     song = meta.retrieve_metadata(song.songPath);
     song.data = std::move(data);
 
-
     saveMisc(song);
-
 
     printSong(song);
 
@@ -47,6 +45,9 @@ void Manager::song_manager::saveSong(Model::Song& song)
 
 void Manager::song_manager::deleteSong(Model::Song& song)
 {
+    // TODO: handle what happens to miscellanes records
+    // like Album, Artist, Genre, etc. when a song
+    // is deleted
     Database::coverArtRepository covRepo(m_bConf);
     Database::songRepository songRepo(m_bConf);
 
@@ -75,7 +76,7 @@ void Manager::song_manager::deleteSong(Model::Song& song)
 
 void Manager::song_manager::printSong(const Model::Song& song)
 {
-    std::cout << "\n\nsong" << std::endl;
+    std::cout << "\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
     std::cout << "artist: " << song.artist << std::endl;
     std::cout << "album: " << song.album << std::endl;
@@ -85,9 +86,11 @@ void Manager::song_manager::printSong(const Model::Song& song)
     std::cout << "track: " << song.track << std::endl;
     std::cout << "disc: " << song.disc << std::endl;
     std::cout << "song path: " << song.songPath << std::endl;
-    if (song.coverArtId != 0) {
-        std::cout << "cover art id: " << song.coverArtId << std::endl;
-    }
+    std::cout << "cover art id: " << song.coverArtId << std::endl;
+    std::cout << "album id: " << song.albumId << std::endl;
+    std::cout << "artist id: " << song.artistId << std::endl;
+    std::cout << "genre id: " << song.genreId << std::endl;
+    std::cout << "year id: " << song.yearId << std::endl;
 }
 
 void Manager::song_manager::saveSongTemp(Model::Song& song)
@@ -119,19 +122,42 @@ void Manager::song_manager::saveMisc(Model::Song& song)
     stockCoverPath.append("/CoverArt.png");
 
     auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
-    song.coverArtId = cov.id;
 
     auto songPath = Manager::directory_manager::create_directory_process(song, musicRootPath);
     songPath.append(song.title);
     songPath.append(".mp3");
-    std::cout << "\n\ntemp path: " << song.songPath << std::endl;
-    std::cout << "new path: " << songPath << std::endl;
+    if (fs::exists(songPath)) {
+        std::cout << "deleting old song with the same metadata" << std::endl;
+        fs::remove(songPath);
+    }
+    std::cout << "copying song to the appropriate directory" << std::endl;
     fs::copy(song.songPath, songPath);
     fs::remove(song.songPath);
     song.songPath = std::move(songPath);
 
-    artistManager artMgr(m_bConf);
     albumManager albMgr(m_bConf);
+    auto album = albMgr.saveAlbum(song);
+    album = albMgr.retrieveAlbum(album);
+    Manager::albumManager::printAlbum(album);
+
+    artistManager artMgr(m_bConf);
+    auto artist = artMgr.saveArtist(song);
+    artist = artMgr.retrieveArtist(artist);
+    Manager::artistManager::printArtist(artist);
+
     genreManager gnrMgr(m_bConf);
+    auto genre = gnrMgr.saveGenre(song);
+    genre = gnrMgr.retrieveGenre(genre);
+    Manager::genreManager::printGenre(genre);
+
     yearManager yrMgr(m_bConf);
+    auto year = yrMgr.saveYear(song);
+    year = yrMgr.retrieveYear(year);
+    Manager::yearManager::printYear(year);
+
+    song.coverArtId = cov.id;
+    song.albumId = album.id;
+    song.artistId = artist.id;
+    song.genreId = genre.id;
+    song.yearId = year.id;
 }

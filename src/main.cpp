@@ -43,7 +43,8 @@ void run(const Model::BinaryPath& bConf)
 int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
-    Model::BinaryPath bConf(argv[0]); 
+    
+    Model::BinaryPath bConf(argv[0]);
 
     run(bConf);
 

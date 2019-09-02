@@ -3,6 +3,7 @@
 
 #include "database/base_repository.h"
 #include "models/models.h"
+#include "types/genreFilter.h"
 
 namespace Database
 {
@@ -10,7 +11,12 @@ namespace Database
     {
     public:
         genreRepository(const Model::BinaryPath&);
+
+        Model::Genre retrieveRecord(Model::Genre&, Type::genreFilter);
+
+        void saveRecord(const Model::Genre&);
     private:
+        Model::Genre parseRecord(MYSQL_RES*);
     };
 }
 
