@@ -20,8 +20,13 @@ Model::Cover Manager::coverArtManager::saveCover(const Model::Song& song, std::s
     cov.songTitle = song.title;
 
     Database::coverArtRepository covRepo(m_bConf);
-    std::cout << "saving image record to the database" << std::endl;
-    covRepo.saveRecord(cov);
+    if (!covRepo.doesCoverArtExist(cov, Type::coverFilter::songTitle)) {
+        std::cout << "saving image record to the database" << std::endl;
+        covRepo.saveRecord(cov);
+    } else {
+        std::cout << "cover art record already exists" << std::endl;
+    }
+
     std::cout << "retrieving image record from database" << std::endl;
     cov = covRepo.retrieveRecord(cov, Type::coverFilter::songTitle);
 

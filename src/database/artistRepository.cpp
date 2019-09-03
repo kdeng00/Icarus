@@ -47,6 +47,13 @@ Model::Artist Database::artistRepository::retrieveRecord(Model::Artist& artist, 
     return artist;
 }
 
+bool Database::artistRepository::doesArtistExist(const Model::Artist& artist, Type::artistFilter filter)
+{
+    // TODO: implement this
+    
+    return false;
+}
+
 void Database::artistRepository::saveRecord(const Model::Artist& artist)
 {
     std::cout << "inserting artist record" << std::endl;
@@ -99,4 +106,12 @@ Model::Artist Database::artistRepository::parseRecord(MYSQL_RES* results)
     std::cout << "parsed artist record" << std::endl;
 
     return artist;
+}
+
+Model::Artist Database::artistRepository::parseRecord(MYSQL_STMT *stmt)
+{
+    // TODO: implement this
+    Model::Artist art;
+
+    return art;
 }

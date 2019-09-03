@@ -24,7 +24,11 @@ Model::Genre Manager::genreManager::saveGenre(const Model::Song& song)
     genre.category = song.genre;
     
     Database::genreRepository gnrRepo(m_bConf);
-    gnrRepo.saveRecord(genre);
+    if (!gnrRepo.doesGenreExist(genre, Type::genreFilter::category)) {
+        gnrRepo.saveRecord(genre);
+    } else {
+        std::cout << "genre record already exists" << std::endl;
+    }
 
     return genre;
 }

@@ -44,6 +44,13 @@ Model::Year Database::yearRepository::retrieveRecord(Model::Year& year, Type::ye
     return year;
 }
 
+bool Database::yearRepository::doesYearExist(const Model::Year& year, Type::yearFilter filter)
+{
+    // TODO: implement this
+
+    return false;
+}
+
 void Database::yearRepository::saveRecord(const Model::Year& year)
 {
     std::cout << "saving year record" << std::endl;
@@ -92,6 +99,14 @@ Model::Year Database::yearRepository::parseRecord(MYSQL_RES *results)
     }
 
     std::cout << "parse year record" << std::endl;
+
+    return year;
+}
+Model::Year Database::yearRepository::parseRecord(MYSQL_STMT *stmt)
+{
+    // TODO: imeplement this
+    
+    Model::Year year;
 
     return year;
 }

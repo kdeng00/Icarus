@@ -1,7 +1,7 @@
 
 {
-  "server": "server",
-  "database": "database",
-  "username": "username",
-  "password": "password"
+  "server": "localhost",
+  "database": "Icarus",
+  "username": "icarus-admin",
+  "password": "dreamofpeace"
 }

@@ -45,6 +45,13 @@ Model::Genre Database::genreRepository::retrieveRecord(Model::Genre& genre, Type
     return genre;
 }
 
+bool Database::genreRepository::doesGenreExist(const Model::Genre& genre, Type::genreFilter filter)
+{
+    // TODO: implement this
+
+    return false;
+}
+
 void Database::genreRepository::saveRecord(const Model::Genre& genre)
 {
     std::cout << "inserting genre record" << std::endl;
@@ -94,6 +101,14 @@ Model::Genre Database::genreRepository::parseRecord(MYSQL_RES* results)
     }
 
     std::cout << "parsed genre record" << std::endl;
+
+    return genre;
+}
+Model::Genre Database::genreRepository::parseRecord(MYSQL_STMT *stmt)
+{
+    // TODO: implement this
+    
+    Model::Genre genre;
 
     return genre;
 }

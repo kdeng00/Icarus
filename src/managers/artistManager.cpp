@@ -24,8 +24,11 @@ Model::Artist Manager::artistManager::saveArtist(const Model::Song& song)
     artist.artist = song.artist;
 
     Database::artistRepository artRepo(m_bConf);
-    artRepo.saveRecord(artist);
-
+    if (!artRepo.doesArtistExist(artist, Type::artistFilter::artist)) {
+        artRepo.saveRecord(artist);
+    } else {
+        std::cout << "artist already exists" << std::endl;
+    }
 
     return artist;
 }

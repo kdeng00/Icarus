@@ -14,9 +14,14 @@ namespace Database
 
         Model::Year retrieveRecord(Model::Year&, Type::yearFilter);
 
+        bool doesYearExist(const Model::Year&, Type::yearFilter);
+
         void saveRecord(const Model::Year&);
     private:
+        // TODO: After parseRecord(MYSQL_STMT*) is implemented
+        // remove parseRecord(MYSQL_RES*)
         Model::Year parseRecord(MYSQL_RES*);
+        Model::Year parseRecord(MYSQL_STMT*);
     };
 }
 

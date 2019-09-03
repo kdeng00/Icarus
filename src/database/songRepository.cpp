@@ -16,13 +16,16 @@ Database::songRepository::songRepository(const Model::BinaryPath& bConf) : base_
 std::vector<Model::Song> Database::songRepository::retrieveRecords()
 {
     auto conn = setup_mysql_connection();
+    auto stmt = mysql_stmt_init(conn);
     const std::string query = "SELECT * FROM Song";
 
-    auto results = perform_mysql_query(conn, query);
-    auto songs = parseRecords(results);
+    ::mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    ::mysql_stmt_execute(stmt);
 
+    auto songs = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
     mysql_close(conn);
-
 
     return songs;
 }
@@ -31,32 +34,104 @@ Model::Song Database::songRepository::retrieveRecord(Model::Song& song, Type::so
 {
     std::stringstream qry;
     auto conn = setup_mysql_connection();
+    auto stmt = mysql_stmt_init(conn);
+
+    MYSQL_BIND params[1];
+    memset(params, 0, sizeof(params));
+
     qry << "SELECT * FROM Song WHERE ";
 
-    std::unique_ptr<char*> param;
+    auto titleLength = song.title.size();
     switch (filter) {
         case Type::songFilter::id:
-            qry << "SongId = " << song.id;
+            qry << "SongId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&song.id;
+            params[0].length = 0;
+            params[0].is_null = 0;;
             break;
         case Type::songFilter::title:
-            param = std::make_unique<char*>(new char[song.title.size()]);
-            mysql_real_escape_string(conn, *param, song.title.c_str(), song.title.size());
-            qry << "Title = '" << *param << "'";
+            qry << "Title = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)song.title.c_str();
+            params[0].length = &titleLength;
+            params[0].is_null = 0;
             break;
         default:
             break;
     }
 
+    qry << " LIMIT 1";
+
     const std::string query = qry.str();
-    auto results = perform_mysql_query(conn, query);
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
     std::cout << "the query has been performed" << std::endl;
 
-    song = parseRecord(results);
+    song = parseRecord(stmt);
 
+    mysql_stmt_close(stmt);
     mysql_close(conn);
     std::cout << "done" << std::endl;
 
     return song;
+}
+
+bool Database::songRepository::doesSongExist(const Model::Song& song, Type::songFilter filter)
+{
+    std::cout << "checking to see if song exists" << std::endl;
+    std::stringstream qry;
+    auto conn = setup_mysql_connection();
+    auto stmt = mysql_stmt_init(conn);
+
+    MYSQL_BIND params[1];
+    memset(params, 0, sizeof(params));
+
+    qry << "SELECT * FROM Song WHERE ";
+
+    auto titleLength = song.title.size();
+    switch (filter) {
+        case Type::songFilter::id:
+            qry << "SongId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&song.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        case Type::songFilter::title:
+            qry << "Title = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)song.title.c_str();
+            params[0].length = &titleLength;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " LIMIT 1";
+
+    const std::string query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    std::cout << "the query has been performed" << std::endl;
+
+    ::mysql_stmt_store_result(stmt);
+    auto rowCount = ::mysql_stmt_num_rows(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+    std::cout << "done" << std::endl;
+
+    return (rowCount > 0) ? true : false;
 }
 
 void Database::songRepository::deleteRecord(const Model::Song& song)
@@ -172,6 +247,7 @@ void Database::songRepository::saveRecord(const Model::Song& song)
     std::cout << "done inserting song record" << std::endl;
 }
 
+// TODO: delete this, not being used
 std::vector<Model::Song> Database::songRepository::parseRecords(MYSQL_RES* results)
 {
     auto fieldNum = mysql_num_fields(results);
@@ -184,6 +260,59 @@ std::vector<Model::Song> Database::songRepository::parseRecords(MYSQL_RES* resul
         Model::Song song;
 
         for (auto i = 0; i != fieldNum; ++i) {
+            /**
+            auto field = mysql_fetch_field(results);
+            if (field->name  == NULL) {
+                std::cout << "null field" << std::endl;
+                break;
+            }
+            */
+            /**
+            std::string field;
+            if ((i + 0) == fieldNum) {
+                std::cout << "goodbye" << std::endl;
+                break;
+            } else {
+                std::cout << "still good" << std::endl;
+                field.assign(mysql_fetch_field(results)->name);
+            }
+            //const std::string field(row[i].field);
+            std::cout << field << std::endl;
+
+            if (field.compare("SongId") == 0) {
+                song.id = std::stoi(row[i]);
+            }
+            if (field.compare("Title") == 0) {
+                song.title = row[i];
+            }
+            if (field.compare("Artist") == 0) {
+                song.artist = row[i];
+            }
+            if (field.compare("Album") == 0) {
+                song.album = row[i];
+            }
+            if (field.compare("Genre") == 0) {
+                song.genre = row[i];
+            }
+            if (field.compare("Year") == 0) {
+                song.year = std::stoi(row[i]);
+            }
+            if (field.compare("Duration") == 0) {
+                song.duration = std::stoi(row[i]);
+            }
+            if (field.compare("Track") == 0) {
+                song.track = std::stoi(row[i]);
+            }
+            if (field.compare("Disc") == 0) {
+                song.disc = std::stoi(row[i]);
+            }
+            if (field.compare("SongPath") == 0) {
+                song.songPath = row[i];
+            }
+            if (field.compare("CoverArtId") == 0) {
+                song.coverArtId = std::stoi(row[i]);
+            }
+            */
             switch (i) {
                 case 0:
                     song.id = std::stoi(row[i]);
@@ -222,19 +351,163 @@ std::vector<Model::Song> Database::songRepository::parseRecords(MYSQL_RES* resul
         }
 
         songs.push_back(song);
+        //std::cout << "added" << std::endl;
+    }
+    //std::cout << "completely" << std::endl;
+
+    return songs;
+}
+
+std::vector<Model::Song> Database::songRepository::parseRecords(MYSQL_STMT *stmt)
+{
+    ::mysql_stmt_store_result(stmt);
+    auto c = ::mysql_stmt_num_rows(stmt);
+    std::cout << "number of results " << c << std::endl;
+    std::vector<Model::Song> songs;
+    songs.reserve(c);
+
+    auto status = 0;
+    auto time = 0;
+    auto valAmt = 15;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    while (status == 0) {
+        std::cout << time++ << " time" << std::endl;
+        std::cout << "field count " << ::mysql_stmt_field_count(stmt) << std::endl;
+        
+        if (::mysql_stmt_field_count(stmt) > 0) {
+
+            Model::Song song;
+            auto res = ::mysql_stmt_result_metadata(stmt);
+            auto fields = ::mysql_fetch_fields(res);
+            auto strLen = 1024;
+            MYSQL_BIND val[valAmt];
+            memset(val, 0, sizeof(val));
+
+            char title[strLen];
+            char album[strLen];
+            char artist[strLen];
+            char genre[strLen];
+            char path[strLen];
+
+            val[0].buffer_type = MYSQL_TYPE_LONG;
+            val[0].buffer = (char*)&song.id;
+            val[0].length = &len[0];
+            val[0].is_null = &nullRes[0];
+
+            val[1].buffer_type = MYSQL_TYPE_STRING;
+            val[1].buffer = (char*)title;
+            val[1].buffer_length = strLen;
+            val[1].length = &len[1];
+            val[1].is_null = &nullRes[1];
+
+            val[2].buffer_type = MYSQL_TYPE_STRING;
+            val[2].buffer = (char*)artist;
+            val[2].buffer_length = strLen;
+            val[2].length = &len[2];
+            val[2].is_null = &nullRes[2];
+
+            val[3].buffer_type = MYSQL_TYPE_STRING;
+            val[3].buffer = (char*)album;
+            val[3].buffer_length = strLen;
+            val[3].length = &len[3];
+            val[3].is_null = &nullRes[3];
+
+            val[4].buffer_type = MYSQL_TYPE_STRING;
+            val[4].buffer = (char*)genre;
+            val[4].buffer_length = strLen;
+            val[4].length = &len[4];
+            val[4].is_null = &nullRes[4];
+
+            val[5].buffer_type = MYSQL_TYPE_LONG;
+            val[5].buffer = (char*)&song.year;
+            val[5].length = &len[5];
+            val[5].is_null = &nullRes[5];
+
+            val[6].buffer_type = MYSQL_TYPE_LONG;
+            val[6].buffer = (char*)&song.duration;
+            val[6].length = &len[6];
+            val[6].is_null = &nullRes[6];
+
+            val[7].buffer_type = MYSQL_TYPE_LONG;
+            val[7].buffer = (char*)&song.track;
+            val[7].length = &len[7];
+            val[7].is_null = &nullRes[7];
+
+            val[8].buffer_type = MYSQL_TYPE_LONG;
+            val[8].buffer = (char*)&song.disc;
+            val[8].length = &len[8];
+            val[8].is_null = &nullRes[8];
+
+            val[9].buffer_type = MYSQL_TYPE_STRING;
+            val[9].buffer = (char*)path;
+            val[9].buffer_length = strLen;
+            val[9].length = &len[9];
+            val[9].is_null = &nullRes[9];
+
+            val[10].buffer_type = MYSQL_TYPE_LONG;
+            val[10].buffer = (char*)&song.coverArtId;
+            val[10].length = &len[10];
+            val[10].is_null = &nullRes[10];
+
+            val[11].buffer_type = MYSQL_TYPE_LONG;
+            val[11].buffer = (char*)&song.artistId;
+            val[11].length = &len[11];
+            val[11].is_null = &nullRes[11];
+
+            val[12].buffer_type = MYSQL_TYPE_LONG;
+            val[12].buffer = (char*)&song.albumId;;
+            val[12].length = &len[12];
+            val[12].is_null = &nullRes[12];
+
+            val[13].buffer_type = MYSQL_TYPE_LONG;
+            val[13].buffer = (char*)&song.genreId;
+            val[13].length = &len[13];
+            val[13].is_null = &nullRes[13];
+
+            val[14].buffer_type = MYSQL_TYPE_LONG;
+            val[14].buffer = (char*)&song.yearId;
+            val[14].length = &len[14];
+            val[14].is_null = &nullRes[14];
+
+            status = ::mysql_stmt_bind_result(stmt, val);
+
+            while (1) {
+                std::cout << "fetching statement result" << std::endl;
+                status = ::mysql_stmt_fetch(stmt);
+
+                if (status == 1 || status == MYSQL_NO_DATA) {
+                    break;
+                }
+                song.title = title;
+                song.album = album;
+                song.artist = artist;
+                song.genre = genre;
+                song.songPath = path;
+
+                songs.push_back(song);
+            }
+        }
+        std::cout << "fetching next result" << std::endl;
+        status = ::mysql_stmt_next_result(stmt);
     }
 
     return songs;
 }
 
+
+// TODO: delete this, not being used anymore
 Model::Song Database::songRepository::parseRecord(MYSQL_RES* results)
 {
     Model::Song song;
-    auto fieldNum = mysql_num_fields(results);
 
-    MYSQL_ROW row = mysql_fetch_row(results);
+    auto fieldNum = mysql_num_fields(results);
+    auto row = mysql_fetch_row(results);
 
     for (auto i = 0; i != fieldNum; ++i) {
+        const std::string field(mysql_fetch_field(results)->name);
+
         switch (i) {
             case 0:
                 song.id = std::stoi(row[i]);
@@ -271,6 +544,130 @@ Model::Song Database::songRepository::parseRecord(MYSQL_RES* results)
                 break;
         }
     }
+    std::cout << "done parsing record" << std::endl;
+
+    return song;
+}
+
+Model::Song Database::songRepository::parseRecord(MYSQL_STMT *stmt)
+{
+    Model::Song song;
+    auto status = 0;
+    auto time = 0;
+    auto valAmt = 15;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    while (status == 0) {
+        if (::mysql_stmt_field_count(stmt) > 0) {
+            auto res = ::mysql_stmt_result_metadata(stmt);
+            auto fields = ::mysql_fetch_fields(res);
+            auto strLen = 1024;
+            MYSQL_BIND val[valAmt];
+            memset(val, 0, sizeof(val));
+
+            char title[strLen];
+            char album[strLen];
+            char artist[strLen];
+            char genre[strLen];
+            char path[strLen];
+
+            val[0].buffer_type = MYSQL_TYPE_LONG;
+            val[0].buffer = (char*)&song.id;
+            val[0].length = &len[0];
+            val[0].is_null = &nullRes[0];
+
+            val[1].buffer_type = MYSQL_TYPE_STRING;
+            val[1].buffer = (char*)title;
+            val[1].buffer_length = strLen;
+            val[1].length = &len[1];
+            val[1].is_null = &nullRes[1];
+
+            val[2].buffer_type = MYSQL_TYPE_STRING;
+            val[2].buffer = (char*)artist;
+            val[2].buffer_length = strLen;
+            val[2].length = &len[2];
+            val[2].is_null = &nullRes[2];
+
+            val[3].buffer_type = MYSQL_TYPE_STRING;
+            val[3].buffer = (char*)album;
+            val[3].buffer_length = strLen;
+            val[3].length = &len[3];
+            val[3].is_null = &nullRes[3];
+
+            val[4].buffer_type = MYSQL_TYPE_STRING;
+            val[4].buffer = (char*)genre;
+            val[4].buffer_length = strLen;
+            val[4].length = &len[4];
+            val[4].is_null = &nullRes[4];
+
+            val[5].buffer_type = MYSQL_TYPE_LONG;
+            val[5].buffer = (char*)&song.year;
+            val[5].length = &len[5];
+            val[5].is_null = &nullRes[5];
+
+            val[6].buffer_type = MYSQL_TYPE_LONG;
+            val[6].buffer = (char*)&song.duration;
+            val[6].length = &len[6];
+            val[6].is_null = &nullRes[6];
+
+            val[7].buffer_type = MYSQL_TYPE_LONG;
+            val[7].buffer = (char*)&song.track;
+            val[7].length = &len[7];
+            val[7].is_null = &nullRes[7];
+
+            val[8].buffer_type = MYSQL_TYPE_LONG;
+            val[8].buffer = (char*)&song.disc;
+            val[8].length = &len[8];
+            val[8].is_null = &nullRes[8];
+
+            val[9].buffer_type = MYSQL_TYPE_STRING;
+            val[9].buffer = (char*)path;
+            val[9].buffer_length = strLen;
+            val[9].length = &len[9];
+            val[9].is_null = &nullRes[9];
+
+            val[10].buffer_type = MYSQL_TYPE_LONG;
+            val[10].buffer = (char*)&song.coverArtId;
+            val[10].length = &len[10];
+            val[10].is_null = &nullRes[10];
+
+            val[11].buffer_type = MYSQL_TYPE_LONG;
+            val[11].buffer = (char*)&song.artistId;
+            val[11].length = &len[11];
+            val[11].is_null = &nullRes[11];
+
+            val[12].buffer_type = MYSQL_TYPE_LONG;
+            val[12].buffer = (char*)&song.albumId;;
+            val[12].length = &len[12];
+            val[12].is_null = &nullRes[12];
+
+            val[13].buffer_type = MYSQL_TYPE_LONG;
+            val[13].buffer = (char*)&song.genreId;
+            val[13].length = &len[13];
+            val[13].is_null = &nullRes[13];
+
+            val[14].buffer_type = MYSQL_TYPE_LONG;
+            val[14].buffer = (char*)&song.yearId;
+            val[14].length = &len[14];
+            val[14].is_null = &nullRes[14];
+
+            status = ::mysql_stmt_bind_result(stmt, val);
+            ::mysql_stmt_store_result(stmt);
+
+            status = ::mysql_stmt_fetch(stmt);
+
+            song.title = title;
+            song.album = album;
+            song.artist = artist;
+            song.genre = genre;
+            song.songPath = path;
+
+        }
+        status = ::mysql_stmt_next_result(stmt);
+    }
+
+    std::cout << "okay!!!!" << std::endl;
     std::cout << "done parsing record" << std::endl;
 
     return song;

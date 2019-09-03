@@ -24,7 +24,11 @@ Model::Year Manager::yearManager::saveYear(const Model::Song& song)
     year.year = song.year;
 
     Database::yearRepository yearRepo(m_bConf);
-    yearRepo.saveRecord(year);
+    if (!yearRepo.doesYearExist(year, Type::yearFilter::year)) {
+        yearRepo.saveRecord(year);
+    } else {
+        std::cout << "year record already exists in the database" << std::endl;
+    }
 
     return year;
 }

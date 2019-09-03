@@ -14,9 +14,14 @@ namespace Database
 
         Model::Artist retrieveRecord(Model::Artist&, Type::artistFilter);
 
+        bool doesArtistExist(const Model::Artist&, Type::artistFilter);
+
         void saveRecord(const Model::Artist&);
     private:
+        // TODO: After parseRecord(MYSQL_STMT*) is implemented
+        // remove parseRecord(MYSQL_RES*)
         Model::Artist parseRecord(MYSQL_RES*);
+        Model::Artist parseRecord(MYSQL_STMT*);
     };
 }
 

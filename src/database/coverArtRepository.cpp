@@ -46,6 +46,12 @@ Model::Cover Database::coverArtRepository::retrieveRecord(Model::Cover& cov, Typ
     return covDb;
 }
 
+bool Database::coverArtRepository::doesCoverArtExist(const Model::Cover& cover, Type::coverFilter filter)
+{
+    // TODO: implement this
+    return false;
+}
+
 void Database::coverArtRepository::deleteRecord(const Model::Cover& cov)
 {
     auto conn = setup_mysql_connection();
@@ -118,4 +124,13 @@ Model::Cover Database::coverArtRepository::parseRecord(MYSQL_RES *results)
     std::cout << "done parsing record" << std::endl;
 
     return cov;
+}
+
+Model::Cover Database::coverArtRepository::parseRecord(MYSQL_STMT *stmt)
+{
+    // TODO: implement this
+    
+    Model::Cover cover;
+
+    return cover;
 }

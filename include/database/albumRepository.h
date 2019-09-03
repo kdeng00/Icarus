@@ -23,7 +23,11 @@ namespace Database
         void saveAlbum(const Model::Album&);
     private:
         std::vector<Model::Album> parseRecords(MYSQL_RES*);
+
+        // TODO: after parseRecord(MYSQL_STMT*) is implemented remove
+        // parseRecord(MYSQL_RES*)
         Model::Album parseRecord(MYSQL_RES*);
+        Model::Album parseRecord(MYSQL_STMT*);
     };
 }
 

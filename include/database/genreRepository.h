@@ -14,9 +14,14 @@ namespace Database
 
         Model::Genre retrieveRecord(Model::Genre&, Type::genreFilter);
 
+        bool doesGenreExist(const Model::Genre&, Type::genreFilter);
+
         void saveRecord(const Model::Genre&);
     private:
+        // TODO: After parseRecord(MYSQL_STMT*) is implemented
+        // remove parseRecord(MYSQL_RES*)
         Model::Genre parseRecord(MYSQL_RES*);
+        Model::Genre parseRecord(MYSQL_STMT*);
     };
 }
 

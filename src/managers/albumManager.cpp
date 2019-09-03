@@ -26,7 +26,12 @@ Model::Album Manager::albumManager::saveAlbum(const Model::Song& song)
     album.year = song.year;
     
     Database::albumRepository albRepo(m_bConf);
-    albRepo.saveAlbum(album);
+    if (!albRepo.doesAlbumExists(album, Type::albumFilter::title)) {
+        albRepo.saveAlbum(album);
+    } else {
+        std::cout << "album record already exists in the database" << std::endl;
+    }
+
 
     return album;
 }

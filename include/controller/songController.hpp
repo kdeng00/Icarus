@@ -117,6 +117,9 @@ namespace Controller
             Model::Song songDb;
             songDb.id = id;
 
+            OATPP_ASSERT_HTTP(songRepo.doesSongExist(songDb, Type::songFilter::id) , Status::CODE_403, "song does not exist");
+
+            std::cout << "song exists" << std::endl;
             songDb = songRepo.retrieveRecord(songDb, Type::songFilter::id);
 
             auto song = Dto::songDto::createShared();

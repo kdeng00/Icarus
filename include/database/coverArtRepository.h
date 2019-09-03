@@ -16,11 +16,16 @@ namespace Database
         coverArtRepository(const Model::BinaryPath&);
 
         Model::Cover retrieveRecord(Model::Cover&, Type::coverFilter);
+        
+        bool doesCoverArtExist(const Model::Cover&, Type::coverFilter);
 
         void deleteRecord(const Model::Cover&);
         void saveRecord(const Model::Cover&);
     private:
+        // TODO: After parseRecord(MYSQL_STMT*) is implemented
+        // remove parseRecord(MYSQL_RES*)
         Model::Cover parseRecord(MYSQL_RES*);
+        Model::Cover parseRecord(MYSQL_STMT*);
     };
 }
 
