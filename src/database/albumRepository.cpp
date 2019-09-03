@@ -53,6 +53,19 @@ Model::Album Database::albumRepository::retrieveRecord(Model::Album& album, Type
     return album;
 }
 
+bool Database::albumRepository::doesAlbumExists(const Model::Album& album, Type::albumFilter filter)
+{
+    // TODO: continue working on this part.
+    // Reason: there should be a check to see if an album record already exists
+    // at the moment there is no check and every time a song is uploaded
+    // a new album record is created, even for songs that are on the
+    // same album. This should not happen. There should be one album
+    // record for songs on the same album. After fixing this, do the
+    // same for Artist, Genre, and Year records
+
+    return false;
+}
+
 void Database::albumRepository::saveAlbum(const Model::Album& album)
 {
     std::cout << "beginning to insert album record" << std::endl;

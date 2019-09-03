@@ -18,6 +18,8 @@ namespace Database
 
         Model::Album retrieveRecord(Model::Album&, Type::albumFilter);
 
+        bool doesAlbumExists(const Model::Album&, Type::albumFilter);
+
         void saveAlbum(const Model::Album&);
     private:
         std::vector<Model::Album> parseRecords(MYSQL_RES*);
