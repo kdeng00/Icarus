@@ -1,0 +1,6 @@
+{
+    "root_music_path": "/icarus/music/",
+    "temp_root_path": "/icarus/temp/",
+    "cover_root_path": "/icarus/cover/",
+    "archive_root_path": "icarus/archive/"
+}
