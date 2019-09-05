@@ -70,4 +70,6 @@ void database::BaseRepository::initializeDetails(const model::BinaryPath& bConf)
     details.server = databaseConfig["server"].get<std::string>();
     details.username = databaseConfig["username"].get<std::string>();
     details.password = databaseConfig["password"].get<std::string>();
+
+    std::cout << "retrieved database details" << std::endl;
 }

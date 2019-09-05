@@ -49,9 +49,53 @@ model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, 
 
 bool database::ArtistRepository::doesArtistExist(const model::Artist& artist, type::ArtistFilter filter)
 {
-    // TODO: implement this
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    MYSQL_BIND params[1];
+    memset(params, 0, sizeof(params));
+
+    std::stringstream qry;
+    qry << "SELECT * FROM Artist WHERE ";
+
+    auto artistLength = artist.artist.size();
+    switch (filter) {
+        case type::ArtistFilter::id:
+            qry << "ArtistId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&artist.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        case type::ArtistFilter::artist:
+            qry << "Artist = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)artist.artist.c_str();
+            params[0].length = &artistLength;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " LIMIT 1";
+
+    const auto query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    std::cout << "the query has been performed" << std::endl;
+
+    mysql_stmt_store_result(stmt);
+    auto rowCount = mysql_stmt_num_rows(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
     
-    return false;
+    return (rowCount > 0) ? true : false;
 }
 
 void database::ArtistRepository::saveRecord(const model::Artist& artist)

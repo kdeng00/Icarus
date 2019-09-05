@@ -12,7 +12,10 @@ manager::ArtistManager::ArtistManager(const model::BinaryPath& bConf)
 
 model::Artist manager::ArtistManager::retrieveArtist(model::Artist& artist)
 {
+    std::cout << "retrieving artist record" << std::endl;
     database::ArtistRepository artRepo(m_bConf);
+    std::cout << "initialized artist repo" << std::endl;
+    std::cout << artist.artist << std::endl;
     artist = artRepo.retrieveRecord(artist, type::ArtistFilter::artist);
 
     return artist;

@@ -47,9 +47,53 @@ model::Genre database::GenreRepository::retrieveRecord(model::Genre& genre, type
 
 bool database::GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter)
 {
-    // TODO: implement this
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
 
-    return false;
+    std::stringstream qry;
+    qry << "SELECT * FROM Genre WHERE ";
+
+    MYSQL_BIND params[1];
+    memset(params, 0, sizeof(params));
+
+    auto categoryLength = genre.category.size();
+    switch (filter) {
+        case type::GenreFilter::id:
+            qry << "GenreId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&genre.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        case type::GenreFilter::category:
+            qry << "Category = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)genre.category.c_str();
+            params[0].length = &categoryLength;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " LIMIT 1";
+
+    const auto query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    std::cout << "the query has been performed" << std::endl;
+
+    mysql_stmt_store_result(stmt);
+    auto rowCount = mysql_stmt_num_rows(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return (rowCount > 0) ? true : false;
 }
 
 void database::GenreRepository::saveRecord(const model::Genre& genre)

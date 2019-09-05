@@ -143,6 +143,7 @@ void manager::SongManager::saveMisc(model::Song& song)
     ArtistManager artMgr(m_bConf);
     auto artist = artMgr.saveArtist(song);
     artist = artMgr.retrieveArtist(artist);
+    std::cout << "out" << std::endl;
     manager::ArtistManager::printArtist(artist);
 
     GenreManager gnrMgr(m_bConf);
@@ -160,4 +161,6 @@ void manager::SongManager::saveMisc(model::Song& song)
     song.artistId = artist.id;
     song.genreId = genre.id;
     song.yearId = year.id;
+
+    std::cout << "done with miscellaneous database records" << std::endl;
 }
