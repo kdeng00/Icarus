@@ -153,6 +153,7 @@ namespace controller
                 std::ostreambuf_iterator<char>(buf));
             fl.close();
 
+            // TODO: no need to make this shared
             auto rawSong = std::make_shared<oatpp::String>(oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true));
         
             auto response = createResponse(Status::CODE_200, *rawSong);
@@ -163,6 +164,7 @@ namespace controller
 
         // TODO: create endpoint for updating songs
 
+        // TODO: work on this to handle the database records
         ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, PATH(Int32, id)) {
 
             model::Song song;

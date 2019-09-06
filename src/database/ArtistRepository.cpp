@@ -17,29 +17,46 @@ model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, 
     std::cout << "retrieving artist record" << std::endl;
     std::stringstream qry;
     auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
     qry << "SELECT art.* FROM Artist art WHERE ";
 
-    std::unique_ptr<char*> param;
+    MYSQL_BIND params[1];
+    memset(params, 0, sizeof(params));
+
+    //std::unique_ptr<char*> param;
+    auto artistLength = artist.artist.size();
     switch (filter) {
         case type::ArtistFilter::id:
-            qry << "art.ArtistId = " << artist.id;
+            qry << "art.ArtistId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&artist.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
             break;
         case type::ArtistFilter::artist:
-            param = std::make_unique<char*>(new char[artist.artist.size()]);
-            mysql_real_escape_string(conn, *param, artist.artist.c_str(), artist.artist.size());
-            qry << "art.Artist ='" << *param << "'";
+            qry << "art.Artist = ?";
+            //param = std::make_unique<char*>(new char[artist.artist.size()]);
+            //mysql_real_escape_string(conn, *param, artist.artist.c_str(), artist.artist.size());
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)artist.artist.c_str();
+            params[0].length = &artistLength;
+            params[0].is_null = 0;
             break;
         default:
             break;
     }
 
-    qry << " ORDER BY ArtistId DESC LIMIT 1";
+    qry << " LIMIT 1";
 
     const auto query = qry.str();
-    auto results = performMysqlQuery(conn, query);
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
 
-    artist = parseRecord(results);
+    artist = parseRecord(stmt);
 
+    mysql_stmt_close(stmt);
     mysql_close(conn);
 
     std::cout << "retrieved record" << std::endl;
@@ -154,8 +171,50 @@ model::Artist database::ArtistRepository::parseRecord(MYSQL_RES* results)
 
 model::Artist database::ArtistRepository::parseRecord(MYSQL_STMT *stmt)
 {
-    // TODO: implement this
+    std::cout << "parsing artist record" << std::endl;
+    mysql_stmt_store_result(stmt);
+
     model::Artist art;
+    auto status = 0;
+    auto time = 0;
+    auto valAmt = 2;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    while (status == 0) {
+        if (mysql_stmt_field_count(stmt) > 0) {
+            auto res = mysql_stmt_result_metadata(stmt);
+            auto fields = mysql_fetch_fields(res);
+            auto strLen = 1024;
+
+            MYSQL_BIND val[valAmt];
+            memset(val, 0, sizeof(val));
+
+            char artist[strLen];
+
+            val[0].buffer_type = MYSQL_TYPE_LONG;
+            val[0].buffer = (char*)&art.id;
+            val[0].length = &len[0];
+            val[0].is_null = &nullRes[0];
+
+            val[1].buffer_type = MYSQL_TYPE_STRING;
+            val[1].buffer = (char*)&artist;
+            val[1].buffer_length = strLen;
+            val[1].length = &len[1];
+            val[1].is_null = &nullRes[1];
+
+            status = mysql_stmt_bind_result(stmt, val);
+            mysql_stmt_store_result(stmt);
+
+            status = mysql_stmt_fetch(stmt);
+
+            art.artist = artist;
+        }
+
+        status = mysql_stmt_next_result(stmt);
+    }
+
+    std::cout << "done parsing artist record" << std::endl;
 
     return art;
 }

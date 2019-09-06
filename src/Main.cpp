@@ -10,9 +10,9 @@
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 
 #include "component/AppComponent.hpp"
+#include "controller/CoverArtController.hpp"
 #include "controller/LoginController.hpp"
 #include "controller/SongController.hpp"
-//#include "database/base_repository.h"
 #include "model/Models.h"
 
 namespace fs = std::filesystem;
@@ -24,8 +24,11 @@ void run(const model::BinaryPath& bConf)
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
 
+    auto coverArtController = std::make_shared<controller::CoverArtController>(bConf);
     auto logController = std::make_shared<controller::LoginController>(bConf);
     auto sngController = std::make_shared<controller::SongController>(bConf);
+
+    coverArtController->addEndpointsToRouter(router);
     logController->addEndpointsToRouter(router);
     sngController->addEndpointsToRouter(router);
 

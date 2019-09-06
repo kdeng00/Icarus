@@ -34,7 +34,7 @@ model::Album database::AlbumRepository::retrieveRecord(model::Album& album, type
     auto titleLength = album.title.size();
     switch (filter) {
         case type::AlbumFilter::id:
-            qry << "alb.AlbumId = " << album.id;
+            qry << "alb.AlbumId = ?";
 
             params[0].buffer_type = MYSQL_TYPE_LONG;
             params[0].buffer = (char*)&album.id;
@@ -64,6 +64,7 @@ model::Album database::AlbumRepository::retrieveRecord(model::Album& album, type
 
     mysql_stmt_close(stmt);
     mysql_close(conn);
+
     std::cout << "done" << std::endl;
 
     return album;
