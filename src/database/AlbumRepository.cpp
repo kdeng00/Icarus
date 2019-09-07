@@ -1,6 +1,7 @@
 #include "database/AlbumRepository.h"
 
 #include <iostream>
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -11,10 +12,19 @@ database::AlbumRepository::AlbumRepository(const model::BinaryPath& bConf)
 { }
 
 
-// TODO: implement this later on
 std::vector<model::Album> database::AlbumRepository::retrieveRecords()
 {
-    std::vector<model::Album> albums;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    const std::string query = "SELECT * FROM Album";
+    mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    mysql_stmt_execute(stmt);
+
+    auto albums = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
 
     return albums;
 }
@@ -156,10 +166,61 @@ void database::AlbumRepository::saveAlbum(const model::Album& album)
 }
 
 
-// TODO: implement this
-std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_RES* results)
+std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_STMT* stmt)
 {
+    mysql_stmt_store_result(stmt);
+
     std::vector<model::Album> albums;
+    albums.reserve(mysql_stmt_num_rows(stmt));
+
+    const auto valAmt = 3;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
+        if (mysql_stmt_field_count(stmt) > 0) {
+            model::Album alb;
+            auto res = mysql_stmt_result_metadata(stmt);
+            auto fields = mysql_fetch_fields(res);
+            const auto strLen = 1024;
+
+            MYSQL_BIND val[valAmt];
+            memset(val, 0, sizeof(val));
+
+            char title[strLen];
+
+            val[0].buffer_type = MYSQL_TYPE_LONG;
+            val[0].buffer = (char*)&alb.id;
+            val[0].length = &len[0];
+            val[0].is_null = &nullRes[0];
+
+            val[1].buffer_type = MYSQL_TYPE_STRING;
+            val[1].buffer = (char*)title;
+            val[1].buffer_length = strLen;
+            val[1].length = &len[1];
+            val[1].is_null = &nullRes[1];
+
+            val[2].buffer_type = MYSQL_TYPE_LONG;
+            val[2].buffer = (char*)&alb.year;
+            val[2].length = &len[2];
+            val[2].is_null = &nullRes[2];
+
+            status = mysql_stmt_bind_result(stmt, val);
+
+            while (true) {
+                std::cout << "fetching statement result" << std::endl;
+                status = mysql_stmt_fetch(stmt);
+
+                if (status == 1 || status == MYSQL_NO_DATA) {
+                    break;
+                }
+
+                alb.title = title;
+                albums.push_back(std::move(alb));
+            }
+        }
+        std::cout << "fetching next result" << std::endl;
+    }
 
     return albums;
 }

@@ -1,5 +1,5 @@
-#ifndef COVERARTCONTROLLER_H_
-#define COVERARTCONTROLLER_H_
+#ifndef ALBUMCONTROLLER_H_
+#define ALBUMCONTROLLER_H_
 
 #include <filesystem>
 #include <iostream>
@@ -53,7 +53,7 @@ namespace controller
             for (auto& albDb : albsDb) {
                 auto alb = dto::AlbumDto::createShared();
                 alb->id = albDb.id;
-                alb->title = albDb.songTitle.c_str();
+                alb->title = albDb.title.c_str();
                 alb->year = albDb.year;
 
                 albums->pushBack(alb);
@@ -69,14 +69,14 @@ namespace controller
             database::AlbumRepository albRepo(m_bConf);
             model::Album albDb(id);
 
-            OATPP_ASSERT_HTTP(albRepo.doesAlbumExist(albDb, type::AlbumFilter::id) , Status::CODE_403, "album does not exist");
+            OATPP_ASSERT_HTTP(albRepo.doesAlbumExists(albDb, type::AlbumFilter::id) , Status::CODE_403, "album does not exist");
 
             std::cout << "album exists" << std::endl;
             albDb = albRepo.retrieveRecord(albDb, type::AlbumFilter::id);
 
             auto album = dto::AlbumDto::createShared();
             album->id = albDb.id;
-            album->title = albDb.songTitle.c_str();
+            album->title = albDb.title.c_str();
             album->year = albDb.year;
 
             return createDtoResponse(Status::CODE_200, album);

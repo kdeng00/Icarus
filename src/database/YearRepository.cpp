@@ -12,8 +12,26 @@ database::YearRepository::YearRepository(const model::BinaryPath& bConf)
 { }
 
 
+std::vector<model::Year> database::YearRepository::retrieveRecords()
+{
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+    const std::string query = "SELECT * FROM Year";
+
+    mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    mysql_stmt_execute(stmt);
+
+    auto yearRecs = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return yearRecs;
+}
+
 model::Year database::YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter)
 {
+    // TODO: switch to prepared statements
     std::cout << "retrieving year record" << std::endl;
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -46,7 +64,6 @@ model::Year database::YearRepository::retrieveRecord(model::Year& year, type::Ye
 
 bool database::YearRepository::doesYearExist(const model::Year& year, type::YearFilter filter)
 {
-    // TODO: implement this
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
 
@@ -121,6 +138,51 @@ void database::YearRepository::saveRecord(const model::Year& year)
     mysql_close(conn);
 
     std::cout << "saved record" << std::endl;
+}
+
+
+std::vector<model::Year> database::YearRepository::parseRecords(MYSQL_STMT *stmt)
+{
+    mysql_stmt_store_result(stmt);
+
+    std::vector<model::Year> yearRecs;
+    yearRecs.reserve(mysql_stmt_num_rows(stmt));
+
+    if (mysql_stmt_field_count(stmt) == 0) {
+        std::cout << "field count is 0" << std::endl;
+        return yearRecs;
+    }
+
+    model::Year yearRec;
+    const auto valAmt = 2;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    auto res = mysql_stmt_result_metadata(stmt);
+
+    MYSQL_BIND val[valAmt];
+    memset(val, 0, sizeof(val));
+
+    val[0].buffer_type = MYSQL_TYPE_LONG;
+    val[0].buffer = (char*)&yearRec.id;
+    val[0].length = &len[0];
+    val[0].is_null = &nullRes[0];
+
+    val[1].buffer_type = MYSQL_TYPE_LONG;
+    val[1].buffer = (char*)&yearRec.year;
+    val[1].length = &len[1];
+    val[1].is_null = &nullRes[1];
+
+    for (auto status = mysql_stmt_bind_result(stmt, val); status == 0;) {
+        std::cout << "fetching statement result" << std::endl;
+        status = mysql_stmt_fetch(stmt);
+
+        if (status == 0) {
+            yearRecs.push_back(std::move(yearRec));
+        }
+    }
+
+    return yearRecs;
 }
 
 model::Year database::YearRepository::parseRecord(MYSQL_RES *results)

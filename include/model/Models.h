@@ -31,6 +31,9 @@ namespace model
 
     struct Artist
     {
+        Artist() = default;
+        Artist(const int id) : id(id) { }
+
         int id;
         std::string artist;
     };
@@ -48,6 +51,9 @@ namespace model
 
     struct Genre
     {
+        Genre() = default;
+        Genre(const int id) : id(id) { }
+
         int id;
         std::string category;
 
@@ -55,6 +61,9 @@ namespace model
 
     struct Year
     {
+        Year() = default;
+        Year(const int id) : id(id) { }
+
         int id;
         int year;
     };

@@ -12,6 +12,24 @@ database::ArtistRepository::ArtistRepository(const model::BinaryPath& binConf)
 }
 
 
+std::vector<model::Artist> database::ArtistRepository::retrieveRecords()
+{
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+    const std::string query = "SELECT * FROM Artist";
+
+    mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    mysql_stmt_execute(stmt);
+
+    auto artists = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return artists;
+}
+
+
 model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, type::ArtistFilter filter)
 {
     std::cout << "retrieving artist record" << std::endl;
@@ -23,7 +41,6 @@ model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, 
     MYSQL_BIND params[1];
     memset(params, 0, sizeof(params));
 
-    //std::unique_ptr<char*> param;
     auto artistLength = artist.artist.size();
     switch (filter) {
         case type::ArtistFilter::id:
@@ -36,8 +53,7 @@ model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, 
             break;
         case type::ArtistFilter::artist:
             qry << "art.Artist = ?";
-            //param = std::make_unique<char*>(new char[artist.artist.size()]);
-            //mysql_real_escape_string(conn, *param, artist.artist.c_str(), artist.artist.size());
+
             params[0].buffer_type = MYSQL_TYPE_STRING;
             params[0].buffer = (char*)artist.artist.c_str();
             params[0].length = &artistLength;
@@ -142,6 +158,57 @@ void database::ArtistRepository::saveRecord(const model::Artist& artist)
     mysql_close(conn);
 
     std::cout<< "inserted artist record" << std::endl;
+}
+
+
+std::vector<model::Artist> database::ArtistRepository::parseRecords(MYSQL_STMT *stmt)
+{
+    mysql_stmt_store_result(stmt);
+
+    std::vector<model::Artist> artists;
+    artists.reserve(mysql_stmt_num_rows(stmt));
+
+    if (mysql_stmt_field_count(stmt) == 0) {
+        std::cout << "field count is 0" << std::endl;
+        return artists;
+    }
+
+    model::Artist art;
+    const auto valAmt = 2;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    auto res = mysql_stmt_result_metadata(stmt);
+    auto fields = mysql_fetch_fields(res);
+    const auto strLen = 1024;
+
+    char artist[strLen];
+
+    MYSQL_BIND val[valAmt];
+    memset(val, 0, sizeof(val));
+
+    val[0].buffer_type = MYSQL_TYPE_LONG;
+    val[0].buffer = (char*)&art.id;
+    val[0].length = &len[0];
+    val[0].is_null = &nullRes[0];
+
+    val[1].buffer_type = MYSQL_TYPE_STRING;
+    val[1].buffer = (char*)artist;
+    val[1].buffer_length = strLen;
+    val[1].length = &len[1];
+    val[1].is_null = &nullRes[1];
+
+    for (auto status = mysql_stmt_bind_result(stmt, val); status == 0; ) {
+        std::cout << "fetching statement result" << std::endl;
+        status = mysql_stmt_fetch(stmt);
+
+        if (status == 0) {
+            art.artist = artist;
+            artists.push_back(std::move(art));
+        }
+    }
+
+    return artists;
 }
 
 

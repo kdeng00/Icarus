@@ -10,8 +10,28 @@ database::GenreRepository::GenreRepository(const model::BinaryPath& bConf)
 { }
 
 
+std::vector<model::Genre> database::GenreRepository::retrieveRecords()
+{
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+    const std::string query = "SELECT * FROM Genre";
+
+    mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    mysql_stmt_execute(stmt);
+
+    auto genres = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return genres;
+}
+
+
 model::Genre database::GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter)
 {
+    // TODO: change to prepared statement
+    
     std::cout << "retrieving genre record" << std::endl;
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -123,6 +143,57 @@ void database::GenreRepository::saveRecord(const model::Genre& genre)
     mysql_close(conn);
 
     std::cout << "inserted record" << std::endl;
+}
+
+
+std::vector<model::Genre> database::GenreRepository::parseRecords(MYSQL_STMT *stmt)
+{
+    mysql_stmt_store_result(stmt);
+
+    std::vector<model::Genre> genres;
+    genres.reserve(mysql_stmt_num_rows(stmt));
+
+    if (mysql_stmt_field_count(stmt) == 0) {
+        std::cout << "field count is 0" << std::endl;
+        return genres;
+    }
+
+    model::Genre gnr;
+    const auto valAmt = 2;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    auto res = mysql_stmt_result_metadata(stmt);
+    auto fields = mysql_fetch_fields(res);
+    const auto strLen = 1024;
+
+    char category[strLen];
+
+    MYSQL_BIND val[valAmt];
+    memset(val, 0, sizeof(val));
+
+    val[0].buffer_type = MYSQL_TYPE_LONG;
+    val[0].buffer = (char*)&gnr.id;
+    val[0].length = &len[0];
+    val[0].is_null = &nullRes[0];
+
+    val[1].buffer_type = MYSQL_TYPE_STRING;
+    val[1].buffer = (char*)category;
+    val[1].buffer_length = strLen;
+    val[1].length = &len[1];
+    val[1].is_null = &nullRes[1];
+
+    for (auto status = mysql_stmt_bind_result(stmt, val); status == 0;) {
+        std::cout << "fetching statement result" << std::endl;
+        status = mysql_stmt_fetch(stmt);
+
+        if (status == 0) {
+            gnr.category = category;
+            genres.push_back(std::move(gnr));
+        }
+    }
+
+    return genres;
 }
 
 model::Genre database::GenreRepository::parseRecord(MYSQL_RES* results)
