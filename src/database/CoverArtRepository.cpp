@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <cstring>
 
 database::CoverArtRepository::CoverArtRepository(const std::string& path) : BaseRepository(path)
@@ -10,6 +11,24 @@ database::CoverArtRepository::CoverArtRepository(const std::string& path) : Base
 
 database::CoverArtRepository::CoverArtRepository(const model::BinaryPath& bConf) : BaseRepository(bConf)
 { }
+
+
+std::vector<model::Cover> database::CoverArtRepository::retrieveRecords()
+{
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+    const std::string query = "SELECT * FROM CoverArt";
+
+    mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    mysql_stmt_execute(stmt);
+
+    auto coverArts = parseRecords(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return coverArts;
+}
 
 model::Cover database::CoverArtRepository::retrieveRecord(model::Cover& cov, type::CoverFilter filter = type::CoverFilter::id)
 {
@@ -156,6 +175,73 @@ void database::CoverArtRepository::saveRecord(const model::Cover& cov)
 
     std::cout << "saved cover art record" << std::endl;
 }
+
+
+std::vector<model::Cover> database::CoverArtRepository::parseRecords(MYSQL_STMT *stmt)
+{
+    mysql_stmt_store_result(stmt);
+    auto rowCount = mysql_stmt_num_rows(stmt);
+    std::cout << "number of results " << rowCount << std::endl;
+
+    std::vector<model::Cover> coverArts;
+    coverArts.reserve(rowCount);
+
+    const auto valAmt = 3;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
+        if (mysql_stmt_field_count(stmt) > 0) {
+            model::Cover coverArt;
+            auto res = mysql_stmt_result_metadata(stmt);
+            auto fields = mysql_fetch_fields(res);
+            auto strLen = 1024;
+
+            MYSQL_BIND val[valAmt];
+            memset(val, 0, sizeof(val));
+
+            char songTitle[strLen];
+            char imagePath[strLen];
+
+            val[0].buffer_type = MYSQL_TYPE_LONG;
+            val[0].buffer = (char*)&coverArt.id;
+            val[0].length = &len[0];
+            val[0].is_null = &nullRes[0];
+
+            val[1].buffer_type = MYSQL_TYPE_STRING;
+            val[1].buffer = (char*)songTitle;
+            val[1].buffer_length = strLen;
+            val[1].length = &len[1];
+            val[1].is_null = &nullRes[1];
+
+            val[2].buffer_type = MYSQL_TYPE_STRING;
+            val[2].buffer = (char*)imagePath;
+            val[2].buffer_length = strLen;
+            val[2].length = &len[2];
+            val[2].is_null = &nullRes[2];
+
+            status = mysql_stmt_bind_result(stmt, val);
+
+            while (true) { 
+                std::cout << "fetching statement result" << std::endl;
+                status = mysql_stmt_fetch(stmt);
+
+                if (status == 1 || status == MYSQL_NO_DATA) {
+                    break;
+                }
+
+                coverArt.songTitle = songTitle;
+                coverArt.imagePath = imagePath;
+
+                coverArts.push_back(std::move(coverArt));
+            }
+        }
+        std::cout << "fetching next result" << std::endl;
+    }
+
+    return coverArts;
+}
+
 
 model::Cover database::CoverArtRepository::parseRecord(MYSQL_RES *results)
 {

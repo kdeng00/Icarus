@@ -41,7 +41,6 @@ namespace controller
 
         #include OATPP_CODEGEN_BEGIN(ApiController)
 
-        /**
         // endpoint for retrieving all cover art records in json format
         ENDPOINT("GET", "/api/v1/coverart", coverArtRecords, 
             REQUEST(std::shared_ptr<IncomingRequest>, request))
@@ -54,14 +53,13 @@ namespace controller
             for (auto& covDb : covsDb) {
                 auto cov = dto::CoverArtDto::createShared();
                 cov->id = covDb.id;
-                cov->Title = covDb.songTitle.c_str();
+                cov->songTitle = covDb.songTitle.c_str();
 
                 coverArts->pushBack(cov);
             }
 
-            return createDtoResponse(Status::CODE_200, songs);
+            return createDtoResponse(Status::CODE_200, coverArts);
         }
-        */
 
         // endpoint for retrieving single cover art record by the cover art id in json format
         ENDPOINT("GET", "/api/v1/coverart/{id}", coverArtRecord, 
