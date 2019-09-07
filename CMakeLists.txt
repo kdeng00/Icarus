@@ -27,6 +27,7 @@ set(SOURCES
 )
 set(HEADERS
     include/component/AppComponent.hpp
+    include/controller/AlbumController.hpp
     include/controller/CoverArtController.hpp
     include/controller/LoginController.hpp
     include/controller/SongController.hpp
@@ -37,9 +38,13 @@ set(HEADERS
     include/database/GenreRepository.h
     include/database/SongRepository.h
     include/database/YearRepository.h
+    include/dto/AlbumDto.hpp
+    include/dto/ArtistDto.hpp
     include/dto/CoverArtDto.hpp
+    include/dto/GenreDto.hpp
     include/dto/LoginResultDto.hpp
     include/dto/SongDto.hpp
+    include/dto/YearDto.hpp
     include/manager/AlbumManager.h
     include/manager/ArtistManager.h
     include/manager/CoverArtManager.h

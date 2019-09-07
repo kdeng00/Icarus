@@ -8,7 +8,10 @@ namespace model
 {
     struct Song
     {
-        int id;
+        Song() = default;
+        Song(const int id) : id(id) { }
+
+        int id; 
         std::string title;
         std::string artist;
         std::string album;
@@ -34,6 +37,9 @@ namespace model
 
     struct Album
     {
+        Album() = default;
+        Album(const int id) : id(id) { }
+
         int id;
         std::string title;
         int year;
@@ -55,6 +61,9 @@ namespace model
 
     struct Cover
     {
+        Cover() = default;
+        Cover(const int id) : id(id) { }
+
         int id;
         std::string songTitle;
         std::string imagePath;
@@ -96,6 +105,7 @@ namespace model
         BinaryPath(const char *p) : path(std::move(p)) { }
         BinaryPath(std::string& p) : path(std::move(p)) { }
         BinaryPath(const std::string& p) : path(std::move(p)) { }
+
         std::string path;
     };
 }

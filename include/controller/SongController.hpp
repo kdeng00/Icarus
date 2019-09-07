@@ -114,8 +114,7 @@ namespace controller
             PATH(Int32, id)) {
 
             database::SongRepository songRepo(m_bConf);
-            model::Song songDb;
-            songDb.id = id;
+            model::Song songDb(id);
 
             OATPP_ASSERT_HTTP(songRepo.doesSongExist(songDb, type::SongFilter::id) , Status::CODE_403, "song does not exist");
 
@@ -140,8 +139,7 @@ namespace controller
             PATH(Int32, id)) {
 
             database::SongRepository songRepo(m_bConf);
-            model::Song songDb;
-            songDb.id = id;
+            model::Song songDb(id);
             songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
             std::ifstream fl(songDb.songPath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -153,7 +151,7 @@ namespace controller
                 std::ostreambuf_iterator<char>(buf));
             fl.close();
 
-            // TODO: no need to make this shared
+            // TODO: no need to make this shared. Why? Because it already is. Sharing shared? Like wetting water
             auto rawSong = std::make_shared<oatpp::String>(oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true));
         
             auto response = createResponse(Status::CODE_200, *rawSong);
