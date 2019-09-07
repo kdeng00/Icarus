@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
 #include "oatpp/core/macro/codegen.hpp"
@@ -29,6 +30,84 @@ namespace fs = std::filesystem;
 
 namespace controller
 {
+    class myCallback : public oatpp::data::stream::ReadCallback
+    {
+    public:
+        myCallback() : _rS(std::make_shared<oatpp::data::stream::FileInputStream>(oatpp::data::stream::FileInputStream("")))
+        {
+            std::cout << "the non desired constructor chosen" << std::endl;
+            std::exit(-1);
+        }
+        myCallback(const std::string& songPath) 
+            : m_songPath(songPath.c_str()), 
+            m_counter(0),
+            _rS(std::make_shared<oatpp::data::stream::FileInputStream>(oatpp::data::stream::FileInputStream(songPath.c_str()))) 
+        {
+            std::cout << "the desired constructor chosen" << std::endl;
+        }
+        myCallback(myCallback& c) = default;
+
+        void bufferSong()
+        {
+            //auto rawSong = oatpp::base::StrBuffer::loadFromFile(m_songPath.c_str());
+            //oatpp::data::stream::FileInputStream rS(m_songPath.c_str());
+
+            //read(&rawSong, rawSong->getSize());
+        }
+
+        oatpp::data::v_io_size read(void *buff, oatpp::data::v_io_size count)
+        {
+            oatpp::data::v_io_size prog = 0;
+
+            char *data = (char*)buff;
+
+            while (prog < count) {
+                /**
+                auto res = count;
+                for (auto i = 0; i != res; ++i) {
+                    data[i] = 'd';
+                }
+                */
+                //std::shared_ptr<oatpp::data::stream::FileInputStream> r(std::make_shared<oatpp::data::stream::FileInputStream>
+
+                std::shared_ptr<oatpp::data::stream::FileInputStream> r((oatpp::data::stream::FileInputStream(m_songPath.c_str)));
+
+                //auto res = _rS->read(&data[prog], count - prog);
+                auto res = r->read(&data[prog], count - prog);
+                //auto res = _rS.read(buff, count - prog);
+                //auto res = _rS->read(buff, count);
+                std::cout << "read " << res << " bytes" << std::endl;
+                m_counter++;
+
+                if (res > 0) {
+                    prog += res;
+                } else {
+                    std::cout << "error occurred in reading from file stream" << std::endl;
+                    if (res == oatpp::data::IOError::RETRY || res == oatpp::data::IOError::WAIT_RETRY) {
+                        std::cout << "retrying or waiting to retry" << std::endl;
+                        continue;
+                    }
+
+                    m_counter = 0;
+                    return prog;
+                }
+            }
+
+            //std::cout << "done" << std::endl;
+            
+            m_counter = 0;
+            return prog;
+        }
+    private:
+        std::string m_songPath;
+
+        std::shared_ptr<oatpp::data::stream::FileInputStream> _rS;
+
+        int m_counter;
+        int m_iterations;
+    };
+    //class myCallbackAsync : public oatpp::data::stream::ReadCallback
+
     class SongController : public oatpp::web::server::api::ApiController
     {
     public:
@@ -142,6 +221,7 @@ namespace controller
             model::Song songDb(id);
             songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
+            /**
             std::ifstream fl(songDb.songPath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             fl.seekg(0);
 
@@ -150,11 +230,12 @@ namespace controller
                 std::istreambuf_iterator<char>(),
                 std::ostreambuf_iterator<char>(buf));
             fl.close();
+            */
 
-            // TODO: no need to make this shared. Why? Because it already is. Sharing shared? Like wetting water
-            auto rawSong = std::make_shared<oatpp::String>(oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true));
+            //auto rawSong = oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true);
+            auto rawSong = oatpp::base::StrBuffer::loadFromFile(songDb.songPath.c_str());
         
-            auto response = createResponse(Status::CODE_200, *rawSong);
+            auto response = createResponse(Status::CODE_200, rawSong);
             response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
 
             return response;
@@ -175,6 +256,24 @@ namespace controller
         }
 
         // TODO: create endpoint for streaming songs
+        ENDPOINT("GET", "/api/v1/song/stream/{id}", streamSong,
+            PATH(Int32, id)) {
+
+            database::SongRepository songRepo(m_bConf);
+            model::Song songDb(id);
+            songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
+
+            myCallback cb(songDb.songPath);
+            auto cb_sh = std::make_shared<myCallback>(cb);
+            auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(oatpp::web::protocol::http::outgoing::ChunkedBody(cb_sh, nullptr, 1024));
+
+            auto response = OutgoingResponse::createShared(Status::CODE_200, db);
+            //auto response = createResponse(Status::CODE_200, "");
+            response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
+            response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
+
+            return response;
+        }
 
         #include OATPP_CODEGEN_END(ApiController)
     private:

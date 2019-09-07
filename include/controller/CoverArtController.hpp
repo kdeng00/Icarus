@@ -89,6 +89,7 @@ namespace controller
             covDb.id = id;
             covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
 
+            /**
             std::ifstream fl(covDb.imagePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             fl.seekg(0);
 
@@ -97,8 +98,10 @@ namespace controller
                 std::istreambuf_iterator<char>(),
                 std::ostreambuf_iterator<char>(buf));
             fl.close();
+            */
 
-            auto rawCover = oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true);
+            //auto rawCover = oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true);
+            auto rawCover = oatpp::base::StrBuffer::loadFromFile(covDb.imagePath.c_str());
             auto response = createResponse(Status::CODE_200, rawCover);
             
             response->putHeader(Header::CONTENT_TYPE, "image/*");
