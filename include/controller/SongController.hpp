@@ -33,80 +33,89 @@ namespace controller
     class myCallback : public oatpp::data::stream::ReadCallback
     {
     public:
-        myCallback() : _rS(std::make_shared<oatpp::data::stream::FileInputStream>(oatpp::data::stream::FileInputStream("")))
+        myCallback() 
         {
             std::cout << "the non desired constructor chosen" << std::endl;
             std::exit(-1);
         }
+
         myCallback(const std::string& songPath) 
             : m_songPath(songPath.c_str()), 
-            m_counter(0),
-            _rS(std::make_shared<oatpp::data::stream::FileInputStream>(oatpp::data::stream::FileInputStream(songPath.c_str()))) 
+            m_counter(0)
         {
             std::cout << "the desired constructor chosen" << std::endl;
+            auto b = oatpp::base::StrBuffer::loadFromFile(m_songPath.c_str());
+            m_fileSize = b->getSize();
         }
+
         myCallback(myCallback& c) = default;
 
-        void bufferSong()
-        {
-            //auto rawSong = oatpp::base::StrBuffer::loadFromFile(m_songPath.c_str());
-            //oatpp::data::stream::FileInputStream rS(m_songPath.c_str());
 
-            //read(&rawSong, rawSong->getSize());
+        // I know, bad naming convention
+        oatpp::data::v_io_size demoStreamZero(void *buff, oatpp::data::v_io_size count)
+        {
+            oatpp::data::stream::FileInputStream rs(m_songPath.c_str());
+
+            return rs.read(buff, count);
+        }
+
+        oatpp::data::v_io_size demoStreamOne(void *buff, oatpp::data::v_io_size count)
+        {
+            std::cout << "file size " << m_fileSize << std::endl;
+            std::cout << "getting file input stream" << std::endl;
+
+            oatpp::data::stream::FileInputStream rs(m_songPath.c_str());
+
+            std::cout << "retrieving file" << std::endl;
+            auto f = rs.getFile();
+            std::cout << "file retrieved" << std::endl;
+
+            std::cout << "starting m_counter val " << m_counter << std::endl;;
+            auto newPos = m_counter * count;
+            auto bytesLeft = m_fileSize - m_bytesRead;
+
+            std::cout << "bytes left " << bytesLeft << std::endl;
+
+            //if (newPos >= m_fileSize) {
+            if (bytesLeft <= 0) {
+                std::cout << "pos " << newPos << std::endl;
+                std::cout << "done reading" << std::endl;
+                return 0;
+            }
+
+            auto fPos = std::ftell(f);
+            std::cout << "current file position indicator " << fPos << std::endl;
+
+            std::fseek(f, newPos, SEEK_SET);
+
+            fPos = std::ftell(f);
+            std::cout << "current file position indicator " << fPos << std::endl;
+
+            buff = malloc(count);
+            std::fgets((char*)buff, count, f);
+
+            std::cout << "ending m_counter val " << m_counter << std::endl;
+
+            m_bytesRead += count;
+            ++m_counter;
+
+            return count;
         }
 
         oatpp::data::v_io_size read(void *buff, oatpp::data::v_io_size count)
         {
-            oatpp::data::v_io_size prog = 0;
 
-            char *data = (char*)buff;
-
-            while (prog < count) {
-                /**
-                auto res = count;
-                for (auto i = 0; i != res; ++i) {
-                    data[i] = 'd';
-                }
-                */
-                //std::shared_ptr<oatpp::data::stream::FileInputStream> r(std::make_shared<oatpp::data::stream::FileInputStream>
-
-                std::shared_ptr<oatpp::data::stream::FileInputStream> r((oatpp::data::stream::FileInputStream(m_songPath.c_str)));
-
-                //auto res = _rS->read(&data[prog], count - prog);
-                auto res = r->read(&data[prog], count - prog);
-                //auto res = _rS.read(buff, count - prog);
-                //auto res = _rS->read(buff, count);
-                std::cout << "read " << res << " bytes" << std::endl;
-                m_counter++;
-
-                if (res > 0) {
-                    prog += res;
-                } else {
-                    std::cout << "error occurred in reading from file stream" << std::endl;
-                    if (res == oatpp::data::IOError::RETRY || res == oatpp::data::IOError::WAIT_RETRY) {
-                        std::cout << "retrying or waiting to retry" << std::endl;
-                        continue;
-                    }
-
-                    m_counter = 0;
-                    return prog;
-                }
-            }
-
-            //std::cout << "done" << std::endl;
-            
-            m_counter = 0;
-            return prog;
+            return demoStreamZero(buff, count);
         }
     private:
         std::string m_songPath;
 
-        std::shared_ptr<oatpp::data::stream::FileInputStream> _rS;
+        long m_fileSize;
+        long m_bytesRead = 0;
+        long m_counter;
 
-        int m_counter;
         int m_iterations;
     };
-    //class myCallbackAsync : public oatpp::data::stream::ReadCallback
 
     class SongController : public oatpp::web::server::api::ApiController
     {
@@ -221,18 +230,6 @@ namespace controller
             model::Song songDb(id);
             songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
-            /**
-            std::ifstream fl(songDb.songPath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            fl.seekg(0);
-
-            std::stringstream buf;
-            std::copy(std::istreambuf_iterator<char>(fl),
-                std::istreambuf_iterator<char>(),
-                std::ostreambuf_iterator<char>(buf));
-            fl.close();
-            */
-
-            //auto rawSong = oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true);
             auto rawSong = oatpp::base::StrBuffer::loadFromFile(songDb.songPath.c_str());
         
             auto response = createResponse(Status::CODE_200, rawSong);
@@ -265,11 +262,14 @@ namespace controller
 
             myCallback cb(songDb.songPath);
             auto cb_sh = std::make_shared<myCallback>(cb);
-            auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(oatpp::web::protocol::http::outgoing::ChunkedBody(cb_sh, nullptr, 1024));
+            auto dSize = 1024;
+            dSize = 100000;
+            auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(oatpp::web::protocol::http::outgoing::ChunkedBody(cb_sh, nullptr, dSize));
 
             auto response = OutgoingResponse::createShared(Status::CODE_200, db);
             //auto response = createResponse(Status::CODE_200, "");
             response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
+            response->putHeader("Accept-Ranges", "bytes");
             response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
 
             return response;
