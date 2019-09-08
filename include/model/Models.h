@@ -112,8 +112,8 @@ namespace model
     {
         BinaryPath() = default;
         BinaryPath(const char *p) : path(std::move(p)) { }
-        BinaryPath(std::string& p) : path(std::move(p)) { }
-        BinaryPath(const std::string& p) : path(std::move(p)) { }
+        BinaryPath(std::string& p) : path(p) { }
+        BinaryPath(const std::string& p) : path(p) { }
 
         std::string path;
     };

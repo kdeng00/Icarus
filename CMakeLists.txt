@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
+    src/callback/StreamCallback.cpp
     src/database/AlbumRepository.cpp
     src/database/ArtistRepository.cpp
     src/database/BaseRepository.cpp
@@ -26,6 +27,7 @@ set(SOURCES
     src/utility/MetadataRetriever.cpp
 )
 set(HEADERS
+    include/callback/StreamCallback.h
     include/component/AppComponent.hpp
     include/controller/AlbumController.hpp
     include/controller/ArtistController.hpp
