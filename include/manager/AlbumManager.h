@@ -13,6 +13,8 @@ namespace manager
         model::Album retrieveAlbum(model::Album&);
         model::Album saveAlbum(const model::Song&);
 
+        void deleteAlbum(const model::Song&);
+
         static void printAlbum(const model::Album&);
     private:
         model::BinaryPath m_bConf;

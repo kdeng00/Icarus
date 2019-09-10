@@ -211,6 +211,7 @@ model::Year database::YearRepository::parseRecord(MYSQL_RES *results)
 model::Year database::YearRepository::parseRecord(MYSQL_STMT *stmt)
 {
     // TODO: imeplement this
+    // I really thought that I had already done this
     
     model::Year year;
 

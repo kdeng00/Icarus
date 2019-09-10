@@ -48,30 +48,18 @@ void manager::SongManager::deleteSong(model::Song& song)
     // TODO: handle what happens to miscellanes records
     // like Album, Artist, Genre, etc. when a song
     // is deleted
-    database::CoverArtRepository covRepo(m_bConf);
     database::SongRepository songRepo(m_bConf);
 
     song = songRepo.retrieveRecord(song, type::SongFilter::id);
-    songRepo.deleteRecord(song);
-
-    model::Cover cov;
-    cov.id = song.coverArtId;
-    cov = covRepo.retrieveRecord(cov, type::CoverFilter::id);
-    covRepo.deleteRecord(cov);
 
     auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
-    const auto coverArtPath = paths["cover_root_path"].get<std::string>();
-    std::string stockCoverArtPath = coverArtPath;
-    stockCoverArtPath.append("CoverArt.png");
+    deleteMisc(song);
 
-    if (stockCoverArtPath.compare(cov.imagePath) != 0) {
-        fs::remove(cov.imagePath);
-        std::cout << "deleting cover art" << std::endl;
-    }
+    songRepo.deleteRecord(song);
+
     fs::remove(song.songPath);
 
     manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
-    manager::DirectoryManager::deleteDirectories(song, coverArtPath);
 }
 
 void manager::SongManager::printSong(const model::Song& song)
@@ -111,6 +99,7 @@ void manager::SongManager::saveSongTemp(model::Song& song)
 
     song.songPath = tmpSongPath;
 }
+
 void manager::SongManager::saveMisc(model::Song& song)
 {
     CoverArtManager covMgr(m_bConf);
@@ -163,4 +152,19 @@ void manager::SongManager::saveMisc(model::Song& song)
     song.yearId = year.id;
 
     std::cout << "done with miscellaneous database records" << std::endl;
+}
+
+void manager::SongManager::deleteMisc(const model::Song& song)
+{
+    manager::CoverArtManager covMgr(m_bConf);
+    covMgr.deleteCover(song);
+
+    manager::AlbumManager albMgr(m_bConf);
+    albMgr.deleteAlbum(song);
+
+    manager::ArtistManager artMgr(m_bConf);
+
+    manager::GenreManager gnrMgr(m_bConf);
+
+    manager::YearManager yrMgr(m_bConf);
 }

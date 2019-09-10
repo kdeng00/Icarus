@@ -1,6 +1,7 @@
 #ifndef ALBUMREPOSITORY_H_
 #define ALBUMREPOSITORY_H_
 
+#include <utility>
 #include <vector>
 
 #include "database/BaseRepository.h"
@@ -16,13 +17,18 @@ namespace database
 
         std::vector<model::Album> retrieveRecords();
 
+        std::pair<model::Album, int> retrieveRecordWithSongCount(model::Album&, type::AlbumFilter);
+
         model::Album retrieveRecord(model::Album&, type::AlbumFilter);
 
         bool doesAlbumExists(const model::Album&, type::AlbumFilter);
 
         void saveAlbum(const model::Album&);
+        void deleteAlbum(const model::Album&, type::AlbumFilter);
     private:
         std::vector<model::Album> parseRecords(MYSQL_STMT*);
+
+        std::pair<model::Album, int> parseRecordWithSongCount(MYSQL_STMT*);
 
         // TODO: after parseRecord(MYSQL_STMT*) is implemented remove
         // parseRecord(MYSQL_RES*)

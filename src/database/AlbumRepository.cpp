@@ -29,6 +29,51 @@ std::vector<model::Album> database::AlbumRepository::retrieveRecords()
     return albums;
 }
 
+
+std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCount(model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
+{
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    MYSQL_BIND params[4];
+    std::memset(params, 0, sizeof(params));
+
+    qry << "SELECT alb.*, COUNT(*) AS SongCount FROM Album alb LEFT JOIN ";
+    qry << "Song sng ON alb.AlbumId=sng.AlbumId WHERE ";
+
+    switch (filter) {
+        case type::AlbumFilter::id:
+            qry << "alb.AlbumId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&album.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+    qry << " GROUP BY alb.AlbumId LIMIT 1";
+
+    const auto query = qry.str();
+
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    std::cout << "query has been performed" << std::endl;
+
+    auto albWSC = parseRecordWithSongCount(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    std::cout << "record has been parsed" << std::endl;
+    
+    return albWSC;
+}
+
 model::Album database::AlbumRepository::retrieveRecord(model::Album& album, type::AlbumFilter filter)
 {
     std::cout << "retrieving album record" << std::endl;
@@ -165,9 +210,45 @@ void database::AlbumRepository::saveAlbum(const model::Album& album)
     std::cout << "done inserting album record" << std::endl;
 }
 
+void database::AlbumRepository::deleteAlbum(const model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
+{
+    std::cout << "deleting album record" << std::endl;
+
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    MYSQL_BIND params[1];
+    std::memset(params, 0, sizeof(params));
+
+    qry << "DELETE FROM Album WHERE ";
+
+    switch (filter) {
+        case type::AlbumFilter::id:
+            qry << "AlbumId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&album.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    const auto query = qry.str();
+
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    std::cout << "execute delete query" << std::endl;
+}
+
 
 std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_STMT* stmt)
 {
+    std::cout << "parsing album record" << std::endl;
     mysql_stmt_store_result(stmt);
 
     std::vector<model::Album> albums;
@@ -225,6 +306,7 @@ std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_STMT* st
     return albums;
 }
 
+// TODO: check to see if this is not used, if not then remove it
 model::Album database::AlbumRepository::parseRecord(MYSQL_RES* results)
 {
     std::cout << "parsing album record" << std::endl;
@@ -248,6 +330,65 @@ model::Album database::AlbumRepository::parseRecord(MYSQL_RES* results)
     }
 
     return album;
+}
+
+std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+{
+    std::cout << "parsing album record with song count" << std::endl;
+    mysql_stmt_store_result(stmt);
+    auto rowCount = mysql_stmt_num_rows(stmt);
+    std::cout << "result count " << rowCount << std::endl;
+
+    model::Album album;
+    int songCount;
+
+    if (mysql_stmt_field_count(stmt) == 0) {
+        std::cout << "field count is 0, must be an incorrect query" << std::endl;
+        return std::make_pair(model::Album(), 0);
+    }
+
+    auto res = mysql_stmt_result_metadata(stmt);
+    const auto valAmt = 4;
+    const auto strLen = 1024;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    MYSQL_BIND val[valAmt];
+    std::memset(val, 0, sizeof(val));
+
+    char title[strLen];
+
+    val[0].buffer_type = MYSQL_TYPE_LONG;
+    val[0].buffer = (char*)&album.id;
+    val[0].length = &len[0];
+    val[0].is_null = &nullRes[0];
+
+    val[1].buffer_type = MYSQL_TYPE_STRING;
+    val[1].buffer = (char*)title;
+    val[1].buffer_length = strLen;
+    val[1].length = &len[1];
+    val[1].is_null = &nullRes[1];
+
+    val[2].buffer_type = MYSQL_TYPE_LONG;
+    val[2].buffer = (char*)&album.year;
+    val[2].length = &len[2];
+    val[2].is_null = &nullRes[2];
+
+    val[3].buffer_type = MYSQL_TYPE_LONG;
+    val[3].buffer = (char*)&songCount;
+    val[3].length = &len[2];
+    val[3].is_null = &nullRes[2];
+
+    auto status = mysql_stmt_bind_result(stmt, val);
+    status = mysql_stmt_fetch(stmt);
+
+    album.title = std::move(title);
+
+    std::cout << "done parsing album record with song count" << std::endl;
+
+    auto albWSC = std::make_pair(album, songCount);
+
+    return albWSC;
 }
 
 model::Album database::AlbumRepository::parseRecord(MYSQL_STMT *stmt)

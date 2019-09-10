@@ -14,6 +14,8 @@ namespace manager
         CoverArtManager(const model::BinaryPath& bConf);
 
         model::Cover saveCover(const model::Song&, std::string&, const std::string&);
+        
+        void deleteCover(const model::Song&);
     private:
         model::BinaryPath m_bConf;
         std::string path;

@@ -32,6 +32,11 @@ namespace model
     struct Artist
     {
         Artist() = default;
+        Artist(const Song& song)
+        {
+            id = song.artistId;
+            artist = song.artist;
+        }
         Artist(const int id) : id(id) { }
 
         int id;
@@ -41,6 +46,12 @@ namespace model
     struct Album
     {
         Album() = default;
+        Album(const Song& song)
+        {
+            id = song.albumId;
+            title = song.album;
+            year = song.year;
+        }
         Album(const int id) : id(id) { }
 
         int id;
@@ -52,6 +63,11 @@ namespace model
     struct Genre
     {
         Genre() = default;
+        Genre(const Song& song)
+        {
+            id = song.genreId;
+            category = song.genre;
+        }
         Genre(const int id) : id(id) { }
 
         int id;
@@ -62,6 +78,11 @@ namespace model
     struct Year
     {
         Year() = default;
+        Year(const Song& song)
+        {
+            id = song.yearId;
+            year = song.year;
+        }
         Year(const int id) : id(id) { }
 
         int id;
@@ -71,6 +92,11 @@ namespace model
     struct Cover
     {
         Cover() = default;
+        Cover(const Song& song)
+        {
+            id = song.coverArtId;
+            songTitle = song.title;
+        }
         Cover(const int id) : id(id) { }
 
         int id;

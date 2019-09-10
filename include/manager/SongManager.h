@@ -23,6 +23,7 @@ namespace manager
     private:
         void saveSongTemp(model::Song&);
         void saveMisc(model::Song&);
+        void deleteMisc(const model::Song&);
 
         model::BinaryPath m_bConf;
         std::string exe_path;

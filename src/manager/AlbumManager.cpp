@@ -36,6 +36,23 @@ model::Album manager::AlbumManager::saveAlbum(const model::Song& song)
     return album;
 }
 
+
+void manager::AlbumManager::deleteAlbum(const model::Song& song)
+{
+    model::Album album(song);
+
+    database::AlbumRepository albRepo(m_bConf);
+    auto albWSC = albRepo.retrieveRecordWithSongCount(album, type::AlbumFilter::id);
+    
+    if (albWSC.second > 1) {
+        std::cout << "album still contain songs related to it, will not delete" << std::endl;
+        return;
+    }
+
+    std::cout << "safe to delete the album record" << std::endl;
+    albRepo.deleteAlbum(album, type::AlbumFilter::id);
+}
+
 void manager::AlbumManager::printAlbum(const model::Album& album)
 {
     std::cout << "\nalbum record" << std::endl;
