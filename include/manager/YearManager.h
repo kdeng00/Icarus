@@ -13,6 +13,8 @@ namespace manager
         model::Year retrieveYear(model::Year&);
         model::Year saveYear(const model::Song&);
 
+        void deleteYear(const model::Song&);
+
         static void printYear(const model::Year&);
     private:
         model::BinaryPath m_bConf;

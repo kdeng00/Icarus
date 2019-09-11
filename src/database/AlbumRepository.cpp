@@ -32,6 +32,7 @@ std::vector<model::Album> database::AlbumRepository::retrieveRecords()
 
 std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCount(model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
 {
+    std::cout << "retrieving album with song count" << std::endl;
     std::stringstream qry;
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -44,7 +45,7 @@ std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCo
 
     switch (filter) {
         case type::AlbumFilter::id:
-            qry << "alb.AlbumId = ?";
+            qry << "sng.AlbumId = ?";
 
             params[0].buffer_type = MYSQL_TYPE_LONG;
             params[0].buffer = (char*)&album.id;
@@ -62,15 +63,11 @@ std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCo
     status = mysql_stmt_bind_param(stmt, params);
     status = mysql_stmt_execute(stmt);
 
-    std::cout << "query has been performed" << std::endl;
-
     auto albWSC = parseRecordWithSongCount(stmt);
 
     mysql_stmt_close(stmt);
     mysql_close(conn);
 
-    std::cout << "record has been parsed" << std::endl;
-    
     return albWSC;
 }
 
@@ -337,10 +334,14 @@ std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount
     std::cout << "parsing album record with song count" << std::endl;
     mysql_stmt_store_result(stmt);
     auto rowCount = mysql_stmt_num_rows(stmt);
-    std::cout << "result count " << rowCount << std::endl;
 
     model::Album album;
-    int songCount;
+    int songCount = 0;
+
+    if (rowCount == 0) {
+        std::cout << "no results" << std::endl;
+        return std::make_pair(album, songCount);
+    }
 
     if (mysql_stmt_field_count(stmt) == 0) {
         std::cout << "field count is 0, must be an incorrect query" << std::endl;
@@ -348,8 +349,8 @@ std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount
     }
 
     auto res = mysql_stmt_result_metadata(stmt);
-    const auto valAmt = 4;
-    const auto strLen = 1024;
+    constexpr auto valAmt = 4;
+    constexpr auto strLen = 1024;
     unsigned long len[valAmt];
     my_bool nullRes[valAmt];
 
@@ -376,8 +377,8 @@ std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount
 
     val[3].buffer_type = MYSQL_TYPE_LONG;
     val[3].buffer = (char*)&songCount;
-    val[3].length = &len[2];
-    val[3].is_null = &nullRes[2];
+    val[3].length = &len[3];
+    val[3].is_null = &nullRes[3];
 
     auto status = mysql_stmt_bind_result(stmt, val);
     status = mysql_stmt_fetch(stmt);

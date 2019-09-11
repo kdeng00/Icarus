@@ -50,15 +50,24 @@ void manager::SongManager::deleteSong(model::Song& song)
     // is deleted
     database::SongRepository songRepo(m_bConf);
 
+    if (!songRepo.doesSongExist(song, type::SongFilter::id)) {
+        std::cout << "song does not exist" << std::endl;
+        return;
+    }
+
     song = songRepo.retrieveRecord(song, type::SongFilter::id);
 
     auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
+
+    auto deleted = songRepo.deleteRecord(song);
+
+    if (!deleted) {
+        std::cout << "song not deleted from databases" << std::endl;
+        return;
+    }
     deleteMisc(song);
 
-    songRepo.deleteRecord(song);
-
     fs::remove(song.songPath);
-
     manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
 }
 
@@ -163,8 +172,11 @@ void manager::SongManager::deleteMisc(const model::Song& song)
     albMgr.deleteAlbum(song);
 
     manager::ArtistManager artMgr(m_bConf);
+    artMgr.deleteArtist(song);
 
     manager::GenreManager gnrMgr(m_bConf);
+    gnrMgr.deleteGenre(song);
 
     manager::YearManager yrMgr(m_bConf);
+    yrMgr.deleteYear(song);
 }

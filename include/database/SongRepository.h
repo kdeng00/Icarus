@@ -24,7 +24,7 @@ namespace database
 
         model::Song retrieveRecord(model::Song&, type::SongFilter);
 
-        void deleteRecord(const model::Song&);
+        bool deleteRecord(const model::Song&);
         void saveRecord(const model::Song&);
     private:
         std::vector<model::Song> parseRecords(MYSQL_RES*); // TODO: to be removed

@@ -36,6 +36,23 @@ model::Artist manager::ArtistManager::saveArtist(const model::Song& song)
     return artist;
 }
 
+void manager::ArtistManager::deleteArtist(const model::Song& song)
+{
+    model::Artist artist(song);
+
+    database::ArtistRepository artRepo(m_bConf);
+    auto artWSC = artRepo.retrieveRecordWithSongCount(artist, type::ArtistFilter::id);
+    
+    if (artWSC.second > 1) {
+        std::cout << "artist still contain songs related to it";
+        std::cout << ", not delete" << std::endl;
+        return;
+    }
+
+    std::cout << "safe to delete the artist record" << std::endl;
+    artRepo.deleteArtist(artist, type::ArtistFilter::id);
+}
+
 void manager::ArtistManager::printArtist(const model::Artist& artist)
 {
     std::cout << "\nartist record" << std::endl;

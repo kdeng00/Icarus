@@ -29,6 +29,50 @@ std::vector<model::Year> database::YearRepository::retrieveRecords()
     return yearRecs;
 }
 
+std::pair<model::Year, int> database::YearRepository::retrieveRecordWithSongCount(model::Year& year, type::YearFilter filter = type::YearFilter::id)
+{
+    std::cout << "retrieving year record with song count" << std::endl;
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    qry << "SELECT yr.*, COUNT(*) AS SongCount FROM Year yr LEFT JOIN ";
+    qry << "Song sng ON yr.YearId=sng.YearId WHERE ";
+
+    MYSQL_BIND params[1];
+    std::memset(params, 0, sizeof(params));
+
+    switch (filter) {
+        case type::YearFilter::id:
+            qry << "sng.YearId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&year.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " GROUP BY yr.YearId LIMIT 1";
+
+    const auto query = qry.str();
+
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    auto yearWSC = parseRecordWithSongCount(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    std::cout << "retrieved year record with song count" << std::endl;
+
+    return yearWSC;
+}
+
 model::Year database::YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter)
 {
     // TODO: switch to prepared statements
@@ -140,6 +184,42 @@ void database::YearRepository::saveRecord(const model::Year& year)
     std::cout << "saved record" << std::endl;
 }
 
+void database::YearRepository::deleteYear(const model::Year& year, type::YearFilter filter = type::YearFilter::id)
+{
+    std::cout << "deleting year record"  << std::endl;
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    qry << "DELETE FROM Year WHERE ";
+
+    MYSQL_BIND params[1];
+    std::memset(params, 0, sizeof(params));
+
+    switch (filter) {
+        case type::YearFilter::id:
+            qry << "YearId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&year.id;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    const auto query = qry.str();
+
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    std::cout << "deleted year record" << std::endl;
+}
 
 std::vector<model::Year> database::YearRepository::parseRecords(MYSQL_STMT *stmt)
 {
@@ -183,6 +263,49 @@ std::vector<model::Year> database::YearRepository::parseRecords(MYSQL_STMT *stmt
     }
 
     return yearRecs;
+}
+
+std::pair<model::Year, int> database::YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+{
+    std::cout << "parsing year record" << std::endl;
+    mysql_stmt_store_result(stmt);
+
+    constexpr auto valAmt = 3;
+    unsigned long len[valAmt];
+    my_bool nullRes[valAmt];
+
+    model::Year year;
+    int songCount = 0;
+
+    if (mysql_stmt_num_rows(stmt) == 0) {
+        std::cout << "no results" << std::endl;
+        return std::make_pair(year, songCount);
+    }
+
+    MYSQL_BIND val[valAmt];
+    std::memset(val, 0, sizeof(val));
+
+    val[0].buffer_type = MYSQL_TYPE_LONG;
+    val[0].buffer = (char*)&year.id;
+    val[0].length = &len[0];
+    val[0].is_null = &nullRes[0];
+
+    val[1].buffer_type = MYSQL_TYPE_LONG;
+    val[1].buffer = (char*)&year.year;
+    val[1].length = &len[1];
+    val[1].is_null = &nullRes[1];
+
+    val[2].buffer_type = MYSQL_TYPE_LONG;
+    val[2].buffer = (char*)&songCount;
+    val[2].length = &len[2];
+    val[2].is_null = &nullRes[2];
+
+    mysql_stmt_bind_result(stmt, val);
+    mysql_stmt_fetch(stmt);
+
+    std::cout << "parsed year record from the database" << std::endl;
+
+    return std::make_pair(year, songCount);
 }
 
 model::Year database::YearRepository::parseRecord(MYSQL_RES *results)

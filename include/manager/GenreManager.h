@@ -13,6 +13,8 @@ namespace manager
         model::Genre retrieveGenre(model::Genre&);
         model::Genre saveGenre(const model::Song&);
 
+        void deleteGenre(const model::Song&);
+
         static void printGenre(const model::Genre&);
     private:
         model::BinaryPath m_bConf;

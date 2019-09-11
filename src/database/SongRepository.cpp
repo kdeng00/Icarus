@@ -13,6 +13,7 @@ database::SongRepository::SongRepository(const std::string& path) : BaseReposito
 database::SongRepository::SongRepository(const model::BinaryPath& bConf) : BaseRepository(bConf)
 { }
 
+
 std::vector<model::Song> database::SongRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
@@ -134,7 +135,7 @@ bool database::SongRepository::doesSongExist(const model::Song& song, type::Song
     return (rowCount > 0) ? true : false;
 }
 
-void database::SongRepository::deleteRecord(const model::Song& song)
+bool database::SongRepository::deleteRecord(const model::Song& song)
 {
     auto conn = setupMysqlConnection();
     auto status = 0;
@@ -144,6 +145,8 @@ void database::SongRepository::deleteRecord(const model::Song& song)
     auto result = performMysqlQuery(conn, query);
 
     mysql_close(conn);
+
+    return (result == 0) ? true : false;
 }
 
 void database::SongRepository::saveRecord(const model::Song& song)

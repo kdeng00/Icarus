@@ -33,6 +33,23 @@ model::Year manager::YearManager::saveYear(const model::Song& song)
     return year;
 }
 
+void manager::YearManager::deleteYear(const model::Song& song)
+{
+    model::Year year(song);
+
+    database::YearRepository yrRepo(m_bConf);
+    auto yrWSC = yrRepo.retrieveRecordWithSongCount(year, type::YearFilter::id);
+
+    if (yrWSC.second > 1) {
+        std::cout << "year still contain songs related to it";
+        std::cout << ", will not delete" << std::endl;
+        return;
+    }
+
+    std::cout << "safe to delete the year record" << std::endl;
+    yrRepo.deleteYear(year, type::YearFilter::id);
+}
+
 void manager::YearManager::printYear(const model::Year& year)
 {
     std::cout << "\nyear record" << std::endl;

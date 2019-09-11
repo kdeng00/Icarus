@@ -89,7 +89,7 @@ void manager::DirectoryManager::deleteCoverArtFile(const std::string& covPath, c
 }
 void manager::DirectoryManager::deleteDirectories(model::Song song, const std::string& rootPath)
 {
-    std::cout << "checking to for empty directories to delete" << std::endl;
+    std::cout << "checking for empty directories to delete" << std::endl;
     const std::string art(rootPath + std::string("/") + song.artist);
     const std::string alb(art + "/" + song.album);
 
