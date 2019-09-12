@@ -153,8 +153,19 @@ namespace controller
         }
 
         // TODO: create endpoint for updating songs
+        ENDPOINT("UPDATE", "/api/v1/song/{id}", songUpdate,
+            BODY_DTO(dto::SongDto::ObjectWrapper, songDto), PATH(Int32, id)) {
+            model::Song song(id);
+            songDto->id = id;
+            
+            auto updatedSong = manager::SongManager::songDtoConv(songDto);
+            std::cout << "printing updated song" << std::endl;
+            manager::SongManager::printSong(updatedSong);
 
-        // TODO: work on this to handle the database records
+            return createResponse(Status::CODE_200, "OK");
+        }
+
+        // endpoint to delete a song
         ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, PATH(Int32, id)) {
             model::Song song(id);
 
@@ -164,7 +175,7 @@ namespace controller
             return createResponse(Status::CODE_200, "OK");
         }
 
-        // TODO: create endpoint for streaming songs
+        // endpoint for streaming a song
         ENDPOINT("GET", "/api/v1/song/stream/{id}", streamSong,
             PATH(Int32, id)) {
             database::SongRepository songRepo(m_bConf);

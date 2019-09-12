@@ -45,9 +45,6 @@ void manager::SongManager::saveSong(model::Song& song)
 
 void manager::SongManager::deleteSong(model::Song& song)
 {
-    // TODO: handle what happens to miscellanes records
-    // like Album, Artist, Genre, etc. when a song
-    // is deleted
     database::SongRepository songRepo(m_bConf);
 
     if (!songRepo.doesSongExist(song, type::SongFilter::id)) {
@@ -69,6 +66,40 @@ void manager::SongManager::deleteSong(model::Song& song)
 
     fs::remove(song.songPath);
     manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
+}
+
+void manager::SongManager::updateSong(model::Song& song)
+{
+    // TODO: update song metadata
+}
+
+model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songDto)
+{
+    // TODO: figure out how to determine if a non-character sequence 
+    // field is empty. Will be necessary for updating the
+    // song based on what the HTTP request body is
+    std::cout << "coverting dto::SongDto to model::Song" << std::endl;
+    model::Song song;
+    song.id = songDto->id;
+    song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
+    song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
+    song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
+    auto s = songDto->year.empty();
+    std::cout << s << std::endl;
+    auto sy = &songDto->year;
+    if (sy->empty()) {
+    //}
+    //if (true) {
+        std::cout << "year is null" << std::endl;
+    } else {
+        std::cout << "year is not null" << std::endl;
+    }
+    song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
+    //song.track = songDto->track;
+    //song.duration = songDto->duration;
+    //song.disc = songDto->disc;
+
+    return song;
 }
 
 void manager::SongManager::printSong(const model::Song& song)

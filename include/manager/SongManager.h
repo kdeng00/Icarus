@@ -6,6 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "dto/SongDto.hpp"
 #include "model/Models.h"
 
 namespace manager
@@ -18,6 +19,9 @@ namespace manager
 
         void saveSong(model::Song&);
         void deleteSong(model::Song&);
+        void updateSong(model::Song&);
+
+        static model::Song songDtoConv(dto::SongDto::ObjectWrapper&);
 
         static void printSong(const model::Song&);
     private:
