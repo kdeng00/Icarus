@@ -5,6 +5,8 @@
 #include <random>
 
 #include <nlohmann/json.hpp>
+#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
+#include "oatpp/web/server/api/ApiController.hpp"
 
 #include "database/CoverArtRepository.h"
 #include "database/SongRepository.h"
@@ -68,36 +70,51 @@ void manager::SongManager::deleteSong(model::Song& song)
     manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
 }
 
-void manager::SongManager::updateSong(model::Song& song)
+void manager::SongManager::updateSong(model::Song& updatedSong)
 {
-    // TODO: update song metadata
+    database::SongRepository songRepo(m_bConf);
+
+    OATPP_ASSERT_HTTP(songRepo.doesSongExist(updatedSong, type::SongFilter::id) , oatpp::web::protocol::http::Status::CODE_404, "song does not exist");
+
+    auto currSong = songRepo.retrieveRecord(updatedSong, type::SongFilter::id);
+    utility::MetadataRetriever meta;
+    meta.updateMetadata(updatedSong, currSong);
+
+    // TODO: 
+    // 1. depending on what metadata was changed there might be a need to
+    // change where the song is stored on the filesystem, deleting empty
+    // directories in the process
+    // 2. create or delete necessary records
 }
 
 model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songDto)
 {
-    // TODO: figure out how to determine if a non-character sequence 
-    // field is empty. Will be necessary for updating the
-    // song based on what the HTTP request body is
     std::cout << "coverting dto::SongDto to model::Song" << std::endl;
     model::Song song;
     song.id = songDto->id;
     song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
     song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
     song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
-    auto s = songDto->year.empty();
-    std::cout << s << std::endl;
-    auto sy = &songDto->year;
-    if (sy->empty()) {
-    //}
-    //if (true) {
-        std::cout << "year is null" << std::endl;
+    auto year = songDto->year.getPtr();
+    auto track = songDto->track.getPtr();
+    auto disc = songDto->track.getPtr();
+    auto duration = songDto->track.getPtr();
+    if (year != nullptr) {
+        std::cout << "not null" << std::endl;
+        song.year = songDto->year;
     } else {
-        std::cout << "year is not null" << std::endl;
+        year = 0;
     }
-    song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
-    //song.track = songDto->track;
-    //song.duration = songDto->duration;
-    //song.disc = songDto->disc;
+    if (track != nullptr) {
+        song.track = songDto->track;
+    } else {
+        track = 0;
+    }
+    if (disc != nullptr) { 
+        song.disc = songDto->disc;
+    } else {
+        disc = 0;
+    }
 
     return song;
 }

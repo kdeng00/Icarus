@@ -155,12 +155,13 @@ namespace controller
         // TODO: create endpoint for updating songs
         ENDPOINT("UPDATE", "/api/v1/song/{id}", songUpdate,
             BODY_DTO(dto::SongDto::ObjectWrapper, songDto), PATH(Int32, id)) {
-            model::Song song(id);
             songDto->id = id;
             
             auto updatedSong = manager::SongManager::songDtoConv(songDto);
             std::cout << "printing updated song" << std::endl;
             manager::SongManager::printSong(updatedSong);
+            manager::SongManager songMgr(m_bConf);
+            songMgr.updateSong(updatedSong);
 
             return createResponse(Status::CODE_200, "OK");
         }
