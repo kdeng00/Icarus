@@ -17,6 +17,9 @@ namespace manager
         SongManager(std::string&);
         SongManager(const model::BinaryPath&);
 
+        bool didSongChange(const model::Song&, const model::Song&);
+        bool requiresFilesystemChange(const model::Song&, const model::Song&);
+
         void saveSong(model::Song&);
         void deleteSong(model::Song&);
         void updateSong(model::Song&);

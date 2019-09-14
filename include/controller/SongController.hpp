@@ -158,8 +158,6 @@ namespace controller
             songDto->id = id;
             
             auto updatedSong = manager::SongManager::songDtoConv(songDto);
-            std::cout << "printing updated song" << std::endl;
-            manager::SongManager::printSong(updatedSong);
             manager::SongManager songMgr(m_bConf);
             songMgr.updateSong(updatedSong);
 

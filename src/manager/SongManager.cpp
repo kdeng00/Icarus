@@ -29,6 +29,30 @@ manager::SongManager::SongManager(const model::BinaryPath& bConf)
 { }
 
 
+bool manager::SongManager::didSongChange(const model::Song& updatedSong, 
+    const model::Song& currSong)
+{
+    // TODO: implement this
+
+    return false;
+}
+
+bool manager::SongManager::requiresFilesystemChange(const model::Song& updatedSong, 
+    const model::Song& currSong)
+{
+    if (updatedSong.title.compare(currSong.title) != 0) {
+        return true;
+    }
+    if (updatedSong.artist.compare(currSong.album) != 0) {
+        return true;
+    }
+    if (updatedSong.album.compare(currSong.genre) != 0) {
+        return true;
+    }
+
+    return false;
+}
+
 void manager::SongManager::saveSong(model::Song& song)
 {
     saveSongTemp(song);
@@ -73,18 +97,22 @@ void manager::SongManager::deleteSong(model::Song& song)
 void manager::SongManager::updateSong(model::Song& updatedSong)
 {
     database::SongRepository songRepo(m_bConf);
+    model::Song currSong(updatedSong.id);
 
-    OATPP_ASSERT_HTTP(songRepo.doesSongExist(updatedSong, type::SongFilter::id) , oatpp::web::protocol::http::Status::CODE_404, "song does not exist");
+    OATPP_ASSERT_HTTP(songRepo.doesSongExist(currSong, type::SongFilter::id) , oatpp::web::protocol::http::Status::CODE_404, "song does not exist");
 
-    auto currSong = songRepo.retrieveRecord(updatedSong, type::SongFilter::id);
+    currSong = songRepo.retrieveRecord(currSong, type::SongFilter::id);
     utility::MetadataRetriever meta;
     meta.updateMetadata(updatedSong, currSong);
 
     // TODO: 
-    // 1. depending on what metadata was changed there might be a need to
+    // 1. determine if the song has been updated at all
+    // 2. depending on what metadata was changed there might be a need to
     // change where the song is stored on the filesystem, deleting empty
     // directories in the process
-    // 2. create or delete necessary records
+    // 3. create or delete necessary records
+    if (requiresFilesystemChange(updatedSong, currSong)) {
+    }
 }
 
 model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songDto)
@@ -92,29 +120,13 @@ model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songD
     std::cout << "coverting dto::SongDto to model::Song" << std::endl;
     model::Song song;
     song.id = songDto->id;
+    song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
     song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
     song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
     song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
-    auto year = songDto->year.getPtr();
-    auto track = songDto->track.getPtr();
-    auto disc = songDto->track.getPtr();
-    auto duration = songDto->track.getPtr();
-    if (year != nullptr) {
-        std::cout << "not null" << std::endl;
-        song.year = songDto->year;
-    } else {
-        year = 0;
-    }
-    if (track != nullptr) {
-        song.track = songDto->track;
-    } else {
-        track = 0;
-    }
-    if (disc != nullptr) { 
-        song.disc = songDto->disc;
-    } else {
-        disc = 0;
-    }
+    song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year->getValue();
+    song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track->getValue();
+    song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc->getValue();
 
     return song;
 }
