@@ -79,6 +79,7 @@ model::Cover database::CoverArtRepository::retrieveRecord(model::Cover& cov, typ
     return covDb;
 }
 
+
 bool database::CoverArtRepository::doesCoverArtExist(const model::Cover& cover, type::CoverFilter filter)
 {
     auto conn = setupMysqlConnection();
@@ -130,6 +131,7 @@ bool database::CoverArtRepository::doesCoverArtExist(const model::Cover& cover, 
     return (rowCount > 0) ? true : false;
 }
 
+
 // TODO: change to prepared statement
 void database::CoverArtRepository::deleteRecord(const model::Cover& cov)
 {
@@ -174,6 +176,49 @@ void database::CoverArtRepository::saveRecord(const model::Cover& cov)
     mysql_close(conn);
 
     std::cout << "saved cover art record" << std::endl;
+}
+
+void database::CoverArtRepository::updateRecord(const model::Cover& cover)
+{
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    qry << "UPDATE CoverArt SET ";
+    qry << "SongTitle = ?, ";
+    qry << "ImagePath = ? ";
+    qry << "WHERE CoverArtId = ?";
+
+    MYSQL_BIND params[3];
+    memset(params, 0, sizeof(params));
+
+    auto songTitleLength = cover.songTitle.size();
+    auto imagePathLength = cover.imagePath.size();
+
+    params[0].buffer_type = MYSQL_TYPE_STRING;
+    params[0].buffer = (char*)cover.songTitle.c_str();
+    params[0].length = &songTitleLength;
+    params[0].is_null = 0;
+
+    params[1].buffer_type = MYSQL_TYPE_STRING;
+    params[1].buffer = (char*)cover.imagePath.c_str();
+    params[1].length = &imagePathLength;
+    params[1].is_null = 0;
+
+    params[2].buffer_type = MYSQL_TYPE_LONG;
+    params[2].buffer = (char*)&cover.id;
+    params[2].length = 0;
+    params[2].is_null = 0;
+
+    const std::string query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    std::cout << "updated cover art record" << std::endl;
 }
 
 

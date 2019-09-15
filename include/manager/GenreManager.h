@@ -14,6 +14,7 @@ namespace manager
         model::Genre saveGenre(const model::Song&);
 
         void deleteGenre(const model::Song&);
+        void updateGenre(model::Song&, const model::Song&);
 
         static void printGenre(const model::Genre&);
     private:

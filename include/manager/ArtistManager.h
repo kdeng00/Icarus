@@ -14,6 +14,7 @@ namespace manager
         model::Artist saveArtist(const model::Song&);
 
         void deleteArtist(const model::Song&);
+        void updateArtist(model::Song&, const model::Song&);
 
         static void printArtist(const model::Artist&);
     private:

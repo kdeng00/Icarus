@@ -7,6 +7,7 @@
 
 namespace fs = std::filesystem;
 
+
 std::string manager::DirectoryManager::createDirectoryProcess(model::Song song, const std::string& rootPath)
 {
     auto currPath = fs::path(rootPath);
@@ -37,14 +38,49 @@ std::string manager::DirectoryManager::createDirectoryProcess(model::Song song, 
     return albPath.string() + "/";
 }
 
+std::string manager::DirectoryManager::createDirectoryProcess(const model::Song& song, 
+    const model::BinaryPath& bConf, type::PathType pType)
+{
+    auto path = pathConfigContent(bConf)[retrievePathType(pType)];
+    auto rootPath = path.get<std::string>();
+    auto currPath = fs::path(rootPath);
+
+    if (fs::exists(currPath)) {
+        std::cout << "path exists" << std::endl;
+    } else {
+        std::cout << "creating root music path" << std::endl;
+        fs::create_directory(currPath);
+    }
+
+    auto artPath = fs::path(currPath.string() + song.artist);
+    if (fs::exists(artPath)) {
+        std::cout << "artist path exists" << std::endl;
+    } else {
+        std::cout << "creating artist path" << std::endl;
+        fs::create_directory(artPath);
+    }
+
+    auto albPath = fs::path(artPath.string() + "/" + song.album);
+    if (fs::exists(albPath)) { 
+        std::cout << "album path exists" << std::endl;
+    } else {
+        std::cout << "creating album path" << std::endl;
+        fs::create_directory(albPath);
+    }
+
+    return albPath.string() + "/";
+}
+
 std::string manager::DirectoryManager::configPath(std::string_view path)
 {
     return fs::canonical(path).parent_path().string();
 }
+
 std::string manager::DirectoryManager::configPath(const model::BinaryPath& bConf)
 {
     return fs::canonical(bConf.path).parent_path().string();
 }
+
 std::string manager::DirectoryManager::contentOfPath(const std::string& path)
 {
     std::fstream a(path, std::ios::in);
@@ -55,6 +91,29 @@ std::string manager::DirectoryManager::contentOfPath(const std::string& path)
     return s.str();
 }
 
+std::string manager::DirectoryManager::retrievePathType(type::PathType pType)
+{
+    std::string path;
+    switch (pType) {
+        case type::PathType::music:
+            path = "root_music_path";
+            break;
+        case type::PathType::archive:
+            path = "archive_root_path";
+            break;
+        case type::PathType::temp:
+            path = "temp_root_path";
+            break;
+        case type::PathType::coverArt:
+            path = "cover_root_path";
+            break;
+        default:
+            break;
+    }
+
+    return path;
+}
+
 nlohmann::json manager::DirectoryManager::credentialConfigContent(const model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);
@@ -62,6 +121,7 @@ nlohmann::json manager::DirectoryManager::credentialConfigContent(const model::B
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+
 nlohmann::json manager::DirectoryManager::databaseConfigContent(const model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);
@@ -69,6 +129,7 @@ nlohmann::json manager::DirectoryManager::databaseConfigContent(const model::Bin
 
     return nlohmann::json::parse(contentOfPath(path));
 }
+
 nlohmann::json manager::DirectoryManager::pathConfigContent(const model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);
@@ -77,16 +138,6 @@ nlohmann::json manager::DirectoryManager::pathConfigContent(const model::BinaryP
     return nlohmann::json::parse(contentOfPath(path));
 }
 
-void manager::DirectoryManager::deleteCoverArtFile(const std::string& covPath, const std::string& stockCoverPath)
-{
-    if (covPath.compare(stockCoverPath) == 0) {
-        std::cout << "cover has stock cover art, will not deleted" << std::endl;
-    } else {
-        std::cout << "deleting song path" << std::endl;
-        auto cov = fs::path(covPath);
-        fs::remove(cov);
-    }
-}
 void manager::DirectoryManager::deleteDirectories(model::Song song, const std::string& rootPath)
 {
     std::cout << "checking for empty directories to delete" << std::endl;
@@ -112,6 +163,18 @@ void manager::DirectoryManager::deleteDirectories(model::Song song, const std::s
 
     std::cout << "deleted empty directory or directories" << std::endl;
 }
+
+void manager::DirectoryManager::deleteCoverArtFile(const std::string& covPath, const std::string& stockCoverPath)
+{
+    if (covPath.compare(stockCoverPath) == 0) {
+        std::cout << "cover has stock cover art, will not deleted" << std::endl;
+    } else {
+        std::cout << "deleting song path" << std::endl;
+        auto cov = fs::path(covPath);
+        fs::remove(cov);
+    }
+}
+
 void manager::DirectoryManager::deleteSong(const model::Song song)
 {
     std::cout << "deleting song" << std::endl;

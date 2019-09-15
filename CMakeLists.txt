@@ -65,7 +65,9 @@ set(HEADERS
     include/type/ArtistFilter.h
     include/type/CoverFilter.h
     include/type/GenreFilter.h
+    include/type/PathType.h
     include/type/Scopes.h
+    include/type/SongChanged.h
     include/type/SongFilter.h
     include/type/YearFilter.h
 )

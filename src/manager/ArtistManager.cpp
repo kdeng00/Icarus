@@ -36,6 +36,7 @@ model::Artist manager::ArtistManager::saveArtist(const model::Song& song)
     return artist;
 }
 
+
 void manager::ArtistManager::deleteArtist(const model::Song& song)
 {
     model::Artist artist(song);
@@ -51,6 +52,24 @@ void manager::ArtistManager::deleteArtist(const model::Song& song)
 
     std::cout << "safe to delete the artist record" << std::endl;
     artRepo.deleteArtist(artist, type::ArtistFilter::id);
+}
+
+void manager::ArtistManager::updateArtist(model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    model::Artist artist;
+    artist.artist = updatedSong.artist;
+
+    database::ArtistRepository artRepo(m_bConf);
+    if (!artRepo.doesArtistExist(artist, type::ArtistFilter::artist)) {
+        std::cout << "artist record does not exist" << std::endl;
+        artRepo.saveRecord(artist);
+    } else {
+        std::cout << "artist record already exists" << std::endl;
+    }
+
+    artist = artRepo.retrieveRecord(artist, type::ArtistFilter::artist);
+    updatedSong.artistId = artist.id;
 }
 
 void manager::ArtistManager::printArtist(const model::Artist& artist)

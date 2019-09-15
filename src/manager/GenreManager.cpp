@@ -33,6 +33,7 @@ model::Genre manager::GenreManager::saveGenre(const model::Song& song)
     return genre;
 }
 
+
 void manager::GenreManager::deleteGenre(const model::Song& song)
 {
     model::Genre genre(song);
@@ -48,6 +49,24 @@ void manager::GenreManager::deleteGenre(const model::Song& song)
 
     std::cout << "safe to delete the genre record" << std::endl;
     gnrRepo.deleteRecord(genre, type::GenreFilter::id);
+}
+
+void manager::GenreManager::updateGenre(model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    model::Genre genre;
+    genre.category = updatedSong.genre;
+
+    database::GenreRepository gnrRepo(m_bConf);
+    if (!gnrRepo.doesGenreExist(genre, type::GenreFilter::category)) {
+        std::cout << "genre record does not exist" << std::endl;
+        gnrRepo.saveRecord(genre);
+    } else {
+        std::cout << "genre record already exists" << std::endl;
+    }
+
+    genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
+    updatedSong.genreId = genre.id;
 }
 
 void manager::GenreManager::printGenre(const model::Genre& genre)

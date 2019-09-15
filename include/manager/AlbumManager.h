@@ -14,6 +14,7 @@ namespace manager
         model::Album saveAlbum(const model::Song&);
 
         void deleteAlbum(const model::Song&);
+        void updateAlbum(model::Song&, const model::Song&);
 
         static void printAlbum(const model::Album&);
     private:

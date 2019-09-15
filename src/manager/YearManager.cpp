@@ -50,6 +50,24 @@ void manager::YearManager::deleteYear(const model::Song& song)
     yrRepo.deleteYear(year, type::YearFilter::id);
 }
 
+void manager::YearManager::updateYear(model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    model::Year year;
+    year.year = updatedSong.year;
+
+    database::YearRepository albRepo(m_bConf);
+    if (!albRepo.doesYearExist(year, type::YearFilter::year)) {
+        std::cout << "year record does not exist" << std::endl;
+        albRepo.saveRecord(year);
+    } else {
+        std::cout << "year record already exists" << std::endl;
+    }
+
+    year = albRepo.retrieveRecord(year, type::YearFilter::year);
+    updatedSong.yearId = year.id;
+}
+
 void manager::YearManager::printYear(const model::Year& year)
 {
     std::cout << "\nyear record" << std::endl;

@@ -16,6 +16,7 @@
 #include "manager/DirectoryManager.h"
 #include "manager/GenreManager.h"
 #include "manager/YearManager.h"
+#include "type/PathType.h"
 #include "utility/MetadataRetriever.h"
 
 namespace fs = std::filesystem;
@@ -32,7 +33,21 @@ manager::SongManager::SongManager(const model::BinaryPath& bConf)
 bool manager::SongManager::didSongChange(const model::Song& updatedSong, 
     const model::Song& currSong)
 {
-    // TODO: implement this
+    if (!updatedSong.title.empty()) {
+        return true;
+    }
+    if (!updatedSong.artist.empty()) {
+        return true;
+    }
+    if (!updatedSong.album.empty()) {
+        return true;
+    }
+    if (updatedSong.genre.empty()) {
+        return true;
+    }
+    if (updatedSong.year != 0) {
+        return true;
+    }
 
     return false;
 }
@@ -52,6 +67,7 @@ bool manager::SongManager::requiresFilesystemChange(const model::Song& updatedSo
 
     return false;
 }
+
 
 void manager::SongManager::saveSong(model::Song& song)
 {
@@ -102,17 +118,27 @@ void manager::SongManager::updateSong(model::Song& updatedSong)
     OATPP_ASSERT_HTTP(songRepo.doesSongExist(currSong, type::SongFilter::id) , oatpp::web::protocol::http::Status::CODE_404, "song does not exist");
 
     currSong = songRepo.retrieveRecord(currSong, type::SongFilter::id);
+    if (!didSongChange(updatedSong, currSong)) {
+        std::cout << "no change to the song" << std::endl;
+        return;
+    }
+
+    assignMiscId(updatedSong, currSong);
+
+    auto changes = changesInSong(updatedSong, currSong);
+
     utility::MetadataRetriever meta;
     meta.updateMetadata(updatedSong, currSong);
+    assignMiscFields(changes, updatedSong, currSong);
 
-    // TODO: 
-    // 1. determine if the song has been updated at all
-    // 2. depending on what metadata was changed there might be a need to
-    // change where the song is stored on the filesystem, deleting empty
-    // directories in the process
-    // 3. create or delete necessary records
     if (requiresFilesystemChange(updatedSong, currSong)) {
+        modifySongOnFilesystem(updatedSong, currSong);
     }
+
+    printSong(updatedSong);
+    printSong(currSong);
+
+    updateMisc(changes, updatedSong, currSong);
 }
 
 model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songDto)
@@ -148,6 +174,90 @@ void manager::SongManager::printSong(const model::Song& song)
     std::cout << "artist id: " << song.artistId << std::endl;
     std::cout << "genre id: " << song.genreId << std::endl;
     std::cout << "year id: " << song.yearId << std::endl;
+}
+
+
+std::map<type::SongChanged, bool> manager::SongManager::changesInSong(
+    const model::Song& updatedSong, const model::Song& currSong)
+{
+    std::map<type::SongChanged, bool> songChanges;
+
+    std::string_view updatedTitle = updatedSong.title;
+    std::string_view updatedArtist = updatedSong.artist;
+    std::string_view updatedAlbum = updatedSong.album;
+    std::string_view updatedGenre = updatedSong.genre;
+
+    songChanges[type::SongChanged::title] = 
+        (currSong.title.compare(updatedTitle) != 0 && 
+         updatedTitle.size() > 0) ? true : false;
+
+    songChanges[type::SongChanged::artist] = 
+        (currSong.artist.compare(updatedArtist) != 0 && 
+         updatedArtist.size() > 0) ? true : false;
+
+    songChanges[type::SongChanged::album] = 
+        (currSong.album.compare(updatedAlbum) != 0 && 
+         updatedAlbum.size() > 0) ? true : false;
+
+    songChanges[type::SongChanged::genre] = 
+        (currSong.genre.compare(updatedGenre) != 0 && 
+         updatedGenre.size() > 0) ? true : false;
+
+    songChanges[type::SongChanged::year] =
+        (updatedSong.year != 0) ? true : false;
+
+    return songChanges;
+}
+
+
+// used to prevent empty values to appear in the updated song
+void manager::SongManager::assignMiscFields(
+    std::map<type::SongChanged, bool>& songChanges, model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    std::cout << "assigning miscellanes fields to updated song" << std::endl;
+    for (auto scIter = songChanges.begin(); scIter != songChanges.end(); ++scIter) {
+        type::SongChanged key = scIter->first;
+        bool changed = songChanges.at(key);
+
+        if (!changed) {
+            switch (key) {
+                case type::SongChanged::title:
+                    updatedSong.title = currSong.title;
+                    std::cout << "title has not been changed" << std::endl;
+                    break;
+                case type::SongChanged::artist:
+                    updatedSong.artist = currSong.artist;
+                    std::cout << "artist has not been changed" << std::endl;
+                    break;
+                case type::SongChanged::album:
+                    updatedSong.album = currSong.album;
+                    std::cout << "album has not been changed" << std::endl;
+                    break;
+                case type::SongChanged::genre:
+                    updatedSong.genre = currSong.genre;
+                    std::cout << "genre has not been changed" << std::endl;
+                    break;
+                case::type::SongChanged::year:
+                    updatedSong.year = currSong.year;
+                    std::cout << "year has not been changed" << std::endl;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+// used to dump miscellaneous id to the updated song
+void manager::SongManager::assignMiscId(model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    std::cout << "assigning miscellaneous Id's to updated song" << std::endl;
+    updatedSong.artistId = currSong.artistId;
+    updatedSong.albumId = currSong.albumId;
+    updatedSong.genreId = currSong.genreId;
+    updatedSong.yearId = currSong.yearId;
+    updatedSong.coverArtId = currSong.coverArtId;
 }
 
 void manager::SongManager::saveSongTemp(model::Song& song)
@@ -239,4 +349,61 @@ void manager::SongManager::deleteMisc(const model::Song& song)
 
     manager::YearManager yrMgr(m_bConf);
     yrMgr.deleteYear(song);
+}
+
+void manager::SongManager::updateMisc(
+    const std::map<type::SongChanged, bool>& songChanges,
+    model::Song& updatedSong, const model::Song& currSong)
+{
+    auto titleChange = songChanges.at(type::SongChanged::title);
+    auto artistChange = songChanges.at(type::SongChanged::artist);
+    auto albumChange = songChanges.at(type::SongChanged::album);
+    auto genreChange = songChanges.at(type::SongChanged::genre);
+    auto yearChange = songChanges.at(type::SongChanged::year);
+
+    if (artistChange) {
+        manager::ArtistManager artMgr(m_bConf);
+        artMgr.updateArtist(updatedSong, currSong);
+    }
+    if (albumChange) {
+        manager::AlbumManager albMgr(m_bConf);
+        albMgr.updateAlbum(updatedSong, currSong);
+    }
+    if (genreChange) {
+        manager::GenreManager gnrMgr(m_bConf);
+        gnrMgr.updateGenre(updatedSong, currSong);
+    }
+    if (yearChange) {
+        manager::YearManager yrMgr(m_bConf);
+        yrMgr.updateYear(updatedSong, currSong);
+    }
+
+    // determins to update the cover art record
+    if (titleChange || artistChange || albumChange) {
+        manager::CoverArtManager covMgr(m_bConf);
+        covMgr.updateCoverRecord(updatedSong);
+    }
+
+    database::SongRepository songRepo(m_bConf);
+    songRepo.updateRecord(updatedSong);
+}
+
+void manager::SongManager::modifySongOnFilesystem(model::Song& updatedSong, 
+    const model::Song& currSong)
+{
+    std::cout << "preparing to modify song" << std::endl;
+    printSong(updatedSong);
+    auto songPath = manager::DirectoryManager::createDirectoryProcess(
+        updatedSong, m_bConf, type::PathType::music);
+    songPath.append(updatedSong.title);
+    songPath.append(".mp3");
+    updatedSong.songPath = std::move(songPath);
+
+    std::cout << "new path " << updatedSong.songPath << std::endl;
+
+    fs::copy(currSong.songPath, updatedSong.songPath);
+    fs::remove(currSong.songPath);
+
+    manager::CoverArtManager covMgr(m_bConf);
+    covMgr.updateCover(updatedSong);
 }

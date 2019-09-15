@@ -53,6 +53,25 @@ void manager::AlbumManager::deleteAlbum(const model::Song& song)
     albRepo.deleteAlbum(album, type::AlbumFilter::id);
 }
 
+void manager::AlbumManager::updateAlbum(model::Song& updatedSong,
+    const model::Song& currSong)
+{
+    model::Album album;
+    album.title = updatedSong.album;
+    album.year = updatedSong.year;
+
+    database::AlbumRepository albRepo(m_bConf);
+    if (!albRepo.doesAlbumExists(album, type::AlbumFilter::title)) {
+        std::cout << "album record does not exist" << std::endl;
+        albRepo.saveAlbum(album);
+    } else {
+        std::cout << "album record already exists" << std::endl;
+    }
+
+    album = albRepo.retrieveRecord(album, type::AlbumFilter::title);
+    updatedSong.albumId = album.id;
+}
+
 void manager::AlbumManager::printAlbum(const model::Album& album)
 {
     std::cout << "\nalbum record" << std::endl;

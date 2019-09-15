@@ -25,6 +25,7 @@ namespace database
 
         void deleteRecord(const model::Cover&);
         void saveRecord(const model::Cover&);
+        void updateRecord(const model::Cover&);
     private:
         std::vector<model::Cover> parseRecords(MYSQL_STMT*);
 

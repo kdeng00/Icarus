@@ -20,12 +20,13 @@ namespace database
 
         std::vector<model::Song> retrieveRecords();
 
-        bool doesSongExist(const model::Song&, type::SongFilter);
-
         model::Song retrieveRecord(model::Song&, type::SongFilter);
 
+        bool doesSongExist(const model::Song&, type::SongFilter);
         bool deleteRecord(const model::Song&);
+
         void saveRecord(const model::Song&);
+        void updateRecord(const model::Song&);
     private:
         std::vector<model::Song> parseRecords(MYSQL_RES*); // TODO: to be removed
         std::vector<model::Song> parseRecords(MYSQL_STMT*);

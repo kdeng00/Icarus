@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "model/Models.h"
+#include "type/PathType.h"
 
 namespace manager
 {
@@ -14,16 +15,19 @@ namespace manager
     {
     public:
         static std::string createDirectoryProcess(model::Song, const std::string&);
+        static std::string createDirectoryProcess(const model::Song&, const model::BinaryPath&, type::PathType);
         static std::string configPath(std::string_view);
         static std::string configPath(const model::BinaryPath&);
         static std::string contentOfPath(const std::string&);
+        static std::string retrievePathType(type::PathType);
 
         static nlohmann::json credentialConfigContent(const model::BinaryPath&);
         static nlohmann::json databaseConfigContent(const model::BinaryPath&);
         static nlohmann::json pathConfigContent(const model::BinaryPath&);
 
-        void deleteCoverArtFile(const std::string&, const std::string&);
         static void deleteDirectories(model::Song, const std::string&);
+
+        void deleteCoverArtFile(const std::string&, const std::string&);
 
     private:
         void deleteSong(const model::Song);

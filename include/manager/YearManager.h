@@ -14,6 +14,7 @@ namespace manager
         model::Year saveYear(const model::Song&);
 
         void deleteYear(const model::Song&);
+        void updateYear(model::Song&, const model::Song&);
 
         static void printYear(const model::Year&);
     private:
