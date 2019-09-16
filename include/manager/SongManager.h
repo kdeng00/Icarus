@@ -33,12 +33,15 @@ namespace manager
     private:
         std::map<type::SongChanged, bool> changesInSong(const model::Song&, const model::Song&);
 
+        std::string createSongPath(const model::Song&);
+
         void assignMiscId(model::Song&, const model::Song&);
         void assignMiscFields(std::map<type::SongChanged, bool>&, model::Song&, 
             const model::Song&);
         void saveSongTemp(model::Song&);
         void saveMisc(model::Song&);
         void deleteMisc(const model::Song&);
+        void deleteMiscExceptCoverArt(const model::Song&);
         void updateMisc(const std::map<type::SongChanged, bool>&, 
             model::Song&, const model::Song&);
         void modifySongOnFilesystem(model::Song&, const model::Song&);

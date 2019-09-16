@@ -92,6 +92,64 @@ model::Cover utility::MetadataRetriever::updateCoverArt(const model::Song& song,
     return cov;
 }
 
+// tags song with the stock cover art
+model::Cover utility::MetadataRetriever::applyStockCoverArt(
+    const model::Song& song, model::Cover& cov, 
+    const std::string& stockCoverPath)
+{
+    TagLib::MPEG::File songFile(song.songPath.c_str());
+    auto tag = songFile.ID3v2Tag();
+
+    utility::ImageFile stockImg(cov.imagePath.c_str());
+    TagLib::ID3v2::AttachedPictureFrame *pic = 
+        new TagLib::ID3v2::AttachedPictureFrame;
+
+    pic->setPicture(stockImg.data());
+    pic->setType(TagLib::ID3v2::AttachedPictureFrame::FrontCover);
+
+    tag->addFrame(pic);
+
+    songFile.save();
+    std::cout << "applied stock cover art" << std::endl;
+
+    delete pic;
+
+    return cov;
+}
+
+// extracts cover art from the song and save it to the
+// appropriate directory
+model::Cover utility::MetadataRetriever::applyCoverArt(const model::Song& song,
+    model::Cover& cov)
+{
+    TagLib::MPEG::File songFile(song.songPath.c_str());
+    auto tag = songFile.ID3v2Tag();
+    auto frameList = tag->frameListMap()["APIC"];
+
+    auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
+        frameList.front());
+        
+    std::fstream imgSave(cov.imagePath, std::ios::out | 
+        std::ios::binary);
+    imgSave.write(frame->picture().data(), frame->picture().size());
+    imgSave.close();
+
+    std::cout << "saved to " << cov.imagePath << std::endl;
+
+    return cov;
+}
+
+
+bool utility::MetadataRetriever::songContainsCoverArt(const model::Song& song)
+{
+    TagLib::MPEG::File songFile(song.songPath.c_str());
+    auto tag = songFile.ID3v2Tag();
+    auto frameList = tag->frameListMap()["APIC"];
+
+    return !frameList.isEmpty();
+}
+
+
 void utility::MetadataRetriever::updateMetadata(model::Song& sngUpdated, const model::Song& sngOld)
 {
     std::cout<<"updating metadata"<<std::endl;

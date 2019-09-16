@@ -18,13 +18,23 @@ manager::CoverArtManager::CoverArtManager(const model::BinaryPath& bConf) : m_bC
 { }
 
 
-model::Cover manager::CoverArtManager::saveCover(const model::Song& song, std::string& rootPath, const std::string& stockCoverPath)
+model::Cover manager::CoverArtManager::saveCover(const model::Song& song)
 {
+    auto pathConfigContent = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto stockCoverPath = manager::DirectoryManager::configPath(m_bConf);
+    stockCoverPath.append("/CoverArt.png");
+
     utility::MetadataRetriever meta;
     model::Cover cov;
-    cov.imagePath = rootPath;
-    cov = meta.updateCoverArt(song, cov, stockCoverPath);
     cov.songTitle = song.title;
+
+    if (meta.songContainsCoverArt(song)) {
+        cov.imagePath = createImagePath(song);
+        cov = meta.applyCoverArt(song, cov);
+    } else {
+        cov.imagePath = pathConfigContent["cover_root_path"].get<std::string>();
+        cov = meta.applyStockCoverArt(song, cov, stockCoverPath);
+    }
 
     database::CoverArtRepository covRepo(m_bConf);
     if (!covRepo.doesCoverArtExist(cov, type::CoverFilter::songTitle)) {
@@ -76,12 +86,14 @@ void manager::CoverArtManager::deleteCover(const model::Song& song)
         const auto coverArtPath = result.second;
     } else {
         std::cout << "song contains the stock cover art, will not delete" << std::endl;
+        return;
     }
 
     manager::DirectoryManager::deleteDirectories(song, result.second);
 }
 
-void manager::CoverArtManager::updateCover(const model::Song& updatedSong)
+void manager::CoverArtManager::updateCover(const model::Song& updatedSong,
+        const model::Song& currSong)
 {
     database::CoverArtRepository covRepo(m_bConf);
     model::Cover cover(updatedSong.coverArtId);
@@ -93,30 +105,38 @@ void manager::CoverArtManager::updateCover(const model::Song& updatedSong)
         return;
     }
 
-    auto imagePath = manager::DirectoryManager::createDirectoryProcess(
-        updatedSong, m_bConf, type::PathType::coverArt);
-    imagePath.append(updatedSong.title);
-    imagePath.append(".png");
-
-    if (cover.imagePath.find(".png") == std::string::npos) {
-        std::cout << "no file extension on image path" << std::endl;
-        cover.imagePath.append(".png");
-    }
+    auto imagePath = createImagePath(updatedSong);
 
     fs::copy(cover.imagePath, imagePath);
     fs::remove(cover.imagePath);
+
+    manager::DirectoryManager::deleteDirectories(currSong, result.second);
 }
 
 void manager::CoverArtManager::updateCoverRecord(const model::Song& updatedSong)
 {
     model::Cover updatedCover(updatedSong);
-    auto updatedImagePath = manager::DirectoryManager::createDirectoryProcess(
-        updatedSong, m_bConf, type::PathType::coverArt);
-    updatedImagePath.append(updatedSong.title);
-
-    updatedCover.imagePath = std::move(updatedImagePath);
-    updatedCover.imagePath.append(".png");
+    auto updatedImagePath = createImagePath(updatedSong);
 
     database::CoverArtRepository covRepo(m_bConf);
     covRepo.updateRecord(updatedCover);
+}
+
+
+std::string manager::CoverArtManager::createImagePath(const model::Song& song)
+{
+    auto imagePath = manager::DirectoryManager::createDirectoryProcess(
+        song, m_bConf, type::PathType::coverArt);
+
+    if (song.track != 0) {
+        imagePath.append("track");
+        auto trackNum = (song.track > 9) ?
+            std::to_string(song.track) : "0" + std::to_string(song.track);
+        imagePath.append(trackNum);
+    } else {
+        imagePath.append(song.title);
+    }
+    imagePath.append(".png");
+
+    return imagePath;
 }

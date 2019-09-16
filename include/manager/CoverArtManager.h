@@ -14,15 +14,16 @@ namespace manager
         CoverArtManager(const std::string&);
         CoverArtManager(const model::BinaryPath& bConf);
 
-        model::Cover saveCover(const model::Song&, std::string&, 
-            const std::string&);
+        model::Cover saveCover(const model::Song&);
 
         std::pair<bool, std::string> defaultCover(const model::Cover&);
         
         void deleteCover(const model::Song&);
-        void updateCover(const model::Song&);
+        void updateCover(const model::Song&, const model::Song&);
         void updateCoverRecord(const model::Song&);
     private:
+        std::string createImagePath(const model::Song&);
+
         model::BinaryPath m_bConf;
         std::string path;
     };

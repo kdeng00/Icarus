@@ -12,7 +12,12 @@ namespace utility
     {
     public:
         model::Song retrieveMetadata(std::string&);
+
         model::Cover updateCoverArt(const model::Song&, model::Cover&, const std::string&);
+        model::Cover applyStockCoverArt(const model::Song&, model::Cover&, const std::string&);
+        model::Cover applyCoverArt(const model::Song&, model::Cover&);
+
+        bool songContainsCoverArt(const model::Song&);
 
         void updateMetadata(model::Song&, const model::Song&);
     private:

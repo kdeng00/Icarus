@@ -157,6 +157,7 @@ model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songD
     return song;
 }
 
+
 void manager::SongManager::printSong(const model::Song& song)
 {
     std::cout << "\nsong" << std::endl;
@@ -210,12 +211,32 @@ std::map<type::SongChanged, bool> manager::SongManager::changesInSong(
 }
 
 
+std::string manager::SongManager::createSongPath(const model::Song& song)
+{
+    auto songPath = manager::DirectoryManager::createDirectoryProcess(
+        song, m_bConf, type::PathType::music);
+
+    if (song.track != 0) {
+        songPath.append("track");
+        auto trackNum = (song.track > 9) ?
+            std::to_string(song.track) : "0" + std::to_string(song.track);
+        songPath.append(trackNum);
+    } else {
+        songPath.append(song.title);
+    }
+    songPath.append(".mp3");
+
+    return songPath;
+}
+
+
 // used to prevent empty values to appear in the updated song
 void manager::SongManager::assignMiscFields(
     std::map<type::SongChanged, bool>& songChanges, model::Song& updatedSong,
     const model::Song& currSong)
 {
     std::cout << "assigning miscellanes fields to updated song" << std::endl;
+    updatedSong.track = currSong.track;
     for (auto scIter = songChanges.begin(); scIter != songChanges.end(); ++scIter) {
         type::SongChanged key = scIter->first;
         bool changed = songChanges.at(key);
@@ -260,6 +281,7 @@ void manager::SongManager::assignMiscId(model::Song& updatedSong,
     updatedSong.coverArtId = currSong.coverArtId;
 }
 
+// saves song to a temporary path
 void manager::SongManager::saveSongTemp(model::Song& song)
 {
     auto config = manager::DirectoryManager::pathConfigContent(m_bConf);
@@ -283,25 +305,22 @@ void manager::SongManager::saveMisc(model::Song& song)
 {
     CoverArtManager covMgr(m_bConf);
     auto pathConfigContent = manager::DirectoryManager::pathConfigContent(m_bConf);
-    auto coverRootPath = pathConfigContent["cover_root_path"].get<std::string>();
     auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
-    auto stockCoverPath = manager::DirectoryManager::configPath(m_bConf);
-    stockCoverPath.append("/CoverArt.png");
+    auto cov = covMgr.saveCover(song);
 
-    auto cov = covMgr.saveCover(song, coverRootPath, stockCoverPath);
-
-    auto songPath = manager::DirectoryManager::createDirectoryProcess(song, musicRootPath);
-    songPath.append(song.title);
-    songPath.append(".mp3");
+    auto songPath = createSongPath(song);
     if (fs::exists(songPath)) {
         std::cout << "deleting old song with the same metadata" << std::endl;
         fs::remove(songPath);
     }
     std::cout << "copying song to the appropriate directory" << std::endl;
+    std::cout << song.songPath << std::endl;
+    std::cout << songPath << std::endl;
     fs::copy(song.songPath, songPath);
     fs::remove(song.songPath);
     song.songPath = std::move(songPath);
+    std::cout << "copied song to the appropriate directory" << std::endl;
 
     AlbumManager albMgr(m_bConf);
     auto album = albMgr.saveAlbum(song);
@@ -311,7 +330,6 @@ void manager::SongManager::saveMisc(model::Song& song)
     ArtistManager artMgr(m_bConf);
     auto artist = artMgr.saveArtist(song);
     artist = artMgr.retrieveArtist(artist);
-    std::cout << "out" << std::endl;
     manager::ArtistManager::printArtist(artist);
 
     GenreManager gnrMgr(m_bConf);
@@ -338,6 +356,22 @@ void manager::SongManager::deleteMisc(const model::Song& song)
     manager::CoverArtManager covMgr(m_bConf);
     covMgr.deleteCover(song);
 
+    manager::AlbumManager albMgr(m_bConf);
+    albMgr.deleteAlbum(song);
+
+    manager::ArtistManager artMgr(m_bConf);
+    artMgr.deleteArtist(song);
+
+    manager::GenreManager gnrMgr(m_bConf);
+    gnrMgr.deleteGenre(song);
+
+    manager::YearManager yrMgr(m_bConf);
+    yrMgr.deleteYear(song);
+}
+
+// deletes miscellanes records
+void manager::SongManager::deleteMiscExceptCoverArt(const model::Song& song)
+{
     manager::AlbumManager albMgr(m_bConf);
     albMgr.deleteAlbum(song);
 
@@ -386,17 +420,15 @@ void manager::SongManager::updateMisc(
 
     database::SongRepository songRepo(m_bConf);
     songRepo.updateRecord(updatedSong);
+
+    deleteMiscExceptCoverArt(currSong);
 }
 
 void manager::SongManager::modifySongOnFilesystem(model::Song& updatedSong, 
     const model::Song& currSong)
 {
     std::cout << "preparing to modify song" << std::endl;
-    printSong(updatedSong);
-    auto songPath = manager::DirectoryManager::createDirectoryProcess(
-        updatedSong, m_bConf, type::PathType::music);
-    songPath.append(updatedSong.title);
-    songPath.append(".mp3");
+    auto songPath = createSongPath(updatedSong);
     updatedSong.songPath = std::move(songPath);
 
     std::cout << "new path " << updatedSong.songPath << std::endl;
@@ -404,6 +436,12 @@ void manager::SongManager::modifySongOnFilesystem(model::Song& updatedSong,
     fs::copy(currSong.songPath, updatedSong.songPath);
     fs::remove(currSong.songPath);
 
+    auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
+    const auto musicRootPath = 
+        paths[manager::DirectoryManager::retrievePathType(
+                type::PathType::music)].get<std::string>();
+    manager::DirectoryManager::deleteDirectories(currSong, musicRootPath);
+
     manager::CoverArtManager covMgr(m_bConf);
-    covMgr.updateCover(updatedSong);
+    covMgr.updateCover(updatedSong, currSong);
 }
