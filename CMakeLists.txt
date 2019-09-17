@@ -25,6 +25,7 @@ set(SOURCES
     src/manager/YearManager.cpp
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp
+    src/verify/Initialization.cpp
 )
 set(HEADERS
     include/callback/StreamCallback.h
@@ -70,6 +71,7 @@ set(HEADERS
     include/type/SongChanged.h
     include/type/SongFilter.h
     include/type/YearFilter.h
+    include/verify/Initialization.h
 )
 
 set (TAGLIB

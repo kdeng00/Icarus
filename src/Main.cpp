@@ -18,6 +18,7 @@
 #include "controller/SongController.hpp"
 #include "controller/YearController.hpp"
 #include "model/Models.h"
+#include "verify/Initialization.h"
 
 namespace fs = std::filesystem;
 
@@ -59,6 +60,7 @@ int main(int argc, char **argv)
     oatpp::base::Environment::init();
     
     model::BinaryPath bConf(argv[0]);
+    verify::Initialization::checkIcarus(bConf);
 
     run(bConf);
 
