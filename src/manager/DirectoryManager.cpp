@@ -114,6 +114,7 @@ std::string manager::DirectoryManager::retrievePathType(type::PathType pType)
     return path;
 }
 
+
 nlohmann::json manager::DirectoryManager::credentialConfigContent(const model::BinaryPath& bConf)
 {
     auto path = configPath(bConf);

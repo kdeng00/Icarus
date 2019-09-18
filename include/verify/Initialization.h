@@ -10,9 +10,11 @@ namespace verify
     public:
         static void checkIcarus(const model::BinaryPath&);
     private:
-        bool confirmConfigAuth(const model::BinaryPath&);
-        bool confirmConfigDatabase(const model::BinaryPath&);
-        bool confirmConfigPaths(const model::BinaryPath&);
+        static bool confirmConfigAuth(const model::BinaryPath&);
+        static bool confirmConfigDatabase(const model::BinaryPath&);
+        static bool confirmConfigPaths(const model::BinaryPath&);
+
+        static void failedConfirmation();
     };
 }
 
