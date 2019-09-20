@@ -15,6 +15,8 @@ namespace database
         BaseRepository();
         BaseRepository(const std::string&);
         BaseRepository(const model::BinaryPath&);
+
+        bool testConnection();
     protected:
         MYSQL* setupMysqlConnection();
         MYSQL* setupMysqlConnection(model::DatabaseConnection);

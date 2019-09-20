@@ -3,6 +3,7 @@
 #include <iostream>
 #include <filesystem>
 
+#include "database/BaseRepository.h"
 #include "manager/DirectoryManager.h"
 #include "type/PathType.h"
 
@@ -33,8 +34,9 @@ bool verify::Initialization::confirmConfigAuth(const model::BinaryPath& bConf)
 // verifies if database connectivity can be established
 bool verify::Initialization::confirmConfigDatabase(const model::BinaryPath& bConf)
 {
-    auto databaseConfig = manager::DirectoryManager::databaseConfigContent(bConf);
-    return true;
+    database::BaseRepository baseRepo(bConf);
+
+    return baseRepo.testConnection();
 }
 
 // verifies if the paths found in the config files exists

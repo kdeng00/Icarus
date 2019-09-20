@@ -13,10 +13,28 @@ database::BaseRepository::BaseRepository(const std::string& path) : path(path)
 { 
     intitalizeDetails();
 }
+
 database::BaseRepository::BaseRepository(const model::BinaryPath& bConf)
 {
     initializeDetails(bConf);
 }
+
+
+bool database::BaseRepository::testConnection()
+{
+    auto conn = mysql_init(nullptr);
+    if (!mysql_real_connect(conn, details.server.c_str(), details.username.c_str(), 
+                            details.password.c_str(), details.database.c_str(), 0, 
+                            nullptr, 0)) {
+        std::cout << "failed to connect to the database" << std::endl;
+        return false;
+    }
+
+    mysql_close(conn);
+
+    return true;
+}
+
 
 MYSQL* database::BaseRepository::setupMysqlConnection()
 {
@@ -29,6 +47,7 @@ MYSQL* database::BaseRepository::setupMysqlConnection()
 
     return conn;
 }
+
 MYSQL* database::BaseRepository::setupMysqlConnection(model::DatabaseConnection details)
 {
     MYSQL *connection = mysql_init(NULL);
@@ -41,6 +60,7 @@ MYSQL* database::BaseRepository::setupMysqlConnection(model::DatabaseConnection 
     return connection;
 }
 
+
 MYSQL_RES* database::BaseRepository::performMysqlQuery(MYSQL *conn, const std::string& query)
 {
    // send the query to the database
@@ -52,6 +72,7 @@ MYSQL_RES* database::BaseRepository::performMysqlQuery(MYSQL *conn, const std::s
 
    return mysql_use_result(conn);
 }
+
 
 void database::BaseRepository::intitalizeDetails()
 {
