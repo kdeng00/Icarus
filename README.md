@@ -14,16 +14,10 @@ One can interface with Icarus the music server either by:
 ## Built With
 
 
-* C#
-* [.NET Core](https://dotnet.microsoft.com/) 2.2
-* .NET Web RESTful API
 * C++ >= C++17
 * GCC >= 8.0
-* conan
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
-* [MySql](https://www.nuget.org/packages/MySql.Data/)
-* [Newtonsoft.Json](https://www.newtonsoft.com/json)
 * [TagLib](https://github.com/taglib/taglib)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
@@ -79,30 +73,34 @@ From the Application page, copy the client id and client secret. These values wi
 <h1 align="center">
     <img src="Images/Configuration/api_cred.png" width=100%>
 </h1>
-Enter the information in the corresponding appsettings json file
+Enter the information in the corresponding ``authcredentials.json`` file
 ```Json
-  "Auth0": {
-	  "ClientId":"",
-	  "ClientSecret":""
-  },
+{
+  "domain": "somedomain.auth0.com",
+  "api_identifier": "https://squawk/api"
+  "client_id": "clientidhere",
+  "client_secret": "illkeepyoumydirtylittlesecret"
+}
 ```
 
 ### API filesystem paths
 
-For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. What is meant by this is that the `RootMusicPath` directory where all music will be stored must exist as well as the `ArchivePath` and `TemporaryMusicPath` paths. An example on a Linux system:
+For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. For that purpose you have to open the ``paths.json`` file. What is meant by this is that the `root_music_path` directory where all music will be stored must exist. The `cover_root_path`, `archive_root_path`, and `temp_root_path` paths must exist and be accessible. An example on a Linux system:
 ```Json
 {
-  "RootMusicPath": "/home/dev/null/music/",
-  "TemporaryMusicPath": "/home/dev/null/music/temp/",
-  "ArchivePath": "/home/dev/null/music/archive/"
+  "root_music_path": "/home/dev/null/music/",
+  "temp_root_path": "/home/dev/null/music/temp/",
+  "cover_root_path": "/home/dev/null/music/coverArt/",
+  "archive_root_path": "/home/dev/null/music/archive/"
 }
 ```
-* RootMusicPath - Where music will be stored in the following convention: *`Artist/Album/Songs`*
-* TemporaryMusicPath - Where music will be stored when uploding songs to the server until the metadata has been fully parsed and entered into the database. Upon completion the files will be deleted and moved to the appropriate path in the `RootMusicPath`
-* ArchivePath - When downloading compressed songs this is the path where songs will be compressed prior to dataa being read into memory, deleting the compressed file, and sending the compressed file from memory to the client
+* `root_music_path` - Where music will be stored in the following convention: *`Artist/Album/Songs`*
+* `temp_music_path` - Where music will be stored when uploding songs to the server until the metadata has been fully parsed and entered into the database. Upon completion the files will be deleted and moved to the appropriate path in the `root_music_path`
+* `cover_root_path` - Where cover art of music will be saved to.
+* `archive_root_path` - When downloading compressed songs this is the path where songs will be compressed prior to dataa being read into memory, deleting the compressed file, and sending the compressed file from memory to the client
 
 
-**Note**: The `TemporaryMusic` or `ArchivePath` does not have to be located in the `RootMusicPath`. Ensure that the permissions are properly set for all of the paths.
+**Note**: The `temp_root_path`, `cover_root_path`, or `archive_root_path` does not have to be located in the same parent directory as `root_music_path`. Ensure that the permissions are properly set for all of the paths.
 
 ### Database connection string
 
@@ -148,6 +146,16 @@ dotnet ef database update --context [Migration]Context
 From this point the database has been successfully configured. Metadata and song filesystem locations can be saved.
 
 <sup>*</sup> Will only need to execute this for UserContext and SongContext because the Song table has relational constraints with Album, Artist, Year, and Genre.
+
+## Building and Running
+```
+git clone --recursive https://github.com/kdeng00/icarus
+mkdir build
+cd build
+cmake ..
+bin/icarus
+```
+Runs the server on localhost port 5002
 
 ## Contributing
 

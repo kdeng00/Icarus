@@ -6,7 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include <cpr/cpr.h>
 #include <jwt-cpp/jwt.h>
+#include <nlohmann/json.hpp>
 
 #include "model/Models.h"
 #include "type/Scopes.h"
@@ -18,12 +20,15 @@ namespace manager
     public:
         TokenManager();
 
-        model::LoginResult retrieveToken();
-        model::LoginResult retrieveToken(std::string_view);
         model::LoginResult retrieveToken(const model::BinaryPath&);
 
         bool isTokenValid(std::string&, type::Scope);
+        bool testAuth(const model::BinaryPath&);
     private:
+        cpr::Response sendRequest(std::string_view, nlohmann::json&);
+
+        nlohmann::json createTokenBody(const model::AuthCredentials&);
+
         model::AuthCredentials parseAuthCredentials(std::string_view);
         model::AuthCredentials parseAuthCredentials(const model::BinaryPath&);
 

@@ -9,9 +9,6 @@
 #include <sstream>
 #include <cstdlib>
 
-#include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
-
 #include "manager/DirectoryManager.h"
 
 namespace fs = std::filesystem;
@@ -21,51 +18,12 @@ manager::TokenManager::TokenManager()
 {
 }
 
-model::LoginResult manager::TokenManager::retrieveToken()
-{
-    model::LoginResult lr;
-    lr.accessToken = "dsfdsf";
-    lr.tokenType = "demo";
 
-    return lr;
-}
-model::LoginResult manager::TokenManager::retrieveToken(std::string_view path)
-{
-    auto cred = parseAuthCredentials(path);
-
-    nlohmann::json reqObj;
-    reqObj["client_id"] = cred.clientId;
-    reqObj["client_secret"] = cred.clientSecret;
-    reqObj["audience"] = cred.apiIdentifier;
-    reqObj["grant_type"] = "client_credentials";
-
-    std::string uri{cred.uri};
-    uri.append("/");
-    uri.append(cred.endpoint);
-
-    auto r = cpr::Post(cpr::Url{uri},
-        cpr::Body{reqObj.dump()},
-        cpr::Header{{"Content-Type", "application/json"},
-        {"Connection", "keep-alive"}});
-
-    auto postRes = nlohmann::json::parse(r.text);
-
-    model::LoginResult lr;
-    lr.accessToken = postRes["access_token"].get<std::string>();
-    lr.tokenType = postRes["token_type"].get<std::string>();
-    lr.expiration = postRes["expires_in"].get<int>();
-
-    return lr;
-}
 model::LoginResult manager::TokenManager::retrieveToken(const model::BinaryPath& bConf)
 {
     auto cred = parseAuthCredentials(bConf);
 
-    nlohmann::json reqObj;
-    reqObj["client_id"] = cred.clientId;
-    reqObj["client_secret"] = cred.clientSecret;
-    reqObj["audience"] = cred.apiIdentifier;
-    reqObj["grant_type"] = "client_credentials";
+    auto reqObj = createTokenBody(cred);
 
     std::string uri{cred.uri};
     uri.append("/");
@@ -76,6 +34,7 @@ model::LoginResult manager::TokenManager::retrieveToken(const model::BinaryPath&
         cpr::Header{{"Content-Type", "application/json"},
         {"Connection", "keep-alive"}});
 
+
     auto postRes = nlohmann::json::parse(r.text);
 
     model::LoginResult lr;
@@ -85,6 +44,7 @@ model::LoginResult manager::TokenManager::retrieveToken(const model::BinaryPath&
 
     return lr;
 }
+
 
 bool manager::TokenManager::isTokenValid(std::string& auth, type::Scope scope)
 {
@@ -115,6 +75,43 @@ bool manager::TokenManager::isTokenValid(std::string& auth, type::Scope scope)
     return false;
 }
 
+bool manager::TokenManager::testAuth(const model::BinaryPath& bConf)
+{
+    auto cred = parseAuthCredentials(bConf);
+    auto reqObj = createTokenBody(cred);
+
+    std::string uri(cred.uri);
+    uri.append("/");
+    uri.append(cred.endpoint);
+
+    auto response = sendRequest(uri, reqObj);
+
+    return (response.status_code == 200) ? true : false;
+}
+
+
+cpr::Response manager::TokenManager::sendRequest(std::string_view uri, nlohmann::json& obj)
+{
+    auto resp = cpr::Post(cpr::Url{uri}, cpr::Body{obj.dump()},
+                          cpr::Header{{"Content-type", "application/json"}, 
+                                      {"Connection", "keep-alive"}});
+
+    return resp;
+}
+
+
+nlohmann::json manager::TokenManager::createTokenBody(const model::AuthCredentials& auth)
+{
+    nlohmann::json obj;
+    obj["client_id"] = auth.clientId;
+    obj["client_secret"] = auth.clientSecret;
+    obj["audience"] = auth.apiIdentifier;
+    obj["grant_type"] = "client_credentials";
+
+    return obj;
+}
+
+
 model::AuthCredentials manager::TokenManager::parseAuthCredentials(std::string_view path)
 {
     auto exe_path = manager::DirectoryManager::configPath(path);
@@ -134,10 +131,7 @@ model::AuthCredentials manager::TokenManager::parseAuthCredentials(std::string_v
 }
 model::AuthCredentials manager::TokenManager::parseAuthCredentials(const model::BinaryPath& bConf)
 {
-    auto exePath = manager::DirectoryManager::configPath(bConf);
-    exePath.append("/authcredentials.json");
-
-    auto con = manager::DirectoryManager::credentialConfigContent(exePath);
+    auto con = manager::DirectoryManager::credentialConfigContent(bConf);
 
     model::AuthCredentials auth;
     auth.uri = "https://";
@@ -186,6 +180,7 @@ std::pair<bool, std::vector<std::string>> manager::TokenManager::fetchAuthHeader
 
     return std::make_pair(foundBearer, authHeader);
 }
+
 
 bool manager::TokenManager::tokenSupportsScope(const std::vector<std::string> scopes, const std::string&& scope)
 {

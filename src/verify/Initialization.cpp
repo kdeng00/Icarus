@@ -5,6 +5,7 @@
 
 #include "database/BaseRepository.h"
 #include "manager/DirectoryManager.h"
+#include "manager/TokenManager.h"
 #include "type/PathType.h"
 
 namespace fs = std::filesystem;
@@ -27,8 +28,9 @@ void verify::Initialization::checkIcarus(const model::BinaryPath& bConf)
 // verifies that the authorization settings are not the default values
 bool verify::Initialization::confirmConfigAuth(const model::BinaryPath& bConf)
 {
-    auto authConfig = manager::DirectoryManager::credentialConfigContent(bConf);
-    return true;
+    manager::TokenManager tokMgr;
+
+    return tokMgr.testAuth(bConf);
 }
 
 // verifies if database connectivity can be established
