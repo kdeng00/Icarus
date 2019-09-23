@@ -24,6 +24,11 @@ namespace dto
     {
         DTO_INIT(UserDto, Object)
 
+        DTO_FIELD(Int32, userId);
+        DTO_FIELD(String, firstname);
+        DTO_FIELD(String, lastname);
+        DTO_FIELD(String, phone);
+        DTO_FIELD(String, email);
         DTO_FIELD(String, username);
         DTO_FIELD(String, password);
     };

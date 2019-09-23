@@ -75,3 +75,12 @@ CREATE TABLE User (
 
     PRIMARY KEY (UserId)
 );
+
+CREATE TABLE Salt (
+    SaltId INT NOT NULL AUTO_INCREMENT,
+    Salt TEXT NOT NULL,
+    UserId INT NOT NULL,
+
+    PRIMARY KEY (SaltId),
+    CONSTRAINT FK_UserId FOREIGN KEY (UserId) REFERENCES User (UserId)
+);

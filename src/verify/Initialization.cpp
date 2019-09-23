@@ -10,8 +10,16 @@
 
 namespace fs = std::filesystem;
 
+namespace verify {
+
+bool Initialization::skipVerification(const std::string& argument)
+{
+    return argument.compare("--noverify") == 0;
+}
+
+
 // verifies if the configuration settings are valid
-void verify::Initialization::checkIcarus(const model::BinaryPath& bConf)
+void Initialization::checkIcarus(const model::BinaryPath& bConf)
 {
     auto auth = confirmConfigAuth(bConf);
     auto database = confirmConfigDatabase(bConf);
@@ -26,7 +34,7 @@ void verify::Initialization::checkIcarus(const model::BinaryPath& bConf)
 
 
 // verifies that the authorization settings are not the default values
-bool verify::Initialization::confirmConfigAuth(const model::BinaryPath& bConf)
+bool Initialization::confirmConfigAuth(const model::BinaryPath& bConf)
 {
     manager::TokenManager tokMgr;
 
@@ -34,7 +42,7 @@ bool verify::Initialization::confirmConfigAuth(const model::BinaryPath& bConf)
 }
 
 // verifies if database connectivity can be established
-bool verify::Initialization::confirmConfigDatabase(const model::BinaryPath& bConf)
+bool Initialization::confirmConfigDatabase(const model::BinaryPath& bConf)
 {
     database::BaseRepository baseRepo(bConf);
 
@@ -42,7 +50,7 @@ bool verify::Initialization::confirmConfigDatabase(const model::BinaryPath& bCon
 }
 
 // verifies if the paths found in the config files exists
-bool verify::Initialization::confirmConfigPaths(const model::BinaryPath& bConf)
+bool Initialization::confirmConfigPaths(const model::BinaryPath& bConf)
 {
     auto pathConfig = manager::DirectoryManager::pathConfigContent(bConf);
 
@@ -96,8 +104,10 @@ bool verify::Initialization::confirmConfigPaths(const model::BinaryPath& bConf)
 
 
 // confirmation failed
-void verify::Initialization::failedConfirmation()
+void Initialization::failedConfirmation()
 {
     std::cout << "configuration confirmation failed. check your settings" << std::endl;
     std::exit(-1);
+}
+
 }

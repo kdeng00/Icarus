@@ -15,6 +15,7 @@
 #include "controller/CoverArtController.hpp"
 #include "controller/GenreController.hpp"
 #include "controller/LoginController.hpp"
+#include "controller/RegisterController.hpp"
 #include "controller/SongController.hpp"
 #include "controller/YearController.hpp"
 #include "model/Models.h"
@@ -33,6 +34,7 @@ void run(const model::BinaryPath& bConf)
     auto coverArtController = std::make_shared<controller::CoverArtController>(bConf);
     auto gnrController = std::make_shared<controller::GenreController>(bConf);
     auto logController = std::make_shared<controller::LoginController>(bConf);
+    auto regController = std::make_shared<controller::RegisterController>(bConf);
     auto sngController = std::make_shared<controller::SongController>(bConf);
     auto yearController = std::make_shared<controller::YearController>(bConf);
 
@@ -41,6 +43,7 @@ void run(const model::BinaryPath& bConf)
     coverArtController->addEndpointsToRouter(router);
     gnrController->addEndpointsToRouter(router);
     logController->addEndpointsToRouter(router);
+    regController->addEndpointsToRouter(router);
     sngController->addEndpointsToRouter(router);
     yearController->addEndpointsToRouter(router);
 
@@ -59,8 +62,17 @@ int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
     
-    model::BinaryPath bConf(argv[0]);
-    verify::Initialization::checkIcarus(bConf);
+    model::BinaryPath bConf(std::move(argv[0]));
+
+    if (argc > 1) {
+        if (!verify::Initialization::skipVerification(argv[1])) {
+            verify::Initialization::checkIcarus(bConf);
+        } else {
+            std::cout << "skiping verifyication" << std::endl;
+        }
+    } else {
+        verify::Initialization::checkIcarus(bConf);
+    }
 
     run(bConf);
 

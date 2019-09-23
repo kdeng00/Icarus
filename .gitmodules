@@ -16,3 +16,6 @@
 [submodule "3rdparty/ormpp"]
 	path = 3rdparty/ormpp
 	url = https://github.com/qicosmos/ormpp
+[submodule "3rdparty/libbcrypt"]
+	path = 3rdparty/libbcrypt
+	url = https://github.com/rg3/libbcrypt

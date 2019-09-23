@@ -116,6 +116,23 @@ namespace model
         int expiration;
     };
 
+    struct User
+    {
+        int id;
+        std::string firstname;
+        std::string lastname;
+        std::string email;
+        std::string phone;
+        std::string username;
+        std::string password;
+    };
+
+    struct PassSec
+    {
+        std::string hashPassword;
+        std::string salt;
+    };
+
     struct AuthCredentials
     {
         std::string domain;

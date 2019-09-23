@@ -13,6 +13,7 @@ set(SOURCES
     src/database/CoverArtRepository.cpp
     src/database/GenreRepository.cpp
     src/database/SongRepository.cpp
+    src/database/UserRepository.cpp
     src/database/YearRepository.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
@@ -22,9 +23,11 @@ set(SOURCES
     src/manager/GenreManager.cpp
     src/manager/SongManager.cpp
     src/manager/TokenManager.cpp
+    src/manager/UserManager.cpp
     src/manager/YearManager.cpp
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp
+    src/utility/PasswordEncryption.cpp
     src/verify/Initialization.cpp
 )
 set(HEADERS
@@ -35,6 +38,7 @@ set(HEADERS
     include/controller/CoverArtController.hpp
     include/controller/GenreController.hpp
     include/controller/LoginController.hpp
+    include/controller/RegisterController.hpp
     include/controller/SongController.hpp
     include/controller/YearController.hpp
     include/database/AlbumRepository.h
@@ -43,6 +47,7 @@ set(HEADERS
     include/database/CoverArtRepository.h
     include/database/GenreRepository.h
     include/database/SongRepository.h
+    include/database/UserRepository.h
     include/database/YearRepository.h
     include/dto/AlbumDto.hpp
     include/dto/ArtistDto.hpp
@@ -57,25 +62,33 @@ set(HEADERS
     include/manager/DirectoryManager.h
     include/manager/GenreManager.h
     include/manager/SongManager.h
-    include/manager/TokenManager.h
+    include/manager/TokenManager.h    
+    include/manager/UserManager.h
     include/manager/YearManager.h
     include/model/Models.h
     include/utility/ImageFile.h
     include/utility/MetadataRetriever.h
+    include/utility/PasswordEncryption.h
     include/type/AlbumFilter.h
     include/type/ArtistFilter.h
     include/type/CoverFilter.h
     include/type/GenreFilter.h
     include/type/PathType.h
+    include/type/SaltFilter.h
     include/type/Scopes.h
     include/type/SongChanged.h
     include/type/SongFilter.h
+    include/type/UserFilter.h
     include/type/YearFilter.h
     include/verify/Initialization.h
 )
 
 set (TAGLIB
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib/3rdparty
+)
+
+set (BCRYPTLIB
+    ${CMAKE_SOURCE_DIR}/3rdparty/libbcrypt
 )
 
 set(TAGLIB_HEADERS
@@ -114,11 +127,14 @@ set (ORM_DIR
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS})
+find_library(BCRYPT bcrypt ${BCRYPTLIB})
+
+include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS} ${BCRYPTLIB}/)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/libbcrypt)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/bin/appsettings.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
@@ -128,4 +144,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BIN
 
 add_executable(icarus ${SOURCES} ${HEADERS})
 target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
-target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES})
+target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} ${BCRYPT})
