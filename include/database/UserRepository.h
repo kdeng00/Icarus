@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory>
+#include <tuple>
 
 #include "database/BaseRepository.h"
 #include "model/Models.h"
@@ -27,30 +28,12 @@ namespace database {
             unsigned long usernameLength;
             unsigned long passwordLength;
         };
-        struct UserVals
-        {
-            /**
-            std::shared_ptr<char*> firstname;
-            std::shared_ptr<char*> lastname;
-            std::shared_ptr<char*> phone;
-            std::shared_ptr<char*> email;
-            std::shared_ptr<char*> username;
-            std::shared_ptr<char*> password;
-            */
-            char firstname[1024];
-            char lastname[1024];
-            char phone[1024];
-            char email[1024];
-            char username[1024];
-            char password[1024];
-        };
 
         std::shared_ptr<MYSQL_BIND> insertUserValues(const model::User&, std::shared_ptr<UserLengths>);
-        std::shared_ptr<MYSQL_BIND> valueBind(model::User&, std::shared_ptr<UserVals>);
-        std::shared_ptr<MYSQL_BIND> valueBind(model::User&, UserVals&);
-        std::shared_ptr<MYSQL_BIND> valueBind(model::User&);
+        std::shared_ptr<MYSQL_BIND> valueBind(model::User&, std::tuple<char*, char*, char*, char*, char*, char*>&);
         std::shared_ptr<UserLengths> fetchUserLengths(const model::User&);
-        std::shared_ptr<UserVals> fetchUserVals();
+
+        std::tuple<char*, char*, char*, char*, char*, char*> fetchUV();
 
         model::User parseRecord(MYSQL_STMT*);
     };
