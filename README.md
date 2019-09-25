@@ -135,7 +135,7 @@ Prior to starting the API, the database must be created. The following tables ar
 
 There is a MySQL script to create these tables, it can be found in the [Scripts/MySQL/](https://github.com/amazing-username/Icarus/blob/master/Scripts/MySQL/create_database.sql) directory. Just merely execute:
 ```shell
-mysql -u ** -p < Scripts/MySQL/create_database.sql
+mysql -u *dblikedecibel* -p < Scripts/MySQL/create_database.sql
 ```
 
 From this point the database has been successfully created. Metadata and song filesystem locations can be saved.
