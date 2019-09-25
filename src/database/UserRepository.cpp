@@ -38,6 +38,8 @@ model::User UserRepository::retrieveUserRecord(model::User& user,
             break;
     }
 
+    qry << " LIMIT 1";
+
     const auto query = qry.str();
     auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
     status = mysql_stmt_bind_param(stmt, params);
@@ -51,7 +53,86 @@ model::User UserRepository::retrieveUserRecord(model::User& user,
     return user;
 }
 
+model::PassSec UserRepository::retrieverUserSaltRecord(model::PassSec& userSec, type::SaltFilter filter)
+{
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
 
+    qry << "SELECT * FROM Salt WHERE ";
+
+    MYSQL_BIND params[1];
+    std::memset(params, 0, sizeof(params));
+
+    switch (filter) {
+        case type::SaltFilter::userId:
+            qry << "UserId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&userSec.userId;
+            params[0].length = 0;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " LIMIT 1";
+
+    const auto query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    userSec = parseSaltRecord(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return userSec;
+}
+
+
+bool UserRepository::doesUserRecordExist(const model::User& user, type::UserFilter filter)
+{
+    std::stringstream qry;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    qry << "SELECT * FROM User WHERE ";
+
+    MYSQL_BIND params[1];
+    std::memset(params, 0, sizeof(params));
+
+    auto userLength = user.username.size();
+    switch (filter) {
+        case type::UserFilter::username:
+            qry << "Username = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_STRING;
+            params[0].buffer = (char*)user.username.c_str();
+            params[0].length = &userLength;
+            params[0].is_null = 0;
+            break;
+        default:
+            break;
+    }
+
+    qry << " LIMIT 1";
+
+    const auto query = qry.str();
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, params);
+    status = mysql_stmt_execute(stmt);
+
+    mysql_stmt_store_result(stmt);
+    const auto rowCount = mysql_stmt_num_rows(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+
+    return (rowCount > 0) ? true : false;
+}
 void UserRepository::saveUserRecord(const model::User& user)
 {
     std::cout << "inserting user record" << std::endl;
@@ -69,6 +150,28 @@ void UserRepository::saveUserRecord(const model::User& user)
 
     auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
     status = mysql_stmt_bind_param(stmt, params.get());
+    status = mysql_stmt_execute(stmt);
+
+    mysql_stmt_close(stmt);
+    mysql_close(conn);
+}
+
+void UserRepository::saveUserSalt(const model::PassSec& userSec)
+{
+    std::cout << "inserting user salt record" << std::endl;
+    auto conn = setupMysqlConnection();
+    auto stmt = mysql_stmt_init(conn);
+
+    std::stringstream qry;
+    qry << "INSERT INTO Salt(Salt, UserId) VALUES(?,?)";
+
+    const auto query = qry.str();
+
+    auto sizes = fetchSaltLengths(userSec);
+    auto values = insertSaltValues(userSec, sizes);
+
+    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+    status = mysql_stmt_bind_param(stmt, values.get());
     status = mysql_stmt_execute(stmt);
 
     mysql_stmt_close(stmt);
@@ -114,6 +217,22 @@ std::shared_ptr<MYSQL_BIND> UserRepository::insertUserValues(const model::User& 
     return values;
 }
 
+std::shared_ptr<MYSQL_BIND> UserRepository::insertSaltValues(const model::PassSec& passSec,
+        std::shared_ptr<UserRepository::SaltLengths> lengths)
+{
+    std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(6, sizeof(MYSQL_BIND)));
+
+    values.get()[0].buffer_type = MYSQL_TYPE_STRING;
+    values.get()[0].buffer = (char*)passSec.hashPassword.c_str();
+    values.get()[0].length = &(lengths->saltLength);
+
+    values.get()[1].buffer_type = MYSQL_TYPE_LONG;
+    values.get()[1].buffer = (char*)&passSec.userId;
+
+
+    return values;
+}
+
 std::shared_ptr<MYSQL_BIND> UserRepository::valueBind(model::User& user,
     std::tuple<char*, char*, char*, char*, char*, char*>& us)
 {
@@ -150,6 +269,24 @@ std::shared_ptr<MYSQL_BIND> UserRepository::valueBind(model::User& user,
     return values;
 }
 
+std::shared_ptr<MYSQL_BIND> UserRepository::saltValueBind(model::PassSec& userSalt, char *salt)
+{
+    std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(3, sizeof(MYSQL_BIND)));
+    constexpr auto strLen = 1024;
+
+    values.get()[0].buffer_type = MYSQL_TYPE_LONG;
+    values.get()[0].buffer = (char*)&userSalt.id;
+
+    values.get()[1].buffer_type = MYSQL_TYPE_STRING;
+    values.get()[1].buffer = (char*)salt;
+    values.get()[1].buffer_length = strLen;
+
+    values.get()[2].buffer_type = MYSQL_TYPE_LONG;
+    values.get()[2].buffer = (char*)&userSalt.userId;
+
+    return values;
+}
+
 std::shared_ptr<UserRepository::UserLengths> UserRepository::fetchUserLengths(const model::User& user)
 {
     auto userLen = std::make_shared<UserLengths>();
@@ -161,6 +298,14 @@ std::shared_ptr<UserRepository::UserLengths> UserRepository::fetchUserLengths(co
     userLen->passwordLength = user.password.size();
 
     return userLen;
+}
+
+std::shared_ptr<UserRepository::SaltLengths> UserRepository::fetchSaltLengths(const model::PassSec& passSec)
+{
+    auto saltLen = std::make_shared<SaltLengths>();
+    saltLen->saltLength = passSec.salt.size();
+
+    return saltLen;
 }
 
 
@@ -194,5 +339,19 @@ model::User UserRepository::parseRecord(MYSQL_STMT *stmt)
     user.password = std::get<5>(usv);
 
     return user;
+}
+
+model::PassSec UserRepository::parseSaltRecord(MYSQL_STMT* stmt)
+{
+    model::PassSec userSalt;
+    char saltKey[1024];
+
+    auto bindedValues = saltValueBind(userSalt, saltKey);
+    auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
+    status = mysql_stmt_fetch(stmt);
+
+    userSalt.salt = saltKey;
+
+    return userSalt;
 }
 }

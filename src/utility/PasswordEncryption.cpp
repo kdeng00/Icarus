@@ -28,6 +28,17 @@ model::PassSec PasswordEncryption::hashPassword(const model::User& user)
     return passSec;
 }
 
+
+bool PasswordEncryption::isPasswordValid(const model::User& user, const model::PassSec& userSalt)
+{
+    std::unique_ptr<char[]> passwordHashed(new char[BCRYPT_HASHSIZE]);
+
+    bcrypt_hashpw(user.password.c_str(), userSalt.salt.c_str(), passwordHashed.get());
+
+    return (userSalt.hashPassword.compare(passwordHashed.get()) == 0) ? true : false;
+}
+
+
 int PasswordEncryption::saltSize()
 {
     constexpr auto size = 10000;

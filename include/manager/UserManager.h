@@ -6,20 +6,22 @@
 #include "dto/LoginResultDto.hpp"
 #include "model/Models.h"
 
-namespace manager
+namespace manager {
+class UserManager
 {
-    class UserManager
-    {
-    public:
-        UserManager(const model::BinaryPath&);
+public:
+    UserManager(const model::BinaryPath&);
 
-        model::User userDtoConv(dto::UserDto::ObjectWrapper&);
+    bool doesUserExist(const model::User&);
+    bool validatePassword(const model::User&);
 
-        void printUser(const model::User&);
-        void registerUser(model::User&);
-    private:
-        model::BinaryPath m_bConf;
-    };
+    void printUser(const model::User&);
+    void registerUser(model::User&);
+
+    static model::User userDtoConv(dto::UserDto::ObjectWrapper&);
+private:
+    model::BinaryPath m_bConf;
+};
 }
 
 #endif

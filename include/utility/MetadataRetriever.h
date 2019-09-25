@@ -6,22 +6,21 @@
 
 #include "model/Models.h"
 
-namespace utility
+namespace utility {
+class MetadataRetriever
 {
-    class MetadataRetriever
-    {
-    public:
-        model::Song retrieveMetadata(std::string&);
+public:
+    model::Song retrieveMetadata(std::string&);
 
-        model::Cover updateCoverArt(const model::Song&, model::Cover&, const std::string&);
-        model::Cover applyStockCoverArt(const model::Song&, model::Cover&, const std::string&);
-        model::Cover applyCoverArt(const model::Song&, model::Cover&);
+    model::Cover updateCoverArt(const model::Song&, model::Cover&, const std::string&);
+    model::Cover applyStockCoverArt(const model::Song&, model::Cover&, const std::string&);
+    model::Cover applyCoverArt(const model::Song&, model::Cover&);
 
-        bool songContainsCoverArt(const model::Song&);
+    bool songContainsCoverArt(const model::Song&);
 
-        void updateMetadata(model::Song&, const model::Song&);
-    private:
-    };
+    void updateMetadata(model::Song&, const model::Song&);
+private:
+};
 }
 
 #endif

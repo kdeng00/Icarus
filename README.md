@@ -43,10 +43,10 @@ Create the API and enter an approrpiate name and identified. For the identified,
 Replace [domain] with the domain name of the created tenant. This can be found in the Default App from the Application menu. Replace [identifier] with the identifer root name in the appsettings environment file. Not the friendly name but the root name of the identifier, omitting the http protocol and the *api* path.
 
 ```Json
-  "Auth0": {
-	  "Domain": "[domain].auth0.com", 
-	  "ApiIdentifier": "https://[identifier]/api"
-  },
+  "domain": "[domain].auth0.com", 
+  "api_identifier": "https://[identifier]/api",
+  "client_id": "iamunique",
+  "client_secret": "Icankeepasecret"
 ```
 
 For the sake of this section, I will not go over configuring the API to accept the signing algorithm since it has already been configured in the [Startip](Startup.cs).cs file. Click on permissions to create the permissions for the API.
@@ -73,7 +73,7 @@ From the Application page, copy the client id and client secret. These values wi
 <h1 align="center">
     <img src="Images/Configuration/api_cred.png" width=100%>
 </h1>
-Enter the information in the corresponding ``authcredentials.json`` file
+Enter the information in the corresponding ``authcredentials.json`` file  
 ```Json
 {
   "domain": "somedomain.auth0.com",
@@ -88,10 +88,10 @@ Enter the information in the corresponding ``authcredentials.json`` file
 For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. For that purpose you have to open the ``paths.json`` file. What is meant by this is that the `root_music_path` directory where all music will be stored must exist. The `cover_root_path`, `archive_root_path`, and `temp_root_path` paths must exist and be accessible. An example on a Linux system:
 ```Json
 {
-  "root_music_path": "/home/dev/null/music/",
-  "temp_root_path": "/home/dev/null/music/temp/",
-  "cover_root_path": "/home/dev/null/music/coverArt/",
-  "archive_root_path": "/home/dev/null/music/archive/"
+  "root_music_path": "/dev/null/music/",
+  "temp_root_path": "/dev/null/music/temp/",
+  "cover_root_path": "/dev/null/music/coverArt/",
+  "archive_root_path": "/dev/null/music/archive/"
 }
 ```
 * `root_music_path` - Where music will be stored in the following convention: *`Artist/Album/Songs`*
@@ -104,55 +104,56 @@ For the purposes of properly uploading, downloading, updating, deleting, and str
 
 ### Database connection string
 
-In order for Database functionality to be operable, there must be a valid connection string and credentials with appropriate permissions. **At the moment there is only support for MySQL**. Depending on your environment `Release` or `Debug` you will need to edit the appsettings.json or appsettings.Development.json accordingly. An example of the fields to change are below:
+In order for Database functionality to be operable, there must be a valid connection string and MySQL credentials with appropriate permissions. **At the moment there is only support for MySQL**. Edit the database.json file accordingly. An example of the fields to change are below:
 ```Json
 {
 
-  "ConnectionStrings": {
-	  "DefaultConnection": "Server=localhost;Database=my_db;Uid=admin;Pwd=toughpassword;"
-  }
+  "server": "localhost", 
+  "database": "my_db",
+  "username": "admin",
+  "password": "toughpassword"
  
 }
 ```
-* Server - The address or domain name of the MySQL server
-* Database - The database name
-* Uid - Username
-* Password - Self-explanatory
+* server - The address or domain name of the MySQL server
+* database - The database name
+* user - Username
+* password - Self-explanatory
 
 The only requirement of the User is that the user should have full permissions to the database as well as permissions to create a database. Other than that, that is all that is required.
 
-### Migrations
+### Database
 
-Prior to starting the API, the Migrations must be applied. There are 6 tables with migrations being applied and thy are:
-* Users
+Prior to starting the API, the database must be created. The following tables are required:
+* User
 * Song
 * Album
 * Artist
 * Year
 * Genre
+* CoverArt
 
-There is a script for Linux systems to apply these migrations, it can be found in the [Scripts/Migrations/Linux](https://github.com/amazing-username/Icarus/blob/master/Scripts/Migrations/Linux/AddUpdate.sh) directory. Just merely execute:
+There is a MySQL script to create these tables, it can be found in the [Scripts/MySQL/](https://github.com/amazing-username/Icarus/blob/master/Scripts/MySQL/create_database.sql) directory. Just merely execute:
 ```shell
-scripts/Migrations/Linux/AddUpdate.sh
+mysql -u ** -p < Scripts/MySQL/create_database.sql
 ```
-Or you can manually add the migrations like so for each migration:
-```shell
-dotnet ef migrations Add [Migration] --context [Migration]Context
-```
-Then update the migrations to the database like so<sup>*</sup>:
-```shell
-dotnet ef database update --context [Migration]Context
-```
-From this point the database has been successfully configured. Metadata and song filesystem locations can be saved.
 
-<sup>*</sup> Will only need to execute this for UserContext and SongContext because the Song table has relational constraints with Album, Artist, Year, and Genre.
+From this point the database has been successfully created. Metadata and song filesystem locations can be saved.
+
 
 ## Building and Running
 ```
 git clone --recursive https://github.com/kdeng00/icarus
+cd 3rdparty/libbcrypt/
+make
+cp bcrypt.a libbcrypt.a
+cp bcrypt.o libbcrypt.o
+cd ../..
 mkdir build
 cd build
+conan install ..
 cmake ..
+make
 bin/icarus
 ```
 Runs the server on localhost port 5002
