@@ -6,22 +6,21 @@
 #include "oatpp/core/data/stream/FileStream.hpp"
 #include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 
-namespace callback
+namespace callback {
+class StreamCallback : public oatpp::data::stream::ReadCallback
 {
-    class StreamCallback : public oatpp::data::stream::ReadCallback
-    {
-    public:
-        StreamCallback();
-        StreamCallback(const std::string&);
+public:
+    StreamCallback();
+    StreamCallback(const std::string&);
 
-        oatpp::data::v_io_size read(void*, oatpp::data::v_io_size);
-    private:
-        std::string m_songPath;
+    oatpp::data::v_io_size read(void*, oatpp::data::v_io_size);
+private:
+    std::string m_songPath;
 
-        long m_bytesRead;
-        long m_counter;
-        long m_fileSize;
-    };
+    long m_bytesRead;
+    long m_counter;
+    long m_fileSize;
+};
 }
 
 #endif

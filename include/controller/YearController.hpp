@@ -26,65 +26,74 @@
 
 namespace fs = std::filesystem;
 
-namespace controller
+namespace controller {
+class YearController : public oatpp::web::server::api::ApiController
 {
-    class YearController : public oatpp::web::server::api::ApiController
+public:
+    YearController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
+    { }
+
+    YearController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
+    { }
+
+    #include OATPP_CODEGEN_BEGIN(ApiController)
+
+    // endpoint for retrieving all year records in json format
+    ENDPOINT("GET", "/api/v1/year", yearRecords, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request))
     {
-    public:
-        YearController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
-        { }
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveYear), Status::CODE_403, "Not allowed");
 
-        YearController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
-        { }
+        std::cout << "starting process of retrieving year" << std::endl;
+        database::YearRepository yrRepo(m_bConf);
+        auto yrsDb = yrRepo.retrieveRecords();
+        auto yearRecs = oatpp::data::mapping::type::List<dto::YearDto::ObjectWrapper>::createShared();
 
-        #include OATPP_CODEGEN_BEGIN(ApiController)
+        for (auto& yrDb : yrsDb) {
+            auto yr = dto::YearDto::createShared();
+            yr->id = yrDb.id;
+            yr->year = yrDb.year;
 
-        // endpoint for retrieving all year records in json format
-        ENDPOINT("GET", "/api/v1/year", yearRecords, 
-            REQUEST(std::shared_ptr<IncomingRequest>, request))
-        {
-            std::cout << "starting process of retrieving year" << std::endl;
-            database::YearRepository yrRepo(m_bConf);
-            auto yrsDb = yrRepo.retrieveRecords();
-            auto yearRecs = oatpp::data::mapping::type::List<dto::YearDto::ObjectWrapper>::createShared();
-
-            for (auto& yrDb : yrsDb) {
-                auto yr = dto::YearDto::createShared();
-                yr->id = yrDb.id;
-                yr->year = yrDb.year;
-
-                yearRecs->pushBack(yr);
-            }
-
-            return createDtoResponse(Status::CODE_200, yearRecs);
+            yearRecs->pushBack(yr);
         }
 
-        // endpoint for retrieving single year record by the year id in json format
-        ENDPOINT("GET", "/api/v1/year/{id}", yearRecord, 
-            PATH(Int32, id)) {
+        return createDtoResponse(Status::CODE_200, yearRecs);
+    }
 
-            database::YearRepository yrRepo(m_bConf);
-            model::Year yrDb(id);
+    // endpoint for retrieving single year record by the year id in json format
+    ENDPOINT("GET", "/api/v1/year/{id}", yearRecord, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id)) {
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveYear), Status::CODE_403, "Not allowed");
 
-            OATPP_ASSERT_HTTP(yrRepo.doesYearExist(yrDb, type::YearFilter::id) , Status::CODE_403, "year does not exist");
+        database::YearRepository yrRepo(m_bConf);
+        model::Year yrDb(id);
 
-            std::cout << "year exist" << std::endl;
-            yrDb = yrRepo.retrieveRecord(yrDb, type::YearFilter::id);
+        OATPP_ASSERT_HTTP(yrRepo.doesYearExist(yrDb, type::YearFilter::id) , Status::CODE_403, "year does not exist");
 
-            auto year = dto::YearDto::createShared();
-            year->id = yrDb.id;
-            year->year= yrDb.year;
+        std::cout << "year exist" << std::endl;
+        yrDb = yrRepo.retrieveRecord(yrDb, type::YearFilter::id);
 
-            return createDtoResponse(Status::CODE_200, year);
-        }
+        auto year = dto::YearDto::createShared();
+        year->id = yrDb.id;
+        year->year= yrDb.year;
 
-        #include OATPP_CODEGEN_END(ApiController)
-    private:
-        std::string m_exe_path;
-        model::BinaryPath m_bConf;
-        const long m_dataSize = std::numeric_limits<long long int>::max();
-    };
+        return createDtoResponse(Status::CODE_200, year);
+    }
+
+    #include OATPP_CODEGEN_END(ApiController)
+private:
+    std::string m_exe_path;
+    model::BinaryPath m_bConf;
+};
 }
 #endif

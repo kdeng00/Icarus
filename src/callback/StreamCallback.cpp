@@ -4,10 +4,11 @@
 #include <fstream>
 #include <memory>
 
-callback::StreamCallback::StreamCallback() : 
+namespace callback {
+StreamCallback::StreamCallback() : 
     m_counter(0) { }
 
-callback::StreamCallback::StreamCallback(const std::string& songPath) : 
+StreamCallback::StreamCallback(const std::string& songPath) : 
     m_songPath(songPath),
     m_counter(0),
     m_bytesRead(0) 
@@ -19,7 +20,7 @@ callback::StreamCallback::StreamCallback(const std::string& songPath) :
 }
 
 
-oatpp::data::v_io_size callback::StreamCallback::read(void *buff, oatpp::data::v_io_size count) 
+oatpp::data::v_io_size StreamCallback::read(void *buff, oatpp::data::v_io_size count) 
 {
     if (m_counter >= m_fileSize) {
         std::cout << "done streaming song" << std::endl;
@@ -39,4 +40,5 @@ oatpp::data::v_io_size callback::StreamCallback::read(void *buff, oatpp::data::v
     song.close();
 
     return count;
+}
 }

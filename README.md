@@ -1,6 +1,6 @@
 # Icarus
 
-Icarus is a music streaming API Server that interacts with [Mear](https://github.com/amazing-username/mear).
+Icarus is a music streaming API Server, allowing access to stream your personal music collection
 
 ### Interfacing With Icarus
 
@@ -8,6 +8,7 @@ One can interface with Icarus the music server either by:
 
 * [Mear](https://github.com/amazing-username/mear) - Partially implemented (under development)
 * [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager)
+* Create your own client to interact with the API
 
 
 
@@ -19,6 +20,9 @@ One can interface with Icarus the music server either by:
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
 * [TagLib](https://github.com/taglib/taglib)
+* [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
+* [libbcrypt](https://github.com/rg3/libbcrypt)
+* [oatpp](https://github.com/oatpp/oatpp)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 
@@ -117,7 +121,7 @@ In order for Database functionality to be operable, there must be a valid connec
 ```
 * server - The address or domain name of the MySQL server
 * database - The database name
-* user - Username
+* username - Username
 * password - Self-explanatory
 
 The only requirement of the User is that the user should have full permissions to the database as well as permissions to create a database. Other than that, that is all that is required.
@@ -135,7 +139,7 @@ Prior to starting the API, the database must be created. The following tables ar
 
 There is a MySQL script to create these tables, it can be found in the [Scripts/MySQL/](https://github.com/amazing-username/Icarus/blob/master/Scripts/MySQL/create_database.sql) directory. Just merely execute:
 ```shell
-mysql -u *dblikedecibel* -p < Scripts/MySQL/create_database.sql
+mysql -u dblikedecibel -p < Scripts/MySQL/create_database.sql
 ```
 
 From this point the database has been successfully created. Metadata and song filesystem locations can be saved.

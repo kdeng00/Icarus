@@ -6,7 +6,17 @@ namespace type
     enum class Scope
     {
         upload = 0,
-        download
+        download,
+        stream,
+        retrieveSong,
+        updateSong,
+        deleteSong,
+        retrieveAlbum,
+        retrieveArtist,
+        retrieveGenre,
+        retrieveYear,
+        downloadCoverArt
+
     };
 }
 

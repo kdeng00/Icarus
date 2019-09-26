@@ -20,71 +20,81 @@
 #include "database/ArtistRepository.h"
 #include "dto/ArtistDto.hpp"
 #include "manager/ArtistManager.h"
+#include "manager/TokenManager.h"
 #include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/ArtistFilter.h"
 
 namespace fs = std::filesystem;
 
-namespace controller
+namespace controller {
+class ArtistController : public oatpp::web::server::api::ApiController
 {
-    class ArtistController : public oatpp::web::server::api::ApiController
+public:
+    ArtistController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
+    { }
+
+    ArtistController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
+    { }
+
+    #include OATPP_CODEGEN_BEGIN(ApiController)
+
+    // endpoint for retrieving all artist records in json format
+    ENDPOINT("GET", "/api/v1/artist", artistRecords, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request))
     {
-    public:
-        ArtistController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
-        { }
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveArtist), Status::CODE_403, "Not allowed");
 
-        ArtistController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
-        { }
+        std::cout << "starting process of retrieving artist" << std::endl;
+        database::ArtistRepository artRepo(m_bConf);
+        auto artsDb = artRepo.retrieveRecords();
+        auto artists = oatpp::data::mapping::type::List<dto::ArtistDto::ObjectWrapper>::createShared();
 
-        #include OATPP_CODEGEN_BEGIN(ApiController)
+        for (auto& artDb : artsDb) {
+            auto art = dto::ArtistDto::createShared();
+            art->id = artDb.id;
+            art->artist = artDb.artist.c_str();
 
-        // endpoint for retrieving all artist records in json format
-        ENDPOINT("GET", "/api/v1/artist", artistRecords, 
-            REQUEST(std::shared_ptr<IncomingRequest>, request))
-        {
-            std::cout << "starting process of retrieving artist" << std::endl;
-            database::ArtistRepository artRepo(m_bConf);
-            auto artsDb = artRepo.retrieveRecords();
-            auto artists = oatpp::data::mapping::type::List<dto::ArtistDto::ObjectWrapper>::createShared();
-
-            for (auto& artDb : artsDb) {
-                auto art = dto::ArtistDto::createShared();
-                art->id = artDb.id;
-                art->artist = artDb.artist.c_str();
-
-                artists->pushBack(art);
-            }
-
-            return createDtoResponse(Status::CODE_200, artists);
+            artists->pushBack(art);
         }
 
-        // endpoint for retrieving single artist record by the artist id in json format
-        ENDPOINT("GET", "/api/v1/artist/{id}", artistRecord, 
-            PATH(Int32, id)) {
+        return createDtoResponse(Status::CODE_200, artists);
+    }
 
-            database::ArtistRepository artRepo(m_bConf);
-            model::Artist artDb(id);
+    // endpoint for retrieving single artist record by the artist id in json format
+    ENDPOINT("GET", "/api/v1/artist/{id}", artistRecord, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id)) {
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveArtist), Status::CODE_403, "Not allowed");
 
-            OATPP_ASSERT_HTTP(artRepo.doesArtistExist(artDb, type::ArtistFilter::id) , Status::CODE_403, "artist does not exist");
+        database::ArtistRepository artRepo(m_bConf);
+        model::Artist artDb(id);
 
-            std::cout << "artist exist" << std::endl;
-            artDb = artRepo.retrieveRecord(artDb, type::ArtistFilter::id);
+        OATPP_ASSERT_HTTP(artRepo.doesArtistExist(artDb, type::ArtistFilter::id) , Status::CODE_403, "artist does not exist");
 
-            auto artist = dto::ArtistDto::createShared();
-            artist->id = artDb.id;
-            artist->artist = artDb.artist.c_str();
+        std::cout << "artist exist" << std::endl;
+        artDb = artRepo.retrieveRecord(artDb, type::ArtistFilter::id);
 
-            return createDtoResponse(Status::CODE_200, artist);
-        }
+        auto artist = dto::ArtistDto::createShared();
+        artist->id = artDb.id;
+        artist->artist = artDb.artist.c_str();
 
-        #include OATPP_CODEGEN_END(ApiController)
-    private:
-        std::string m_exe_path;
-        model::BinaryPath m_bConf;
-        const long m_dataSize = std::numeric_limits<long long int>::max();
-    };
+        return createDtoResponse(Status::CODE_200, artist);
+    }
+
+    #include OATPP_CODEGEN_END(ApiController)
+private:
+    std::string m_exe_path;
+    model::BinaryPath m_bConf;
+};
 }
 #endif

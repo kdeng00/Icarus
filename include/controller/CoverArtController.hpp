@@ -26,94 +26,96 @@
 
 namespace fs = std::filesystem;
 
-namespace controller
+namespace controller {
+class CoverArtController : public oatpp::web::server::api::ApiController
 {
-    class CoverArtController : public oatpp::web::server::api::ApiController
+public:
+    CoverArtController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
+    { }
+
+    CoverArtController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+        : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
+    { }
+
+    #include OATPP_CODEGEN_BEGIN(ApiController)
+
+    // endpoint for retrieving all cover art records in json format
+    ENDPOINT("GET", "/api/v1/coverart", coverArtRecords, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request))
     {
-    public:
-        CoverArtController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)
-        { }
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::downloadCoverArt), Status::CODE_403, "Not allowed");
 
-        CoverArtController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-            : oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
-        { }
+        std::cout << "starting process of retrieving cover art" << std::endl;
+        database::CoverArtRepository covRepo(m_bConf);
+        auto covsDb = covRepo.retrieveRecords();
+        auto coverArts = oatpp::data::mapping::type::List<dto::CoverArtDto::ObjectWrapper>::createShared();
 
-        #include OATPP_CODEGEN_BEGIN(ApiController)
+        for (auto& covDb : covsDb) {
+            auto cov = dto::CoverArtDto::createShared();
+            cov->id = covDb.id;
+            cov->songTitle = covDb.songTitle.c_str();
 
-        // endpoint for retrieving all cover art records in json format
-        ENDPOINT("GET", "/api/v1/coverart", coverArtRecords, 
-            REQUEST(std::shared_ptr<IncomingRequest>, request))
-        {
-            std::cout << "starting process of retrieving cover art" << std::endl;
-            database::CoverArtRepository covRepo(m_bConf);
-            auto covsDb = covRepo.retrieveRecords();
-            auto coverArts = oatpp::data::mapping::type::List<dto::CoverArtDto::ObjectWrapper>::createShared();
-
-            for (auto& covDb : covsDb) {
-                auto cov = dto::CoverArtDto::createShared();
-                cov->id = covDb.id;
-                cov->songTitle = covDb.songTitle.c_str();
-
-                coverArts->pushBack(cov);
-            }
-
-            return createDtoResponse(Status::CODE_200, coverArts);
+            coverArts->pushBack(cov);
         }
 
-        // endpoint for retrieving single cover art record by the cover art id in json format
-        ENDPOINT("GET", "/api/v1/coverart/{id}", coverArtRecord, 
-            PATH(Int32, id)) {
+        return createDtoResponse(Status::CODE_200, coverArts);
+    }
 
-            database::CoverArtRepository covRepo(m_bConf);
-            model::Cover covDb;
-            covDb.id = id;
+    // endpoint for retrieving single cover art record by the cover art id in json format
+    ENDPOINT("GET", "/api/v1/coverart/{id}", coverArtRecord, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id)) {
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::downloadCoverArt), Status::CODE_403, "Not allowed");
 
-            OATPP_ASSERT_HTTP(covRepo.doesCoverArtExist(covDb, type::CoverFilter::id) , Status::CODE_403, "song does not exist");
+        database::CoverArtRepository covRepo(m_bConf);
+        model::Cover covDb;
+        covDb.id = id;
 
-            std::cout << "cover art exists" << std::endl;
-            covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
+        OATPP_ASSERT_HTTP(covRepo.doesCoverArtExist(covDb, type::CoverFilter::id) , Status::CODE_403, "song does not exist");
 
-            auto coverArt = dto::CoverArtDto::createShared();
-            coverArt->id = covDb.id;
-            coverArt->songTitle = covDb.songTitle.c_str();
+        std::cout << "cover art exists" << std::endl;
+        covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
 
-            return createDtoResponse(Status::CODE_200, coverArt);
-        }
+        auto coverArt = dto::CoverArtDto::createShared();
+        coverArt->id = covDb.id;
+        coverArt->songTitle = covDb.songTitle.c_str();
 
-        ENDPOINT("GET", "/api/v1/coverart/download/{id}", downloadCoverArt, 
-            PATH(Int32, id)) {
+        return createDtoResponse(Status::CODE_200, coverArt);
+    }
 
-            database::CoverArtRepository covRepo(m_bConf);
-            model::Cover covDb;
-            covDb.id = id;
-            covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
+    ENDPOINT("GET", "/api/v1/coverart/download/{id}", downloadCoverArt, 
+        REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id)) {
+        auto authHeader = request->getHeader("Authorization");
+        OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
+        auto auth = authHeader->std_str();
+        manager::TokenManager tok;
+        OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::downloadCoverArt), Status::CODE_403, "Not allowed");
 
-            /**
-            std::ifstream fl(covDb.imagePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            fl.seekg(0);
+        database::CoverArtRepository covRepo(m_bConf);
+        model::Cover covDb;
+        covDb.id = id;
+        covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
 
-            std::stringstream buf;
-            std::copy(std::istreambuf_iterator<char>(fl),
-                std::istreambuf_iterator<char>(),
-                std::ostreambuf_iterator<char>(buf));
-            fl.close();
-            */
-
-            //auto rawCover = oatpp::String(buf.str().data(), (v_int32)buf.str().size(), true);
-            auto rawCover = oatpp::base::StrBuffer::loadFromFile(covDb.imagePath.c_str());
-            auto response = createResponse(Status::CODE_200, rawCover);
+        auto rawCover = oatpp::base::StrBuffer::loadFromFile(covDb.imagePath.c_str());
+        auto response = createResponse(Status::CODE_200, rawCover);
             
-            response->putHeader(Header::CONTENT_TYPE, "image/*");
+        response->putHeader(Header::CONTENT_TYPE, "image/*");
 
-            return response;
-        }
+        return response;
+    }
 
-        #include OATPP_CODEGEN_END(ApiController)
-    private:
-        std::string m_exe_path;
-        model::BinaryPath m_bConf;
-        const long m_dataSize = std::numeric_limits<long long int>::max();
-    };
+    #include OATPP_CODEGEN_END(ApiController)
+private:
+    std::string m_exe_path;
+    model::BinaryPath m_bConf;
+};
 }
 #endif

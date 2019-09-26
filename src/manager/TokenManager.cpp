@@ -13,13 +13,13 @@
 
 namespace fs = std::filesystem;
 
-
-manager::TokenManager::TokenManager()
+namespace manager {
+TokenManager::TokenManager()
 {
 }
 
 
-model::LoginResult manager::TokenManager::retrieveToken(const model::BinaryPath& bConf)
+model::LoginResult TokenManager::retrieveToken(const model::BinaryPath& bConf)
 {
     auto cred = parseAuthCredentials(bConf);
 
@@ -46,7 +46,7 @@ model::LoginResult manager::TokenManager::retrieveToken(const model::BinaryPath&
 }
 
 
-bool manager::TokenManager::isTokenValid(std::string& auth, type::Scope scope)
+bool TokenManager::isTokenValid(std::string& auth, type::Scope scope)
 {
     auto authPair = fetchAuthHeader(auth);
 
@@ -65,9 +65,26 @@ bool manager::TokenManager::isTokenValid(std::string& auth, type::Scope scope)
     switch (scope) {
         case type::Scope::upload:
             return tokenSupportsScope(scopes, "upload:songs");
-            break;
         case type::Scope::download:
             return tokenSupportsScope(scopes, "download:songs");
+        case type::Scope::stream:
+            return tokenSupportsScope(scopes, "stream:songs");
+        case type::Scope::deleteSong:
+            return tokenSupportsScope(scopes, "delete:songs");
+        case type::Scope::updateSong:
+            return tokenSupportsScope(scopes, "update:songs");
+        case type::Scope::retrieveSong:
+            return tokenSupportsScope(scopes, "read:song_details");
+        case type::Scope::retrieveAlbum:
+            return tokenSupportsScope(scopes, "read:albums");
+        case type::Scope::retrieveArtist:
+            return tokenSupportsScope(scopes, "read:artists");
+        case type::Scope::retrieveGenre:
+            return tokenSupportsScope(scopes, "read:genre");
+        case type::Scope::retrieveYear:
+            return tokenSupportsScope(scopes, "read:year");
+        case type::Scope::downloadCoverArt:
+            return tokenSupportsScope(scopes, "download:cover_art");
         default:
             break;
     }
@@ -75,7 +92,7 @@ bool manager::TokenManager::isTokenValid(std::string& auth, type::Scope scope)
     return false;
 }
 
-bool manager::TokenManager::testAuth(const model::BinaryPath& bConf)
+bool TokenManager::testAuth(const model::BinaryPath& bConf)
 {
     auto cred = parseAuthCredentials(bConf);
     auto reqObj = createTokenBody(cred);
@@ -90,7 +107,7 @@ bool manager::TokenManager::testAuth(const model::BinaryPath& bConf)
 }
 
 
-cpr::Response manager::TokenManager::sendRequest(std::string_view uri, nlohmann::json& obj)
+cpr::Response TokenManager::sendRequest(std::string_view uri, nlohmann::json& obj)
 {
     auto resp = cpr::Post(cpr::Url{uri}, cpr::Body{obj.dump()},
                           cpr::Header{{"Content-type", "application/json"}, 
@@ -100,7 +117,7 @@ cpr::Response manager::TokenManager::sendRequest(std::string_view uri, nlohmann:
 }
 
 
-nlohmann::json manager::TokenManager::createTokenBody(const model::AuthCredentials& auth)
+nlohmann::json TokenManager::createTokenBody(const model::AuthCredentials& auth)
 {
     nlohmann::json obj;
     obj["client_id"] = auth.clientId;
@@ -112,12 +129,12 @@ nlohmann::json manager::TokenManager::createTokenBody(const model::AuthCredentia
 }
 
 
-model::AuthCredentials manager::TokenManager::parseAuthCredentials(std::string_view path)
+model::AuthCredentials TokenManager::parseAuthCredentials(std::string_view path)
 {
-    auto exe_path = manager::DirectoryManager::configPath(path);
+    auto exe_path = DirectoryManager::configPath(path);
     exe_path.append("/authcredentials.json");
     
-    auto con = manager::DirectoryManager::credentialConfigContent(exe_path);
+    auto con = DirectoryManager::credentialConfigContent(exe_path);
 
     model::AuthCredentials auth;
     auth.uri = "https://";
@@ -129,9 +146,9 @@ model::AuthCredentials manager::TokenManager::parseAuthCredentials(std::string_v
 
     return auth;
 }
-model::AuthCredentials manager::TokenManager::parseAuthCredentials(const model::BinaryPath& bConf)
+model::AuthCredentials TokenManager::parseAuthCredentials(const model::BinaryPath& bConf)
 {
-    auto con = manager::DirectoryManager::credentialConfigContent(bConf);
+    auto con = DirectoryManager::credentialConfigContent(bConf);
 
     model::AuthCredentials auth;
     auth.uri = "https://";
@@ -144,7 +161,7 @@ model::AuthCredentials manager::TokenManager::parseAuthCredentials(const model::
     return auth;
 }
 
-std::vector<std::string> manager::TokenManager::extractScopes(const jwt::decoded_jwt&& decoded)
+std::vector<std::string> TokenManager::extractScopes(const jwt::decoded_jwt&& decoded)
 {
     std::vector<std::string> scopes;
 
@@ -162,7 +179,7 @@ std::vector<std::string> manager::TokenManager::extractScopes(const jwt::decoded
     return scopes;
 }
 
-std::pair<bool, std::vector<std::string>> manager::TokenManager::fetchAuthHeader(const std::string& auth)
+std::pair<bool, std::vector<std::string>> TokenManager::fetchAuthHeader(const std::string& auth)
 {
     std::istringstream iss(auth);
     std::vector<std::string> authHeader{std::istream_iterator<std::string>(iss),
@@ -182,10 +199,12 @@ std::pair<bool, std::vector<std::string>> manager::TokenManager::fetchAuthHeader
 }
 
 
-bool manager::TokenManager::tokenSupportsScope(const std::vector<std::string> scopes, const std::string&& scope)
+bool TokenManager::tokenSupportsScope(const std::vector<std::string> scopes, 
+    const std::string&& scope)
 {
     return std::any_of(scopes.begin(), scopes.end(), 
         [&](std::string foundScope) {
             return (foundScope.compare(scope) == 0);
         });
+}
 }
