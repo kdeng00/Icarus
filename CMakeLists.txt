@@ -15,6 +15,7 @@ set(SOURCES
     src/database/SongRepository.cpp
     src/database/UserRepository.cpp
     src/database/YearRepository.cpp
+    src/dto/conversion/DtoConversions.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
     src/manager/ArtistManager.cpp
@@ -56,6 +57,7 @@ set(HEADERS
     include/dto/LoginResultDto.hpp
     include/dto/SongDto.hpp
     include/dto/YearDto.hpp
+    include/dto/conversion/DtoConversions.h
     include/manager/AlbumManager.h
     include/manager/ArtistManager.h
     include/manager/CoverArtManager.h

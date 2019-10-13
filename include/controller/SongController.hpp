@@ -30,8 +30,7 @@
 namespace fs = std::filesystem;
 
 namespace controller {
-class SongController : public oatpp::web::server::api::ApiController
-{
+class SongController : public oatpp::web::server::api::ApiController {
 public:
     SongController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
         : oatpp::web::server::api::ApiController(objectMapper), m_exe_path(p)

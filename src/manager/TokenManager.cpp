@@ -19,28 +19,21 @@ TokenManager::TokenManager()
 }
 
 
-model::LoginResult TokenManager::retrieveToken(const model::BinaryPath& bConf)
+model::Token TokenManager::retrieveToken(const model::BinaryPath& bConf)
 {
     auto cred = parseAuthCredentials(bConf);
-
     auto reqObj = createTokenBody(cred);
 
     std::string uri{cred.uri};
     uri.append("/");
     uri.append(cred.endpoint);
 
-    auto r = cpr::Post(cpr::Url{uri},
-        cpr::Body{reqObj.dump()},
-        cpr::Header{{"Content-Type", "application/json"},
-        {"Connection", "keep-alive"}});
-
-
+    auto r = sendRequest(uri, reqObj);
     auto postRes = nlohmann::json::parse(r.text);
 
-    model::LoginResult lr;
-    lr.accessToken = postRes["access_token"].get<std::string>();
-    lr.tokenType = postRes["token_type"].get<std::string>();
-    lr.expiration = postRes["expires_in"].get<int>();
+    model::Token lr(std::move(postRes["access_token"].get<std::string>()),
+        std::move(postRes["token_type"].get<std::string>()), 
+        postRes["expires_in"].get<int>());
 
     return lr;
 }
@@ -129,6 +122,7 @@ nlohmann::json TokenManager::createTokenBody(const model::AuthCredentials& auth)
 }
 
 
+[[depreacted("use the other function with the same name")]]
 model::AuthCredentials TokenManager::parseAuthCredentials(std::string_view path)
 {
     auto exe_path = DirectoryManager::configPath(path);
@@ -165,7 +159,7 @@ std::vector<std::string> TokenManager::extractScopes(const jwt::decoded_jwt&& de
 {
     std::vector<std::string> scopes;
 
-    for (auto d : decoded.get_payload_claims()) {
+    for (auto& d : decoded.get_payload_claims()) {
         if (d.first.compare("scope") == 0) {
             std::cout << "found scope" << std::endl;
             std::string allScopes(d.second.to_json().get<std::string>());
@@ -188,7 +182,7 @@ std::pair<bool, std::vector<std::string>> TokenManager::fetchAuthHeader(const st
 
     bool foundBearer = false;
     if (std::any_of(authHeader.begin(), authHeader.end(), 
-           [](std::string word) { 
+           [&](std::string_view word) { 
                return (word.compare("Bearer") == 0);
            })) {
         std::cout << "Bearer found" << std::endl;
@@ -199,11 +193,11 @@ std::pair<bool, std::vector<std::string>> TokenManager::fetchAuthHeader(const st
 }
 
 
-bool TokenManager::tokenSupportsScope(const std::vector<std::string> scopes, 
+bool TokenManager::tokenSupportsScope(const std::vector<std::string>& scopes, 
     const std::string&& scope)
 {
     return std::any_of(scopes.begin(), scopes.end(), 
-        [&](std::string foundScope) {
+        [&](std::string_view foundScope) {
             return (foundScope.compare(scope) == 0);
         });
 }

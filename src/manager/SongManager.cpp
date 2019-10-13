@@ -308,8 +308,8 @@ void manager::SongManager::saveMisc(model::Song& song)
     auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
     auto cov = covMgr.saveCover(song);
+    const auto songPath = createSongPath(song);
 
-    auto songPath = createSongPath(song);
     if (fs::exists(songPath)) {
         std::cout << "deleting old song with the same metadata" << std::endl;
         fs::remove(songPath);

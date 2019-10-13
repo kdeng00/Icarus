@@ -7,18 +7,16 @@
 #include "model/Models.h"
 
 namespace manager {
-class UserManager
-{
+class UserManager {
 public:
     UserManager(const model::BinaryPath&);
+
+    model::RegisterResult registerUser(model::User&);
 
     bool doesUserExist(const model::User&);
     bool validatePassword(const model::User&);
 
     void printUser(const model::User&);
-    void registerUser(model::User&);
-
-    static model::User userDtoConv(dto::UserDto::ObjectWrapper&);
 private:
     model::BinaryPath m_bConf;
 };

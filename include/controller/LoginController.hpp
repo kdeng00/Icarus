@@ -10,13 +10,13 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 
 #include "dto/LoginResultDto.hpp"
+#include "dto/conversion/DtoConversions.h"
 #include "manager/TokenManager.h"
 #include "manager/UserManager.h"
 #include "model/Models.h"
 
 namespace controller {
-class LoginController : public oatpp::web::server::api::ApiController
-{
+class LoginController : public oatpp::web::server::api::ApiController {
 public:
     LoginController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
         : oatpp::web::server::api::ApiController(objectMapper), exe_path(p)
@@ -32,29 +32,21 @@ public:
         OATPP_LOGI("icarus", "logging in");
 
         manager::UserManager usrMgr(m_bConf);
-        auto user = manager::UserManager::userDtoConv(usr);
+        auto user = dto::conversion::DtoConversions::toUser(usr);
 
-        if (!usrMgr.doesUserExist(user)) {
+        if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
+            auto logRes = dto::LoginResultDto::createShared();
+            logRes->message = "invalid credentials";
             std::cout << "user does not exist" << std::endl;
-            return createResponse(Status::CODE_401, "invalid credentials");
+            return createDtoResponse(Status::CODE_401, logRes);
         }
 
         std::cout << "user exists" << std::endl;
 
-        if (!usrMgr.validatePassword(user)) {
-            std::cout << "password is not valid" << std::endl;
-            return createResponse(Status::CODE_401, "invalid credentials");
-        }
-
         manager::TokenManager tok;
         auto token = tok.retrieveToken(m_bConf);
 
-        auto logRes = dto::LoginResultDto::createShared();
-        logRes->id = 0; // TODO: change this later on to something meaningful or remove it
-        logRes->username = usr->username->c_str();
-        logRes->token = token.accessToken.c_str();
-        logRes->token_type = token.tokenType.c_str();
-        logRes->expiration = token.expiration;
+        auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
         logRes->message = "Successful";
 
         return createDtoResponse(Status::CODE_200, logRes);

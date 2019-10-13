@@ -5,8 +5,7 @@
 #include <vector>
 
 namespace model {
-struct Song
-{
+struct Song {
     Song() = default;
     Song(const int id) : id(id) { }
 
@@ -28,8 +27,7 @@ struct Song
     int yearId;
 };
 
-struct Artist
-{
+struct Artist {
     Artist() = default;
     Artist(const Song& song)
     {
@@ -42,8 +40,7 @@ struct Artist
     std::string artist;
 };
 
-struct Album
-{
+struct Album {
     Album() = default;
     Album(const Song& song)
     {
@@ -59,8 +56,7 @@ struct Album
     std::vector<Song> songs;
 };
 
-struct Genre
-{
+struct Genre {
     Genre() = default;
     Genre(const Song& song)
     {
@@ -74,8 +70,7 @@ struct Genre
 
 };
 
-struct Year
-{
+struct Year {
     Year() = default;
     Year(const Song& song)
     {
@@ -88,8 +83,7 @@ struct Year
     int year;
 };
 
-struct Cover
-{
+struct Cover {
     Cover() = default;
     Cover(const Song& song)
     {
@@ -105,8 +99,22 @@ struct Cover
     std::vector<unsigned char> data;
 };
 
-struct LoginResult
-{
+class Token {
+public:
+    Token() = default;
+    Token(const std::string& accessToken) :
+        accessToken(accessToken) { }
+    Token(const std::string& accessToken, const std::string& tokenType, 
+        const int expiration) :
+        accessToken(accessToken), tokenType(tokenType), 
+        expiration(expiration) { }
+
+    std::string accessToken;
+    int expiration;
+    std::string tokenType;
+};
+
+struct LoginResult {
     int userId;
     std::string username;
     std::string accessToken;
@@ -115,8 +123,14 @@ struct LoginResult
     int expiration;
 };
 
-struct User
-{
+class RegisterResult {
+public:
+    std::string username;
+    bool registered;
+    std::string message;
+};
+
+struct User {
     int id;
     std::string firstname;
     std::string lastname;
@@ -126,16 +140,14 @@ struct User
     std::string password;
 };
 
-struct PassSec
-{
+struct PassSec {
     int id;
     std::string hashPassword;
     std::string salt;
     int userId;
 };
 
-struct AuthCredentials
-{
+struct AuthCredentials {
     std::string domain;
     std::string apiIdentifier;
     std::string clientId;
@@ -144,16 +156,14 @@ struct AuthCredentials
     std::string endpoint;
 };
 
-struct DatabaseConnection
-{
+struct DatabaseConnection {
     std::string server;
     std::string username;
     std::string password;
     std::string database;
 };
 
-struct BinaryPath
-{
+struct BinaryPath {
     BinaryPath() = default;
     BinaryPath(const char *p) : path(std::move(p)) { }
     BinaryPath(std::string& p) : path(p) { }
