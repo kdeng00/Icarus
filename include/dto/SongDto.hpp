@@ -23,6 +23,7 @@ namespace dto
         DTO_FIELD(Int32, disc);
         DTO_FIELD(Int32, year);
         DTO_FIELD(Int32, duration);
+        DTO_FIELD(Int32, coverart_id);
     };
 
     #include OATPP_CODEGEN_END(DTO)

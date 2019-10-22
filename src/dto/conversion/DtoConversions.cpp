@@ -24,6 +24,22 @@ namespace dto { namespace conversion {
     }
 
 
+    dto::SongDto::ObjectWrapper DtoConversions::toSongDto(const model::Song& song) {
+        auto result = dto::SongDto::createShared();
+        result->id = (song.id != 0) ? song.id : 0;
+        result->title = (!song.title.empty()) ? song.title.c_str() : "";
+        result->album = (!song.album.empty()) ? song.album.c_str() : "";
+        result->artist = (!song.artist.empty()) ? song.artist.c_str() : "";
+        result->genre = (!song.genre.empty()) ? song.genre.c_str() : "";
+        result->year = (song.year != 0) ? song.year : 0;
+        result->track = (song.track != 0) ? song.track : 0;
+        result->disc = (song.disc != 0) ? song.disc : 0;
+        result->coverart_id = (song.coverArtId != 0) ? song.coverArtId : 0;
+
+        return result;
+    }
+
+
     model::Song DtoConversions::toSong(dto::SongDto::ObjectWrapper& songDto) {
         model::Song song;
         song.id = (songDto->id.getPtr() == nullptr) ? 0 : songDto->id->getValue();
@@ -34,6 +50,8 @@ namespace dto { namespace conversion {
         song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year->getValue();
         song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track->getValue();
         song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc->getValue();
+        song.coverArtId = (songDto->coverart_id.getPtr() == nullptr) ? 
+            0 : songDto->coverart_id->getValue();
 
         return song;
     }

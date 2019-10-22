@@ -13,6 +13,8 @@ namespace dto { namespace conversion {
         static dto::RegisterResultDto::ObjectWrapper toRegisterResultDto(
             const model::RegisterResult&);
 
+        static dto::SongDto::ObjectWrapper toSongDto(const model::Song&);
+
         static model::Song toSong(dto::SongDto::ObjectWrapper&);
 
         static model::User toUser(dto::UserDto::ObjectWrapper&);
