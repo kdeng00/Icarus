@@ -21,6 +21,7 @@
 #include "callback/StreamCallback.h"
 #include "database/SongRepository.h"
 #include "dto/SongDto.hpp"
+#include "dto/conversion/DtoConversions.h"
 #include "manager/SongManager.h"
 #include "manager/TokenManager.h"
 #include "model/Models.h"
@@ -74,8 +75,9 @@ public:
     
         manager::SongManager songMgr(m_bConf);
         songMgr.saveSong(sng);
+        auto songDto = dto::conversion::DtoConversions::toSongDto(sng);
 
-        return createResponse(Status::CODE_200, "OK");
+        return createDtoResponse(Status::CODE_200, songDto);
     }
 
     // endpoint for retrieving all song records in json format
@@ -95,16 +97,7 @@ public:
 
         std::cout << "creating object to send" << std::endl;
         for (auto& songDb : songsDb) {
-            auto song = dto::SongDto::createShared();
-            song->id = songDb.id;
-            song->title = songDb.title.c_str();
-            song->artist = songDb.artist.c_str();
-            song->album = songDb.album.c_str();
-            song->genre = songDb.genre.c_str();
-            song->year = songDb.year;
-            song->duration = songDb.duration;
-            song->track = songDb.track;
-            song->disc = songDb.disc;
+            auto song = dto::conversion::DtoConversions::toSongDto(songDb);
 
             songs->pushBack(song);
         }
@@ -130,16 +123,7 @@ public:
         std::cout << "song exists" << std::endl;
         songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
-        auto song = dto::SongDto::createShared();
-        song->id = songDb.id;
-        song->title = songDb.title.c_str();
-        song->artist = songDb.artist.c_str();
-        song->album = songDb.album.c_str();
-        song->genre = songDb.genre.c_str();
-        song->year = songDb.year;
-        song->duration = songDb.duration;
-        song->track = songDb.track;
-        song->disc = songDb.disc;
+        auto song = dto::conversion::DtoConversions::toSongDto(songDb);
 
         return createDtoResponse(Status::CODE_200, song);
     }

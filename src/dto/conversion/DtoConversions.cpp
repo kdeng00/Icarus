@@ -31,6 +31,7 @@ namespace dto { namespace conversion {
         result->album = (!song.album.empty()) ? song.album.c_str() : "";
         result->artist = (!song.artist.empty()) ? song.artist.c_str() : "";
         result->genre = (!song.genre.empty()) ? song.genre.c_str() : "";
+        result->duration = (song.duration != 0) ? song.duration : 0;
         result->year = (song.year != 0) ? song.year : 0;
         result->track = (song.track != 0) ? song.track : 0;
         result->disc = (song.disc != 0) ? song.disc : 0;

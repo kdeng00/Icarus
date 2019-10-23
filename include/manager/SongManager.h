@@ -11,8 +11,7 @@
 #include "model/Models.h"
 #include "type/SongChanged.h"
 
-namespace manager
-{
+namespace manager {
     class SongManager
     {
     public:

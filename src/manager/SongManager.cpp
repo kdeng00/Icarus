@@ -83,6 +83,7 @@ void manager::SongManager::saveSong(model::Song& song)
 
     database::SongRepository songRepo(m_bConf);
     songRepo.saveRecord(song);
+    song = songRepo.retrieveRecord(song, type::SongFilter::title);
 }
 
 void manager::SongManager::deleteSong(model::Song& song)
