@@ -117,8 +117,9 @@ public:
         database::SongRepository songRepo(m_bConf);
         model::Song songDb(id);
 
-        OATPP_ASSERT_HTTP(songRepo.doesSongExist(songDb, type::SongFilter::id) , Status::CODE_403, 
-            "song does not exist");
+        if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
+            return songDoesNotExist();
+        }
 
         std::cout << "song exists" << std::endl;
         songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
@@ -138,6 +139,10 @@ public:
 
         database::SongRepository songRepo(m_bConf);
         model::Song songDb(id);
+        if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
+            return songDoesNotExist();
+        }
+
         songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
         auto rawSong = oatpp::base::StrBuffer::loadFromFile(songDb.songPath.c_str());
@@ -158,9 +163,12 @@ public:
         manager::TokenManager tok;
         OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::updateSong), Status::CODE_403, "Not allowed");
             
-        auto updatedSong = manager::SongManager::songDtoConv(songDto);
+        auto updatedSong = dto::conversion::DtoConversions::toSong(songDto);
         manager::SongManager songMgr(m_bConf);
-        songMgr.updateSong(updatedSong);
+        auto result = songMgr.updateSong(updatedSong);
+        if (!result) {
+            return songDoesNotExist();
+        }
 
         return createResponse(Status::CODE_200, "OK");
     }
@@ -177,7 +185,10 @@ public:
         model::Song song(id);
 
         manager::SongManager sngMgr(m_bConf);
-        sngMgr.deleteSong(song);
+        auto result = sngMgr.deleteSong(song);
+        if (!result) {
+            return songDoesNotExist();
+        }
 
         return createResponse(Status::CODE_200, "OK");
     }
@@ -193,6 +204,10 @@ public:
 
         database::SongRepository songRepo(m_bConf);
         model::Song songDb(id);
+        if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
+            return songDoesNotExist();
+        }
+
         songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
         oatpp::data::v_io_size dSize = 1024;
@@ -209,6 +224,12 @@ public:
 
     #include OATPP_CODEGEN_END(ApiController)
 private:
+    std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> 
+        songDoesNotExist() {
+
+        return createResponse(Status::CODE_404, "Song not found");
+    }
+
     std::string m_exe_path;
 
     model::BinaryPath m_bConf;

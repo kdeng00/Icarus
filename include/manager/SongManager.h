@@ -21,12 +21,10 @@ namespace manager {
 
         bool didSongChange(const model::Song&, const model::Song&);
         bool requiresFilesystemChange(const model::Song&, const model::Song&);
+        bool deleteSong(model::Song&);
+        bool updateSong(model::Song&);
 
         void saveSong(model::Song&);
-        void deleteSong(model::Song&);
-        void updateSong(model::Song&);
-
-        static model::Song songDtoConv(dto::SongDto::ObjectWrapper&);
 
         static void printSong(const model::Song&);
     private:

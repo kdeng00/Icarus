@@ -68,31 +68,13 @@ bool manager::SongManager::requiresFilesystemChange(const model::Song& updatedSo
     return false;
 }
 
-
-void manager::SongManager::saveSong(model::Song& song)
-{
-    saveSongTemp(song);
-    utility::MetadataRetriever meta;
-    auto data = std::move(song.data);
-    song = meta.retrieveMetadata(song.songPath);
-    song.data = std::move(data);
-
-    saveMisc(song);
-
-    printSong(song);
-
-    database::SongRepository songRepo(m_bConf);
-    songRepo.saveRecord(song);
-    song = songRepo.retrieveRecord(song, type::SongFilter::title);
-}
-
-void manager::SongManager::deleteSong(model::Song& song)
+bool manager::SongManager::deleteSong(model::Song& song)
 {
     database::SongRepository songRepo(m_bConf);
 
     if (!songRepo.doesSongExist(song, type::SongFilter::id)) {
         std::cout << "song does not exist" << std::endl;
-        return;
+        return false;
     }
 
     song = songRepo.retrieveRecord(song, type::SongFilter::id);
@@ -103,25 +85,24 @@ void manager::SongManager::deleteSong(model::Song& song)
 
     if (!deleted) {
         std::cout << "song not deleted from databases" << std::endl;
-        return;
+        return deleted;
     }
     deleteMisc(song);
 
     fs::remove(song.songPath);
     manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
+    return deleted;
 }
 
-void manager::SongManager::updateSong(model::Song& updatedSong)
+bool manager::SongManager::updateSong(model::Song& updatedSong)
 {
     database::SongRepository songRepo(m_bConf);
     model::Song currSong(updatedSong.id);
 
-    OATPP_ASSERT_HTTP(songRepo.doesSongExist(currSong, type::SongFilter::id) , oatpp::web::protocol::http::Status::CODE_404, "song does not exist");
-
     currSong = songRepo.retrieveRecord(currSong, type::SongFilter::id);
     if (!didSongChange(updatedSong, currSong)) {
         std::cout << "no change to the song" << std::endl;
-        return;
+        return false;
     }
 
     assignMiscId(updatedSong, currSong);
@@ -140,22 +121,26 @@ void manager::SongManager::updateSong(model::Song& updatedSong)
     printSong(currSong);
 
     updateMisc(changes, updatedSong, currSong);
+
+    return true;
 }
 
-model::Song manager::SongManager::songDtoConv(dto::SongDto::ObjectWrapper& songDto)
-{
-    std::cout << "coverting dto::SongDto to model::Song" << std::endl;
-    model::Song song;
-    song.id = songDto->id;
-    song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
-    song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
-    song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
-    song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
-    song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year->getValue();
-    song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track->getValue();
-    song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc->getValue();
 
-    return song;
+void manager::SongManager::saveSong(model::Song& song)
+{
+    saveSongTemp(song);
+    utility::MetadataRetriever meta;
+    auto data = std::move(song.data);
+    song = meta.retrieveMetadata(song.songPath);
+    song.data = std::move(data);
+
+    saveMisc(song);
+
+    printSong(song);
+
+    database::SongRepository songRepo(m_bConf);
+    songRepo.saveRecord(song);
+    song = songRepo.retrieveRecord(song, type::SongFilter::title);
 }
 
 
