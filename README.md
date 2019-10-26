@@ -130,6 +130,7 @@ The only requirement of the User is that the user should have full permissions t
 
 Prior to starting the API, the database must be created. The following tables are required:
 * User
+* Salt
 * Song
 * Album
 * Artist
@@ -156,7 +157,7 @@ cd ../..
 mkdir build
 cd build
 conan install ..
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SYSTEM_CURL=ON -DBUILD_CPR_TESTS=OFF -DOATPP_BUILD_TESTS=OFF
 make
 bin/icarus
 ```
@@ -166,15 +167,9 @@ Runs the server on localhost port 5002
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the code of conduct, and the process for submitting pull requests to the project.
 
-## Versioning
-
-* [v0.1](https://github.com/amazing-username/Icarus/releases/tag/v0.1)
-
 ## Authors
 
 * **Kun Deng** - [amazing-username](https://github.com/amazing-username)
-
-See also the list of [contributors](https://github.com/amazing-username/Icarus/graphs/contributors) who participated in this project.
 
 ## License
 
