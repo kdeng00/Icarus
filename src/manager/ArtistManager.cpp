@@ -5,12 +5,12 @@
 #include "database/ArtistRepository.h"
 #include "type/ArtistFilter.h"
 
-manager::ArtistManager::ArtistManager(const model::BinaryPath& bConf)
-    : m_bConf(bConf)
-{ }
+namespace manager {
+
+ArtistManager::ArtistManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
 
 
-model::Artist manager::ArtistManager::retrieveArtist(model::Artist& artist)
+model::Artist ArtistManager::retrieveArtist(model::Artist& artist)
 {
     std::cout << "retrieving artist record" << std::endl;
     database::ArtistRepository artRepo(m_bConf);
@@ -21,7 +21,7 @@ model::Artist manager::ArtistManager::retrieveArtist(model::Artist& artist)
     return artist;
 }
 
-model::Artist manager::ArtistManager::saveArtist(const model::Song& song)
+model::Artist ArtistManager::saveArtist(const model::Song& song)
 {
     model::Artist artist;
     artist.artist = song.artist;
@@ -37,7 +37,7 @@ model::Artist manager::ArtistManager::saveArtist(const model::Song& song)
 }
 
 
-void manager::ArtistManager::deleteArtist(const model::Song& song)
+void ArtistManager::deleteArtist(const model::Song& song)
 {
     model::Artist artist(song);
 
@@ -54,7 +54,7 @@ void manager::ArtistManager::deleteArtist(const model::Song& song)
     artRepo.deleteArtist(artist, type::ArtistFilter::id);
 }
 
-void manager::ArtistManager::updateArtist(model::Song& updatedSong,
+void ArtistManager::updateArtist(model::Song& updatedSong,
     const model::Song& currSong)
 {
     model::Artist artist;
@@ -72,9 +72,10 @@ void manager::ArtistManager::updateArtist(model::Song& updatedSong,
     updatedSong.artistId = artist.id;
 }
 
-void manager::ArtistManager::printArtist(const model::Artist& artist)
+void ArtistManager::printArtist(const model::Artist& artist)
 {
     std::cout << "\nartist record" << std::endl;
     std::cout << "id: " << artist.id << std::endl;
     std::cout << "artist: " << artist.artist << std::endl;
+}
 }

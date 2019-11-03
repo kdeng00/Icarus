@@ -6,21 +6,22 @@
 
 #include "manager/DirectoryManager.h"
 
-database::BaseRepository::BaseRepository() 
+namespace database {
+BaseRepository::BaseRepository() 
 { }
 
-database::BaseRepository::BaseRepository(const std::string& path) : path(path)
+BaseRepository::BaseRepository(const std::string& path) : path(path)
 { 
     intitalizeDetails();
 }
 
-database::BaseRepository::BaseRepository(const model::BinaryPath& bConf)
+BaseRepository::BaseRepository(const model::BinaryPath& bConf)
 {
     initializeDetails(bConf);
 }
 
 
-bool database::BaseRepository::testConnection()
+bool BaseRepository::testConnection()
 {
     auto conn = mysql_init(nullptr);
     if (!mysql_real_connect(conn, details.server.c_str(), details.username.c_str(), 
@@ -36,7 +37,7 @@ bool database::BaseRepository::testConnection()
 }
 
 
-MYSQL* database::BaseRepository::setupMysqlConnection()
+MYSQL* BaseRepository::setupMysqlConnection()
 {
     MYSQL *conn = mysql_init(nullptr);
 
@@ -48,7 +49,7 @@ MYSQL* database::BaseRepository::setupMysqlConnection()
     return conn;
 }
 
-MYSQL* database::BaseRepository::setupMysqlConnection(model::DatabaseConnection details)
+MYSQL* BaseRepository::setupMysqlConnection(model::DatabaseConnection details)
 {
     MYSQL *connection = mysql_init(NULL);
 
@@ -61,7 +62,7 @@ MYSQL* database::BaseRepository::setupMysqlConnection(model::DatabaseConnection 
 }
 
 
-MYSQL_RES* database::BaseRepository::performMysqlQuery(MYSQL *conn, const std::string& query)
+MYSQL_RES* BaseRepository::performMysqlQuery(MYSQL *conn, const std::string& query)
 {
    // send the query to the database
    if (mysql_query(conn, query.c_str()))
@@ -74,7 +75,7 @@ MYSQL_RES* database::BaseRepository::performMysqlQuery(MYSQL *conn, const std::s
 }
 
 
-void database::BaseRepository::intitalizeDetails()
+void BaseRepository::intitalizeDetails()
 {
     auto databaseConfig = manager::DirectoryManager::databaseConfigContent(path);
     
@@ -83,7 +84,7 @@ void database::BaseRepository::intitalizeDetails()
     details.server = databaseConfig["server"].get<std::string>();
     details.username = databaseConfig["username"].get<std::string>();
 }
-void database::BaseRepository::initializeDetails(const model::BinaryPath& bConf)
+void BaseRepository::initializeDetails(const model::BinaryPath& bConf)
 {
     auto databaseConfig = manager::DirectoryManager::databaseConfigContent(bConf);
 
@@ -93,4 +94,5 @@ void database::BaseRepository::initializeDetails(const model::BinaryPath& bConf)
     details.password = databaseConfig["password"].get<std::string>();
 
     std::cout << "retrieved database details" << std::endl;
+}
 }

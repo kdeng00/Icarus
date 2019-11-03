@@ -1,7 +1,7 @@
 #include "dto/conversion/DtoConversions.h"
 
 namespace dto { namespace conversion { 
-    dto::LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
+    LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
         const model::Token& token) {
         auto logRes = dto::LoginResultDto::createShared();
         logRes->username = user.username.c_str();

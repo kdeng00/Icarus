@@ -5,12 +5,11 @@
 #include "database/GenreRepository.h"
 #include "type/GenreFilter.h"
 
-manager::GenreManager::GenreManager(const model::BinaryPath& bConf)
-    : m_bConf(bConf)
-{ }
+namespace manager {
+GenreManager::GenreManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
 
 
-model::Genre manager::GenreManager::retrieveGenre(model::Genre& genre)
+model::Genre GenreManager::retrieveGenre(model::Genre& genre)
 {
     database::GenreRepository gnrRepo(m_bConf);
     genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
@@ -18,7 +17,7 @@ model::Genre manager::GenreManager::retrieveGenre(model::Genre& genre)
     return genre;
 }
 
-model::Genre manager::GenreManager::saveGenre(const model::Song& song)
+model::Genre GenreManager::saveGenre(const model::Song& song)
 {
     model::Genre genre;
     genre.category = song.genre;
@@ -34,7 +33,7 @@ model::Genre manager::GenreManager::saveGenre(const model::Song& song)
 }
 
 
-void manager::GenreManager::deleteGenre(const model::Song& song)
+void GenreManager::deleteGenre(const model::Song& song)
 {
     model::Genre genre(song);
 
@@ -51,7 +50,7 @@ void manager::GenreManager::deleteGenre(const model::Song& song)
     gnrRepo.deleteRecord(genre, type::GenreFilter::id);
 }
 
-void manager::GenreManager::updateGenre(model::Song& updatedSong,
+void GenreManager::updateGenre(model::Song& updatedSong,
     const model::Song& currSong)
 {
     model::Genre genre;
@@ -69,9 +68,10 @@ void manager::GenreManager::updateGenre(model::Song& updatedSong,
     updatedSong.genreId = genre.id;
 }
 
-void manager::GenreManager::printGenre(const model::Genre& genre)
+void GenreManager::printGenre(const model::Genre& genre)
 {
     std::cout << "genre record" << std::endl;
     std::cout << "id: " << genre.id << std::endl;
     std::cout << "category: " << genre.category << std::endl;
+}
 }

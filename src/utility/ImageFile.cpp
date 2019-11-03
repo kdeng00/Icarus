@@ -1,10 +1,12 @@
 #include "utility/ImageFile.h"
 
-utility::ImageFile::ImageFile(const char *file) : TagLib::File(file)
+namespace utility {
+ImageFile::ImageFile(const char *file) : TagLib::File(file)
 {
 }
 
-TagLib::ByteVector utility::ImageFile::data()
+TagLib::ByteVector ImageFile::data()
 {
     return readBlock(length());
+}
 }

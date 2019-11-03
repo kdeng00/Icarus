@@ -15,7 +15,6 @@ namespace manager {
     class SongManager
     {
     public:
-        SongManager(std::string&);
         SongManager(const model::BinaryPath&);
 
 
@@ -44,7 +43,6 @@ namespace manager {
         void modifySongOnFilesystem(model::Song&, const model::Song&);
 
         model::BinaryPath m_bConf;
-        std::string exe_path;
     };
 }
 

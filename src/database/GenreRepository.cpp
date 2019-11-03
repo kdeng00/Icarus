@@ -5,12 +5,14 @@
 #include <sstream>
 #include <cstring>
 
-database::GenreRepository::GenreRepository(const model::BinaryPath& bConf)
+namespace database {
+
+GenreRepository::GenreRepository(const model::BinaryPath& bConf)
     : BaseRepository(bConf)
 { }
 
 
-std::vector<model::Genre> database::GenreRepository::retrieveRecords()
+std::vector<model::Genre> GenreRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -27,7 +29,7 @@ std::vector<model::Genre> database::GenreRepository::retrieveRecords()
     return genres;
 }
 
-std::pair<model::Genre, int> database::GenreRepository::retrieveRecordWithSongCount(model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
+std::pair<model::Genre, int> GenreRepository::retrieveRecordWithSongCount(model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
 {
     std::cout << "retrieving genre record with song count" << std::endl;
     std::stringstream qry;
@@ -71,7 +73,7 @@ std::pair<model::Genre, int> database::GenreRepository::retrieveRecordWithSongCo
     return gnrWSC;
 }
 
-model::Genre database::GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter)
+model::Genre GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter)
 {
     // TODO: change to prepared statement
     
@@ -108,7 +110,7 @@ model::Genre database::GenreRepository::retrieveRecord(model::Genre& genre, type
     return genre;
 }
 
-bool database::GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter)
+bool GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter)
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -159,7 +161,7 @@ bool database::GenreRepository::doesGenreExist(const model::Genre& genre, type::
     return (rowCount > 0) ? true : false;
 }
 
-void database::GenreRepository::saveRecord(const model::Genre& genre)
+void GenreRepository::saveRecord(const model::Genre& genre)
 {
     std::cout << "inserting genre record" << std::endl;
 
@@ -188,7 +190,7 @@ void database::GenreRepository::saveRecord(const model::Genre& genre)
     std::cout << "inserted record" << std::endl;
 }
 
-void database::GenreRepository::deleteRecord(const model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
+void GenreRepository::deleteRecord(const model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
 {
     // TODO: implement this
     std::cout << "deleting genre record" << std::endl;
@@ -227,7 +229,7 @@ void database::GenreRepository::deleteRecord(const model::Genre& genre, type::Ge
 }
 
 
-std::vector<model::Genre> database::GenreRepository::parseRecords(MYSQL_STMT *stmt)
+std::vector<model::Genre> GenreRepository::parseRecords(MYSQL_STMT *stmt)
 {
     mysql_stmt_store_result(stmt);
 
@@ -277,7 +279,7 @@ std::vector<model::Genre> database::GenreRepository::parseRecords(MYSQL_STMT *st
     return genres;
 }
 
-std::pair<model::Genre, int> database::GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+std::pair<model::Genre, int> GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
 {
     std::cout << "parsing genre record with song count" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -326,7 +328,7 @@ std::pair<model::Genre, int> database::GenreRepository::parseRecordWithSongCount
     return std::make_pair(genre, songCount);
 }
 
-model::Genre database::GenreRepository::parseRecord(MYSQL_RES* results)
+model::Genre GenreRepository::parseRecord(MYSQL_RES* results)
 {
     std::cout << "parsing genre record" << std::endl;
     model::Genre genre;
@@ -349,11 +351,12 @@ model::Genre database::GenreRepository::parseRecord(MYSQL_RES* results)
 
     return genre;
 }
-model::Genre database::GenreRepository::parseRecord(MYSQL_STMT *stmt)
+model::Genre GenreRepository::parseRecord(MYSQL_STMT *stmt)
 {
     // TODO: implement this
     
     model::Genre genre;
 
     return genre;
+}
 }

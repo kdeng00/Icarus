@@ -16,7 +16,7 @@
 namespace manager {
 class TokenManager {
 public:
-    TokenManager();
+    TokenManager() = default;
 
     model::Token retrieveToken(const model::BinaryPath&);
 
@@ -27,7 +27,6 @@ private:
 
     nlohmann::json createTokenBody(const model::AuthCredentials&);
 
-    model::AuthCredentials parseAuthCredentials(std::string_view);
     model::AuthCredentials parseAuthCredentials(const model::BinaryPath&);
 
     std::vector<std::string> extractScopes(const jwt::decoded_jwt&&);

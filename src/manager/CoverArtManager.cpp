@@ -11,17 +11,14 @@
 
 namespace fs = std::filesystem;
 
-manager::CoverArtManager::CoverArtManager(const std::string& configPath) : path(configPath)
-{ }
-
-manager::CoverArtManager::CoverArtManager(const model::BinaryPath& bConf) : m_bConf(bConf)
-{ }
+namespace manager {
+CoverArtManager::CoverArtManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
 
 
-model::Cover manager::CoverArtManager::saveCover(const model::Song& song)
+model::Cover CoverArtManager::saveCover(const model::Song& song)
 {
-    auto pathConfigContent = manager::DirectoryManager::pathConfigContent(m_bConf);
-    auto stockCoverPath = manager::DirectoryManager::configPath(m_bConf);
+    auto pathConfigContent = DirectoryManager::pathConfigContent(m_bConf);
+    auto stockCoverPath = DirectoryManager::configPath(m_bConf);
     stockCoverPath.append("/CoverArt.png");
 
     utility::MetadataRetriever meta;
@@ -51,12 +48,12 @@ model::Cover manager::CoverArtManager::saveCover(const model::Song& song)
 }
 
 
-std::pair<bool, std::string> manager::CoverArtManager::defaultCover(
+std::pair<bool, std::string> CoverArtManager::defaultCover(
     const model::Cover& cover) {
 
-    auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto paths = DirectoryManager::pathConfigContent(m_bConf);
     const auto coverArtPath = 
-        paths[manager::DirectoryManager::retrievePathType(
+        paths[DirectoryManager::retrievePathType(
             type::PathType::coverArt)].get<std::string>();
 
     auto stockCoverArtPath = coverArtPath;
@@ -70,7 +67,7 @@ std::pair<bool, std::string> manager::CoverArtManager::defaultCover(
 }
 
 
-void manager::CoverArtManager::deleteCover(const model::Song& song)
+void CoverArtManager::deleteCover(const model::Song& song)
 {
     database::CoverArtRepository covRepo(m_bConf);
 
@@ -89,10 +86,10 @@ void manager::CoverArtManager::deleteCover(const model::Song& song)
         return;
     }
 
-    manager::DirectoryManager::deleteDirectories(song, result.second);
+    DirectoryManager::deleteDirectories(song, result.second);
 }
 
-void manager::CoverArtManager::updateCover(const model::Song& updatedSong,
+void CoverArtManager::updateCover(const model::Song& updatedSong,
         const model::Song& currSong)
 {
     database::CoverArtRepository covRepo(m_bConf);
@@ -110,10 +107,10 @@ void manager::CoverArtManager::updateCover(const model::Song& updatedSong,
     fs::copy(cover.imagePath, imagePath);
     fs::remove(cover.imagePath);
 
-    manager::DirectoryManager::deleteDirectories(currSong, result.second);
+    DirectoryManager::deleteDirectories(currSong, result.second);
 }
 
-void manager::CoverArtManager::updateCoverRecord(const model::Song& updatedSong)
+void CoverArtManager::updateCoverRecord(const model::Song& updatedSong)
 {
     model::Cover updatedCover(updatedSong);
     auto updatedImagePath = createImagePath(updatedSong);
@@ -123,9 +120,9 @@ void manager::CoverArtManager::updateCoverRecord(const model::Song& updatedSong)
 }
 
 
-std::string manager::CoverArtManager::createImagePath(const model::Song& song)
+std::string CoverArtManager::createImagePath(const model::Song& song)
 {
-    auto imagePath = manager::DirectoryManager::createDirectoryProcess(
+    auto imagePath = DirectoryManager::createDirectoryProcess(
         song, m_bConf, type::PathType::coverArt);
 
     if (song.track != 0) {
@@ -139,4 +136,5 @@ std::string manager::CoverArtManager::createImagePath(const model::Song& song)
     imagePath.append(".png");
 
     return imagePath;
+}
 }

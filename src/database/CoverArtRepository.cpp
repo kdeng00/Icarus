@@ -6,14 +6,15 @@
 #include <string>
 #include <cstring>
 
-database::CoverArtRepository::CoverArtRepository(const std::string& path) : BaseRepository(path)
+namespace database {
+CoverArtRepository::CoverArtRepository(const std::string& path) : BaseRepository(path)
 { }
 
-database::CoverArtRepository::CoverArtRepository(const model::BinaryPath& bConf) : BaseRepository(bConf)
+CoverArtRepository::CoverArtRepository(const model::BinaryPath& bConf) : BaseRepository(bConf)
 { }
 
 
-std::vector<model::Cover> database::CoverArtRepository::retrieveRecords()
+std::vector<model::Cover> CoverArtRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -30,7 +31,7 @@ std::vector<model::Cover> database::CoverArtRepository::retrieveRecords()
     return coverArts;
 }
 
-model::Cover database::CoverArtRepository::retrieveRecord(model::Cover& cov, type::CoverFilter filter = type::CoverFilter::id)
+model::Cover CoverArtRepository::retrieveRecord(model::Cover& cov, type::CoverFilter filter = type::CoverFilter::id)
 {
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -80,7 +81,7 @@ model::Cover database::CoverArtRepository::retrieveRecord(model::Cover& cov, typ
 }
 
 
-bool database::CoverArtRepository::doesCoverArtExist(const model::Cover& cover, type::CoverFilter filter)
+bool CoverArtRepository::doesCoverArtExist(const model::Cover& cover, type::CoverFilter filter)
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -133,7 +134,7 @@ bool database::CoverArtRepository::doesCoverArtExist(const model::Cover& cover, 
 
 
 // TODO: change to prepared statement
-void database::CoverArtRepository::deleteRecord(const model::Cover& cov)
+void CoverArtRepository::deleteRecord(const model::Cover& cov)
 {
     auto conn = setupMysqlConnection();
     const std::string query("DELETE FROM CoverArt WHERE CoverArtId = " + std::to_string(cov.id));
@@ -143,7 +144,7 @@ void database::CoverArtRepository::deleteRecord(const model::Cover& cov)
     mysql_close(conn);
 }
 
-void database::CoverArtRepository::saveRecord(const model::Cover& cov)
+void CoverArtRepository::saveRecord(const model::Cover& cov)
 {
     std::cout << "saving cover art record";
     auto conn = setupMysqlConnection();
@@ -178,7 +179,7 @@ void database::CoverArtRepository::saveRecord(const model::Cover& cov)
     std::cout << "saved cover art record" << std::endl;
 }
 
-void database::CoverArtRepository::updateRecord(const model::Cover& cover)
+void CoverArtRepository::updateRecord(const model::Cover& cover)
 {
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -222,7 +223,7 @@ void database::CoverArtRepository::updateRecord(const model::Cover& cover)
 }
 
 
-std::vector<model::Cover> database::CoverArtRepository::parseRecords(MYSQL_STMT *stmt)
+std::vector<model::Cover> CoverArtRepository::parseRecords(MYSQL_STMT *stmt)
 {
     mysql_stmt_store_result(stmt);
     auto rowCount = mysql_stmt_num_rows(stmt);
@@ -288,7 +289,7 @@ std::vector<model::Cover> database::CoverArtRepository::parseRecords(MYSQL_STMT 
 }
 
 
-model::Cover database::CoverArtRepository::parseRecord(MYSQL_RES *results)
+model::Cover CoverArtRepository::parseRecord(MYSQL_RES *results)
 {
     std::cout << "parsing record" << std::endl;
     model::Cover cov;
@@ -314,7 +315,7 @@ model::Cover database::CoverArtRepository::parseRecord(MYSQL_RES *results)
     return cov;
 }
 
-model::Cover database::CoverArtRepository::parseRecord(MYSQL_STMT *stmt)
+model::Cover CoverArtRepository::parseRecord(MYSQL_STMT *stmt)
 {
     std::cout << "parsing cover art record" << std::endl;
 
@@ -371,4 +372,5 @@ model::Cover database::CoverArtRepository::parseRecord(MYSQL_STMT *stmt)
     std::cout << "done parsing cover art record" << std::endl;
 
     return cover;
+}
 }

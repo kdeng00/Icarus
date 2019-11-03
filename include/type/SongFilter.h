@@ -9,8 +9,10 @@ namespace type
         title,
         album,
         artist,
+        albumArtist,
         genre,
-        year
+        year,
+        titleAndArtist
     };
 }
 

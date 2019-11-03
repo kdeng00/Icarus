@@ -6,13 +6,14 @@
 #include <string>
 #include <cstring>
 
-database::ArtistRepository::ArtistRepository(const model::BinaryPath& binConf)
+namespace database {
+ArtistRepository::ArtistRepository(const model::BinaryPath& binConf)
     : BaseRepository(binConf)
 {
 }
 
 
-std::vector<model::Artist> database::ArtistRepository::retrieveRecords()
+std::vector<model::Artist> ArtistRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -29,7 +30,7 @@ std::vector<model::Artist> database::ArtistRepository::retrieveRecords()
     return artists;
 }
 
-std::pair<model::Artist, int> database::ArtistRepository::retrieveRecordWithSongCount(model::Artist& artist, type::ArtistFilter filter = type::ArtistFilter::id)
+std::pair<model::Artist, int> ArtistRepository::retrieveRecordWithSongCount(model::Artist& artist, type::ArtistFilter filter = type::ArtistFilter::id)
 {
     std::cout << "retrieving artist record with song count" << std::endl;
     std::stringstream qry;
@@ -73,7 +74,7 @@ std::pair<model::Artist, int> database::ArtistRepository::retrieveRecordWithSong
     return artWSC;
 }
 
-model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, type::ArtistFilter filter)
+model::Artist ArtistRepository::retrieveRecord(model::Artist& artist, type::ArtistFilter filter)
 {
     std::cout << "retrieving artist record" << std::endl;
     std::stringstream qry;
@@ -123,7 +124,7 @@ model::Artist database::ArtistRepository::retrieveRecord(model::Artist& artist, 
     return artist;
 }
 
-bool database::ArtistRepository::doesArtistExist(const model::Artist& artist, type::ArtistFilter filter)
+bool ArtistRepository::doesArtistExist(const model::Artist& artist, type::ArtistFilter filter)
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -174,7 +175,7 @@ bool database::ArtistRepository::doesArtistExist(const model::Artist& artist, ty
     return (rowCount > 0) ? true : false;
 }
 
-void database::ArtistRepository::saveRecord(const model::Artist& artist)
+void ArtistRepository::saveRecord(const model::Artist& artist)
 {
     std::cout << "inserting artist record" << std::endl;
 
@@ -203,8 +204,7 @@ void database::ArtistRepository::saveRecord(const model::Artist& artist)
     std::cout<< "inserted artist record" << std::endl;
 }
 
-void database::ArtistRepository::deleteArtist(const model::Artist& artist, type::ArtistFilter filter = type::ArtistFilter::id) {
-    // TODO: implement this
+void ArtistRepository::deleteArtist(const model::Artist& artist, type::ArtistFilter filter = type::ArtistFilter::id) {
     std::cout << "delete Artist record" << std::endl;
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -240,7 +240,7 @@ void database::ArtistRepository::deleteArtist(const model::Artist& artist, type:
     std::cout << "deleted artist record" << std::endl;
 }
 
-std::vector<model::Artist> database::ArtistRepository::parseRecords(MYSQL_STMT *stmt)
+std::vector<model::Artist> ArtistRepository::parseRecords(MYSQL_STMT *stmt)
 {
     mysql_stmt_store_result(stmt);
 
@@ -291,7 +291,7 @@ std::vector<model::Artist> database::ArtistRepository::parseRecords(MYSQL_STMT *
 }
 
 
-model::Artist database::ArtistRepository::parseRecord(MYSQL_RES* results)
+model::Artist ArtistRepository::parseRecord(MYSQL_RES* results)
 {
     std::cout << "parsing artist record" << std::endl;
     model::Artist artist;
@@ -315,7 +315,7 @@ model::Artist database::ArtistRepository::parseRecord(MYSQL_RES* results)
     return artist;
 }
 
-std::pair<model::Artist, int> database::ArtistRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+std::pair<model::Artist, int> ArtistRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
 {
     std::cout << "parsing artist record with song count" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -364,7 +364,7 @@ std::pair<model::Artist, int> database::ArtistRepository::parseRecordWithSongCou
     return std::make_pair(artist, songCount);
 }
 
-model::Artist database::ArtistRepository::parseRecord(MYSQL_STMT *stmt)
+model::Artist ArtistRepository::parseRecord(MYSQL_STMT *stmt)
 {
     std::cout << "parsing artist record" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -412,4 +412,5 @@ model::Artist database::ArtistRepository::parseRecord(MYSQL_STMT *stmt)
     std::cout << "done parsing artist record" << std::endl;
 
     return art;
+}
 }

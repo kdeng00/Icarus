@@ -14,11 +14,6 @@
 namespace fs = std::filesystem;
 
 namespace manager {
-TokenManager::TokenManager()
-{
-}
-
-
 model::Token TokenManager::retrieveToken(const model::BinaryPath& bConf)
 {
     auto cred = parseAuthCredentials(bConf);
@@ -122,24 +117,6 @@ nlohmann::json TokenManager::createTokenBody(const model::AuthCredentials& auth)
 }
 
 
-[[depreacted("use the other function with the same name")]]
-model::AuthCredentials TokenManager::parseAuthCredentials(std::string_view path)
-{
-    auto exe_path = DirectoryManager::configPath(path);
-    exe_path.append("/authcredentials.json");
-    
-    auto con = DirectoryManager::credentialConfigContent(exe_path);
-
-    model::AuthCredentials auth;
-    auth.uri = "https://";
-    auth.uri.append(con["domain"]);
-    auth.apiIdentifier = con["api_identifier"];
-    auth.clientId = con["client_id"];
-    auth.clientSecret = con["client_secret"];
-    auth.endpoint = "oauth/token";
-
-    return auth;
-}
 model::AuthCredentials TokenManager::parseAuthCredentials(const model::BinaryPath& bConf)
 {
     auto con = DirectoryManager::credentialConfigContent(bConf);
@@ -154,6 +131,7 @@ model::AuthCredentials TokenManager::parseAuthCredentials(const model::BinaryPat
 
     return auth;
 }
+
 
 std::vector<std::string> TokenManager::extractScopes(const jwt::decoded_jwt&& decoded)
 {

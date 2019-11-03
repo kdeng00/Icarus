@@ -6,12 +6,11 @@
 #include "model/Models.h"
 #include "type/AlbumFilter.h"
 
-manager::AlbumManager::AlbumManager(const model::BinaryPath& bConf)
-    : m_bConf(bConf)
-{ }
+namespace manager {
+AlbumManager::AlbumManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
 
 
-model::Album manager::AlbumManager::retrieveAlbum(model::Album& album)
+model::Album AlbumManager::retrieveAlbum(model::Album& album)
 {
     database::AlbumRepository albRepo(m_bConf);
     album = std::move(albRepo.retrieveRecord(album, type::AlbumFilter::title));
@@ -19,7 +18,7 @@ model::Album manager::AlbumManager::retrieveAlbum(model::Album& album)
     return album;
 }
 
-model::Album manager::AlbumManager::saveAlbum(const model::Song& song)
+model::Album AlbumManager::saveAlbum(const model::Song& song)
 {
     model::Album album;
     album.title = song.album;
@@ -37,7 +36,7 @@ model::Album manager::AlbumManager::saveAlbum(const model::Song& song)
 }
 
 
-void manager::AlbumManager::deleteAlbum(const model::Song& song)
+void AlbumManager::deleteAlbum(const model::Song& song)
 {
     model::Album album(song);
 
@@ -53,7 +52,7 @@ void manager::AlbumManager::deleteAlbum(const model::Song& song)
     albRepo.deleteAlbum(album, type::AlbumFilter::id);
 }
 
-void manager::AlbumManager::updateAlbum(model::Song& updatedSong,
+void AlbumManager::updateAlbum(model::Song& updatedSong,
     const model::Song& currSong)
 {
     model::Album album;
@@ -72,10 +71,11 @@ void manager::AlbumManager::updateAlbum(model::Song& updatedSong,
     updatedSong.albumId = album.id;
 }
 
-void manager::AlbumManager::printAlbum(const model::Album& album)
+void AlbumManager::printAlbum(const model::Album& album)
 {
     std::cout << "\nalbum record" << std::endl;
     std::cout << "id: " << album.id << std::endl;
     std::cout << "title: " << album.title << std::endl;
     std::cout << "year: " << album.year << std::endl;
+}
 }

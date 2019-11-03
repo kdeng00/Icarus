@@ -17,7 +17,8 @@
 
 namespace fs = std::filesystem;
 
-model::Song utility::MetadataRetriever::retrieveMetadata(std::string& songPath)
+namespace utility {
+model::Song MetadataRetriever::retrieveMetadata(std::string& songPath)
 {
     TagLib::FileRef file(songPath.c_str());
     model::Song song;
@@ -48,7 +49,8 @@ model::Song utility::MetadataRetriever::retrieveMetadata(std::string& songPath)
     return song;
 }
 
-model::Cover utility::MetadataRetriever::updateCoverArt(const model::Song& song, model::Cover& cov, const std::string& stockCoverPath)
+model::Cover MetadataRetriever::updateCoverArt(const model::Song& song, model::Cover& cov, 
+    const std::string& stockCoverPath)
 {
     TagLib::MPEG::File sngF(song.songPath.c_str());
     auto tag = sngF.ID3v2Tag();
@@ -93,14 +95,14 @@ model::Cover utility::MetadataRetriever::updateCoverArt(const model::Song& song,
 }
 
 // tags song with the stock cover art
-model::Cover utility::MetadataRetriever::applyStockCoverArt(
+model::Cover MetadataRetriever::applyStockCoverArt(
     const model::Song& song, model::Cover& cov, 
     const std::string& stockCoverPath)
 {
     TagLib::MPEG::File songFile(song.songPath.c_str());
     auto tag = songFile.ID3v2Tag();
 
-    utility::ImageFile stockImg(cov.imagePath.c_str());
+    ImageFile stockImg(cov.imagePath.c_str());
     TagLib::ID3v2::AttachedPictureFrame *pic = 
         new TagLib::ID3v2::AttachedPictureFrame;
 
@@ -119,7 +121,7 @@ model::Cover utility::MetadataRetriever::applyStockCoverArt(
 
 // extracts cover art from the song and save it to the
 // appropriate directory
-model::Cover utility::MetadataRetriever::applyCoverArt(const model::Song& song,
+model::Cover MetadataRetriever::applyCoverArt(const model::Song& song,
     model::Cover& cov)
 {
     TagLib::MPEG::File songFile(song.songPath.c_str());
@@ -140,7 +142,7 @@ model::Cover utility::MetadataRetriever::applyCoverArt(const model::Song& song,
 }
 
 
-bool utility::MetadataRetriever::songContainsCoverArt(const model::Song& song)
+bool MetadataRetriever::songContainsCoverArt(const model::Song& song)
 {
     TagLib::MPEG::File songFile(song.songPath.c_str());
     auto tag = songFile.ID3v2Tag();
@@ -150,7 +152,7 @@ bool utility::MetadataRetriever::songContainsCoverArt(const model::Song& song)
 }
 
 
-void utility::MetadataRetriever::updateMetadata(model::Song& sngUpdated, const model::Song& sngOld)
+void MetadataRetriever::updateMetadata(model::Song& sngUpdated, const model::Song& sngOld)
 {
     std::cout<<"updating metadata"<<std::endl;
     TagLib::FileRef file(sngOld.songPath.c_str());
@@ -174,4 +176,5 @@ void utility::MetadataRetriever::updateMetadata(model::Song& sngUpdated, const m
     // TODO: functionality to update the track number and disc number
 
     file.save();
+}
 }

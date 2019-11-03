@@ -2,6 +2,7 @@
 #define SONGREPOSITORY_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include <mysql/mysql.h>
@@ -28,10 +29,13 @@ namespace database
         void saveRecord(const model::Song&);
         void updateRecord(const model::Song&);
     private:
-        std::vector<model::Song> parseRecords(MYSQL_RES*); // TODO: to be removed
+        std::shared_ptr<MYSQL_BIND> valueBind(model::Song&, 
+            std::tuple<char*, char*, char*, char*, char*>&);
+
+        std::tuple<char*, char*, char*, char*, char*> metadataBuffer();
+
         std::vector<model::Song> parseRecords(MYSQL_STMT*);
 
-        model::Song parseRecord(MYSQL_RES*); // TODO: to be removed
         model::Song parseRecord(MYSQL_STMT*);
     };
 }

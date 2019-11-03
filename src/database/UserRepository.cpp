@@ -25,6 +25,13 @@ model::User UserRepository::retrieveUserRecord(model::User& user,
     auto userLength = user.username.size();
     switch (filter) {
         case type::UserFilter::id:
+            qry << "UserId = ?";
+
+            params[0].buffer_type = MYSQL_TYPE_LONG;
+            params[0].buffer = (char*)&user.id;
+            params[0].length = nullptr;
+            params[0].is_null = 0;
+
             break;
         case type::UserFilter::username:
             qry << "Username = ?";

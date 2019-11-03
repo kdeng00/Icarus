@@ -21,16 +21,13 @@
 
 namespace fs = std::filesystem;
 
-manager::SongManager::SongManager(std::string& x_path)
-    : exe_path(x_path)
-{ }
-
-manager::SongManager::SongManager(const model::BinaryPath& bConf)
+namespace manager {
+SongManager::SongManager(const model::BinaryPath& bConf)
     : m_bConf(bConf)
 { }
 
 
-bool manager::SongManager::didSongChange(const model::Song& updatedSong, 
+bool SongManager::didSongChange(const model::Song& updatedSong, 
     const model::Song& currSong)
 {
     if (!updatedSong.title.empty()) {
@@ -52,7 +49,7 @@ bool manager::SongManager::didSongChange(const model::Song& updatedSong,
     return false;
 }
 
-bool manager::SongManager::requiresFilesystemChange(const model::Song& updatedSong, 
+bool SongManager::requiresFilesystemChange(const model::Song& updatedSong, 
     const model::Song& currSong)
 {
     if (updatedSong.title.compare(currSong.title) != 0) {
@@ -68,7 +65,7 @@ bool manager::SongManager::requiresFilesystemChange(const model::Song& updatedSo
     return false;
 }
 
-bool manager::SongManager::deleteSong(model::Song& song)
+bool SongManager::deleteSong(model::Song& song)
 {
     database::SongRepository songRepo(m_bConf);
 
@@ -79,7 +76,7 @@ bool manager::SongManager::deleteSong(model::Song& song)
 
     song = songRepo.retrieveRecord(song, type::SongFilter::id);
 
-    auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto paths = DirectoryManager::pathConfigContent(m_bConf);
 
     auto deleted = songRepo.deleteRecord(song);
 
@@ -90,11 +87,11 @@ bool manager::SongManager::deleteSong(model::Song& song)
     deleteMisc(song);
 
     fs::remove(song.songPath);
-    manager::DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
+    DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
     return deleted;
 }
 
-bool manager::SongManager::updateSong(model::Song& updatedSong)
+bool SongManager::updateSong(model::Song& updatedSong)
 {
     database::SongRepository songRepo(m_bConf);
     model::Song currSong(updatedSong.id);
@@ -126,7 +123,7 @@ bool manager::SongManager::updateSong(model::Song& updatedSong)
 }
 
 
-void manager::SongManager::saveSong(model::Song& song)
+void SongManager::saveSong(model::Song& song)
 {
     saveSongTemp(song);
     utility::MetadataRetriever meta;
@@ -140,11 +137,11 @@ void manager::SongManager::saveSong(model::Song& song)
 
     database::SongRepository songRepo(m_bConf);
     songRepo.saveRecord(song);
-    song = songRepo.retrieveRecord(song, type::SongFilter::title);
+    song = songRepo.retrieveRecord(song, type::SongFilter::titleAndArtist);
 }
 
 
-void manager::SongManager::printSong(const model::Song& song)
+void SongManager::printSong(const model::Song& song)
 {
     std::cout << "\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
@@ -164,7 +161,7 @@ void manager::SongManager::printSong(const model::Song& song)
 }
 
 
-std::map<type::SongChanged, bool> manager::SongManager::changesInSong(
+std::map<type::SongChanged, bool> SongManager::changesInSong(
     const model::Song& updatedSong, const model::Song& currSong)
 {
     std::map<type::SongChanged, bool> songChanges;
@@ -197,9 +194,9 @@ std::map<type::SongChanged, bool> manager::SongManager::changesInSong(
 }
 
 
-std::string manager::SongManager::createSongPath(const model::Song& song)
+std::string SongManager::createSongPath(const model::Song& song)
 {
-    auto songPath = manager::DirectoryManager::createDirectoryProcess(
+    auto songPath = DirectoryManager::createDirectoryProcess(
         song, m_bConf, type::PathType::music);
 
     if (song.track != 0) {
@@ -217,7 +214,7 @@ std::string manager::SongManager::createSongPath(const model::Song& song)
 
 
 // used to prevent empty values to appear in the updated song
-void manager::SongManager::assignMiscFields(
+void SongManager::assignMiscFields(
     std::map<type::SongChanged, bool>& songChanges, model::Song& updatedSong,
     const model::Song& currSong)
 {
@@ -256,7 +253,7 @@ void manager::SongManager::assignMiscFields(
 }
 
 // used to dump miscellaneous id to the updated song
-void manager::SongManager::assignMiscId(model::Song& updatedSong,
+void SongManager::assignMiscId(model::Song& updatedSong,
     const model::Song& currSong)
 {
     std::cout << "assigning miscellaneous Id's to updated song" << std::endl;
@@ -268,9 +265,9 @@ void manager::SongManager::assignMiscId(model::Song& updatedSong,
 }
 
 // saves song to a temporary path
-void manager::SongManager::saveSongTemp(model::Song& song)
+void SongManager::saveSongTemp(model::Song& song)
 {
-    auto config = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto config = DirectoryManager::pathConfigContent(m_bConf);
 
     auto tmpSongPath = config["temp_root_path"].get<std::string>();
     std::random_device dev;
@@ -287,10 +284,10 @@ void manager::SongManager::saveSongTemp(model::Song& song)
     song.songPath = tmpSongPath;
 }
 
-void manager::SongManager::saveMisc(model::Song& song)
+void SongManager::saveMisc(model::Song& song)
 {
     CoverArtManager covMgr(m_bConf);
-    auto pathConfigContent = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto pathConfigContent = DirectoryManager::pathConfigContent(m_bConf);
     auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
 
     auto cov = covMgr.saveCover(song);
@@ -311,22 +308,22 @@ void manager::SongManager::saveMisc(model::Song& song)
     AlbumManager albMgr(m_bConf);
     auto album = albMgr.saveAlbum(song);
     album = albMgr.retrieveAlbum(album);
-    manager::AlbumManager::printAlbum(album);
+    AlbumManager::printAlbum(album);
 
     ArtistManager artMgr(m_bConf);
     auto artist = artMgr.saveArtist(song);
     artist = artMgr.retrieveArtist(artist);
-    manager::ArtistManager::printArtist(artist);
+    ArtistManager::printArtist(artist);
 
     GenreManager gnrMgr(m_bConf);
     auto genre = gnrMgr.saveGenre(song);
     genre = gnrMgr.retrieveGenre(genre);
-    manager::GenreManager::printGenre(genre);
+    GenreManager::printGenre(genre);
 
     YearManager yrMgr(m_bConf);
     auto year = yrMgr.saveYear(song);
     year = yrMgr.retrieveYear(year);
-    manager::YearManager::printYear(year);
+    YearManager::printYear(year);
 
     song.coverArtId = cov.id;
     song.albumId = album.id;
@@ -337,41 +334,41 @@ void manager::SongManager::saveMisc(model::Song& song)
     std::cout << "done with miscellaneous database records" << std::endl;
 }
 
-void manager::SongManager::deleteMisc(const model::Song& song)
+void SongManager::deleteMisc(const model::Song& song)
 {
-    manager::CoverArtManager covMgr(m_bConf);
+    CoverArtManager covMgr(m_bConf);
     covMgr.deleteCover(song);
 
-    manager::AlbumManager albMgr(m_bConf);
+    AlbumManager albMgr(m_bConf);
     albMgr.deleteAlbum(song);
 
-    manager::ArtistManager artMgr(m_bConf);
+    ArtistManager artMgr(m_bConf);
     artMgr.deleteArtist(song);
 
-    manager::GenreManager gnrMgr(m_bConf);
+    GenreManager gnrMgr(m_bConf);
     gnrMgr.deleteGenre(song);
 
-    manager::YearManager yrMgr(m_bConf);
+    YearManager yrMgr(m_bConf);
     yrMgr.deleteYear(song);
 }
 
 // deletes miscellanes records
-void manager::SongManager::deleteMiscExceptCoverArt(const model::Song& song)
+void SongManager::deleteMiscExceptCoverArt(const model::Song& song)
 {
-    manager::AlbumManager albMgr(m_bConf);
+    AlbumManager albMgr(m_bConf);
     albMgr.deleteAlbum(song);
 
-    manager::ArtistManager artMgr(m_bConf);
+    ArtistManager artMgr(m_bConf);
     artMgr.deleteArtist(song);
 
-    manager::GenreManager gnrMgr(m_bConf);
+    GenreManager gnrMgr(m_bConf);
     gnrMgr.deleteGenre(song);
 
-    manager::YearManager yrMgr(m_bConf);
+    YearManager yrMgr(m_bConf);
     yrMgr.deleteYear(song);
 }
 
-void manager::SongManager::updateMisc(
+void SongManager::updateMisc(
     const std::map<type::SongChanged, bool>& songChanges,
     model::Song& updatedSong, const model::Song& currSong)
 {
@@ -382,25 +379,25 @@ void manager::SongManager::updateMisc(
     auto yearChange = songChanges.at(type::SongChanged::year);
 
     if (artistChange) {
-        manager::ArtistManager artMgr(m_bConf);
+        ArtistManager artMgr(m_bConf);
         artMgr.updateArtist(updatedSong, currSong);
     }
     if (albumChange) {
-        manager::AlbumManager albMgr(m_bConf);
+        AlbumManager albMgr(m_bConf);
         albMgr.updateAlbum(updatedSong, currSong);
     }
     if (genreChange) {
-        manager::GenreManager gnrMgr(m_bConf);
+        GenreManager gnrMgr(m_bConf);
         gnrMgr.updateGenre(updatedSong, currSong);
     }
     if (yearChange) {
-        manager::YearManager yrMgr(m_bConf);
+        YearManager yrMgr(m_bConf);
         yrMgr.updateYear(updatedSong, currSong);
     }
 
     // determins to update the cover art record
     if (titleChange || artistChange || albumChange) {
-        manager::CoverArtManager covMgr(m_bConf);
+        CoverArtManager covMgr(m_bConf);
         covMgr.updateCoverRecord(updatedSong);
     }
 
@@ -410,7 +407,7 @@ void manager::SongManager::updateMisc(
     deleteMiscExceptCoverArt(currSong);
 }
 
-void manager::SongManager::modifySongOnFilesystem(model::Song& updatedSong, 
+void SongManager::modifySongOnFilesystem(model::Song& updatedSong, 
     const model::Song& currSong)
 {
     std::cout << "preparing to modify song" << std::endl;
@@ -422,12 +419,13 @@ void manager::SongManager::modifySongOnFilesystem(model::Song& updatedSong,
     fs::copy(currSong.songPath, updatedSong.songPath);
     fs::remove(currSong.songPath);
 
-    auto paths = manager::DirectoryManager::pathConfigContent(m_bConf);
+    auto paths = DirectoryManager::pathConfigContent(m_bConf);
     const auto musicRootPath = 
-        paths[manager::DirectoryManager::retrievePathType(
+        paths[DirectoryManager::retrievePathType(
                 type::PathType::music)].get<std::string>();
-    manager::DirectoryManager::deleteDirectories(currSong, musicRootPath);
+    DirectoryManager::deleteDirectories(currSong, musicRootPath);
 
-    manager::CoverArtManager covMgr(m_bConf);
+    CoverArtManager covMgr(m_bConf);
     covMgr.updateCover(updatedSong, currSong);
+}
 }

@@ -6,13 +6,11 @@
 #include <string>
 #include <cstring>
 
-
-database::YearRepository::YearRepository(const model::BinaryPath& bConf)
-    : BaseRepository(bConf)
-{ }
+namespace database {
+YearRepository::YearRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
 
 
-std::vector<model::Year> database::YearRepository::retrieveRecords()
+std::vector<model::Year> YearRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -29,7 +27,7 @@ std::vector<model::Year> database::YearRepository::retrieveRecords()
     return yearRecs;
 }
 
-std::pair<model::Year, int> database::YearRepository::retrieveRecordWithSongCount(model::Year& year, type::YearFilter filter = type::YearFilter::id)
+std::pair<model::Year, int> YearRepository::retrieveRecordWithSongCount(model::Year& year, type::YearFilter filter = type::YearFilter::id)
 {
     std::cout << "retrieving year record with song count" << std::endl;
     std::stringstream qry;
@@ -73,7 +71,7 @@ std::pair<model::Year, int> database::YearRepository::retrieveRecordWithSongCoun
     return yearWSC;
 }
 
-model::Year database::YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter)
+model::Year YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter)
 {
     // TODO: switch to prepared statements
     std::cout << "retrieving year record" << std::endl;
@@ -106,7 +104,7 @@ model::Year database::YearRepository::retrieveRecord(model::Year& year, type::Ye
     return year;
 }
 
-bool database::YearRepository::doesYearExist(const model::Year& year, type::YearFilter filter)
+bool YearRepository::doesYearExist(const model::Year& year, type::YearFilter filter)
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -156,7 +154,7 @@ bool database::YearRepository::doesYearExist(const model::Year& year, type::Year
     return (rowCount > 0) ? true : false;
 }
 
-void database::YearRepository::saveRecord(const model::Year& year)
+void YearRepository::saveRecord(const model::Year& year)
 {
     std::cout << "saving year record" << std::endl;
 
@@ -184,7 +182,7 @@ void database::YearRepository::saveRecord(const model::Year& year)
     std::cout << "saved record" << std::endl;
 }
 
-void database::YearRepository::deleteYear(const model::Year& year, type::YearFilter filter = type::YearFilter::id)
+void YearRepository::deleteYear(const model::Year& year, type::YearFilter filter = type::YearFilter::id)
 {
     std::cout << "deleting year record"  << std::endl;
     std::stringstream qry;
@@ -221,7 +219,7 @@ void database::YearRepository::deleteYear(const model::Year& year, type::YearFil
     std::cout << "deleted year record" << std::endl;
 }
 
-std::vector<model::Year> database::YearRepository::parseRecords(MYSQL_STMT *stmt)
+std::vector<model::Year> YearRepository::parseRecords(MYSQL_STMT *stmt)
 {
     mysql_stmt_store_result(stmt);
 
@@ -265,7 +263,7 @@ std::vector<model::Year> database::YearRepository::parseRecords(MYSQL_STMT *stmt
     return yearRecs;
 }
 
-std::pair<model::Year, int> database::YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+std::pair<model::Year, int> YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
 {
     std::cout << "parsing year record" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -308,7 +306,7 @@ std::pair<model::Year, int> database::YearRepository::parseRecordWithSongCount(M
     return std::make_pair(year, songCount);
 }
 
-model::Year database::YearRepository::parseRecord(MYSQL_RES *results)
+model::Year YearRepository::parseRecord(MYSQL_RES *results)
 {
     std::cout << "parsing year record" << std::endl;
     model::Year year;
@@ -331,7 +329,7 @@ model::Year database::YearRepository::parseRecord(MYSQL_RES *results)
 
     return year;
 }
-model::Year database::YearRepository::parseRecord(MYSQL_STMT *stmt)
+model::Year YearRepository::parseRecord(MYSQL_STMT *stmt)
 {
     // TODO: imeplement this
     // I really thought that I had already done this
@@ -339,4 +337,5 @@ model::Year database::YearRepository::parseRecord(MYSQL_STMT *stmt)
     model::Year year;
 
     return year;
+}
 }

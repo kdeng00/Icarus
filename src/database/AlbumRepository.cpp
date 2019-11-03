@@ -7,12 +7,13 @@
 #include <string>
 #include <cstring>
 
-database::AlbumRepository::AlbumRepository(const model::BinaryPath& bConf)
+namespace database {
+AlbumRepository::AlbumRepository(const model::BinaryPath& bConf)
     : BaseRepository(bConf)
 { }
 
 
-std::vector<model::Album> database::AlbumRepository::retrieveRecords()
+std::vector<model::Album> AlbumRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -30,7 +31,7 @@ std::vector<model::Album> database::AlbumRepository::retrieveRecords()
 }
 
 
-std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCount(model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
+std::pair<model::Album, int> AlbumRepository::retrieveRecordWithSongCount(model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
 {
     std::cout << "retrieving album with song count" << std::endl;
     std::stringstream qry;
@@ -71,7 +72,7 @@ std::pair<model::Album, int> database::AlbumRepository::retrieveRecordWithSongCo
     return albWSC;
 }
 
-model::Album database::AlbumRepository::retrieveRecord(model::Album& album, type::AlbumFilter filter)
+model::Album AlbumRepository::retrieveRecord(model::Album& album, type::AlbumFilter filter)
 {
     std::cout << "retrieving album record" << std::endl;
     std::stringstream qry;
@@ -122,7 +123,7 @@ model::Album database::AlbumRepository::retrieveRecord(model::Album& album, type
     return album;
 }
 
-bool database::AlbumRepository::doesAlbumExists(const model::Album& album, type::AlbumFilter filter)
+bool AlbumRepository::doesAlbumExists(const model::Album& album, type::AlbumFilter filter)
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
@@ -173,7 +174,7 @@ bool database::AlbumRepository::doesAlbumExists(const model::Album& album, type:
     return (rowCount > 0) ? true : false;
 }
 
-void database::AlbumRepository::saveAlbum(const model::Album& album)
+void AlbumRepository::saveAlbum(const model::Album& album)
 {
     std::cout << "beginning to insert album record" << std::endl;
 
@@ -207,7 +208,7 @@ void database::AlbumRepository::saveAlbum(const model::Album& album)
     std::cout << "done inserting album record" << std::endl;
 }
 
-void database::AlbumRepository::deleteAlbum(const model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
+void AlbumRepository::deleteAlbum(const model::Album& album, type::AlbumFilter filter = type::AlbumFilter::id)
 {
     std::cout << "deleting album record" << std::endl;
 
@@ -243,7 +244,7 @@ void database::AlbumRepository::deleteAlbum(const model::Album& album, type::Alb
 }
 
 
-std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_STMT* stmt)
+std::vector<model::Album> AlbumRepository::parseRecords(MYSQL_STMT* stmt)
 {
     std::cout << "parsing album record" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -304,7 +305,7 @@ std::vector<model::Album> database::AlbumRepository::parseRecords(MYSQL_STMT* st
 }
 
 // TODO: check to see if this is not used, if not then remove it
-model::Album database::AlbumRepository::parseRecord(MYSQL_RES* results)
+model::Album AlbumRepository::parseRecord(MYSQL_RES* results)
 {
     std::cout << "parsing album record" << std::endl;
     model::Album album;
@@ -329,7 +330,7 @@ model::Album database::AlbumRepository::parseRecord(MYSQL_RES* results)
     return album;
 }
 
-std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+std::pair<model::Album, int> AlbumRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
 {
     std::cout << "parsing album record with song count" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -392,7 +393,7 @@ std::pair<model::Album, int> database::AlbumRepository::parseRecordWithSongCount
     return albWSC;
 }
 
-model::Album database::AlbumRepository::parseRecord(MYSQL_STMT *stmt)
+model::Album AlbumRepository::parseRecord(MYSQL_STMT *stmt)
 {
     std::cout << "parsing album record" << std::endl;
     mysql_stmt_store_result(stmt);
@@ -446,4 +447,5 @@ model::Album database::AlbumRepository::parseRecord(MYSQL_STMT *stmt)
     std::cout << "done parsing album record" << std::endl;
 
     return album;
+}
 }
