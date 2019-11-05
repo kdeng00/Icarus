@@ -52,7 +52,7 @@ std::string DirectoryManager::createDirectoryProcess(const model::Song& song,
         fs::create_directory(currPath);
     }
 
-    auto artPath = fs::path(currPath.string() + song.artist);
+    auto artPath = fs::path(currPath.string() + song.albumArtist);
     if (fs::exists(artPath)) {
         std::cout << "artist path exists" << std::endl;
     } else {
@@ -143,7 +143,7 @@ nlohmann::json DirectoryManager::pathConfigContent(const model::BinaryPath& bCon
 void DirectoryManager::deleteDirectories(model::Song song, const std::string& rootPath)
 {
     std::cout << "checking for empty directories to delete" << std::endl;
-    const std::string art(rootPath + std::string("/") + song.artist);
+    const std::string art(rootPath + std::string("/") + song.albumArtist);
     const std::string alb(art + "/" + song.album);
 
     auto albPath = fs::path(alb);

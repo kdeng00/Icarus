@@ -128,7 +128,7 @@ void SongManager::saveSong(model::Song& song)
     saveSongTemp(song);
     utility::MetadataRetriever meta;
     auto data = std::move(song.data);
-    song = meta.retrieveMetadata(song.songPath);
+    song = meta.retrieveMetadata(song);
     song.data = std::move(data);
 
     saveMisc(song);
@@ -146,6 +146,7 @@ void SongManager::printSong(const model::Song& song)
     std::cout << "\nsong" << std::endl;
     std::cout << "title: " << song.title << std::endl;
     std::cout << "artist: " << song.artist << std::endl;
+    std::cout << "album artist: " << song.albumArtist << std::endl;
     std::cout << "album: " << song.album << std::endl;
     std::cout << "genre: " << song.genre << std::endl;
     std::cout << "duration: " << song.duration << std::endl;

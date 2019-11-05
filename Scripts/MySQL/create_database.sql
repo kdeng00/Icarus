@@ -13,6 +13,7 @@ CREATE TABLE CoverArt (
 CREATE TABLE Album (
     AlbumId INT NOT NULL AUTO_INCREMENT,
     Title TEXT NOT NULL,
+    Artist TEXT NOT NULL,
     Year INT NOT NULL,
 
     PRIMARY KEY (AlbumId)

@@ -1,6 +1,7 @@
 #ifndef ALBUMREPOSITORY_H_
 #define ALBUMREPOSITORY_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -30,9 +31,13 @@ namespace database
 
         std::pair<model::Album, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        // TODO: after parseRecord(MYSQL_STMT*) is implemented remove
-        // parseRecord(MYSQL_RES*)
-        model::Album parseRecord(MYSQL_RES*);
+        std::shared_ptr<MYSQL_BIND> valueBind(model::Album&, 
+                std::tuple<char*, char*>&);
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Album&, 
+                std::tuple<char*, char*>&, int&);
+
+        std::tuple<char*, char*> metadataBuffer();
+
         model::Album parseRecord(MYSQL_STMT*);
     };
 }

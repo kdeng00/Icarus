@@ -9,9 +9,6 @@
 
 namespace database {
 
-SongRepository::SongRepository(const std::string& path) : BaseRepository(path)
-{ }
-
 SongRepository::SongRepository(const model::BinaryPath& bConf) : BaseRepository(bConf)
 { }
 
@@ -20,7 +17,10 @@ std::vector<model::Song> SongRepository::retrieveRecords()
 {
     auto conn = setupMysqlConnection();
     auto stmt = mysql_stmt_init(conn);
-    const std::string query = "SELECT * FROM Song";
+    std::stringstream qry;
+    qry << "SELECT sng.*, alb.Artist AS AlbumArtist FROM Song sng ";
+    qry << "LEFT JOIN Album alb ON sng.AlbumId=alb.AlbumId";
+    const auto query = qry.str();
 
     ::mysql_stmt_prepare(stmt, query.c_str(), query.size());
     ::mysql_stmt_execute(stmt);
@@ -52,7 +52,8 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
     MYSQL_BIND params[valueFilterCount];
     memset(params, 0, sizeof(params));
 
-    qry << "SELECT * FROM Song WHERE ";
+    qry << "SELECT sng.*, alb.Artist AS AlbumArtist FROM Song sng ";
+    qry << "LEFT JOIN Album alb ON sng.AlbumId=alb.AlbumId WHERE ";
 
     auto titleLength = song.title.size();
     auto artistLength = song.artist.size();
@@ -92,7 +93,7 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
 
     qry << " LIMIT 1";
 
-    const std::string query = qry.str();
+    const auto query = qry.str();
     auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
     status = mysql_stmt_bind_param(stmt, params);
     status = mysql_stmt_execute(stmt);
@@ -393,10 +394,10 @@ void SongRepository::updateRecord(const model::Song& song)
 
 
 std::shared_ptr<MYSQL_BIND> SongRepository::valueBind(model::Song& song,
-    std::tuple<char*, char*, char*, char*, char*>& metadata)
+    std::tuple<char*, char*, char*, char*, char*, char*>& metadata)
 {
     constexpr auto strLen = 1024;
-    constexpr auto valueCount = 15;
+    constexpr auto valueCount = 16;
     std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(valueCount, sizeof(MYSQL_BIND)));
     unsigned long len[valueCount];
     my_bool nullRes[valueCount];
@@ -452,11 +453,15 @@ std::shared_ptr<MYSQL_BIND> SongRepository::valueBind(model::Song& song,
     values.get()[14].buffer_type = MYSQL_TYPE_LONG;
     values.get()[14].buffer = (char*)&song.yearId;
 
+    values.get()[15].buffer_type = MYSQL_TYPE_STRING;
+    values.get()[15].buffer = (char*)std::get<5>(metadata);
+    values.get()[15].buffer_length = strLen;
+
     return values;
 }
 
 
-std::tuple<char*, char*, char*, char*, char*> SongRepository::metadataBuffer()
+std::tuple<char*, char*, char*, char*, char*, char*> SongRepository::metadataBuffer()
 {
     constexpr auto length = 1024;
     char title[length];
@@ -464,8 +469,9 @@ std::tuple<char*, char*, char*, char*, char*> SongRepository::metadataBuffer()
     char album[length];
     char genre[length];
     char path[length];
+    char albumArtist[length];
 
-    return std::make_tuple(title, artist, album, genre, path);
+    return std::make_tuple(title, artist, album, genre, path, albumArtist);
 }
 
 
@@ -501,6 +507,7 @@ std::vector<model::Song> SongRepository::parseRecords(MYSQL_STMT *stmt)
                 song.album = std::get<2>(metaBuff);
                 song.genre = std::get<3>(metaBuff);
                 song.songPath = std::get<4>(metaBuff);
+                song.albumArtist = std::get<5>(metaBuff);
 
                 songs.push_back(song);
             }
@@ -526,6 +533,7 @@ model::Song SongRepository::parseRecord(MYSQL_STMT *stmt)
     song.album = std::get<2>(metaBuff);
     song.genre = std::get<3>(metaBuff);
     song.songPath = std::get<4>(metaBuff);
+    song.albumArtist = std::get<5>(metaBuff);
     
     std::cout << "done parsing record" << std::endl;
 

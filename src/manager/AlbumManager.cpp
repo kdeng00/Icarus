@@ -20,11 +20,10 @@ model::Album AlbumManager::retrieveAlbum(model::Album& album)
 
 model::Album AlbumManager::saveAlbum(const model::Song& song)
 {
-    model::Album album;
-    album.title = song.album;
-    album.year = song.year;
+    model::Album album(song);
     
     database::AlbumRepository albRepo(m_bConf);
+    // TODO: check for existence with the title and the artist
     if (!albRepo.doesAlbumExists(album, type::AlbumFilter::title)) {
         albRepo.saveAlbum(album);
     } else {
@@ -55,9 +54,7 @@ void AlbumManager::deleteAlbum(const model::Song& song)
 void AlbumManager::updateAlbum(model::Song& updatedSong,
     const model::Song& currSong)
 {
-    model::Album album;
-    album.title = updatedSong.album;
-    album.year = updatedSong.year;
+    model::Album album(updatedSong);
 
     database::AlbumRepository albRepo(m_bConf);
     if (!albRepo.doesAlbumExists(album, type::AlbumFilter::title)) {

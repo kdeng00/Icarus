@@ -16,7 +16,6 @@ namespace database
     class SongRepository : public BaseRepository
     {
     public:
-        SongRepository(const std::string&);
         SongRepository(const model::BinaryPath&);
 
         std::vector<model::Song> retrieveRecords();
@@ -30,9 +29,9 @@ namespace database
         void updateRecord(const model::Song&);
     private:
         std::shared_ptr<MYSQL_BIND> valueBind(model::Song&, 
-            std::tuple<char*, char*, char*, char*, char*>&);
+            std::tuple<char*, char*, char*, char*, char*, char*>&);
 
-        std::tuple<char*, char*, char*, char*, char*> metadataBuffer();
+        std::tuple<char*, char*, char*, char*, char*, char*> metadataBuffer();
 
         std::vector<model::Song> parseRecords(MYSQL_STMT*);
 

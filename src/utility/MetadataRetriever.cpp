@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <attachedpictureframe.h>
+#include <textidentificationframe.h>
 #include <fileref.h>
 #include <mpegfile.h>
 #include <tag.h>
@@ -18,31 +19,43 @@
 namespace fs = std::filesystem;
 
 namespace utility {
-model::Song MetadataRetriever::retrieveMetadata(std::string& songPath)
+model::Song MetadataRetriever::retrieveMetadata(model::Song& song)
 {
-    TagLib::FileRef file(songPath.c_str());
-    model::Song song;
-    song.title = file.tag()->title().toCString();
-    song.artist = file.tag()->artist().toCString();
-    song.album = file.tag()->album().toCString();
-    song.genre = file.tag()->genre().toCString();
-    song.year = file.tag()->year();
-    song.track = file.tag()->track();
-    song.duration = file.audioProperties()->lengthInSeconds();
-    song.songPath = songPath;
-
-    // TODO: Move over to this eventually since at the moment
-    // I am only targetting mp3 files
-    // Used to retrieve disc
-    TagLib::MPEG::File sameFile(songPath.c_str());
+    TagLib::MPEG::File sameFile(song.songPath.c_str());
     auto tag = sameFile.ID3v2Tag();
+    song.title = tag->title().toCString();
+    song.artist = tag->artist().toCString();
+    song.album = tag->album().toCString();
+    song.genre = tag->genre().toCString();
+    song.year = tag->year();
+    song.track = tag->track();
+    song.duration = sameFile.audioProperties()->lengthInSeconds();
 
-    auto frame = tag->frameList("TPOS");
-    if (frame.isEmpty()) {
-        song.disc = 1;
-        // TODO: set default disc to 1 if none found
+    constexpr auto id3DiscName = "TPOS";
+    constexpr auto id3AlbumArtistName = "TPE2";
+
+    auto discFrame = tag->frameList(id3DiscName);
+    auto albumArtistFrame = tag->frameList(id3AlbumArtistName);
+    if (discFrame.isEmpty()) {
+        constexpr auto discDefaultVal = "1";
+        TagLib::ID3v2::TextIdentificationFrame *emptyFrame = 
+                new TagLib::ID3v2::TextIdentificationFrame(id3DiscName);
+        tag->addFrame(emptyFrame);
+        emptyFrame->setText(discDefaultVal);
+        song.disc = std::atoi(discDefaultVal);
+        sameFile.save();
     } else {
-        song.disc = std::stoi(frame.front()->toString().toCString());
+        song.disc = std::stoi(discFrame.front()->toString().toCString());
+    }
+
+    if (albumArtistFrame.isEmpty()) {
+        TagLib::ID3v2::TextIdentificationFrame *emptyFrame = 
+                new TagLib::ID3v2::TextIdentificationFrame(id3DiscName);
+        tag->addFrame(emptyFrame);
+        emptyFrame->setText(song.artist.c_str());
+        sameFile.save();
+    } else {
+        song.albumArtist = albumArtistFrame.front()->toString().toCString();
     }
 
 
@@ -155,13 +168,28 @@ bool MetadataRetriever::songContainsCoverArt(const model::Song& song)
 void MetadataRetriever::updateMetadata(model::Song& sngUpdated, const model::Song& sngOld)
 {
     std::cout<<"updating metadata"<<std::endl;
-    TagLib::FileRef file(sngOld.songPath.c_str());
+    TagLib::MPEG::File file(sngOld.songPath.c_str());
+    auto tag = file.ID3v2Tag();
     
     if (sngUpdated.title.size() > 0) {
         file.tag()->setTitle(sngUpdated.title);
     }
     if (sngUpdated.artist.size() > 0) {
         file.tag()->setArtist(sngUpdated.artist);
+    }
+    if (sngUpdated.albumArtist.size() > 0) {
+        constexpr auto frameId = "TPE2";
+        auto albumArtistFrame = tag->frameList(frameId);
+        if (albumArtistFrame.isEmpty()) {
+            TagLib::ID3v2::TextIdentificationFrame *frame =
+                    new TagLib::ID3v2::TextIdentificationFrame(frameId);
+            frame->setText(sngUpdated.albumArtist.c_str());
+            tag->addFrame(frame);
+        } else {
+            albumArtistFrame.front()->setText(sngUpdated.albumArtist.c_str());
+        }
+
+        file.save();
     }
     if (sngUpdated.album.size() > 0) {
         file.tag()->setAlbum(sngUpdated.album);

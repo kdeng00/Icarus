@@ -14,6 +14,7 @@ namespace dto
 
         DTO_FIELD(Int32, id);
         DTO_FIELD(String, title);
+        DTO_FIELD(String, artist);
         DTO_FIELD(Int32, year);
     };
 

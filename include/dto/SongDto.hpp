@@ -17,6 +17,7 @@ namespace dto
         DTO_FIELD(Int32, id);
         DTO_FIELD(String, title);
         DTO_FIELD(String, artist);
+        DTO_FIELD(String, album_artist);
         DTO_FIELD(String, album);
         DTO_FIELD(String, genre);
         DTO_FIELD(Int32, track);

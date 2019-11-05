@@ -19,6 +19,7 @@
 
 #include "database/AlbumRepository.h"
 #include "dto/AlbumDto.hpp"
+#include "dto/conversion/DtoConversions.h"
 #include "manager/AlbumManager.h"
 #include "manager/TokenManager.h"
 #include "model/Models.h"
@@ -57,10 +58,7 @@ public:
         auto albums = oatpp::data::mapping::type::List<dto::AlbumDto::ObjectWrapper>::createShared();
 
         for (auto& albDb : albsDb) {
-            auto alb = dto::AlbumDto::createShared();
-            alb->id = albDb.id;
-            alb->title = albDb.title.c_str();
-            alb->year = albDb.year;
+            auto alb = dto::conversion::DtoConversions::toAlbumDto(albDb);
 
             albums->pushBack(alb);
         }
@@ -85,10 +83,7 @@ public:
         std::cout << "album exists" << std::endl;
         albDb = albRepo.retrieveRecord(albDb, type::AlbumFilter::id);
 
-        auto album = dto::AlbumDto::createShared();
-        album->id = albDb.id;
-        album->title = albDb.title.c_str();
-        album->year = albDb.year;
+        auto album = dto::conversion::DtoConversions::toAlbumDto(albDb);
 
         return createDtoResponse(Status::CODE_200, album);
     }

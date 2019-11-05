@@ -5,14 +5,24 @@
 #include <vector>
 
 namespace model {
-struct Song {
+class Song {
+public:
     Song() = default;
     Song(const int id) : id(id) { }
+    Song(const int id, const std::string& title, const std::string& artist,
+            const std::string& album, const std::string& albumArtist,
+            const std::string& genre, const int year, const int duration,
+            const int track, const int disc, const std::string songPath) :
+            id(id), title(title), artist(artist), album(album),
+            albumArtist(albumArtist), genre(genre), year(year),
+            duration(duration), track(track), disc(disc), 
+            songPath(songPath) { }
 
     int id; 
     std::string title;
     std::string artist;
     std::string album;
+    std::string albumArtist;
     std::string genre;
     int year;
     int duration;
@@ -27,42 +37,35 @@ struct Song {
     int yearId;
 };
 
-struct Artist {
+class Artist {
+public:
     Artist() = default;
-    Artist(const Song& song)
-    {
-        id = song.artistId;
-        artist = song.artist;
-    }
+    Artist(const Song& song) : id(song.artistId), artist(song.artist) { }
     Artist(const int id) : id(id) { }
 
     int id;
     std::string artist;
 };
 
-struct Album {
+class Album {
+public:
     Album() = default;
-    Album(const Song& song)
-    {
-        id = song.albumId;
-        title = song.album;
-        year = song.year;
-    }
+    Album(const Song& song) : 
+            id(song.albumId), title(song.album),artist(song.artist), year(song.year) { }
     Album(const int id) : id(id) { }
 
     int id;
     std::string title;
+    std::string artist;
     int year;
     std::vector<Song> songs;
 };
 
-struct Genre {
+class Genre {
+public:
     Genre() = default;
-    Genre(const Song& song)
-    {
-        id = song.genreId;
-        category = song.genre;
-    }
+    Genre(const Song& song) : 
+            id(song.genreId), category(song.genre) { }
     Genre(const int id) : id(id) { }
 
     int id;
@@ -70,26 +73,22 @@ struct Genre {
 
 };
 
-struct Year {
+class Year {
+public:
     Year() = default;
-    Year(const Song& song)
-    {
-        id = song.yearId;
-        year = song.year;
-    }
+    Year(const Song& song) : 
+            id(song.yearId), year(song.year) { }
     Year(const int id) : id(id) { }
 
     int id;
     int year;
 };
 
-struct Cover {
+class Cover {
+public:
     Cover() = default;
-    Cover(const Song& song)
-    {
-        id = song.coverArtId;
-        songTitle = song.title;
-    }
+    Cover(const Song& song) : 
+            id(song.coverArtId), songTitle(song.title) { }
     Cover(const int id) : id(id) { }
 
     int id;
@@ -163,11 +162,12 @@ struct DatabaseConnection {
     std::string database;
 };
 
-struct BinaryPath {
+class BinaryPath {
+public:
     BinaryPath() = default;
-    BinaryPath(const char *p) : path(std::move(p)) { }
-    BinaryPath(std::string& p) : path(p) { }
+    BinaryPath(const char *p) : path(p) { }
     BinaryPath(const std::string& p) : path(p) { }
+    BinaryPath(const std::string&& p) : path(p) { }
 
     std::string path;
 };

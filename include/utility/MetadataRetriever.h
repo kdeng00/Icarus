@@ -10,7 +10,7 @@ namespace utility {
 class MetadataRetriever
 {
 public:
-    model::Song retrieveMetadata(std::string&);
+    model::Song retrieveMetadata(model::Song&);
 
     model::Cover updateCoverArt(const model::Song&, model::Cover&, const std::string&);
     model::Cover applyStockCoverArt(const model::Song&, model::Cover&, const std::string&);
