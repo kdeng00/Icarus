@@ -20,7 +20,7 @@ namespace database
 
         std::vector<model::Song> retrieveRecords();
 
-        model::Song retrieveRecord(model::Song&, type::SongFilter);
+        model::Song retrieveRecord(const model::Song&, type::SongFilter);
 
         bool doesSongExist(const model::Song&, type::SongFilter);
         bool deleteRecord(const model::Song&);

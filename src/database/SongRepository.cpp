@@ -34,7 +34,7 @@ std::vector<model::Song> SongRepository::retrieveRecords()
 }
 
 
-model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter filter)
+model::Song SongRepository::retrieveRecord(const model::Song& song, type::SongFilter filter)
 {
     std::stringstream qry;
     auto conn = setupMysqlConnection();
@@ -59,7 +59,7 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
     auto artistLength = song.artist.size();
     switch (filter) {
         case type::SongFilter::id:
-            qry << "SongId = ?";
+            qry << "sng.SongId = ?";
 
             params[0].buffer_type = MYSQL_TYPE_LONG;
             params[0].buffer = (char*)&song.id;
@@ -67,7 +67,7 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
             params[0].is_null = 0;;
             break;
         case type::SongFilter::title:
-            qry << "Title = ?";
+            qry << "sng.Title = ?";
 
             params[0].buffer_type = MYSQL_TYPE_STRING;
             params[0].buffer = (char*)song.title.c_str();
@@ -75,7 +75,7 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
             params[0].is_null = 0;
             break;
         case type::SongFilter::titleAndArtist:
-            qry << "Title = ? AND Artist = ?";
+            qry << "sng.Title = ? AND sng.Artist = ?";
 
             params[0].buffer_type = MYSQL_TYPE_STRING;
             params[0].buffer = (char*)song.title.c_str();
@@ -86,6 +86,9 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
             params[1].buffer = (char*)song.artist.c_str();
             params[1].length = &artistLength;
             params[1].is_null = 0;
+
+            std::cout << "title: " << song.title.c_str() << " artist: " << 
+                song.artist.c_str() << "\n";
             break;
         default:
             break;
@@ -100,13 +103,14 @@ model::Song SongRepository::retrieveRecord(model::Song& song, type::SongFilter f
 
     std::cout << "the query has been performed" << std::endl;
 
-    song = parseRecord(stmt);
+    //song = parseRecord(stmt);
+    auto retrievedSong = parseRecord(stmt);
 
     mysql_stmt_close(stmt);
     mysql_close(conn);
     std::cout << "done" << std::endl;
 
-    return song;
+    return retrievedSong;
 }
 
 
@@ -522,6 +526,8 @@ std::vector<model::Song> SongRepository::parseRecords(MYSQL_STMT *stmt)
 
 model::Song SongRepository::parseRecord(MYSQL_STMT *stmt)
 {
+    mysql_stmt_store_result(stmt);
+    std::cout << "amount of rows: " << mysql_stmt_num_rows(stmt) << std::endl;
     model::Song song;
     auto metaBuff = metadataBuffer();
     auto bindedValues = valueBind(song, metaBuff);
@@ -529,6 +535,7 @@ model::Song SongRepository::parseRecord(MYSQL_STMT *stmt)
     status = mysql_stmt_fetch(stmt);
 
     song.title = std::get<0>(metaBuff);
+    std::cout << "parsing song record\n the title is: " << song.title << std::endl;
     song.artist = std::get<1>(metaBuff);
     song.album = std::get<2>(metaBuff);
     song.genre = std::get<3>(metaBuff);
