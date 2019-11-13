@@ -535,7 +535,6 @@ model::Song SongRepository::parseRecord(MYSQL_STMT *stmt)
     status = mysql_stmt_fetch(stmt);
 
     song.title = std::get<0>(metaBuff);
-    std::cout << "parsing song record\n the title is: " << song.title << std::endl;
     song.artist = std::get<1>(metaBuff);
     song.album = std::get<2>(metaBuff);
     song.genre = std::get<3>(metaBuff);
