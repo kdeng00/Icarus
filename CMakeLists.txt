@@ -80,6 +80,7 @@ set(HEADERS
     include/type/Scopes.h
     include/type/SongChanged.h
     include/type/SongFilter.h
+    include/type/SongUpload.h
     include/type/UserFilter.h
     include/type/YearFilter.h
     include/verify/Initialization.h
@@ -122,9 +123,6 @@ set(JWT_CPP_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jwt-cpp/include
 )
 
-set (ORM_DIR
-    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/ormpp
-)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
@@ -136,7 +134,6 @@ include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS} ${BC
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/libbcrypt)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/bin/appsettings.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)

@@ -27,6 +27,7 @@
 #include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/SongFilter.h"
+#include "type/SongUpload.h"
 
 namespace fs = std::filesystem;
 
@@ -74,7 +75,16 @@ public:
         sng.data = std::move(data);
     
         manager::SongManager songMgr(m_bConf);
-        songMgr.saveSong(sng);
+        const auto result =  songMgr.saveSong(sng);
+        if (!result.first) {
+            switch (result.second) {
+                case type::SongUpload::AlreadyExist:
+                    return createResponse(Status::CODE_400, "Song already exists");
+                default:
+                    break;
+            }
+        }
+
         auto songDto = dto::conversion::DtoConversions::toSongDto(sng);
 
         return createDtoResponse(Status::CODE_200, songDto);

@@ -23,8 +23,33 @@ namespace fs = std::filesystem;
 
 namespace manager {
 SongManager::SongManager(const model::BinaryPath& bConf)
-    : m_bConf(bConf)
-{ }
+    : m_bConf(bConf) { }
+
+
+std::pair<bool, type::SongUpload> SongManager::saveSong(model::Song& song)
+{
+    saveSongTemp(song);
+    utility::MetadataRetriever meta;
+    auto data = std::move(song.data);
+    song = meta.retrieveMetadata(song);
+    song.data = std::move(data);
+
+    database::SongRepository songRepo(m_bConf);
+    if (songRepo.doesSongExist(song, type::SongFilter::titleAndArtist)) {
+        std::cout << "\ntitle: " << song.title << "\nartist: " << song.artist << "\n";
+        std::cout << "does not exist\n";
+        return std::make_pair(false, type::SongUpload::AlreadyExist);
+    }
+
+    saveMisc(song);
+
+    printSong(song);
+
+    songRepo.saveRecord(song);
+    song = songRepo.retrieveRecord(song, type::SongFilter::titleAndArtist);
+
+    return std::make_pair(true, type::SongUpload::Successful);
+}
 
 
 bool SongManager::didSongChange(const model::Song& updatedSong, 
@@ -120,24 +145,6 @@ bool SongManager::updateSong(model::Song& updatedSong)
     updateMisc(changes, updatedSong, currSong);
 
     return true;
-}
-
-
-void SongManager::saveSong(model::Song& song)
-{
-    saveSongTemp(song);
-    utility::MetadataRetriever meta;
-    auto data = std::move(song.data);
-    song = meta.retrieveMetadata(song);
-    song.data = std::move(data);
-
-    saveMisc(song);
-
-    printSong(song);
-
-    database::SongRepository songRepo(m_bConf);
-    songRepo.saveRecord(song);
-    song = songRepo.retrieveRecord(song, type::SongFilter::titleAndArtist);
 }
 
 

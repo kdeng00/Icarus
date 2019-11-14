@@ -4,12 +4,14 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 
 #include <nlohmann/json.hpp>
 
 #include "dto/SongDto.hpp"
 #include "model/Models.h"
 #include "type/SongChanged.h"
+#include "type/SongUpload.h"
 
 namespace manager {
     class SongManager
@@ -17,13 +19,12 @@ namespace manager {
     public:
         SongManager(const model::BinaryPath&);
 
+        std::pair<bool, type::SongUpload> saveSong(model::Song&);
 
         bool didSongChange(const model::Song&, const model::Song&);
         bool requiresFilesystemChange(const model::Song&, const model::Song&);
         bool deleteSong(model::Song&);
         bool updateSong(model::Song&);
-
-        void saveSong(model::Song&);
 
         static void printSong(const model::Song&);
     private:
