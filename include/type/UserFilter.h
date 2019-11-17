@@ -2,8 +2,7 @@
 #define USERFILTER_H_
 
 namespace type {
-    enum class UserFilter
-    {
+    enum class UserFilter {
         id = 0,
         username
     };

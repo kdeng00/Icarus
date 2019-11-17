@@ -2,7 +2,7 @@
 
 namespace dto { namespace conversion { 
     LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
-        const model::Token& token) {
+            const model::Token& token) {
         auto logRes = dto::LoginResultDto::createShared();
         logRes->username = user.username.c_str();
         logRes->token = token.accessToken.c_str();

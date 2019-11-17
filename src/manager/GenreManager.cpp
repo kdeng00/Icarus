@@ -6,72 +6,67 @@
 #include "type/GenreFilter.h"
 
 namespace manager {
-GenreManager::GenreManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    GenreManager::GenreManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
 
 
-model::Genre GenreManager::retrieveGenre(model::Genre& genre)
-{
-    database::GenreRepository gnrRepo(m_bConf);
-    genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
+    model::Genre GenreManager::retrieveGenre(model::Genre& genre) {
+		database::GenreRepository gnrRepo(m_bConf);
+		genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
 
-    return genre;
-}
-
-model::Genre GenreManager::saveGenre(const model::Song& song)
-{
-    model::Genre genre;
-    genre.category = song.genre;
-    
-    database::GenreRepository gnrRepo(m_bConf);
-    if (!gnrRepo.doesGenreExist(genre, type::GenreFilter::category)) {
-        gnrRepo.saveRecord(genre);
-    } else {
-        std::cout << "genre record already exists" << std::endl;
+		return genre;
     }
 
-    return genre;
-}
+    model::Genre GenreManager::saveGenre(const model::Song& song) {
+		model::Genre genre;
+		genre.category = song.genre;
+		
+		database::GenreRepository gnrRepo(m_bConf);
+		if (!gnrRepo.doesGenreExist(genre, type::GenreFilter::category)) {
+		    gnrRepo.saveRecord(genre);
+		} else {
+		    std::cout << "genre record already exists\n";
+		}
 
-
-void GenreManager::deleteGenre(const model::Song& song)
-{
-    model::Genre genre(song);
-
-    database::GenreRepository gnrRepo(m_bConf);
-    auto gnrWSC = gnrRepo.retrieveRecordWithSongCount(genre, type::GenreFilter::id);
-
-    if (gnrWSC.second > 1) {
-        std::cout << "genre still contain songs related to it";
-        std::cout << ", will not delete" << std::endl;
-        return;
+		return genre;
     }
 
-    std::cout << "safe to delete the genre record" << std::endl;
-    gnrRepo.deleteRecord(genre, type::GenreFilter::id);
-}
 
-void GenreManager::updateGenre(model::Song& updatedSong,
-    const model::Song& currSong)
-{
-    model::Genre genre;
-    genre.category = updatedSong.genre;
+    void GenreManager::deleteGenre(const model::Song& song) {
+		model::Genre genre(song);
 
-    database::GenreRepository gnrRepo(m_bConf);
-    if (!gnrRepo.doesGenreExist(genre, type::GenreFilter::category)) {
-        std::cout << "genre record does not exist" << std::endl;
-        gnrRepo.saveRecord(genre);
-    } else {
-        std::cout << "genre record already exists" << std::endl;
+		database::GenreRepository gnrRepo(m_bConf);
+		auto gnrWSC = gnrRepo.retrieveRecordWithSongCount(genre, type::GenreFilter::id);
+
+		if (gnrWSC.second > 1) {
+		    std::cout << "genre still contain songs related to it";
+		    std::cout << ", will not delete\n";
+		    return;
+		}
+
+		std::cout << "safe to delete the genre record\n";
+		gnrRepo.deleteRecord(genre, type::GenreFilter::id);
     }
 
-    genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
-    updatedSong.genreId = genre.id;
-}
+    void GenreManager::updateGenre(model::Song& updatedSong,
+		    const model::Song& currSong) {
+		model::Genre genre;
+		genre.category = updatedSong.genre;
 
-void GenreManager::printGenre(const model::Genre& genre)
-{
-    std::cout << "genre record" << std::endl;
-    std::cout << "id: " << genre.id << std::endl;
-    std::cout << "category: " << genre.category << std::endl;
-}
+		database::GenreRepository gnrRepo(m_bConf);
+		if (!gnrRepo.doesGenreExist(genre, type::GenreFilter::category)) {
+		    std::cout << "genre record does not exist\n";
+		    gnrRepo.saveRecord(genre);
+		} else {
+		    std::cout << "genre record already exists\n";
+		}
+
+		genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
+		updatedSong.genreId = genre.id;
+    }
+
+    void GenreManager::printGenre(const model::Genre& genre) {
+		std::cout << "genre record\n";
+		std::cout << "id: " << genre.id << "\n";
+		std::cout << "category: " << genre.category << "\n";
+    }
 }

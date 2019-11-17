@@ -1,6 +1,7 @@
 #ifndef ARTISTREPOSITORY_H_
 #define ARTISTREPOSITORY_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -8,16 +9,15 @@
 #include "model/Models.h"
 #include "type/ArtistFilter.h"
 
-namespace database
-{
-    class ArtistRepository : public BaseRepository
-    {
+namespace database {
+    class ArtistRepository : public BaseRepository {
     public:
         ArtistRepository(const model::BinaryPath&);
 
         std::vector<model::Artist> retrieveRecords();
 
-        std::pair<model::Artist, int> retrieveRecordWithSongCount(model::Artist&, type::ArtistFilter);
+        std::pair<model::Artist, int> retrieveRecordWithSongCount(
+                model::Artist&, type::ArtistFilter);
 
         model::Artist retrieveRecord(model::Artist&, type::ArtistFilter);
 
@@ -30,9 +30,13 @@ namespace database
 
         std::pair<model::Artist, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        // TODO: After parseRecord(MYSQL_STMT*) is implemented
-        // remove parseRecord(MYSQL_RES*)
-        model::Artist parseRecord(MYSQL_RES*);
+        std::shared_ptr<MYSQL_BIND> valueBind(model::Artist&,
+                std::tuple<char*>&);
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Artist&,
+                std::tuple<char*>&, int&);
+
+        std::tuple<char*> metadataBuffer();
+
         model::Artist parseRecord(MYSQL_STMT*);
     };
 }

@@ -11,18 +11,16 @@
 #include "model/Models.h"
 #include "type/SongFilter.h"
 
-namespace database
-{
-    class SongRepository : public BaseRepository
-    {
+namespace database {
+    class SongRepository : public BaseRepository {
     public:
         SongRepository(const model::BinaryPath&);
 
         std::vector<model::Song> retrieveRecords();
 
-        model::Song retrieveRecord(const model::Song&, type::SongFilter);
+        model::Song retrieveRecord(const model::Song&, type::SongFilter = type::SongFilter::id);
 
-        bool doesSongExist(const model::Song&, type::SongFilter);
+        bool doesSongExist(const model::Song&, type::SongFilter = type::SongFilter::id);
         bool deleteRecord(const model::Song&);
 
         void saveRecord(const model::Song&);

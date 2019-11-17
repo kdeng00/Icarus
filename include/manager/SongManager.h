@@ -14,8 +14,7 @@
 #include "type/SongUpload.h"
 
 namespace manager {
-    class SongManager
-    {
+    class SongManager {
     public:
         SongManager(const model::BinaryPath&);
 

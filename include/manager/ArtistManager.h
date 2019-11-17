@@ -3,10 +3,8 @@
 
 #include "model/Models.h"
 
-namespace manager
-{
-    class ArtistManager
-    {
+namespace manager {
+    class ArtistManager {
     public:
         ArtistManager(const model::BinaryPath&);
 

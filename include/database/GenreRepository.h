@@ -1,6 +1,7 @@
 #ifndef GENREREPOSITORY_H_
 #define GENREREPOSITORY_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -8,10 +9,8 @@
 #include "model/Models.h"
 #include "type/GenreFilter.h"
 
-namespace database
-{
-    class GenreRepository : public BaseRepository
-    {
+namespace database {
+    class GenreRepository : public BaseRepository {
     public:
         GenreRepository(const model::BinaryPath&);
 
@@ -30,9 +29,13 @@ namespace database
 
         std::pair<model::Genre, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        // TODO: After parseRecord(MYSQL_STMT*) is implemented
-        // remove parseRecord(MYSQL_RES*)
-        model::Genre parseRecord(MYSQL_RES*);
+        std::shared_ptr<MYSQL_BIND> valueBind(model::Genre&,
+                std::tuple<char*>&);
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Genre&,
+                std::tuple<char*>&, int&);
+
+        std::tuple<char*> metadataBuffer();
+
         model::Genre parseRecord(MYSQL_STMT*);
     };
 }

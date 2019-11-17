@@ -3,10 +3,8 @@
 
 #include "model/Models.h"
 
-namespace manager
-{
-    class AlbumManager
-    {
+namespace manager {
+    class AlbumManager {
     public:
         AlbumManager(const model::BinaryPath&);
 

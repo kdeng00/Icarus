@@ -2,8 +2,7 @@
 #define SALTFILTER_H_
 
 namespace type {
-    enum class SaltFilter
-    {
+    enum class SaltFilter {
         id = 0,
         salt,
         userId

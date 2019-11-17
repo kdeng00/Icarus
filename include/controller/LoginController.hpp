@@ -16,46 +16,42 @@
 #include "model/Models.h"
 
 namespace controller {
-class LoginController : public oatpp::web::server::api::ApiController {
-public:
-    LoginController(std::string p, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-        : oatpp::web::server::api::ApiController(objectMapper), exe_path(p)
-    { }
-    LoginController(const model::BinaryPath& bConf, OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-        :oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf)
-    { }
+    class LoginController : public oatpp::web::server::api::ApiController {
+    public:
+		LoginController(const model::BinaryPath& bConf, 
+                OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+				:oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf) { }
 
 
-    #include OATPP_CODEGEN_BEGIN(ApiController)
+		#include OATPP_CODEGEN_BEGIN(ApiController)
     
-    ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
-        OATPP_LOGI("icarus", "logging in");
+		ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
+		    OATPP_LOGI("icarus", "logging in");
 
-        manager::UserManager usrMgr(m_bConf);
-        auto user = dto::conversion::DtoConversions::toUser(usr);
+		    manager::UserManager usrMgr(m_bConf);
+		    auto user = dto::conversion::DtoConversions::toUser(usr);
 
-        if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
-            auto logRes = dto::LoginResultDto::createShared();
-            logRes->message = "invalid credentials";
-            std::cout << "user does not exist" << std::endl;
-            return createDtoResponse(Status::CODE_401, logRes);
-        }
+		    if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
+		    	auto logRes = dto::LoginResultDto::createShared();
+		        logRes->message = "invalid credentials";
+		        std::cout << "user does not exist\n";
+		        return createDtoResponse(Status::CODE_401, logRes);
+		    }
 
-        std::cout << "user exists" << std::endl;
+		    std::cout << "user exists\n";
 
-        manager::TokenManager tok;
-        auto token = tok.retrieveToken(m_bConf);
+		    manager::TokenManager tok;
+		    auto token = tok.retrieveToken(m_bConf);
 
-        auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
-        logRes->message = "Successful";
+		    auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
+		    logRes->message = "Successful";
 
-        return createDtoResponse(Status::CODE_200, logRes);
-    }
+		    return createDtoResponse(Status::CODE_200, logRes);
+		}
 
-    #include OATPP_CODEGEN_END(ApiController)
-private:
-    std::string exe_path;
-    model::BinaryPath m_bConf;
-};
+		#include OATPP_CODEGEN_END(ApiController)
+    private:
+		model::BinaryPath m_bConf;
+    };
 }
 #endif

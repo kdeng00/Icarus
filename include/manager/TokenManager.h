@@ -14,26 +14,26 @@
 #include "type/Scopes.h"
 
 namespace manager {
-class TokenManager {
-public:
-    TokenManager() = default;
+    class TokenManager {
+    public:
+        TokenManager() = default;
 
-    model::Token retrieveToken(const model::BinaryPath&);
+        model::Token retrieveToken(const model::BinaryPath&);
 
-    bool isTokenValid(std::string&, type::Scope);
-    bool testAuth(const model::BinaryPath&);
-private:
-    cpr::Response sendRequest(std::string_view, nlohmann::json&);
+        bool isTokenValid(std::string&, type::Scope);
+        bool testAuth(const model::BinaryPath&);
+    private:
+        cpr::Response sendRequest(std::string_view, nlohmann::json&);
 
-    nlohmann::json createTokenBody(const model::AuthCredentials&);
+        nlohmann::json createTokenBody(const model::AuthCredentials&);
 
-    model::AuthCredentials parseAuthCredentials(const model::BinaryPath&);
+        model::AuthCredentials parseAuthCredentials(const model::BinaryPath&);
 
-    std::vector<std::string> extractScopes(const jwt::decoded_jwt&&);
-    std::pair<bool, std::vector<std::string>> fetchAuthHeader(const std::string&);
+        std::vector<std::string> extractScopes(const jwt::decoded_jwt&&);
+        std::pair<bool, std::vector<std::string>> fetchAuthHeader(const std::string&);
 
-    bool tokenSupportsScope(const std::vector<std::string>&, const std::string&&);
-};
+        bool tokenSupportsScope(const std::vector<std::string>&, const std::string&&);
+    };
 }
 
 #endif

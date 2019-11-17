@@ -23,8 +23,7 @@
 
 namespace fs = std::filesystem;
 
-void run(const model::BinaryPath& bConf)
-{
+void run(const model::BinaryPath& bConf) {
     component::AppComponent component;
 
     OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
@@ -58,8 +57,7 @@ void run(const model::BinaryPath& bConf)
     server.run();
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     oatpp::base::Environment::init();
     
     model::BinaryPath bConf(std::move(argv[0]));
@@ -68,7 +66,7 @@ int main(int argc, char **argv)
         if (!verify::Initialization::skipVerification(argv[1])) {
             verify::Initialization::checkIcarus(bConf);
         } else {
-            std::cout << "skiping verifyication" << std::endl;
+            std::cout << "skiping verifyication\n";
         }
     } else {
         verify::Initialization::checkIcarus(bConf);

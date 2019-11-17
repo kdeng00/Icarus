@@ -7,12 +7,10 @@
 
 #include "model/Models.h"
 
-namespace database
-{
-    class BaseRepository
-    {
+namespace database {
+    class BaseRepository {
     public:
-        BaseRepository();
+        BaseRepository() = default;
         BaseRepository(const std::string&);
         BaseRepository(const model::BinaryPath&);
 

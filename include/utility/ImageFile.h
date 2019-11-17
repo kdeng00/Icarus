@@ -13,10 +13,8 @@
 #include <tpropertymap.h>
 #include <id3v2tag.h>
 
-namespace utility
-{
-    class ImageFile : public TagLib::File
-    {
+namespace utility {
+    class ImageFile : public TagLib::File {
     public:
         ImageFile(const char *file);
 

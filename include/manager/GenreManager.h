@@ -3,10 +3,8 @@
 
 #include "model/Models.h"
 
-namespace manager
-{
-    class GenreManager
-    {
+namespace manager {
+    class GenreManager {
     public:
         GenreManager(const model::BinaryPath&);
 

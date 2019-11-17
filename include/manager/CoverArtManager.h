@@ -6,12 +6,9 @@
 
 #include "model/Models.h"
 
-namespace manager
-{
-    class CoverArtManager
-    {
+namespace manager {
+    class CoverArtManager {
     public:
-        CoverArtManager(const std::string&);
         CoverArtManager(const model::BinaryPath& bConf);
 
         model::Cover saveCover(const model::Song&);
@@ -25,7 +22,6 @@ namespace manager
         std::string createImagePath(const model::Song&);
 
         model::BinaryPath m_bConf;
-        std::string path;
     };
 }
 

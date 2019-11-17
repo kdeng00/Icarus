@@ -9,13 +9,12 @@
 #include "model/Models.h"
 #include "type/PathType.h"
 
-namespace manager
-{
-    class DirectoryManager
-    {
+namespace manager {
+    class DirectoryManager {
     public:
         static std::string createDirectoryProcess(model::Song, const std::string&);
-        static std::string createDirectoryProcess(const model::Song&, const model::BinaryPath&, type::PathType);
+        static std::string createDirectoryProcess(const model::Song&, 
+                const model::BinaryPath&, type::PathType);
         static std::string configPath(std::string_view);
         static std::string configPath(const model::BinaryPath&);
         static std::string contentOfPath(const std::string&);

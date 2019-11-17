@@ -5,10 +5,8 @@
 
 #include "model/Models.h"
 
-namespace verify
-{
-    class Initialization
-    {
+namespace verify {
+    class Initialization {
     public:
         static bool skipVerification(const std::string&);
 

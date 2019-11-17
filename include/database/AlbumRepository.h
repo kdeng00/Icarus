@@ -9,10 +9,8 @@
 #include "model/Models.h"
 #include "type/AlbumFilter.h"
 
-namespace database
-{
-    class AlbumRepository : public BaseRepository
-    {
+namespace database {
+    class AlbumRepository : public BaseRepository {
     public:
         AlbumRepository(const model::BinaryPath&);
 

@@ -4,12 +4,10 @@
 #include "oatpp/core/data/mapping/type/Object.hpp"
 #include "oatpp/core/macro/codegen.hpp"
 
-namespace dto
-{
+namespace dto {
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    class CoverArtDto : public oatpp::data::mapping::type::Object
-    {
+    class CoverArtDto : public oatpp::data::mapping::type::Object {
         DTO_INIT(CoverArtDto, Object)
 
         DTO_FIELD(Int32, id);

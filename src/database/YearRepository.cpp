@@ -7,335 +7,336 @@
 #include <cstring>
 
 namespace database {
-YearRepository::YearRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
+    YearRepository::YearRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
 
 
-std::vector<model::Year> YearRepository::retrieveRecords()
-{
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-    const std::string query = "SELECT * FROM Year";
+    std::vector<model::Year> YearRepository::retrieveRecords() {
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
+		const std::string query = "SELECT * FROM Year";
 
-    mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    mysql_stmt_execute(stmt);
+		mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		mysql_stmt_execute(stmt);
 
-    auto yearRecs = parseRecords(stmt);
+		auto yearRecs = parseRecords(stmt);
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
 
-    return yearRecs;
-}
-
-std::pair<model::Year, int> YearRepository::retrieveRecordWithSongCount(model::Year& year, type::YearFilter filter = type::YearFilter::id)
-{
-    std::cout << "retrieving year record with song count" << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-
-    qry << "SELECT yr.*, COUNT(*) AS SongCount FROM Year yr LEFT JOIN ";
-    qry << "Song sng ON yr.YearId=sng.YearId WHERE ";
-
-    MYSQL_BIND params[1];
-    std::memset(params, 0, sizeof(params));
-
-    switch (filter) {
-        case type::YearFilter::id:
-            qry << "sng.YearId = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&year.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
+		return yearRecs;
     }
 
-    qry << " GROUP BY yr.YearId LIMIT 1";
+    std::pair<model::Year, int> YearRepository::retrieveRecordWithSongCount(model::Year& year, 
+            type::YearFilter filter) {
+		std::cout << "retrieving year record with song count\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
 
-    const auto query = qry.str();
+		qry << "SELECT yr.*, COUNT(*) AS SongCount FROM Year yr LEFT JOIN ";
+		qry << "Song sng ON yr.YearId=sng.YearId WHERE ";
 
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
+		MYSQL_BIND params[1];
+		std::memset(params, 0, sizeof(params));
 
-    auto yearWSC = parseRecordWithSongCount(stmt);
+		switch (filter) {
+		    case type::YearFilter::id:
+		        qry << "sng.YearId = ?";
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&year.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
 
-    std::cout << "retrieved year record with song count" << std::endl;
+		qry << " GROUP BY yr.YearId LIMIT 1";
 
-    return yearWSC;
-}
+		const auto query = qry.str();
 
-model::Year YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter)
-{
-    // TODO: switch to prepared statements
-    std::cout << "retrieving year record" << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    qry << "SELECT yr.* FROM Year yr WHERE ";
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
 
-    switch (filter) {
-        case type::YearFilter::id:
-            qry << "yr.YearId = " << year.id;
-            break;
-        case type::YearFilter::year:
-            qry << "yr.Year = " << year.year;
-            break;
-        default:
-            break;
+		auto yearWSC = parseRecordWithSongCount(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "retrieved year record with song count\n";
+
+		return yearWSC;
     }
 
-    qry << " ORDER BY yr.YearId DESC LIMIT 1";
+    model::Year YearRepository::retrieveRecord(model::Year& year, type::YearFilter filter) {
+		std::cout << "retrieving year record\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+        auto stmt = mysql_stmt_init(conn);
+		qry << "SELECT yr.* FROM Year yr WHERE ";
 
-    const auto query = qry.str();
-    auto results = performMysqlQuery(conn, query);
+        MYSQL_BIND params[1];
+        std::memset(params, 0, sizeof(0));
 
-    year = parseRecord(results);
+		switch (filter) {
+		    case type::YearFilter::id:
+		        qry << "yr.YearId = ?";
 
-    mysql_close(conn);
+                params[0].buffer_type = MYSQL_TYPE_LONG;
+                params[0].buffer = reinterpret_cast<char*>(&year.id);
+                params[0].length = 0;
+                params[0].is_null = 0;
+		        break;
+		    case type::YearFilter::year:
+		        qry << "yr.Year = ?";
 
-    std::cout << "retrieved record" << std::endl;
+                params[0].buffer_type = MYSQL_TYPE_LONG;
+                params[0].buffer = reinterpret_cast<char*>(&year.year);
+                params[0].length = 0;
+                params[0].is_null = 0;
+		        break;
+		    default:
+				    break;
+		}
 
-    return year;
-}
+		qry << " ORDER BY yr.YearId DESC LIMIT 1";
 
-bool YearRepository::doesYearExist(const model::Year& year, type::YearFilter filter)
-{
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
+		const auto query = qry.str();
 
-    std::stringstream qry;
-    qry << "SELECT * FROM Year WHERE ";
+        auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+        status = mysql_stmt_bind_param(stmt, params);
+        status = mysql_stmt_execute(stmt);
 
-    MYSQL_BIND params[1];
-    memset(params, 0, sizeof(params));
+		year = parseRecord(stmt);
 
-    switch (filter) {
-        case type::YearFilter::id:
-            qry << "YearId = ?";
+        mysql_stmt_close(stmt);
+		mysql_close(conn);
 
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&year.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        case type::YearFilter::year:
-            qry << "Year = ?";
+		std::cout << "retrieved record\n";
 
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&year.year;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
+		return year;
     }
 
-    qry << " LIMIT 1";
 
-    const auto query = qry.str();
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
+    bool YearRepository::doesYearExist(const model::Year& year, type::YearFilter filter) {
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
 
-    std::cout << "the query has been performed" << std::endl;
+		std::stringstream qry;
+		qry << "SELECT * FROM Year WHERE ";
 
-    mysql_stmt_store_result(stmt);
-    auto rowCount = mysql_stmt_num_rows(stmt);
+		MYSQL_BIND params[1];
+		memset(params, 0, sizeof(params));
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		switch (filter) {
+		    case type::YearFilter::id:
+		        qry << "YearId = ?";
 
-    return (rowCount > 0) ? true : false;
-}
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&year.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    case type::YearFilter::year:
+		        qry << "Year = ?";
 
-void YearRepository::saveRecord(const model::Year& year)
-{
-    std::cout << "saving year record" << std::endl;
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&year.year;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
 
-    auto conn = setupMysqlConnection();
-    MYSQL_STMT *stmt = mysql_stmt_init(conn);
+		qry << " LIMIT 1";
 
-    const std::string query("INSERT INTO Year(Year) VALUES(?)");
+		const auto query = qry.str();
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
 
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		std::cout << "the query has been performed\n";
 
-    MYSQL_BIND params[1];
-    memset(params, 0 , sizeof(params));
+		mysql_stmt_store_result(stmt);
+		auto rowCount = mysql_stmt_num_rows(stmt);
 
-    params[0].buffer_type = MYSQL_TYPE_LONG;
-    params[0].buffer = (char*)&year.year;
-    params[0].length = 0;
-    params[0].is_null = 0;
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
 
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
-
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
-
-    std::cout << "saved record" << std::endl;
-}
-
-void YearRepository::deleteYear(const model::Year& year, type::YearFilter filter = type::YearFilter::id)
-{
-    std::cout << "deleting year record"  << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-
-    qry << "DELETE FROM Year WHERE ";
-
-    MYSQL_BIND params[1];
-    std::memset(params, 0, sizeof(params));
-
-    switch (filter) {
-        case type::YearFilter::id:
-            qry << "YearId = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&year.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
+		return (rowCount > 0) ? true : false;
     }
 
-    const auto query = qry.str();
 
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
+    void YearRepository::saveRecord(const model::Year& year) {
+		std::cout << "saving year record\n";
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		auto conn = setupMysqlConnection();
+		MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
-    std::cout << "deleted year record" << std::endl;
-}
+		const std::string query("INSERT INTO Year(Year) VALUES(?)");
 
-std::vector<model::Year> YearRepository::parseRecords(MYSQL_STMT *stmt)
-{
-    mysql_stmt_store_result(stmt);
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 
-    std::vector<model::Year> yearRecs;
-    yearRecs.reserve(mysql_stmt_num_rows(stmt));
+		MYSQL_BIND params[1];
+		memset(params, 0 , sizeof(params));
 
-    if (mysql_stmt_field_count(stmt) == 0) {
-        std::cout << "field count is 0" << std::endl;
-        return yearRecs;
+		params[0].buffer_type = MYSQL_TYPE_LONG;
+		params[0].buffer = (char*)&year.year;
+		params[0].length = 0;
+		params[0].is_null = 0;
+
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "saved record\n";
     }
 
-    model::Year yearRec;
-    const auto valAmt = 2;
-    unsigned long len[valAmt];
-    my_bool nullRes[valAmt];
+    void YearRepository::deleteYear(const model::Year& year, 
+            type::YearFilter filter) {
+		std::cout << "deleting year record\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
 
-    auto res = mysql_stmt_result_metadata(stmt);
+		qry << "DELETE FROM Year WHERE ";
 
-    MYSQL_BIND val[valAmt];
-    memset(val, 0, sizeof(val));
+		MYSQL_BIND params[1];
+		std::memset(params, 0, sizeof(params));
 
-    val[0].buffer_type = MYSQL_TYPE_LONG;
-    val[0].buffer = (char*)&yearRec.id;
-    val[0].length = &len[0];
-    val[0].is_null = &nullRes[0];
+		switch (filter) {
+		    case type::YearFilter::id:
+		        qry << "YearId = ?";
 
-    val[1].buffer_type = MYSQL_TYPE_LONG;
-    val[1].buffer = (char*)&yearRec.year;
-    val[1].length = &len[1];
-    val[1].is_null = &nullRes[1];
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&year.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
 
-    for (auto status = mysql_stmt_bind_result(stmt, val); status == 0;) {
-        std::cout << "fetching statement result" << std::endl;
+		const auto query = qry.str();
+
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "deleted year record\n";
+    }
+
+
+    std::vector<model::Year> YearRepository::parseRecords(MYSQL_STMT *stmt) {
+		mysql_stmt_store_result(stmt);
+        const auto rowCount = mysql_stmt_num_rows(stmt);
+
+		std::vector<model::Year> yearRecs;
+		yearRecs.reserve(rowCount);
+
+		if (mysql_stmt_field_count(stmt) == 0) {
+		    std::cout << "field count is 0\n";
+		    return yearRecs;
+		}
+
+		const auto valAmt = 2;
+		unsigned long len[valAmt];
+		my_bool nullRes[valAmt];
+
+		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
+            if (mysql_stmt_field_count(stmt) > 0) {
+		        model::Year yearRec;
+
+		        std::cout << "fetching statement result\n";
+                auto bindedValues = valueBind(yearRec);
+                status = mysql_stmt_bind_result(stmt, bindedValues.get());
+		        status = mysql_stmt_fetch(stmt);
+
+                if (status == 1 || status == MYSQL_NO_DATA) break;
+
+		        yearRecs.push_back(yearRec);
+            }
+            std::cout << "fetching next result\n";
+		}
+
+		return yearRecs;
+    }
+
+    std::pair<model::Year, int> YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
+		std::cout << "parsing year record\n";
+		mysql_stmt_store_result(stmt);
+
+		model::Year year;
+		int songCount = 0;
+
+		if (mysql_stmt_num_rows(stmt) == 0) {
+		    std::cout << "no results\n";
+		    return std::make_pair(year, songCount);
+		}
+
+        auto val = valueBindWithSongCount(year, songCount);
+
+		auto status = mysql_stmt_bind_result(stmt, val.get());
+		status = mysql_stmt_fetch(stmt);
+
+		std::cout << "parsed year record from the database\n";
+
+		return std::make_pair(year, songCount);
+    }
+
+
+    std::shared_ptr<MYSQL_BIND> YearRepository::valueBind(model::Year& year) {
+        constexpr auto valueCount = 2;
+        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+                std::calloc(valueCount, sizeof(MYSQL_BIND)));
+
+        values.get()[0].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[0].buffer = reinterpret_cast<char*>(&year.id);
+
+        values.get()[1].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[1].buffer = reinterpret_cast<char*>(&year.year);
+
+        return values;
+    }
+
+    std::shared_ptr<MYSQL_BIND> YearRepository::valueBindWithSongCount(model::Year& year,
+            int& songCount) {
+        constexpr auto valueCount = 3;
+        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+                std::calloc(valueCount, sizeof(MYSQL_BIND)));
+
+        values.get()[0].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[0].buffer = reinterpret_cast<char*>(&year.id);
+
+        values.get()[1].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[1].buffer = reinterpret_cast<char*>(&year.year);
+
+        values.get()[2].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[2].buffer = reinterpret_cast<char*>(&songCount);
+
+        return values;
+    }
+
+
+    model::Year YearRepository::parseRecord(MYSQL_STMT *stmt) {
+        std::cout << "parsing year record\n";
+        mysql_stmt_store_result(stmt);
+
+		model::Year year;
+        auto bindedValues = valueBind(year);
+        auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
         status = mysql_stmt_fetch(stmt);
 
-        if (status == 0) {
-            yearRecs.push_back(std::move(yearRec));
-        }
+        std::cout << "done parsing year record\n";
+
+		return year;
     }
-
-    return yearRecs;
-}
-
-std::pair<model::Year, int> YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
-{
-    std::cout << "parsing year record" << std::endl;
-    mysql_stmt_store_result(stmt);
-
-    constexpr auto valAmt = 3;
-    unsigned long len[valAmt];
-    my_bool nullRes[valAmt];
-
-    model::Year year;
-    int songCount = 0;
-
-    if (mysql_stmt_num_rows(stmt) == 0) {
-        std::cout << "no results" << std::endl;
-        return std::make_pair(year, songCount);
-    }
-
-    MYSQL_BIND val[valAmt];
-    std::memset(val, 0, sizeof(val));
-
-    val[0].buffer_type = MYSQL_TYPE_LONG;
-    val[0].buffer = (char*)&year.id;
-    val[0].length = &len[0];
-    val[0].is_null = &nullRes[0];
-
-    val[1].buffer_type = MYSQL_TYPE_LONG;
-    val[1].buffer = (char*)&year.year;
-    val[1].length = &len[1];
-    val[1].is_null = &nullRes[1];
-
-    val[2].buffer_type = MYSQL_TYPE_LONG;
-    val[2].buffer = (char*)&songCount;
-    val[2].length = &len[2];
-    val[2].is_null = &nullRes[2];
-
-    mysql_stmt_bind_result(stmt, val);
-    mysql_stmt_fetch(stmt);
-
-    std::cout << "parsed year record from the database" << std::endl;
-
-    return std::make_pair(year, songCount);
-}
-
-model::Year YearRepository::parseRecord(MYSQL_RES *results)
-{
-    std::cout << "parsing year record" << std::endl;
-    model::Year year;
-
-    auto fieldNum = mysql_num_fields(results);
-    auto row = mysql_fetch_row(results);
-
-    for (auto i = 0; i != fieldNum; ++i) {
-        const std::string field(mysql_fetch_field(results)->name);
-
-        if (field.compare("YearId") == 0) {
-            year.id= std::stoi(row[i]);
-        }
-        if (field.compare("Year") == 0) {
-            year.year = std::stoi(row[i]);
-        }
-    }
-
-    std::cout << "parse year record" << std::endl;
-
-    return year;
-}
-model::Year YearRepository::parseRecord(MYSQL_STMT *stmt)
-{
-    // TODO: imeplement this
-    // I really thought that I had already done this
-    
-    model::Year year;
-
-    return year;
-}
 }

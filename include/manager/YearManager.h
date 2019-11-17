@@ -3,10 +3,8 @@
 
 #include "model/Models.h"
 
-namespace manager
-{
-    class YearManager
-    {
+namespace manager {
+    class YearManager {
     public:
         YearManager(const model::BinaryPath&);
 

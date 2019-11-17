@@ -17,8 +17,8 @@ namespace controller {
     class RegisterController : public oatpp::web::server::api::ApiController {
     public:
         RegisterController(const model::BinaryPath& bConf, 
-            OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) :
-            oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf) { }
+                OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) :
+                oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf) { }
 
         #include OATPP_CODEGEN_BEGIN(ApiController)
 
@@ -26,6 +26,9 @@ namespace controller {
             BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
             manager::UserManager usrMgr(m_bConf);
             auto user = dto::conversion::DtoConversions::toUser(usr);
+            if (usrMgr.doesUserExist(user)) {
+                return createResponse(Status::CODE_401, "user already exists");
+            }
 
             auto res = usrMgr.registerUser(user);
             auto registerResult = dto::conversion::DtoConversions::toRegisterResultDto(res);

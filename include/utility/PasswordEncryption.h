@@ -12,7 +12,7 @@ public:
 
     bool isPasswordValid(const model::User&, const model::PassSec&);
 private:
-    int saltSize();
+    constexpr int saltSize() noexcept;
 };
 }
 

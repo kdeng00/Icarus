@@ -1,6 +1,7 @@
 #ifndef COVERARTREPOSITORY_H_
 #define COVERARTREPOSITORY_H_
 
+#include <memory>
 #include <vector>
 
 #include <mysql/mysql.h>
@@ -9,12 +10,9 @@
 #include "model/Models.h"
 #include "type/CoverFilter.h"
 
-namespace database
-{
-    class CoverArtRepository : public BaseRepository
-    {
+namespace database {
+    class CoverArtRepository : public BaseRepository {
     public:
-        CoverArtRepository(const std::string&);
         CoverArtRepository(const model::BinaryPath&);
 
         std::vector<model::Cover> retrieveRecords();
@@ -23,15 +21,17 @@ namespace database
         
         bool doesCoverArtExist(const model::Cover&, type::CoverFilter);
 
-        void deleteRecord(const model::Cover&);
+        void deleteRecord(const model::Cover&, type::CoverFilter = type::CoverFilter::id);
         void saveRecord(const model::Cover&);
         void updateRecord(const model::Cover&);
     private:
         std::vector<model::Cover> parseRecords(MYSQL_STMT*);
 
-        // TODO: After parseRecord(MYSQL_STMT*) is implemented
-        // remove parseRecord(MYSQL_RES*)
-        model::Cover parseRecord(MYSQL_RES*);
+        std::shared_ptr<MYSQL_BIND> valueBind(model::Cover&,
+                std::tuple<char*, char*>&);
+
+        std::tuple<char*, char*> metadataBuffer();
+
         model::Cover parseRecord(MYSQL_STMT*);
     };
 }

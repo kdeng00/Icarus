@@ -6,12 +6,10 @@
 
 #include "model/Models.h"
 
-namespace dto
-{
+namespace dto {
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    class SongDto : public oatpp::data::mapping::type::Object
-    {
+    class SongDto : public oatpp::data::mapping::type::Object {
         DTO_INIT(SongDto, Object)
 
         DTO_FIELD(Int32, id);

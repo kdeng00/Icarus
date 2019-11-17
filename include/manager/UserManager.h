@@ -7,19 +7,19 @@
 #include "model/Models.h"
 
 namespace manager {
-class UserManager {
-public:
-    UserManager(const model::BinaryPath&);
+    class UserManager {
+    public:
+        UserManager(const model::BinaryPath&);
 
-    model::RegisterResult registerUser(model::User&);
+        model::RegisterResult registerUser(model::User&);
 
-    bool doesUserExist(const model::User&);
-    bool validatePassword(const model::User&);
+        bool doesUserExist(const model::User&);
+        bool validatePassword(const model::User&);
 
-    void printUser(const model::User&);
-private:
-    model::BinaryPath m_bConf;
-};
+        void printUser(const model::User&);
+    private:
+        model::BinaryPath m_bConf;
+    };
 }
 
 #endif

@@ -6,357 +6,350 @@
 #include <cstring>
 
 namespace database {
-
-GenreRepository::GenreRepository(const model::BinaryPath& bConf)
-    : BaseRepository(bConf)
-{ }
+    GenreRepository::GenreRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
 
 
-std::vector<model::Genre> GenreRepository::retrieveRecords()
-{
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-    const std::string query = "SELECT * FROM Genre";
+    std::vector<model::Genre> GenreRepository::retrieveRecords() {
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
+		const std::string query = "SELECT * FROM Genre";
 
-    mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    mysql_stmt_execute(stmt);
+		mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		mysql_stmt_execute(stmt);
 
-    auto genres = parseRecords(stmt);
+		auto genres = parseRecords(stmt);
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
 
-    return genres;
-}
-
-std::pair<model::Genre, int> GenreRepository::retrieveRecordWithSongCount(model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
-{
-    std::cout << "retrieving genre record with song count" << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-
-    qry << "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre gnr LEFT JOIN ";
-    qry << "Song sng ON gnr.GenreId=sng.GenreId WHERE ";
-
-    MYSQL_BIND params[1];
-    std::memset(params, 0, sizeof(params));
-
-    switch (filter) {
-        case type::GenreFilter::id:
-            qry << "sng.GenreId = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&genre.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
+		return genres;
     }
 
-    qry << " GROUP BY gnr.GenreId LIMIT 1";
+    std::pair<model::Genre, int> GenreRepository::retrieveRecordWithSongCount(
+            model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id) {
+		std::cout << "retrieving genre record with song count\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
 
-    const auto query = qry.str();
+		qry << "SELECT gnr.*, COUNT(*) AS SongCount FROM Genre gnr LEFT JOIN ";
+		qry << "Song sng ON gnr.GenreId=sng.GenreId WHERE ";
 
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
+		MYSQL_BIND params[1];
+		std::memset(params, 0, sizeof(params));
 
-    auto gnrWSC = parseRecordWithSongCount(stmt);
+		switch (filter) {
+		    case type::GenreFilter::id:
+		        qry << "sng.GenreId = ?";
 
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&genre.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
 
-    std::cout << "retrieved genre record with song count" << std::endl;
+		qry << " GROUP BY gnr.GenreId LIMIT 1";
 
-    return gnrWSC;
-}
+		const auto query = qry.str();
 
-model::Genre GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter)
-{
-    // TODO: change to prepared statement
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		auto gnrWSC = parseRecordWithSongCount(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "retrieved genre record with song count\n";
+
+		return gnrWSC;
+    }
+
+    model::Genre GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter) {
+		std::cout << "retrieving genre record\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+        auto stmt = mysql_stmt_init(conn);
+		qry << "SELECT gnr.* FROM Genre gnr WHERE ";
+
+        MYSQL_BIND params[1];
+        std::memset(params, 0, sizeof(params));
+        auto categoryLength = genre.category.size();
+		
+		switch (filter) {
+		    case type::GenreFilter::id:
+		        qry << "gnr.GenreId = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_LONG;
+                params[0].buffer = reinterpret_cast<char*>(&genre.id);
+                params[0].length = 0;
+                params[0].is_null = 0;
+		        break;
+		    case type::GenreFilter::category:
+		        qry << "gnr.Category = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_STRING;
+                params[0].buffer = const_cast<char*>(genre.category.c_str());
+                params[0].length = &categoryLength;
+                params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
+
+		qry << " ORDER BY GenreId DESC LIMIT 1";
+
+		const auto query = qry.str();
+        auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+        status = mysql_stmt_bind_param(stmt, params);
+        status = mysql_stmt_execute(stmt);
+
+		genre = parseRecord(stmt);
+
+        mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "retrieved record\n";
+
+		return genre;
+    }
+
+    bool GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter) {
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
+
+		std::stringstream qry;
+		qry << "SELECT * FROM Genre WHERE ";
+
+		MYSQL_BIND params[1];
+		memset(params, 0, sizeof(params));
+
+		auto categoryLength = genre.category.size();
+		switch (filter) {
+		    case type::GenreFilter::id:
+		        qry << "GenreId = ?";
+
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&genre.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    case type::GenreFilter::category:
+		        qry << "Category = ?";
+
+		        params[0].buffer_type = MYSQL_TYPE_STRING;
+		        params[0].buffer = (char*)genre.category.c_str();
+		        params[0].length = &categoryLength;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
+
+		qry << " LIMIT 1";
+
+		const auto query = qry.str();
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		std::cout << "the query has been performed\n";
+
+		mysql_stmt_store_result(stmt);
+		auto rowCount = mysql_stmt_num_rows(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		return (rowCount > 0) ? true : false;
+    }
+
+    void GenreRepository::saveRecord(const model::Genre& genre) {
+		std::cout << "inserting genre record\n";
+
+		auto conn = setupMysqlConnection();
+		MYSQL_STMT *stmt = mysql_stmt_init(conn);
+
+		const std::string query("INSERT INTO Genre(Category) VALUES(?)");
+
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+
+		MYSQL_BIND params[1];
+		memset(params, 0, sizeof(params));
+
+		params[0].buffer_type = MYSQL_TYPE_STRING;
+		params[0].buffer = (char*)genre.category.c_str();
+		auto categoryLength = genre.category.size();
+		params[0].length = &categoryLength;
+		params[0].is_null = 0;
+
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "inserted record\n";
+    }
+
+    void GenreRepository::deleteRecord(const model::Genre& genre, 
+            type::GenreFilter filter = type::GenreFilter::id) {
+		std::cout << "deleting genre record\n";
+		std::stringstream qry;
+		auto conn = setupMysqlConnection();
+		auto stmt = mysql_stmt_init(conn);
+
+		qry << "DELETE FROM Genre WHERE ";
+
+		MYSQL_BIND params[1];
+		std::memset(params, 0, sizeof(params));
+
+		switch (filter) {
+		    case type::GenreFilter::id:
+		        qry << "GenreId = ?";
+
+		        params[0].buffer_type = MYSQL_TYPE_LONG;
+		        params[0].buffer = (char*)&genre.id;
+		        params[0].length = 0;
+		        params[0].is_null = 0;
+		        break;
+		    default:
+		        break;
+		}
+
+		const auto query = qry.str();
+
+		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
+		status = mysql_stmt_bind_param(stmt, params);
+		status = mysql_stmt_execute(stmt);
+
+		mysql_stmt_close(stmt);
+		mysql_close(conn);
+
+		std::cout << "deleted genre record\n";
+    }
+
+
+    std::vector<model::Genre> GenreRepository::parseRecords(MYSQL_STMT *stmt) {
+		mysql_stmt_store_result(stmt);
+
+		std::vector<model::Genre> genres;
+		genres.reserve(mysql_stmt_num_rows(stmt));
+
+		constexpr auto valAmt = 2;
+
+		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
+            if (mysql_stmt_field_count(stmt) > 0) {
+                model::Genre genre;
+                auto metaBuff = metadataBuffer();
+                auto bindedValues = valueBind(genre, metaBuff);
+                status = mysql_stmt_bind_result(stmt, bindedValues.get());
+
+                std::cout << "fetching statement result\n";
+                status = mysql_stmt_fetch(stmt);
+
+                if (status == 1 || status == MYSQL_NO_DATA) break;
+
+                genre.category = std::get<0>(metaBuff);
+                genres.push_back(genre);
+            }
+		    std::cout << "fetching statement result\n";
+		}
+
+		return genres;
+    }
+
+    std::pair<model::Genre, int> GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
+		std::cout << "parsing genre record with song count\n";
+		mysql_stmt_store_result(stmt);
+        const auto rowCount = mysql_stmt_num_rows(stmt);
+
+		model::Genre genre;
+		int songCount = 0;
+
+        auto metaBuff = metadataBuffer();
+        auto val = valueBindWithSongCount(genre, metaBuff, songCount);
+
+        if (rowCount == 0) {
+            std::cout << "no results\n";
+            return std::make_pair(genre, songCount);
+        }
+
+		auto status = mysql_stmt_bind_result(stmt, val.get());
+		status = mysql_stmt_fetch(stmt);
+
+		genre.category = std::get<0>(metaBuff);
+
+		std::cout << "parsed genre record with song count\n";
+
+		return std::make_pair(genre, songCount);
+    }
+
+
+    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBind(model::Genre& genre,
+            std::tuple<char*>& metadata) {
+        constexpr auto valueCount = 2;
+        constexpr auto wordLen = 1024;
+        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+                std::calloc(valueCount, sizeof(MYSQL_BIND)));
+
+        values.get()[0].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[0].buffer = reinterpret_cast<char*>(&genre.id);
+
+        values.get()[1].buffer_type = MYSQL_TYPE_STRING;
+        values.get()[1].buffer = reinterpret_cast<char*>(std::get<0>(metadata));
+        values.get()[1].buffer_length = wordLen;
+
+        return values;
+    }
     
-    std::cout << "retrieving genre record" << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    qry << "SELECT gnr.* FROM Genre gnr WHERE ";
+    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBindWithSongCount(model::Genre& genre,
+            std::tuple<char*>& metadata, int& songCount) {
+        constexpr auto valueCount = 3;
+        constexpr auto wordLen = 1024;
+        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+                std::calloc(valueCount, sizeof(MYSQL_BIND)));
 
-    std::unique_ptr<char*> param;
-    switch (filter) {
-        case type::GenreFilter::id:
-            qry << "gnr.GenreId = " << genre.id;
-            break;
-        case type::GenreFilter::category:
-            param = std::make_unique<char*>(new char[genre.category.size()]);
-            mysql_real_escape_string(conn, *param, genre.category.c_str(), genre.category.size());
-            qry << "gnr.Category ='" << *param << "'";
-            break;
-        default:
-            break;
+        values.get()[0].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[0].buffer = reinterpret_cast<char*>(&genre.id);
+
+        values.get()[1].buffer_type = MYSQL_TYPE_STRING;
+        values.get()[1].buffer = reinterpret_cast<char*>(std::get<0>(metadata));
+        values.get()[1].buffer_length = wordLen;
+
+        values.get()[2].buffer_type = MYSQL_TYPE_LONG;
+        values.get()[2].buffer = reinterpret_cast<char*>(&songCount);
+
+        return values;
     }
 
-    qry << " ORDER BY GenreId DESC LIMIT 1";
 
-    const auto query = qry.str();
-    auto results = performMysqlQuery(conn, query);
+    std::tuple<char*> GenreRepository::metadataBuffer() {
+        constexpr auto wordLen = 1024;
+        char category[wordLen];
 
-    genre = parseRecord(results);
-
-    mysql_close(conn);
-
-    std::cout << "retrieved record" << std::endl;
-
-    return genre;
-}
-
-bool GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter)
-{
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-
-    std::stringstream qry;
-    qry << "SELECT * FROM Genre WHERE ";
-
-    MYSQL_BIND params[1];
-    memset(params, 0, sizeof(params));
-
-    auto categoryLength = genre.category.size();
-    switch (filter) {
-        case type::GenreFilter::id:
-            qry << "GenreId = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&genre.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        case type::GenreFilter::category:
-            qry << "Category = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_STRING;
-            params[0].buffer = (char*)genre.category.c_str();
-            params[0].length = &categoryLength;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
+        return std::make_tuple(category);
     }
 
-    qry << " LIMIT 1";
 
-    const auto query = qry.str();
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
+    model::Genre GenreRepository::parseRecord(MYSQL_STMT *stmt) {
+        std::cout << "parsing genre record\n";
+        mysql_stmt_store_result(stmt);
 
-    std::cout << "the query has been performed" << std::endl;
-
-    mysql_stmt_store_result(stmt);
-    auto rowCount = mysql_stmt_num_rows(stmt);
-
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
-
-    return (rowCount > 0) ? true : false;
-}
-
-void GenreRepository::saveRecord(const model::Genre& genre)
-{
-    std::cout << "inserting genre record" << std::endl;
-
-    auto conn = setupMysqlConnection();
-    MYSQL_STMT *stmt = mysql_stmt_init(conn);
-
-    const std::string query("INSERT INTO Genre(Category) VALUES(?)");
-
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-
-    MYSQL_BIND params[1];
-    memset(params, 0, sizeof(params));
-
-    params[0].buffer_type = MYSQL_TYPE_STRING;
-    params[0].buffer = (char*)genre.category.c_str();
-    auto categoryLength = genre.category.size();
-    params[0].length = &categoryLength;
-    params[0].is_null = 0;
-
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
-
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
-
-    std::cout << "inserted record" << std::endl;
-}
-
-void GenreRepository::deleteRecord(const model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id)
-{
-    // TODO: implement this
-    std::cout << "deleting genre record" << std::endl;
-    std::stringstream qry;
-    auto conn = setupMysqlConnection();
-    auto stmt = mysql_stmt_init(conn);
-
-    qry << "DELETE FROM Genre WHERE ";
-
-    MYSQL_BIND params[1];
-    std::memset(params, 0, sizeof(params));
-
-    switch (filter) {
-        case type::GenreFilter::id:
-            qry << "GenreId = ?";
-
-            params[0].buffer_type = MYSQL_TYPE_LONG;
-            params[0].buffer = (char*)&genre.id;
-            params[0].length = 0;
-            params[0].is_null = 0;
-            break;
-        default:
-            break;
-    }
-
-    const auto query = qry.str();
-
-    auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
-    status = mysql_stmt_bind_param(stmt, params);
-    status = mysql_stmt_execute(stmt);
-
-    mysql_stmt_close(stmt);
-    mysql_close(conn);
-
-    std::cout << "deleted genre record" << std::endl;
-}
-
-
-std::vector<model::Genre> GenreRepository::parseRecords(MYSQL_STMT *stmt)
-{
-    mysql_stmt_store_result(stmt);
-
-    std::vector<model::Genre> genres;
-    genres.reserve(mysql_stmt_num_rows(stmt));
-
-    if (mysql_stmt_field_count(stmt) == 0) {
-        std::cout << "field count is 0" << std::endl;
-        return genres;
-    }
-
-    model::Genre gnr;
-    const auto valAmt = 2;
-    unsigned long len[valAmt];
-    my_bool nullRes[valAmt];
-
-    auto res = mysql_stmt_result_metadata(stmt);
-    auto fields = mysql_fetch_fields(res);
-    const auto strLen = 1024;
-
-    char category[strLen];
-
-    MYSQL_BIND val[valAmt];
-    memset(val, 0, sizeof(val));
-
-    val[0].buffer_type = MYSQL_TYPE_LONG;
-    val[0].buffer = (char*)&gnr.id;
-    val[0].length = &len[0];
-    val[0].is_null = &nullRes[0];
-
-    val[1].buffer_type = MYSQL_TYPE_STRING;
-    val[1].buffer = (char*)category;
-    val[1].buffer_length = strLen;
-    val[1].length = &len[1];
-    val[1].is_null = &nullRes[1];
-
-    for (auto status = mysql_stmt_bind_result(stmt, val); status == 0;) {
-        std::cout << "fetching statement result" << std::endl;
+		model::Genre genre;
+        auto metaBuff = metadataBuffer();
+        auto bindedValues = valueBind(genre, metaBuff);
+        auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
         status = mysql_stmt_fetch(stmt);
 
-        if (status == 0) {
-            gnr.category = category;
-            genres.push_back(std::move(gnr));
-        }
+        genre.category = std::get<0>(metaBuff);
+
+        std::cout << "done parsing genre record\n";
+
+		return genre;
     }
-
-    return genres;
-}
-
-std::pair<model::Genre, int> GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
-{
-    std::cout << "parsing genre record with song count" << std::endl;
-    mysql_stmt_store_result(stmt);
-
-    const auto strLen = 1024;
-    const auto valAmt = 3;
-    unsigned long len[valAmt];
-    my_bool nullRes[valAmt];
-
-    model::Genre genre;
-    int songCount = 0;
-
-    if (mysql_stmt_num_rows(stmt) == 0) {
-        std::cout << "no results" << std::endl;
-        return std::make_pair(genre, songCount);
-    }
-
-    MYSQL_BIND val[valAmt];
-    std::memset(val, 0, sizeof(val));
-
-    char category[strLen] ;
-
-    val[0].buffer_type = MYSQL_TYPE_LONG;
-    val[0].buffer = (char*)&genre.id;
-    val[0].length = &len[0];
-    val[0].is_null = &nullRes[0];
-
-    val[1].buffer_type = MYSQL_TYPE_STRING;
-    val[1].buffer = (char*)category;
-    val[1].buffer_length = strLen;
-    val[1].length = &len[1];
-    val[1].is_null = &nullRes[1];
-
-    val[2].buffer_type = MYSQL_TYPE_LONG;
-    val[2].buffer = (char*)&songCount;
-    val[2].length = &len[2];
-    val[2].is_null = &nullRes[2];
-
-    mysql_stmt_bind_result(stmt, val);
-    mysql_stmt_fetch(stmt);
-
-    genre.category = std::move(category);
-
-    std::cout << "parsed genre record with song count" << std::endl;
-
-    return std::make_pair(genre, songCount);
-}
-
-model::Genre GenreRepository::parseRecord(MYSQL_RES* results)
-{
-    std::cout << "parsing genre record" << std::endl;
-    model::Genre genre;
-
-    auto fieldNum = mysql_num_fields(results);
-    auto row = mysql_fetch_row(results);
-
-    for (auto i =0; i != fieldNum; ++i) {
-        const std::string field(mysql_fetch_field(results)->name);
-
-        if (field.compare("GenreId") == 0) {
-            genre.id = std::stoi(row[i]);
-        }
-        if (field.compare("Category") == 0) {
-            genre.category = row[i];
-        }
-    }
-
-    std::cout << "parsed genre record" << std::endl;
-
-    return genre;
-}
-model::Genre GenreRepository::parseRecord(MYSQL_STMT *stmt)
-{
-    // TODO: implement this
-    
-    model::Genre genre;
-
-    return genre;
-}
 }
