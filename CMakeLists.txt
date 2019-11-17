@@ -127,13 +127,19 @@ set(JWT_CPP_INCLUDE
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-find_library(BCRYPT bcrypt ${BCRYPTLIB})
+#find_library(BCRYPT bcrypt ${BCRYPTLIB})
 
-include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS} ${BCRYPTLIB}/)
+include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS} ${BCRYPTLIB})
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
+
+add_library(bcrypt STATIC IMPORTED)
+
+set_target_properties(bcrypt PROPERTIES IMPORTED_LOCATION
+        "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/libbcrypt/bcrypt.a"
+)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/appsettings.json ${CMAKE_BINARY_DIR}/bin/appsettings.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
@@ -143,4 +149,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BIN
 
 add_executable(icarus ${SOURCES} ${HEADERS})
 target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
-target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} ${BCRYPT})
+target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} bcrypt)

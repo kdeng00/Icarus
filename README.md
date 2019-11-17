@@ -53,7 +53,7 @@ Replace [domain] with the domain name of the created tenant. This can be found i
   "client_secret": "Icankeepasecret"
 ```
 
-For the sake of this section, I will not go over configuring the API to accept the signing algorithm since it has already been configured in the [Startip](Startup.cs).cs file. Click on permissions to create the permissions for the API.
+Click on permissions to create the permissions for the API.
 <h1 align "center">
     <img src="Images/Configuration/configure_api.png" width=100%>
 </h1>
@@ -151,8 +151,6 @@ From this point the database has been successfully created. Metadata and song fi
 git clone --recursive https://github.com/kdeng00/icarus
 cd 3rdparty/libbcrypt/
 make
-cp bcrypt.a libbcrypt.a
-cp bcrypt.o libbcrypt.o
 cd ../..
 mkdir build
 cd build
