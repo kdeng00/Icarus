@@ -12,7 +12,7 @@ namespace callback {
         StreamCallback();
         StreamCallback(const std::string&);
 
-        oatpp::data::v_io_size read(void*, oatpp::data::v_io_size);
+        oatpp::v_io_size read(void*, oatpp::v_io_size);
     private:
         std::string m_songPath;
 

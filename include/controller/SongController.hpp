@@ -221,7 +221,7 @@ namespace controller {
 
 		    songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
-		    oatpp::data::v_io_size dSize = 1024;
+		    auto dSize = 1024;
 
 		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(
 		            std::make_shared<callback::StreamCallback>(songDb.songPath), 
