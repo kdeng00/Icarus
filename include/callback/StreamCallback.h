@@ -4,7 +4,7 @@
 #include <string>
 
 #include "oatpp/core/data/stream/FileStream.hpp"
-#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
+//#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 
 namespace callback {
     class StreamCallback : public oatpp::data::stream::ReadCallback {
