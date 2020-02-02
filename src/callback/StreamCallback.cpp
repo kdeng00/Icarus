@@ -18,7 +18,9 @@ namespace callback {
     }
 
 
-    oatpp::v_io_size StreamCallback::read(void *buff, oatpp::v_io_size count) {
+
+    oatpp::v_io_size StreamCallback::read(void *buff, v_buff_size count,
+            oatpp::async::Action& action) {
         if (m_counter >= m_fileSize) {
             std::cout << "done streaming song\n";
             return 0;

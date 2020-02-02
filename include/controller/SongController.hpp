@@ -12,11 +12,11 @@
 #include <oatpp/core/async/Coroutine.hpp>
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
+#include "oatpp/core/base/StrBuffer.hpp"
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
 #include "oatpp/web/mime/multipart/InMemoryPartReader.hpp"
 #include "oatpp/web/mime/multipart/Reader.hpp"
-//#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 #include "oatpp/web/protocol/http/outgoing/StreamingBody.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
@@ -43,10 +43,12 @@ namespace controller {
 
 		// endpoint for uploading a song
 		ENDPOINT("POST", "/api/v1/song/data", songUpload, 
+                AUTHORIZATION(std::shared_ptr<oatpp::web::server::handler::DefaultBearerAuthorizationObject>, authObject),
 				REQUEST(std::shared_ptr<IncomingRequest>, request)) {
 		    auto authHeader = request->getHeader("Authorization");
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 		    auto auth = authHeader->std_str();
+            
 		    manager::TokenManager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                     type::Scope::upload), Status::CODE_403, "Not allowed");
@@ -225,37 +227,16 @@ namespace controller {
 
 		    auto dSize = 1024;
 
-            /**
-            auto buff = std::make_unique<const char*>(file->getInMemoryData()->c_str());
-            auto buffSize = file->getKnownSize();
-
-		    std::vector<unsigned char> data(*buff, *buff + buffSize);
-            */
-
-            /**
-		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(
-		            std::make_shared<callback::StreamCallback>(songDb.songPath), 
-                    nullptr, dSize);
-            */
-
-            /**
-		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::ChunkedBody>(
-		            std::make_shared<callback::StreamCallback>(songDb.songPath)
-                    );
-            */
-
+            auto callback = std::make_shared<callback::StreamCallback>(songDb.songPath);
 		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::StreamingBody>(
-		            std::make_shared<callback::StreamCallback>(songDb.songPath), 
-                    dSize);
+                    callback
+                    );
 
-            /**
 		    auto response = OutgoingResponse::createShared(Status::CODE_200, db);
 		    response->putHeader(Header::CONNECTION, Header::Value::CONNECTION_KEEP_ALIVE);
 		    response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
 
 		    return response;
-            */
-            return createResponse(Status::CODE_200, "Aye okay");
 		}
 
 		#include OATPP_CODEGEN_END(ApiController)

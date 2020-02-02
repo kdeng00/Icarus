@@ -4,6 +4,8 @@
 #include <string>
 
 #include "oatpp/core/data/stream/FileStream.hpp"
+#include "oatpp/core/data/stream/Stream.hpp"
+#include "oatpp/core/async/Coroutine.hpp"
 //#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 
 namespace callback {
@@ -12,7 +14,7 @@ namespace callback {
         StreamCallback();
         StreamCallback(const std::string&);
 
-        oatpp::v_io_size read(void*, oatpp::v_io_size);
+        oatpp::v_io_size read(void*, v_buff_size, oatpp::async::Action&);
     private:
         std::string m_songPath;
 
