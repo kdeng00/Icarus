@@ -13,16 +13,16 @@ namespace utility {
         std::unique_ptr<char[]> salt(new char[BCRYPT_HASHSIZE]);
         std::unique_ptr<char[]> hash(new char[BCRYPT_HASHSIZE]);
 
-        std::cout << "generating salt" << std::endl;
+        std::cout << "generating salt\n";
         bcrypt_gensalt(saltSize(), salt.get());
-        std::cout << "hashing password" << std::endl;
+        std::cout << "hashing password\n";
         bcrypt_hashpw(user.password.c_str(), salt.get(), hash.get());
 
         passSec.salt = salt.get();
         passSec.hashPassword = hash.get();
 
-        std::cout << "hash: " << passSec.hashPassword << std::endl;
-        std::cout << "salt: " << passSec.salt << std::endl;
+        std::cout << "hash: " << passSec.hashPassword << "\n";
+        std::cout << "salt: " << passSec.salt << "\n";
 
         return passSec;
     }

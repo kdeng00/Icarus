@@ -84,7 +84,7 @@ namespace utility {
 		    tag->addFrame(pic);
 
 		    sngF.save();
-		    std::cout << "applied stock cover art" << std::endl;
+		    std::cout << "applied stock cover art\n";
 		} else {
 		    auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
 		            frameList.front());
