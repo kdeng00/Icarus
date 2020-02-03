@@ -41,6 +41,12 @@ namespace database {
 		    case type::SongFilter::titleAndArtist:
 		        valueFilterCount = 2;
 		        break;
+            case type::SongFilter::titleAlbArtistAlbum:
+                valueFilterCount = 3;
+		        break;
+            case type::SongFilter::titleAlbArtistAlbumTrack:
+                valueFilterCount = 4;
+                break;
 		    default:
 				break;
 		}
@@ -53,6 +59,8 @@ namespace database {
 
 		auto titleLength = song.title.size();
 		auto artistLength = song.artist.size();
+        auto albumArtistLength = song.albumArtist.size();
+        auto albumLength = song.album.size();
 		switch (filter) {
 		    case type::SongFilter::id:
 		        qry << "sng.SongId = ?";
@@ -86,6 +94,47 @@ namespace database {
 		        std::cout << "title: " << song.title.c_str() << " artist: " << 
 		            song.artist.c_str() << "\n";
 		        break;
+            case type::SongFilter::titleAlbArtistAlbum:
+                qry << "sng.Title = ? AND sng.Album = ? AND alb.Artist = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_STRING;
+                params[0].buffer = (char*)song.title.c_str();
+                params[0].length = &titleLength;
+                params[0].is_null = 0;
+
+                params[1].buffer_type = MYSQL_TYPE_STRING;
+                params[1].buffer = (char*)song.album.c_str();
+                params[1].length = &albumLength;
+                params[1].is_null = 0;
+
+                params[2].buffer_type = MYSQL_TYPE_STRING;
+                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].length = &albumArtistLength;
+                params[2].is_null = 0;
+                break;
+            case type::SongFilter::titleAlbArtistAlbumTrack:
+                qry << "sng.Title = ? AND sng.Album = ? AND alb.Artist = ? AND sng.Track = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_STRING;
+                params[0].buffer = (char*)song.title.c_str();
+                params[0].length = &titleLength;
+                params[0].is_null = 0;
+
+                params[1].buffer_type = MYSQL_TYPE_STRING;
+                params[1].buffer = (char*)song.album.c_str();
+                params[1].length = &titleLength;
+                params[1].is_null = 0;
+
+                params[2].buffer_type = MYSQL_TYPE_STRING;
+                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].length = &titleLength;
+                params[2].is_null = 0;
+
+		        params[3].buffer_type = MYSQL_TYPE_LONG;
+		        params[3].buffer = (char*)&song.track;
+		        params[3].length = 0;
+		        params[3].is_null = 0;;
+                break;
 		    default:
 		        break;
 		}
@@ -103,7 +152,6 @@ namespace database {
 
 		mysql_stmt_close(stmt);
 		mysql_close(conn);
-		std::cout << "done\n";
 
 		return retrievedSong;
     }
@@ -119,6 +167,12 @@ namespace database {
 		    case type::SongFilter::titleAndArtist:
 		        valueFilterCount = 2;
 		        break;
+            case type::SongFilter::titleAlbArtistAlbum:
+                valueFilterCount = 3;
+                break;
+            case type::SongFilter::titleAlbArtistAlbumTrack:
+                valueFilterCount = 4;
+                break;
 		    default:
 		        break;
 		}
@@ -127,13 +181,16 @@ namespace database {
 		MYSQL_BIND params[valueFilterCount];
 		memset(params, 0, sizeof(params));
 
-		qry << "SELECT * FROM Song WHERE ";
+		qry << "SELECT sng.* FROM Song sng ";
+        qry << "LEFT JOIN Album alb ON sng.AlbumId = alb.AlbumId WHERE ";
 
 		auto titleLength = song.title.size();
 		auto artistLength = song.artist.size();
+        auto albumArtistLength = song.albumArtist.size();
+        auto albumLength = song.album.size();
 		switch (filter) {
 		    case type::SongFilter::id:
-		        qry << "SongId = ?";
+		        qry << "sng.SongId = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_LONG;
 		        params[0].buffer = (char*)&song.id;
@@ -141,7 +198,7 @@ namespace database {
 		        params[0].is_null = 0;
 		        break;
 		    case type::SongFilter::title:
-		        qry << "Title = ?";
+		        qry << "sng.Title = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
 		        params[0].buffer = (char*)song.title.c_str();
@@ -149,7 +206,7 @@ namespace database {
 		        params[0].is_null = 0;
 		        break;
 		    case type::SongFilter::titleAndArtist:
-		        qry << "Title = ? AND Artist = ?";
+		        qry << "sng.Title = ? AND sng.Artist = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
 		        params[0].buffer = (char*)song.title.c_str();
@@ -161,6 +218,47 @@ namespace database {
 		        params[1].length = &artistLength;
 		        params[1].is_null = 0;
 		        break;
+            case type::SongFilter::titleAlbArtistAlbum:
+                qry << "sng.Title = ? AND sng.Album = ? AND alb.Artist = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_STRING;
+                params[0].buffer = (char*)song.title.c_str();
+                params[0].length = &titleLength;
+                params[0].is_null = 0;
+
+                params[1].buffer_type = MYSQL_TYPE_STRING;
+                params[1].buffer = (char*)song.album.c_str();
+                params[1].length = &albumLength;
+                params[1].is_null = 0;
+
+                params[1].buffer_type = MYSQL_TYPE_STRING;
+                params[1].buffer = (char*)song.albumArtist.c_str();
+                params[1].length = &albumArtistLength;
+                params[1].is_null = 0;
+                break;
+            case type::SongFilter::titleAlbArtistAlbumTrack:
+                qry << "sng.Title = ? AND sng.Album = ? AND alb.Artist = ? AND sng.Track = ?";
+
+                params[0].buffer_type = MYSQL_TYPE_STRING;
+                params[0].buffer = (char*)song.title.c_str();
+                params[0].length = &titleLength;
+                params[0].is_null = 0;
+
+                params[1].buffer_type = MYSQL_TYPE_STRING;
+                params[1].buffer = (char*)song.album.c_str();
+                params[1].length = &titleLength;
+                params[1].is_null = 0;
+
+                params[2].buffer_type = MYSQL_TYPE_STRING;
+                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].length = &titleLength;
+                params[2].is_null = 0;
+
+		        params[3].buffer_type = MYSQL_TYPE_LONG;
+		        params[3].buffer = (char*)&song.track;
+		        params[3].length = 0;
+		        params[3].is_null = 0;;
+                break;
 		    default:
 		        break;
 		}
@@ -179,7 +277,6 @@ namespace database {
 
 		mysql_stmt_close(stmt);
 		mysql_close(conn);
-		std::cout << "done\n";
 
 		return (rowCount > 0) ? true : false;
     }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <string_view>
+#include <filesystem>
 
 #include <nlohmann/json.hpp>
 
@@ -12,7 +13,9 @@
 namespace manager {
     class DirectoryManager {
     public:
-        static std::string createDirectoryProcess(model::Song, const std::string&);
+        DirectoryManager() = default;
+
+        static std::string createDirectoryProcess(const model::Song&, const std::string&);
         static std::string createDirectoryProcess(const model::Song&, 
                 const model::BinaryPath&, type::PathType);
         static std::string configPath(std::string_view);
@@ -29,6 +32,10 @@ namespace manager {
         void deleteCoverArtFile(const std::string&, const std::string&);
 
     private:
+        std::filesystem::path relativeDiscSongPathFilesystem(const std::filesystem::path&, 
+                const model::Song&);
+        std::string relativeDiscSongPath(const std::filesystem::path&, const model::Song&);
+
         void deleteSong(const model::Song);
     };
 }

@@ -43,7 +43,7 @@ namespace controller {
 
 		// endpoint for uploading a song
 		ENDPOINT("POST", "/api/v1/song/data", songUpload, 
-                AUTHORIZATION(std::shared_ptr<oatpp::web::server::handler::DefaultBearerAuthorizationObject>, authObject),
+                //AUTHORIZATION(std::shared_ptr<oatpp::web::server::handler::DefaultBearerAuthorizationObject>, authObject),
 				REQUEST(std::shared_ptr<IncomingRequest>, request)) {
 		    auto authHeader = request->getHeader("Authorization");
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");

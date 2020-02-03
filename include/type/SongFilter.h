@@ -10,7 +10,9 @@ namespace type {
         albumArtist,
         genre,
         year,
-        titleAndArtist
+        titleAndArtist,
+        titleAlbArtistAlbum,
+        titleAlbArtistAlbumTrack
     };
 }
 

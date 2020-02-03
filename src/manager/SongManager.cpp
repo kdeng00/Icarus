@@ -33,7 +33,7 @@ namespace manager {
 		song.data = std::move(data);
 
 		database::SongRepository songRepo(m_bConf);
-		if (songRepo.doesSongExist(song, type::SongFilter::titleAndArtist)) {
+		if (songRepo.doesSongExist(song, type::SongFilter::titleAlbArtistAlbum)) {
 		    std::cout << "\ntitle: " << song.title << "\nartist: " << song.artist << "\n";
 		    std::cout << "does not exist\n";
 		    return std::make_pair(false, type::SongUpload::AlreadyExist);
@@ -44,7 +44,7 @@ namespace manager {
 		printSong(song);
 
 		songRepo.saveRecord(song);
-		song = songRepo.retrieveRecord(song, type::SongFilter::titleAndArtist);
+		song = songRepo.retrieveRecord(song, type::SongFilter::titleAlbArtistAlbum);
 
 		return std::make_pair(true, type::SongUpload::Successful);
     }
@@ -293,8 +293,8 @@ namespace manager {
             fs::remove(songPath);
         }
         std::cout << "copying song to the appropriate directory\n";
-        std::cout << song.songPath << std::endl;
-        std::cout << songPath << std::endl;
+        std::cout << song.songPath << "\n";
+        std::cout << songPath << "\n";
         fs::copy(song.songPath, songPath);
         fs::remove(song.songPath);
         song.songPath = std::move(songPath);
