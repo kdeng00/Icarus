@@ -6,11 +6,6 @@
 #include <sstream>
 #include <string.h>
 
-#include <attachedpictureframe.h>
-#include <textidentificationframe.h>
-#include <fileref.h>
-#include <mpegfile.h>
-#include <tag.h>
 
 #include "manager/DirectoryManager.h"
 #include "utility/ImageFile.h"
@@ -22,12 +17,13 @@ namespace utility {
     model::Song MetadataRetriever::retrieveMetadata(model::Song& song) {
 		TagLib::MPEG::File sameFile(song.songPath.c_str());
 		auto tag = sameFile.ID3v2Tag();
-		song.title = tag->title().toCString();
-		song.artist = tag->artist().toCString();
-		song.album = tag->album().toCString();
-		song.genre = tag->genre().toCString();
+		song.title = tag->title().toCString(true);
+		song.artist = tag->artist().toCString(true);
+		song.album = tag->album().toCString(true);
+		song.genre = tag->genre().toCString(true);
 		song.year = tag->year();
 		song.track = tag->track();
+
 		song.duration = sameFile.audioProperties()->lengthInSeconds();
 
 		constexpr auto id3DiscName = "TPOS";
@@ -49,12 +45,12 @@ namespace utility {
 
 		if (albumArtistFrame.isEmpty()) {
 		    TagLib::ID3v2::TextIdentificationFrame *emptyFrame = 
-		            new TagLib::ID3v2::TextIdentificationFrame(id3DiscName);
+		            new TagLib::ID3v2::TextIdentificationFrame(id3AlbumArtistName);
 		    tag->addFrame(emptyFrame);
 		    emptyFrame->setText(song.artist.c_str());
 		    sameFile.save();
 		} else {
-		    song.albumArtist = albumArtistFrame.front()->toString().toCString();
+		    song.albumArtist = albumArtistFrame.front()->toString().toCString(true);
 		}
 
 		return song;

@@ -4,13 +4,19 @@
 #include <iostream>
 #include <string>
 
+#include <attachedpictureframe.h>
+#include <textidentificationframe.h>
+#include <fileref.h>
+#include <mpegfile.h>
+#include <tag.h>
+
 #include "model/Models.h"
 
 namespace utility {
     class MetadataRetriever {
     public:
         model::Song retrieveMetadata(model::Song&);
-
+        
         model::Cover updateCoverArt(const model::Song&, model::Cover&, const std::string&);
         model::Cover applyStockCoverArt(const model::Song&, model::Cover&, const std::string&);
         model::Cover applyCoverArt(const model::Song&, model::Cover&);
