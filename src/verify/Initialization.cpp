@@ -22,7 +22,7 @@ namespace verify {
         auto database = confirmConfigDatabase(bConf);
         auto path = confirmConfigPaths(bConf);
 
-        if ((auth && database && path) == false) {
+        if ((!auth) && (!database) && (!path)) {
             failedConfirmation();
         }
 
