@@ -1,7 +1,8 @@
 #include "dto/conversion/DtoConversions.h"
 
 namespace dto { namespace conversion { 
-    LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
+    // LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
+    LoginResultDto DtoConversions::toLoginResultDto(const model::User& user, 
             const model::Token& token) {
         auto logRes = dto::LoginResultDto::createShared();
         logRes->username = user.username.c_str();
@@ -13,7 +14,8 @@ namespace dto { namespace conversion {
     }
 
 
-    dto::RegisterResultDto::ObjectWrapper DtoConversions::toRegisterResultDto(
+    // dto::RegisterResultDto::ObjectWrapper DtoConversions::toRegisterResultDto(
+    dto::RegisterResultDto DtoConversions::toRegisterResultDto(
         const model::RegisterResult& regRes) {
         auto result = dto::RegisterResultDto::createShared();
         result->message = regRes.message.c_str();
@@ -24,7 +26,8 @@ namespace dto { namespace conversion {
     }
 
 
-    dto::AlbumDto::ObjectWrapper DtoConversions::toAlbumDto(const model::Album& album) {
+    // dto::AlbumDto::ObjectWrapper DtoConversions::toAlbumDto(const model::Album& album) {
+    dto::AlbumDto DtoConversions::toAlbumDto(const model::Album& album) {
         auto result = dto::AlbumDto::createShared();
         result->id = (album.id != 0) ? album.id : 0;
         result->title = (!album.title.empty()) ? album.title.c_str() : "";
@@ -35,7 +38,8 @@ namespace dto { namespace conversion {
     }
 
 
-    dto::SongDto::ObjectWrapper DtoConversions::toSongDto(const model::Song& song) {
+    // dto::SongDto::ObjectWrapper DtoConversions::toSongDto(const model::Song& song) {
+    dto::SongDto DtoConversions::toSongDto(const model::Song& song) {
         auto result = dto::SongDto::createShared();
         result->id = (song.id != 0) ? song.id : 0;
         result->title = (!song.title.empty()) ? song.title.c_str() : "";
@@ -53,27 +57,31 @@ namespace dto { namespace conversion {
     }
 
 
-    model::Song DtoConversions::toSong(dto::SongDto::ObjectWrapper& songDto) {
+    // model::Song DtoConversions::toSong(dto::SongDto::ObjectWrapper& songDto) {
+    model::Song DtoConversions::toSong(dto::SongDto *songDto) {
         model::Song song;
         song.id = (songDto->id.getPtr() == nullptr) ? 0 : songDto->id->getValue();
-        song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
-        song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
-        song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
+        song.title = (songDto->title == nullptr) ? "" : songDto->title.c_str();
+        song.album = (songDto->album == nullptr) ? "" : songDto->album.c_str();
+        song.artist = (songDto->artist == nullptr) ? "" : songDto->artist.c_str();
         song.albumArtist = (songDto->album_artist == nullptr) ? 
-                "" : songDto->album_artist->c_str();
-        song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
-        song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year->getValue();
-        song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track->getValue();
-        song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc->getValue();
+                "" : songDto->album_artist.c_str();
+        song.genre = (songDto->genre == nullptr) ? "" : songDto->genre.c_str();
+        song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year.getValue();
+        song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track.getValue();
+        song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc.getValue();
         song.coverArtId = (songDto->coverart_id.getPtr() == nullptr) ? 
-            0 : songDto->coverart_id->getValue();
+            0 : songDto->coverart_id.getValue();
 
         return song;
     }
 
 
-    model::User DtoConversions::toUser(dto::UserDto::ObjectWrapper& userDto) {
+    // model::User DtoConversions::toUser(dto::UserDto::ObjectWrapper& userDto) {
+    model::User DtoConversions::toUser(dto::UserDto &userDto) {
         model::User user;
+        // TODO: Can't leave it like this
+        /**
         user.id = (userDto->userId.getPtr() == nullptr) ? 0 : userDto->userId->getValue();
         user.firstname = (userDto->firstname == nullptr) ? "" : userDto->firstname->c_str();
         user.lastname = (userDto->lastname == nullptr) ? "" : userDto->lastname->c_str();
@@ -81,6 +89,7 @@ namespace dto { namespace conversion {
         user.email = (userDto->email == nullptr) ? "" : userDto->email->c_str();
         user.username = (userDto->username == nullptr) ? "" : userDto->username->c_str();
         user.password = (userDto->password == nullptr) ? "" : userDto->password->c_str();
+        */
 
         return user;
     }

@@ -46,7 +46,7 @@ set (BCRYPTLIB
 
 include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
+# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
 
 add_library(bcrypt STATIC IMPORTED)
 
@@ -59,15 +59,18 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_D
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build/icarus ${CMAKE_BINARY_DIR}/bin/icarus COPYONLY)
+# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build/icarus ${CMAKE_BINARY_DIR}/bin/icarus COPYONLY)
 
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
+find_package(oatpp CONFIG REQUIRED)
 
 add_executable(icarus ${SOURCES})
 
 
+
+
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)
