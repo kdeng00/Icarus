@@ -1,6 +1,3 @@
-[submodule "Libs/cpr"]
-	path = 3rdparty/cpr
-	url = https://github.com/whoshuu/cpr.git
 [submodule "3rdparty/oatpp"]
 	path = 3rdparty/oatpp
 	url = https://github.com/oatpp/oatpp
