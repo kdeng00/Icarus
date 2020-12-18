@@ -104,13 +104,16 @@ namespace controller {
 		    std::cout << "starting process of retrieving songs\n";
 		    database::SongRepository songRepo(m_bConf);
 		    auto songsDb = songRepo.retrieveRecords();
-		    auto songs = oatpp::data::mapping::type::List<dto::SongDto::ObjectWrapper>::createShared();
+		    // auto songs = oatpp::data::mapping::type::List<dto::SongDto::ObjectWrapper>::createShared();
+		    auto songs = oatpp::Vector<oatpp::Object<dto::SongDto>>::createShared();
+
+		    // auto yearRecs = oatpp::Vector<oatpp::Object<dto::YearDto>>::createShared();
 
 		    std::cout << "creating object to send\n";
 		    for (auto& songDb : songsDb) {
 		        auto song = dto::conversion::DtoConversions::toSongDto(songDb);
 
-		        songs->pushBack(song);
+		        songs->push_back(song);
 		    }
 
 		    return createDtoResponse(Status::CODE_200, songs);
@@ -167,7 +170,8 @@ namespace controller {
 
 		ENDPOINT("UPDATE", "/api/v1/song/{id}", songUpdate,
 				REQUEST(std::shared_ptr<IncomingRequest>, request),
-    		    BODY_DTO(dto::SongDto::ObjectWrapper, songDto), PATH(Int32, id)) {
+    		    // BODY_DTO(dto::SongDto::ObjectWrapper, songDto), PATH(Int32, id)) {
+    		    BODY_DTO(oatpp::data::mapping::type::ObjectWrapper<dto::SongDto>, songDto), PATH(Int32, id)) {
 		    songDto->id = id;
 		    auto authHeader = request->getHeader("Authorization");
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");

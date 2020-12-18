@@ -49,15 +49,18 @@ namespace controller {
 		    std::cout << "starting process of retrieving artist\n";
 		    database::ArtistRepository artRepo(m_bConf);
 		    auto artsDb = artRepo.retrieveRecords();
-		    auto artists = oatpp::data::mapping::type::
-                    List<dto::ArtistDto::ObjectWrapper>::createShared();
+		    auto artists = oatpp::Vector<oatpp::Object<dto::ArtistDto>>::createShared();
+                    // List<dto::ArtistDto::ObjectWrapper>::createShared();
+                    
 
 		    for (auto& artDb : artsDb) {
 		        auto art = dto::ArtistDto::createShared();
 		        art->id = artDb.id;
 		        art->artist = artDb.artist.c_str();
 
-		        artists->pushBack(art);
+		        // artists->push_back(art);
+				artists->push_back(art);
+				// artists.push_back(art);
 		    }
 
 		    return createDtoResponse(Status::CODE_200, artists);

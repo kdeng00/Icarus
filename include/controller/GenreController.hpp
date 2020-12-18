@@ -49,15 +49,14 @@ namespace controller {
 		    std::cout << "starting process of retrieving genre\n";
 		    database::GenreRepository gnrRepo(m_bConf);
 		    auto gnrsDb = gnrRepo.retrieveRecords();
-		    auto genres = oatpp::data::mapping::type::
-                    List<dto::GenreDto::ObjectWrapper>::createShared();
+		    auto genres = oatpp::Vector<oatpp::Object<dto::GenreDto>>::createShared();
 
 		    for (auto& gnrDb : gnrsDb) {
 		        auto gnr = dto::GenreDto::createShared();
 		        gnr->id = gnrDb.id;
 		        gnr->category = gnrDb.category.c_str();
 
-		        genres->pushBack(gnr);
+		        genres->push_back(gnr);
 		    }
 
 		    return createDtoResponse(Status::CODE_200, genres);

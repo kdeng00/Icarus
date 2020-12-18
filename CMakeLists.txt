@@ -15,7 +15,7 @@ set(SOURCES
     src/database/SongRepository.cpp
     src/database/UserRepository.cpp
     src/database/YearRepository.cpp
-    src/dto/conversion/DtoConversions.cpp
+    # src/dto/conversion/DtoConversions.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
     src/manager/ArtistManager.cpp

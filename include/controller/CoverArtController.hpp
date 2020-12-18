@@ -48,15 +48,14 @@ namespace controller {
 		    std::cout << "starting process of retrieving cover art\n";
 		    database::CoverArtRepository covRepo(m_bConf);
 		    auto covsDb = covRepo.retrieveRecords();
-		    auto coverArts = oatpp::data::mapping::type::
-                    List<dto::CoverArtDto::ObjectWrapper>::createShared();
+		    auto coverArts = oatpp::Vector<oatpp::Object<dto::CoverArtDto>>::createShared();
 
 		    for (auto& covDb : covsDb) {
 		    		auto cov = dto::CoverArtDto::createShared();
 		        cov->id = covDb.id;
 		        cov->songTitle = covDb.songTitle.c_str();
 
-		        coverArts->pushBack(cov);
+		        coverArts->push_back(cov);
 		    }
 
 		    return createDtoResponse(Status::CODE_200, coverArts);

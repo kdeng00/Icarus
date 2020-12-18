@@ -23,7 +23,8 @@ namespace controller {
         #include OATPP_CODEGEN_BEGIN(ApiController)
 
         ENDPOINT("POST", "api/v1/register", registerUser, 
-            BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
+            // BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
+            BODY_DTO(oatpp::data::mapping::type::ObjectWrapper<dto::UserDto>, usr)) {
             manager::UserManager usrMgr(m_bConf);
             auto user = dto::conversion::DtoConversions::toUser(usr);
             if (usrMgr.doesUserExist(user)) {

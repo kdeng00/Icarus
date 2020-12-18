@@ -1,20 +1,18 @@
 #include "dto/conversion/DtoConversions.h"
 
+
 namespace dto { namespace conversion { 
     // LoginResultDto::ObjectWrapper DtoConversions::toLoginResultDto(const model::User& user, 
-    LoginResultDto DtoConversions::toLoginResultDto(const model::User& user, 
-            const model::Token& token) {
-        auto logRes = dto::LoginResultDto::createShared();
-        logRes->username = user.username.c_str();
-        logRes->token = token.accessToken.c_str();
-        logRes->token_type = token.tokenType.c_str();
-        logRes->expiration = token.expiration;
+    // dto::LoginResultDto DtoConversions::toLoginResultDto(const model::User& user, 
 
-        return logRes;
+    /**
+    oatpp::data::mapping::type::DTOWrapper<dto::LoginResultDto> DtoConversions::toLoginResultDto(const model::User& user, 
     }
+    */
 
 
     // dto::RegisterResultDto::ObjectWrapper DtoConversions::toRegisterResultDto(
+        /**
     dto::RegisterResultDto DtoConversions::toRegisterResultDto(
         const model::RegisterResult& regRes) {
         auto result = dto::RegisterResultDto::createShared();
@@ -24,9 +22,11 @@ namespace dto { namespace conversion {
 
         return result;
     }
+    */
 
 
     // dto::AlbumDto::ObjectWrapper DtoConversions::toAlbumDto(const model::Album& album) {
+        /**
     dto::AlbumDto DtoConversions::toAlbumDto(const model::Album& album) {
         auto result = dto::AlbumDto::createShared();
         result->id = (album.id != 0) ? album.id : 0;
@@ -36,9 +36,11 @@ namespace dto { namespace conversion {
 
         return result;
     }
+    */
 
 
     // dto::SongDto::ObjectWrapper DtoConversions::toSongDto(const model::Song& song) {
+        /**
     dto::SongDto DtoConversions::toSongDto(const model::Song& song) {
         auto result = dto::SongDto::createShared();
         result->id = (song.id != 0) ? song.id : 0;
@@ -55,9 +57,11 @@ namespace dto { namespace conversion {
 
         return result;
     }
+    */
 
 
     // model::Song DtoConversions::toSong(dto::SongDto::ObjectWrapper& songDto) {
+        /**
     model::Song DtoConversions::toSong(dto::SongDto *songDto) {
         model::Song song;
         song.id = (songDto->id.getPtr() == nullptr) ? 0 : songDto->id->getValue();
@@ -75,6 +79,7 @@ namespace dto { namespace conversion {
 
         return song;
     }
+    */
 
 
     // model::User DtoConversions::toUser(dto::UserDto::ObjectWrapper& userDto) {

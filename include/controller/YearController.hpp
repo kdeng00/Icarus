@@ -48,15 +48,20 @@ namespace controller {
 		    std::cout << "starting process of retrieving year\n";
 		    database::YearRepository yrRepo(m_bConf);
 		    auto yrsDb = yrRepo.retrieveRecords();
-		    auto yearRecs = oatpp::data::mapping::type::
-                    List<dto::YearDto::ObjectWrapper>::createShared();
+		    // auto yearRecs = oatpp::data::mapping::type::
+                    // List<dto::YearDto::ObjectWrapper>::createShared();
+                    // List<dto::YearDto>::createShared();
+		    auto yearRecs = oatpp::Vector<oatpp::Object<dto::YearDto>>::createShared();
+                    // List<dto::YearDto::ObjectWrapper>::createShared();
+                    // List<dto::YearDto>::createShared();
 
 		    for (auto& yrDb : yrsDb) {
 		        auto yr = dto::YearDto::createShared();
 		        yr->id = yrDb.id;
 		        yr->year = yrDb.year;
 
-		        yearRecs->pushBack(yr);
+		        // yearRecs->pushBack(yr);
+				yearRecs->push_back(yr);
 		    }
 
 		    return createDtoResponse(Status::CODE_200, yearRecs);
