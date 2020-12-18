@@ -86,37 +86,8 @@ set(HEADERS
     include/verify/Initialization.h
 )
 
-set (TAGLIB
-    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib/3rdparty
-)
-
 set (BCRYPTLIB
     ${CMAKE_SOURCE_DIR}/3rdparty/libbcrypt
-)
-
-set(TAGLIB_HEADERS
-    "${CMAKE_SOURCE_DIR}/build/3rdparty/taglib" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/ape" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/asf" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/dsdiff" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/dsf" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/flac" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/it" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mod" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mp4" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mpc" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mpeg" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mpeg/id3v2" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/mpeg/id3v2/frames" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/ogg" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/riff" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/s3m" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/toolkit" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/trueaudio" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/wavpack" 
-    "${CMAKE_SOURCE_DIR}/3rdparty/taglib/taglib/xm" 
 )
 
 set(JWT_CPP_INCLUDE
@@ -129,10 +100,9 @@ conan_basic_setup()
 
 #find_library(BCRYPT bcrypt ${BCRYPTLIB})
 
-include_directories(include ${CPR_INCLUDE_DIRS} ${TAGLIB} ${TAGLIB_HEADERS} ${BCRYPTLIB})
+include_directories(include ${CPR_INCLUDE_DIRS} ${BCRYPTLIB})
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/taglib)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
 
 add_library(bcrypt STATIC IMPORTED)
@@ -148,5 +118,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/pa
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
 
 add_executable(icarus ${SOURCES} ${HEADERS})
+
 target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
-target_link_libraries(icarus "-lstdc++fs" tag oatpp mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} bcrypt)
+target_link_libraries(icarus "-lstdc++fs" oatpp tag mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} bcrypt)

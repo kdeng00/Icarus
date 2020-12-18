@@ -3,15 +3,16 @@
 
 #include <iostream>
 
-#include <attachedpictureframe.h>
-#include <tag.h>
-#include <tfile.h>
-#include <tfilestream.h>
-#include <fileref.h>
-#include <tbytevector.h>
-#include <tbytevectorstream.h>
-#include <tpropertymap.h>
-#include <id3v2tag.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/tag.h>
+#include <taglib/tfile.h>
+#include <taglib/tfilestream.h>
+#include <taglib/fileref.h>
+#include <taglib/tbytevector.h>
+#include <taglib/tbytevectorstream.h>
+#include <taglib/tpropertymap.h>
+#include <taglib/id3v2tag.h>
+
 
 namespace utility {
     class ImageFile : public TagLib::File {
