@@ -21,7 +21,7 @@ One can interface with Icarus the music server either by:
 * [cpr](https://www.github.com/whoshuu/cpr)
 * [TagLib](https://github.com/taglib/taglib)
 * [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
-* libmysql
+* libmariadb
 * [libbcrypt](https://github.com/rg3/libbcrypt)
 * [oatpp](https://github.com/oatpp/oatpp)
 
@@ -153,7 +153,7 @@ git clone --recursive https://github.com/kdeng00/icarus
 
 cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install nlohmann-json cpr taglib jwt-cpp
+./vcpkg install nlohmann-json cpr taglib jwt-cpp libmariadb
 
 cd ../3rdparty/libbcrypt/
 make

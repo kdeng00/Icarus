@@ -118,4 +118,4 @@ add_executable(icarus ${SOURCES} ${HEADERS})
 
 
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp tag mysqlclient nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)
