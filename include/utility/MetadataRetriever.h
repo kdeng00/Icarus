@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 
-// #include <attachedpictureframe.h>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/textidentificationframe.h>
 #include <taglib/fileref.h>
