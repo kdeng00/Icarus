@@ -90,19 +90,11 @@ set (BCRYPTLIB
     ${CMAKE_SOURCE_DIR}/3rdparty/libbcrypt
 )
 
-set(JWT_CPP_INCLUDE
-    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/jwt-cpp/include
-)
-
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
 
 #find_library(BCRYPT bcrypt ${BCRYPTLIB})
 
-include_directories(include ${CPR_INCLUDE_DIRS} ${BCRYPTLIB})
+include_directories(include ${BCRYPTLIB})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cpr)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
 
 add_library(bcrypt STATIC IMPORTED)
@@ -117,7 +109,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
 
+find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
+
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(cpr CONFIG REQUIRED)
+
 add_executable(icarus ${SOURCES} ${HEADERS})
 
-target_include_directories(icarus PUBLIC ${JWT_CPP_INCLUDE})
-target_link_libraries(icarus "-lstdc++fs" oatpp tag mysqlclient ${CONAN_LIBS} ${CPR_LIBRARIES} bcrypt)
+
+target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp tag mysqlclient nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)
