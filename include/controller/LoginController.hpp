@@ -9,23 +9,30 @@
 #include "oatpp/core/macro/component.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
+#include "dto/conversion/DtoConversions.h"
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/TokenManager.h"
 #include "manager/UserManager.h"
 #include "model/Models.h"
 
-namespace controller {
-    class LoginController : public oatpp::web::server::api::ApiController {
+namespace controller
+{
+    class LoginController : public oatpp::web::server::api::ApiController
+    {
     public:
 		LoginController(const model::BinaryPath& bConf, 
-                OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-				:oatpp::web::server::api::ApiController(objectMapper), m_bConf(bConf) { }
+                        OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : 
+                            oatpp::web::server::api::ApiController(objectMapper),
+                            m_bConf(bConf)
+        {
+        }
 
 
 		#include OATPP_CODEGEN_BEGIN(ApiController)
     
-		ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(dto::UserDto::ObjectWrapper, usr)) {
+		ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(oatpp::Object<UserDto>, usr))
+        {
 		    OATPP_LOGI("icarus", "logging in");
 
 		    manager::UserManager usrMgr(m_bConf);
@@ -33,8 +40,11 @@ namespace controller {
 
 		    if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
 		    	auto logRes = dto::LoginResultDto::createShared();
+
 		        logRes->message = "invalid credentials";
+
 		        std::cout << "user does not exist\n";
+
 		        return createDtoResponse(Status::CODE_401, logRes);
 		    }
 

@@ -1,7 +1,6 @@
 #ifndef ALBUMCONTROLLER_H_
 #define ALBUMCONTROLLER_H_
 
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -27,16 +26,17 @@
 #include "type/Scopes.h"
 #include "type/AlbumFilter.h"
 
-namespace fs = std::filesystem;
 using namespace dto;
 
-namespace controller {
-    class AlbumController : public oatpp::web::server::api::ApiController {
+namespace controller
+{
+    class AlbumController : public oatpp::web::server::api::ApiController
+    {
     public:
         AlbumController(const model::BinaryPath& bConf, 
-                        OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
-                        : oatpp::web::server::api::ApiController(objectMapper), 
-                          m_bConf(bConf)
+                        OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : 
+                            oatpp::web::server::api::ApiController(objectMapper), 
+                            m_bConf(bConf)
         {
         }
 
@@ -67,7 +67,7 @@ namespace controller {
             albums->reserve(albsDb.size());
 
             for (auto& albDb : albsDb) {
-                auto alb = dto::conversion::DtoConversions::toAlbumDto<oatpp::Object<AlbumDto>>(albDb);
+                auto alb = dto::conversion::DtoConversions::toAlbumDto(albDb);
 
                 albums->push_back(alb);
             }
@@ -99,7 +99,7 @@ namespace controller {
             std::cout << "album exists\n";
             albDb = albRepo.retrieveRecord(albDb, type::AlbumFilter::id);
 
-            auto album = dto::conversion::DtoConversions::toAlbumDto<oatpp::Object<AlbumDto>>(albDb);
+            auto album = dto::conversion::DtoConversions::toAlbumDto(albDb);
 
             return createDtoResponse(Status::CODE_200, album);
         }

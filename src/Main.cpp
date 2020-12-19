@@ -18,16 +18,14 @@
 
 
 #include "component/AppComponent.hpp"
-// #include "controller/ArtistController.hpp"
+#include "controller/ArtistController.hpp"
 #include "controller/AlbumController.hpp"
-/**
 #include "controller/CoverArtController.hpp"
 #include "controller/GenreController.hpp"
 #include "controller/LoginController.hpp"
 #include "controller/RegisterController.hpp"
 #include "controller/SongController.hpp"
 #include "controller/YearController.hpp"
-*/
 #include "model/Models.h"
 #include "verify/Initialization.h"
 
@@ -42,7 +40,6 @@ void run(const model::BinaryPath& bConf) {
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
 
     auto albumController = std::make_shared<controller::AlbumController>(bConf);
-    /**
     auto artistController = std::make_shared<controller::ArtistController>(bConf);
     auto coverArtController = std::make_shared<controller::CoverArtController>(bConf);
     auto gnrController = std::make_shared<controller::GenreController>(bConf);
@@ -50,10 +47,8 @@ void run(const model::BinaryPath& bConf) {
     auto regController = std::make_shared<controller::RegisterController>(bConf);
     auto sngController = std::make_shared<controller::SongController>(bConf);
     auto yearController = std::make_shared<controller::YearController>(bConf);
-    */
 
     albumController->addEndpointsToRouter(router);
-    /**
     artistController->addEndpointsToRouter(router);
     coverArtController->addEndpointsToRouter(router);
     gnrController->addEndpointsToRouter(router);
@@ -61,7 +56,6 @@ void run(const model::BinaryPath& bConf) {
     regController->addEndpointsToRouter(router);
     sngController->addEndpointsToRouter(router);
     yearController->addEndpointsToRouter(router);
-    */
 
     // OATPP_COMPONENT(std::shared_ptr<oatpp::network::server::ConnectionHandler>, connectionHandler);
 

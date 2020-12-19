@@ -1,20 +1,19 @@
 #ifndef DTOCONVERSIONS_H_
 #define DTOCONVERSIONS_H_
 
+#include <oatpp/core/data/mapping/ObjectMapper.hpp>
 #include <oatpp/core/data/mapping/type/Type.hpp>
 #include <oatpp/core/data/mapping/type/Object.hpp>
 #include <oatpp/core/Types.hpp>
 
 #include "dto/AlbumDto.hpp"
+#include "dto/ArtistDto.hpp"
+#include "dto/CoverArtDto.hpp"
+#include "dto/GenreDto.hpp"
 #include "dto/LoginResultDto.hpp"
 #include "dto/SongDto.hpp"
+#include "dto/YearDto.hpp"
 #include "model/Models.h"
-#include "oatpp/core/data/mapping/ObjectMapper.hpp"
-
-using model::User;
-using model::Song;
-using model::Token;
-using model::RegisterResult;
 
 using namespace model;
 using namespace dto;
@@ -22,41 +21,31 @@ using namespace dto;
 namespace dto { namespace conversion {
     class DtoConversions {
     public:
-        // static dto::LoginResultDto::ObjectWrapper toLoginResultDto(const model::User&, const model::Token&);
-        // static oatpp::data::mapping::type::ObjectWrapper<dto::LoginResultDto> toLoginResultDto(const model::User &user, const model::Token &token)
-        // static dto::LoginResultDto::ObjectWrapper toLoginResultDto(const model::User &user, const model::Token &token)
-        // static dto::LoginResultDto::ObjectWrapper toLoginResultDto(const User &user, const Token &token)
-        template<typename D = LoginResultDto>
+        template<typename D = oatpp::Object<LoginResultDto>>
         static D toLoginResultDto(const User &user, const Token &token)
         {
-            // const model::Token& token) {
             auto logRes = LoginResultDto::createShared();
-            /**
-            logRes->username = user.username.c_str();
-            logRes->token = token.accessToken.c_str();
-            logRes->token_type = token.tokenType.c_str();
-            logRes->expiration = token.expiration;
-            */
+            logRes->id = (user.id != 0) ? user.id : 0;
+            logRes->username = (!user.username.empty()) ? user.username.c_str() : "None";
+            logRes->token = (!token.accessToken.empty()) ? token.accessToken.c_str() : "None";
+            logRes->token_type = (!token.tokenType.empty()) ? token.tokenType.c_str() : "None";
+            logRes->expiration = (token.expiration != 0) ? token.expiration : 0;
 
             return logRes;
         }
 
-        // static dto::RegisterResultDto::ObjectWrapper toRegisterResultDto(
-        template<typename D = RegisterResultDto>
+        template<typename D = oatpp::Object<RegisterResultDto>>
         static D toRegisterResultDto(
             const model::RegisterResult &regRes)
         {
             auto result = RegisterResultDto::createShared();
-            /**
-            result->message = regRes.message.c_str();
+            result->message = (!regRes.message.empty()) ? regRes.message.c_str() : "None";
             result->registered = regRes.registered;
-            result->username = regRes.username.c_str();
-            */
+            result->username = (!regRes.username.empty()) ? regRes.username.c_str() : "None";
 
             return result;
         }
 
-        // static dto::AlbumDto::ObjectWrapper toAlbumDto(const model::Album&);
         template<typename D = oatpp::Object<AlbumDto>>
         static D toAlbumDto(const Album &album)
         {
@@ -69,11 +58,42 @@ namespace dto { namespace conversion {
             return result;
         }
 
-        template<typename D = SongDto>
+        template<typename D = oatpp::Object<ArtistDto>>
+        static D toArtistDto(const Artist &artist)
+        {
+            auto result = ArtistDto::createShared();
+            result->id = (artist.id != 0) ? artist.id : 0;
+            result->artist = (!artist.artist.empty()) ? artist.artist.c_str() : "None";
+
+            return result;
+        }
+
+
+        template<typename D = oatpp::Object<CoverArtDto>>
+        static D toCoverDto(const Cover &cover)
+        {
+            auto result = CoverArtDto::createShared();
+            result->id = cover.id != 0 ? cover.id : 0;
+            result->songTitle = (!cover.songTitle.empty()) ? cover.songTitle.c_str() : "None";
+
+            return result;
+        }
+
+        template<typename D = oatpp::Object<GenreDto>>
+        static D toGenreDto(const Genre &genre)
+        {
+            auto result = GenreDto::createShared();
+            result->id = (genre.id != 0) ? genre.id : 0;
+            result->category = (!genre.category.empty()) ? genre.category.c_str() : "None";
+
+            return result;
+        }
+
+
+        template<typename D = oatpp::Object<SongDto>>
         static D toSongDto(const model::Song &song)
         {
             auto result = SongDto::createShared();
-            /**
             result->id = (song.id != 0) ? song.id : 0;
             result->title = (!song.title.empty()) ? song.title.c_str() : "";
             result->album = (!song.album.empty()) ? song.album.c_str() : "";
@@ -85,42 +105,53 @@ namespace dto { namespace conversion {
             result->track = (song.track != 0) ? song.track : 0;
             result->disc = (song.disc != 0) ? song.disc : 0;
             result->coverart_id = (song.coverArtId != 0) ? song.coverArtId : 0;
-            */
 
             return result;
         }
 
-        // static model::Song toSong(dto::SongDto::ObjectWrapper&);
-        template<typename D = oatpp::Object<SongDto>, typename Song = Song>
-        static model::Song toSong(D songDto)
+        template<typename D = oatpp::Object<YearDto>>
+        static D toYearDto(const Year &year)
+        {
+            auto result = YearDto::createShared();
+            result->id = (year.id != 0) ? year.id : 0;
+            result->year = (year.year != 0) ? year.year : 0;
+
+            return result;
+        }
+
+
+        template<typename D = oatpp::Object<SongDto>>
+        static Song toSong(const D &songDto)
         {
             Song song;
+            int id = songDto->id;
+            song.id = (songDto->id.getPtr() == nullptr) ? 0 : id;
+            auto title = songDto->title.get();
             /**
-            song.id = (songDto.id.getPtr() == nullptr) ? 0 : songDto.id->getValue();
-            song.title = (songDto.title == nullptr) ? "" : songDto.title.c_str();
-            song.album = (songDto.album == nullptr) ? "" : songDto.album.c_str();
-            song.artist = (songDto.artist == nullptr) ? "" : songDto.artist.c_str();
-            song.albumArtist = (songDto.album_artist == nullptr) ? 
-                "" : songDto.album_artist.c_str();
-            song.genre = (songDto.genre == nullptr) ? "" : songDto.genre.c_str();
-            song.year = (songDto.year.getPtr() == nullptr) ? 0 : songDto.year.getValue();
-            song.track = (songDto.track.getPtr() == nullptr) ? 0 : songDto.track.getValue();
-            song.disc = (songDto.disc.getPtr() == nullptr) ? 0 : songDto.disc.getValue();
-            song.coverArtId = (songDto.coverart_id.getPtr() == nullptr) ? 
-                0 : songDto.coverart_id.getValue();
-                */
+            song.title = (songDto->title == nullptr) ? "" : songDto->title;
+            song.album = (songDto->album == nullptr) ? "" : songDto->album.c_str();
+            song.artist = (songDto->artist == nullptr) ? "" : songDto->artist.c_str();
+            song.albumArtist = (songDto->album_artist == nullptr) ? 
+                "" : songDto->album_artist.c_str();
+            song.genre = (songDto->genre == nullptr) ? "" : songDto->genre.c_str();
+            song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year.getValue();
+            song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track.getValue();
+            song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc.getValue();
+            song.coverArtId = (songDto->coverart_id.getPtr() == nullptr) ? 
+                0 : songDto->coverart_id.getValue();
+            */
 
         return song;
 
         }
 
-        // static model::User toUser(dto::UserDto::ObjectWrapper&);
-        template<typename D = UserDto>
-        static User toUser(D &userDto)
+        template<typename D = oatpp::Object<UserDto>>
+        static User toUser(const D &userDto)
         {
-            model::User user;
+            User user;
+            int id = userDto->userId;
             /**
-            user.id = (userDto->userId.getPtr() == nullptr) ? 0 : userDto->userId->getValue();
+            user.id = (userDto->userId.getPtr() == nullptr) ? 0 : userDto->userId.getValue();
             user.firstname = (userDto->firstname == nullptr) ? "" : userDto->firstname->c_str();
             user.lastname = (userDto->lastname == nullptr) ? "" : userDto->lastname->c_str();
             user.phone = (userDto->phone == nullptr) ? "" : userDto->phone->c_str();
