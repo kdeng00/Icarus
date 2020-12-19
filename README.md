@@ -19,11 +19,13 @@ One can interface with Icarus the music server either by:
 * GCC >= 8.0
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
-* [TagLib](https://github.com/taglib/taglib)
-* [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
+* libcurl
+* libopenssl (Choice of using the system's ssl library or using the one from the cpr library)
 * libmariadb
-* [libbcrypt](https://github.com/rg3/libbcrypt)
+* [TagLib](https://github.com/taglib/taglib)
 * [oatpp](https://github.com/oatpp/oatpp)
+* [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
+* [libbcrypt](https://github.com/rg3/libbcrypt)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 
@@ -153,7 +155,7 @@ git clone --recursive https://github.com/kdeng00/icarus
 
 cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install nlohmann-json cpr taglib jwt-cpp libmariadb
+./vcpkg install nlohmann-json cpr taglib jwt-cpp libmariadb oatpp
 
 cd ../3rdparty/libbcrypt/
 make
@@ -161,7 +163,7 @@ make
 cd ../..
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SYSTEM_CURL=ON -DBUILD_CPR_TESTS=OFF -DOATPP_BUILD_TESTS=OFF
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SYSTEM_CURL=ON
 cmake --build .
 bin/icarus
 ```

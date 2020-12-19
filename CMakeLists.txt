@@ -1,11 +1,32 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(icarus)
+
+message("The current source directory ${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(VCPKG_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vcpkg)
+
+message("The vcpkg root path ${VCPKG_ROOT_PATH}")
+
+set(TOOLCHAIN_PATH ${VCPKG_ROOT_PATH}/scripts/buildsystems/vcpkg.cmake)
+
+set(CMAKE_TOOLCHAIN_FILE
+    ${TOOLCHAIN_PATH}
+    CACHE STRING "Vcpkg toolchain file")
+
+message("toolchain file ${CMAKE_TOOLCHAIN_FILE}")
+
+
+project(icarus CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+
+set(OATPP_BUILD_TESTS OFF)
+set(BUILD_CPR_TESTS OFF)
+set(USE_SYSTEM_CURL ON)
 
 set(SOURCES
     src/callback/StreamCallback.cpp
