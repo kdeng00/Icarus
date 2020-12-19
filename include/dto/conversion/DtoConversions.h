@@ -1,6 +1,10 @@
 #ifndef DTOCONVERSIONS_H_
 #define DTOCONVERSIONS_H_
 
+#include <iostream>
+#include <chrono>
+#include <thread>
+
 #include <oatpp/core/data/mapping/ObjectMapper.hpp>
 #include <oatpp/core/data/mapping/type/Type.hpp>
 #include <oatpp/core/data/mapping/type/Object.hpp>
@@ -18,8 +22,10 @@
 using namespace model;
 using namespace dto;
 
-namespace dto { namespace conversion {
-    class DtoConversions {
+namespace dto::conversion
+{
+    class DtoConversions
+    {
     public:
         template<typename D = oatpp::Object<LoginResultDto>>
         static D toLoginResultDto(const User &user, const Token &token)
@@ -124,22 +130,18 @@ namespace dto { namespace conversion {
         static Song toSong(const D &songDto)
         {
             Song song;
-            int id = songDto->id;
-            song.id = (songDto->id.getPtr() == nullptr) ? 0 : id;
-            auto title = songDto->title.get();
-            /**
-            song.title = (songDto->title == nullptr) ? "" : songDto->title;
-            song.album = (songDto->album == nullptr) ? "" : songDto->album.c_str();
-            song.artist = (songDto->artist == nullptr) ? "" : songDto->artist.c_str();
+            song.id = (songDto->id.getPtr() == nullptr) ? 0 : *songDto->id;
+            song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
+            song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
+            song.artist = (songDto->artist == nullptr) ? "" : songDto->artist->c_str();
             song.albumArtist = (songDto->album_artist == nullptr) ? 
-                "" : songDto->album_artist.c_str();
-            song.genre = (songDto->genre == nullptr) ? "" : songDto->genre.c_str();
-            song.year = (songDto->year.getPtr() == nullptr) ? 0 : songDto->year.getValue();
-            song.track = (songDto->track.getPtr() == nullptr) ? 0 : songDto->track.getValue();
-            song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : songDto->disc.getValue();
+                "" : songDto->album_artist->c_str();
+            song.genre = (songDto->genre == nullptr) ? "" : songDto->genre->c_str();
+            song.year = (songDto->year.getPtr() == nullptr) ? 0 : *songDto->year;
+            song.track = (songDto->track.getPtr() == nullptr) ? 0 : *songDto->track;
+            song.disc = (songDto->disc.getPtr() == nullptr) ? 0 : *songDto->disc;
             song.coverArtId = (songDto->coverart_id.getPtr() == nullptr) ? 
-                0 : songDto->coverart_id.getValue();
-            */
+                0 : *songDto->coverart_id;
 
         return song;
 
@@ -149,20 +151,20 @@ namespace dto { namespace conversion {
         static User toUser(const D &userDto)
         {
             User user;
-            int id = userDto->userId;
-            /**
-            user.id = (userDto->userId.getPtr() == nullptr) ? 0 : userDto->userId.getValue();
+            user.id = (userDto->userId.getPtr()) ? 0 : *userDto->userId;
             user.firstname = (userDto->firstname == nullptr) ? "" : userDto->firstname->c_str();
             user.lastname = (userDto->lastname == nullptr) ? "" : userDto->lastname->c_str();
             user.phone = (userDto->phone == nullptr) ? "" : userDto->phone->c_str();
             user.email = (userDto->email == nullptr) ? "" : userDto->email->c_str();
             user.username = (userDto->username == nullptr) ? "" : userDto->username->c_str();
             user.password = (userDto->password == nullptr) ? "" : userDto->password->c_str();
-            */
+
+
+            std::cout << "Over\n";
 
             return user;
         }
     };
-}}
+}
 
 #endif

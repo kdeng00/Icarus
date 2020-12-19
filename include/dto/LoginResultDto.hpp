@@ -1,17 +1,17 @@
 #ifndef LOGINRESULTDTO_H_
 #define LOGINRESULTDTO_H_
 
-// #include <oatpp/core/data/mapping/type/Object.hpp>
-#include <oatpp/core/Types.hpp>
 #include <oatpp/core/macro/codegen.hpp>
+#include <oatpp/core/Types.hpp>
 
 #include "model/Models.h"
 
-namespace dto {
+namespace dto
+{
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    // class LoginResultDto : public oatpp::data::mapping::type::Object {
-    class LoginResultDto : public oatpp::DTO {
+    class LoginResultDto : public oatpp::DTO
+    {
         DTO_INIT(LoginResultDto, DTO)
 
         DTO_FIELD(oatpp::Int32, id);
@@ -22,7 +22,8 @@ namespace dto {
         DTO_FIELD(oatpp::String, message);
     };
 
-    class RegisterResultDto : public oatpp::DTO {
+    class RegisterResultDto : public oatpp::DTO
+    {
         DTO_INIT(RegisterResultDto, DTO)
 
         DTO_FIELD(oatpp::String, username);
@@ -30,7 +31,8 @@ namespace dto {
         DTO_FIELD(oatpp::String, message);
     };
 
-    class UserDto : public oatpp::DTO {
+    class UserDto : public oatpp::DTO
+    {
         DTO_INIT(UserDto, DTO)
 
         DTO_FIELD(oatpp::Int32, userId);

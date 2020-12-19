@@ -4,10 +4,12 @@
 #include "oatpp/core/macro/codegen.hpp"
 #include <oatpp/core/Types.hpp>
 
-namespace dto {
+namespace dto
+{
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    class YearDto : public oatpp::DTO {
+    class YearDto : public oatpp::DTO
+    {
         DTO_INIT(YearDto, DTO)
 
         DTO_FIELD(Int32, id);

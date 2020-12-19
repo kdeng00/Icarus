@@ -53,7 +53,6 @@ namespace controller
 
 		// endpoint for uploading a song
 		ENDPOINT("POST", "/api/v1/song/data", songUpload, 
-                //AUTHORIZATION(std::shared_ptr<oatpp::web::server::handler::DefaultBearerAuthorizationObject>, authObject),
 				 REQUEST(std::shared_ptr<IncomingRequest>, request))
         {
 		    auto authHeader = request->getHeader("Authorization");
@@ -69,13 +68,8 @@ namespace controller
                 std::make_shared<oatpp::web::mime::multipart::PartList>
                 (request->getHeaders());
 
-		    // oatpp::web::mime::multipart::Reader mp_reader(mp.get());
 		    oatpp::web::mime::multipart::Reader mp_reader = mp.get();
 
-            /**
-		    mp_reader.setPartReader("file", 
-                    oatpp::web::mime::multipart::createInMemoryPartReader(m_dataSize));
-            */
             mp_reader.setDefaultPartReader(
                     oatpp::web::mime::multipart::createInMemoryPartReader(30 * 1024 * 1024));
 
@@ -83,7 +77,6 @@ namespace controller
 		    request->transferBody(&mp_reader);
 
 		    auto file = mp->getNamedPart("file");
-            // auto file = mp->readNextPartSimple();
 
 		    OATPP_ASSERT_HTTP(file, Status::CODE_400, "file is null");
 
@@ -266,7 +259,7 @@ namespace controller
 
 		    songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
-		    auto dSize = 1024;
+		    constexpr auto dSize = 1024;
 
             auto callback = std::make_shared<callback::StreamCallback>(songDb.songPath);
 		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::StreamingBody>(

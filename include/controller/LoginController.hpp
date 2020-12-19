@@ -48,8 +48,6 @@ namespace controller
 		        return createDtoResponse(Status::CODE_401, logRes);
 		    }
 
-		    std::cout << "user exists\n";
-
 		    manager::TokenManager tok;
 		    auto token = tok.retrieveToken(m_bConf);
 

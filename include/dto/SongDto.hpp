@@ -2,15 +2,16 @@
 #define SONGDTO_H_
 
 #include <oatpp/core/Types.hpp>
-// #include <oatpp/core/data/mapping/type/Object.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 
 #include "model/Models.h"
 
-namespace dto {
+namespace dto
+{
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    class SongDto : public oatpp::DTO {
+    class SongDto : public oatpp::DTO
+    {
         DTO_INIT(SongDto, DTO)
 
         DTO_FIELD(oatpp::Int32, id);

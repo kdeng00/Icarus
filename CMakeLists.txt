@@ -5,6 +5,8 @@ project(icarus)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
 set(SOURCES
     src/callback/StreamCallback.cpp
     src/database/AlbumRepository.cpp
@@ -15,7 +17,6 @@ set(SOURCES
     src/database/SongRepository.cpp
     src/database/UserRepository.cpp
     src/database/YearRepository.cpp
-    # src/dto/conversion/DtoConversions.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
     src/manager/ArtistManager.cpp
@@ -29,7 +30,6 @@ set(SOURCES
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp
     src/utility/PasswordEncryption.cpp
-    src/verify/Initialization.cpp
 )
 
 
@@ -46,7 +46,6 @@ set (BCRYPTLIB
 
 include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB})
 
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/oatpp)
 
 add_library(bcrypt STATIC IMPORTED)
 
@@ -59,7 +58,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/authcredentials.json ${CMAKE_BINARY_D
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build/icarus ${CMAKE_BINARY_DIR}/bin/icarus COPYONLY)
 
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
@@ -67,9 +65,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
 find_package(oatpp CONFIG REQUIRED)
 
+
+
 add_executable(icarus ${SOURCES})
-
-
 
 
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
