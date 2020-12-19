@@ -4,11 +4,11 @@
 #include <iostream>
 #include <string>
 
-#include <attachedpictureframe.h>
-#include <textidentificationframe.h>
-#include <fileref.h>
-#include <mpegfile.h>
-#include <tag.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/textidentificationframe.h>
+#include <taglib/fileref.h>
+#include <taglib/mpegfile.h>
+#include <taglib/tag.h>
 
 #include "model/Models.h"
 

@@ -21,6 +21,7 @@ One can interface with Icarus the music server either by:
 * [cpr](https://www.github.com/whoshuu/cpr)
 * [TagLib](https://github.com/taglib/taglib)
 * [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
+* libmariadb
 * [libbcrypt](https://github.com/rg3/libbcrypt)
 * [oatpp](https://github.com/oatpp/oatpp)
 
@@ -149,14 +150,19 @@ From this point the database has been successfully created. Metadata and song fi
 ## Building and Running
 ```
 git clone --recursive https://github.com/kdeng00/icarus
-cd 3rdparty/libbcrypt/
+
+cd icarus/3rdparty/vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg install nlohmann-json cpr taglib jwt-cpp libmariadb
+
+cd ../3rdparty/libbcrypt/
 make
+
 cd ../..
 mkdir build
 cd build
-conan install ..
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SYSTEM_CURL=ON -DBUILD_CPR_TESTS=OFF -DOATPP_BUILD_TESTS=OFF
-make
+cmake --build .
 bin/icarus
 ```
 Runs the server on localhost port 5002

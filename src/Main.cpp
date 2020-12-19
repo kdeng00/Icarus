@@ -1,13 +1,15 @@
-#include <exception>
 #include <iostream>
-#include <filesystem>
+#include <exception>
 #include <memory>
 #include <string>
 
 #include <mysql/mysql.h>
-#include <oatpp/network/server/Server.hpp>
-#include "oatpp/network/server/SimpleTCPConnectionProvider.hpp"
-#include "oatpp/web/server/HttpConnectionHandler.hpp"
+
+#include <oatpp/web/server/HttpConnectionHandler.hpp>
+
+#include <oatpp/network/Server.hpp>
+#include <oatpp/network/tcp/server/ConnectionProvider.hpp>
+
 
 #include "component/AppComponent.hpp"
 #include "controller/ArtistController.hpp"
@@ -21,12 +23,14 @@
 #include "model/Models.h"
 #include "verify/Initialization.h"
 
-namespace fs = std::filesystem;
 
-void run(const model::BinaryPath& bConf) {
+void run(const model::BinaryPath& bConf)
+{
     component::AppComponent component;
 
-    OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
+    auto router = oatpp::web::server::HttpRouter::createShared();
+
+    auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
 
     auto albumController = std::make_shared<controller::AlbumController>(bConf);
     auto artistController = std::make_shared<controller::ArtistController>(bConf);
@@ -46,30 +50,35 @@ void run(const model::BinaryPath& bConf) {
     sngController->addEndpointsToRouter(router);
     yearController->addEndpointsToRouter(router);
 
-    OATPP_COMPONENT(std::shared_ptr<oatpp::network::server::ConnectionHandler>, connectionHandler);
-
     OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider);
 
-    oatpp::network::server::Server server(connectionProvider, connectionHandler);
+    oatpp::network::Server server(connectionProvider, connectionHandler);
 
     OATPP_LOGI("icarus", "Server running on port %s", connectionProvider->getProperty("port").getData());
 
     server.run();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     oatpp::base::Environment::init();
     
     model::BinaryPath bConf(std::move(argv[0]));
 
-    if (argc > 1) {
-        if (!verify::Initialization::skipVerification(argv[1])) {
-            verify::Initialization::checkIcarus(bConf);
-        } else {
+    if (argc > 1)
+    {
+        if (!verify::Initialization<>::skipVerification(argv[1]))
+        {
+            verify::Initialization<>::checkIcarus(bConf);
+        }
+        else
+        {
             std::cout << "skiping verifyication\n";
         }
-    } else {
-        verify::Initialization::checkIcarus(bConf);
+    } 
+    else
+    {
+        verify::Initialization<>::checkIcarus(bConf);
     }
 
     run(bConf);

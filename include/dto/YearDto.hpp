@@ -1,14 +1,16 @@
 #ifndef YEARDTO_H_
 #define YEARDTO_H_
 
-#include "oatpp/core/data/mapping/type/Object.hpp"
 #include "oatpp/core/macro/codegen.hpp"
+#include <oatpp/core/Types.hpp>
 
-namespace dto {
+namespace dto
+{
     #include OATPP_CODEGEN_BEGIN(DTO)
 
-    class YearDto : public oatpp::data::mapping::type::Object {
-        DTO_INIT(YearDto, Object)
+    class YearDto : public oatpp::DTO
+    {
+        DTO_INIT(YearDto, DTO)
 
         DTO_FIELD(Int32, id);
         DTO_FIELD(Int32, year);

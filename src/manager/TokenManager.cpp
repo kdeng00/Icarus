@@ -3,15 +3,12 @@
 #include <iostream>
 #include <iterator>
 #include <fstream>
-#include <filesystem>
 #include <string>
 #include <string_view>
 #include <sstream>
 #include <cstdlib>
 
 #include "manager/DirectoryManager.h"
-
-namespace fs = std::filesystem;
 
 namespace manager {
     model::Token TokenManager::retrieveToken(const model::BinaryPath& bConf) {
@@ -93,7 +90,9 @@ namespace manager {
 
 
     cpr::Response TokenManager::sendRequest(std::string_view uri, nlohmann::json& obj) {
-		auto resp = cpr::Post(cpr::Url{uri}, cpr::Body{obj.dump()},
+		const std::string uriString(uri.begin(), uri.end());
+
+		auto resp = cpr::Post(cpr::Url(uriString), cpr::Body{obj.dump()},
                           cpr::Header{{"Content-type", "application/json"}, 
                                       {"Connection", "keep-alive"}});
 
