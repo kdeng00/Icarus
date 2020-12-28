@@ -10,3 +10,6 @@
 [submodule "3rdparty/vcpkg"]
 	path = 3rdparty/vcpkg
 	url = https://github.com/microsoft/vcpkg
+[submodule "icarus_lib"]
+	path = icarus_lib
+	url = https://github.com/kdeng00/icarus_lib
