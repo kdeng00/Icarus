@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
 #include "model/Models.h"
 #include "type/AlbumFilter.h"
@@ -12,7 +14,7 @@
 namespace database {
     class AlbumRepository : public BaseRepository {
     public:
-        AlbumRepository(const model::BinaryPath&);
+        AlbumRepository(const icarus_lib::binary_path&);
 
         std::vector<model::Album> retrieveRecords();
 

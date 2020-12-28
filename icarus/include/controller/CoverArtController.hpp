@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
 #include "oatpp/core/macro/codegen.hpp"
@@ -16,6 +17,7 @@
 #include "oatpp/web/mime/multipart/Reader.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
+#include "controller/BaseController.hpp"
 #include "database/CoverArtRepository.h"
 #include "dto/CoverArtDto.hpp"
 #include "dto/conversion/DtoConversions.h"
@@ -28,13 +30,12 @@
 
 namespace controller 
 {
-    class CoverArtController : public oatpp::web::server::api::ApiController
+    class CoverArtController : public BaseController
     {
     public:
-		CoverArtController(const model::BinaryPath& bConf, 
-                           OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : 
-                               oatpp::web::server::api::ApiController(objectMapper),
-                               m_bConf(bConf)
+		CoverArtController(const icarus_lib::binary_path &bConf, 
+                           OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, object_mapper)) : 
+						  		BaseController(bConf, object_mapper)
         {
         }
 
@@ -125,7 +126,6 @@ namespace controller
 
 		#include OATPP_CODEGEN_END(ApiController)
     private:
-		model::BinaryPath m_bConf;
     };
 }
 #endif

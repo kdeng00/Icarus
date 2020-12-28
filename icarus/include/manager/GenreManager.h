@@ -1,12 +1,14 @@
 #ifndef GENREMANAGER_H_
 #define GENREMANAGER_H_
 
+#include "icarus_lib/icarus.h"
+
 #include "model/Models.h"
 
 namespace manager {
     class GenreManager {
     public:
-        GenreManager(const model::BinaryPath&);
+        GenreManager(const icarus_lib::binary_path &);
 
         model::Genre retrieveGenre(model::Genre&);
         model::Genre saveGenre(const model::Song&);
@@ -16,7 +18,7 @@ namespace manager {
 
         static void printGenre(const model::Genre&);
     private:
-        model::BinaryPath m_bConf;
+        icarus_lib::binary_path  m_bConf;
     };
 }
 

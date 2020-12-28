@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
 #include <oatpp/core/async/Coroutine.hpp>
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
@@ -23,6 +24,7 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 
 #include "callback/StreamCallback.h"
+#include "controller/BaseController.hpp"
 #include "database/SongRepository.h"
 #include "dto/SongDto.hpp"
 #include "dto/conversion/DtoConversions.h"
@@ -39,13 +41,12 @@ using namespace dto;
 
 namespace controller
 {
-    class SongController : public oatpp::web::server::api::ApiController
+    class SongController : public BaseController
     {
     public:
-		SongController(const model::BinaryPath& bConf, 
-                       OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : 
-                           oatpp::web::server::api::ApiController(objectMapper), 
-                           m_bConf(bConf)
+		SongController(const icarus_lib::binary_path &bConf, 
+                       OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, object_mapper)) : 
+					   		BaseController(bConf, object_mapper)
         {
         }
 
@@ -281,7 +282,6 @@ namespace controller
 		    return createResponse(Status::CODE_404, "Song not found");
 		}
 
-		model::BinaryPath m_bConf;
 
 		const long m_dataSize = std::numeric_limits<long long int>::max();
     };

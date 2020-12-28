@@ -90,5 +90,5 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 add_executable(icarus ${SOURCES})
 
 
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt)
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt icarus_lib)
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})

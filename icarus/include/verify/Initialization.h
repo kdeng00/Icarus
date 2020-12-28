@@ -7,17 +7,20 @@
 #include <vector>
 #include <utility>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
 #include "manager/DirectoryManager.h"
 #include "manager/TokenManager.h"
-#include "model/Models.h"
+// #include "model/Models.h"
 #include "type/PathType.h"
 
 namespace fs = std::filesystem;
 
 namespace verify
 {
-    template<typename Config = model::BinaryPath>
+    // template<typename Config = model::BinaryPath>
+    template<typename Config = icarus_lib::binary_path>
     class Initialization
     {
     public:

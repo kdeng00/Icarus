@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
 #include "oatpp/core/macro/codegen.hpp"
@@ -16,6 +17,7 @@
 #include "oatpp/web/mime/multipart/Reader.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 
+#include "controller/BaseController.hpp"
 #include "database/YearRepository.h"
 #include "dto/conversion/DtoConversions.h"
 #include "dto/YearDto.hpp"
@@ -28,13 +30,12 @@
 
 namespace controller
 {
-    class YearController : public oatpp::web::server::api::ApiController
+    class YearController : public BaseController
     {
     public:
-		YearController(const model::BinaryPath& bConf, 
-                       OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : 
-                           oatpp::web::server::api::ApiController(objectMapper),
-                           m_bConf(bConf)
+		YearController(const icarus_lib::binary_path &bConf, 
+                       OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, object_mapper)) : 
+							BaseController(bConf, object_mapper)
         {
         }
 
@@ -99,7 +100,6 @@ namespace controller
 
 		#include OATPP_CODEGEN_END(ApiController)
     private:
-		model::BinaryPath m_bConf;
     };
 }
 

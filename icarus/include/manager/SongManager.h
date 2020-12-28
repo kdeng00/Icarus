@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 
+#include "icarus_lib/icarus.h"
 #include <nlohmann/json.hpp>
 
 #include "dto/SongDto.hpp"
@@ -16,7 +17,7 @@
 namespace manager {
     class SongManager {
     public:
-        SongManager(const model::BinaryPath&);
+        SongManager(const icarus_lib::binary_path &);
 
         std::pair<bool, type::SongUpload> saveSong(model::Song&);
 
@@ -42,7 +43,7 @@ namespace manager {
             model::Song&, const model::Song&);
         void modifySongOnFilesystem(model::Song&, const model::Song&);
 
-        model::BinaryPath m_bConf;
+        icarus_lib::binary_path  m_bConf;
     };
 }
 

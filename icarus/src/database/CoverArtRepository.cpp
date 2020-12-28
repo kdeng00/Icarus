@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace database {
-    CoverArtRepository::CoverArtRepository(const model::BinaryPath& bConf) : 
+    CoverArtRepository::CoverArtRepository(const icarus_lib::binary_path & bConf) : 
             BaseRepository(bConf) { }
 
 

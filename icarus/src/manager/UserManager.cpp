@@ -7,7 +7,7 @@
 #include "utility/PasswordEncryption.h"
 
 namespace manager {
-    UserManager::UserManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    UserManager::UserManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
     model::RegisterResult UserManager::registerUser(model::User& user) {

@@ -7,7 +7,7 @@
 
 namespace database {
 
-    UserRepository::UserRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
+    UserRepository::UserRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
     model::User UserRepository::retrieveUserRecord(model::User& user, 

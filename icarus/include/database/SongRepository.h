@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
 
 #include "database/BaseRepository.h"
@@ -14,7 +15,7 @@
 namespace database {
     class SongRepository : public BaseRepository {
     public:
-        SongRepository(const model::BinaryPath&);
+        SongRepository(const icarus_lib::binary_path &);
 
         std::vector<model::Song> retrieveRecords();
 

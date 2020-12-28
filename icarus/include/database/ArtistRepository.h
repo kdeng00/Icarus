@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
 #include "model/Models.h"
 #include "type/ArtistFilter.h"
@@ -12,7 +14,7 @@
 namespace database {
     class ArtistRepository : public BaseRepository {
     public:
-        ArtistRepository(const model::BinaryPath&);
+        ArtistRepository(const icarus_lib::binary_path&);
 
         std::vector<model::Artist> retrieveRecords();
 

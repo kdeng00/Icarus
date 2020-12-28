@@ -48,7 +48,7 @@ namespace manager {
     }
 
     std::string DirectoryManager::createDirectoryProcess(const model::Song& song, 
-            const model::BinaryPath& bConf, type::PathType pType) {
+            const icarus_lib::binary_path & bConf, type::PathType pType) {
         auto path = pathConfigContent(bConf)[retrievePathType(pType)];
         auto rootPath = path.get<std::string>();
         auto currPath = fs::path(rootPath);
@@ -91,7 +91,7 @@ namespace manager {
         return fs::canonical(path).parent_path().string();
     }
 
-    std::string DirectoryManager::configPath(const model::BinaryPath& bConf) {
+    std::string DirectoryManager::configPath(const icarus_lib::binary_path & bConf) {
         return fs::canonical(bConf.path).parent_path().string();
     }
 
@@ -127,21 +127,21 @@ namespace manager {
     }
 
 
-    nlohmann::json DirectoryManager::credentialConfigContent(const model::BinaryPath& bConf) {
+    nlohmann::json DirectoryManager::credentialConfigContent(const icarus_lib::binary_path & bConf) {
         auto path = configPath(bConf);
         path.append("/authcredentials.json");
 
         return nlohmann::json::parse(contentOfPath(path));
     }
 
-    nlohmann::json DirectoryManager::databaseConfigContent(const model::BinaryPath& bConf) {
+    nlohmann::json DirectoryManager::databaseConfigContent(const icarus_lib::binary_path & bConf) {
         auto path = configPath(bConf);
         path.append("/database.json");
 
         return nlohmann::json::parse(contentOfPath(path));
     }
 
-    nlohmann::json DirectoryManager::pathConfigContent(const model::BinaryPath& bConf) {
+    nlohmann::json DirectoryManager::pathConfigContent(const icarus_lib::binary_path & bConf) {
         auto path = configPath(bConf);
         path.append("/paths.json");
 

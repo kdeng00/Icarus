@@ -5,36 +5,37 @@
 #include <utility>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/YearFilter.h"
 
 namespace database {
     class YearRepository : public BaseRepository {
     public:
-        YearRepository(const model::BinaryPath&);
+        YearRepository(const icarus_lib::binary_path &);
 
-        std::vector<model::Year> retrieveRecords();
+        std::vector<icarus_lib::year> retrieveRecords();
 
-        std::pair<model::Year, int> retrieveRecordWithSongCount(model::Year&, 
+        std::pair<icarus_lib::year, int> retrieveRecordWithSongCount(icarus_lib::year&, 
                 type::YearFilter = type::YearFilter::id);
 
-        model::Year retrieveRecord(model::Year&, type::YearFilter = type::YearFilter::id);
+        icarus_lib::year retrieveRecord(icarus_lib::year&, type::YearFilter = type::YearFilter::id);
 
-        bool doesYearExist(const model::Year&, type::YearFilter = type::YearFilter::id);
+        bool doesYearExist(const icarus_lib::year&, type::YearFilter = type::YearFilter::id);
 
-        void saveRecord(const model::Year&);
-        void deleteYear(const model::Year&, type::YearFilter = type::YearFilter::id);
+        void saveRecord(const icarus_lib::year&);
+        void deleteYear(const icarus_lib::year&, type::YearFilter = type::YearFilter::id);
     private:
-        std::vector<model::Year> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::year> parseRecords(MYSQL_STMT*);
 
-        std::pair<model::Year, int> parseRecordWithSongCount(MYSQL_STMT*);
+        std::pair<icarus_lib::year, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Year&);
-        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Year&,
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::year&);
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(icarus_lib::year&,
                 int&);
 
-        model::Year parseRecord(MYSQL_STMT*);
+        icarus_lib::year parseRecord(MYSQL_STMT*);
     };
 }
 

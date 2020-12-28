@@ -6,7 +6,7 @@
 #include <cstring>
 
 namespace database {
-    GenreRepository::GenreRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
+    GenreRepository::GenreRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
     std::vector<model::Genre> GenreRepository::retrieveRecords() {

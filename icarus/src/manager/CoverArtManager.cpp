@@ -12,7 +12,7 @@
 namespace fs = std::filesystem;
 
 namespace manager {
-    CoverArtManager::CoverArtManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    CoverArtManager::CoverArtManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
     model::Cover CoverArtManager::saveCover(const model::Song& song) {

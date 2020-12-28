@@ -7,7 +7,7 @@
 
 namespace manager {
 
-    ArtistManager::ArtistManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    ArtistManager::ArtistManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
     model::Artist ArtistManager::retrieveArtist(model::Artist& artist) {

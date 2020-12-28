@@ -11,7 +11,7 @@ namespace database {
         intitalizeDetails(); 
     }
 
-    BaseRepository::BaseRepository(const model::BinaryPath& bConf) {
+    BaseRepository::BaseRepository(const icarus_lib::binary_path & bConf) {
         initializeDetails(bConf);
     }
 
@@ -74,7 +74,7 @@ namespace database {
         details.server = databaseConfig["server"].get<std::string>();
         details.username = databaseConfig["username"].get<std::string>();
     }
-    void BaseRepository::initializeDetails(const model::BinaryPath& bConf)
+    void BaseRepository::initializeDetails(const icarus_lib::binary_path & bConf)
     {
         auto databaseConfig = manager::DirectoryManager::databaseConfigContent(bConf);
 

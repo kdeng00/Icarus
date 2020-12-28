@@ -3,10 +3,9 @@
 #include <memory>
 #include <string>
 
+#include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
-
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
-
 #include <oatpp/network/Server.hpp>
 #include <oatpp/network/tcp/server/ConnectionProvider.hpp>
 
@@ -20,11 +19,11 @@
 #include "controller/RegisterController.hpp"
 #include "controller/SongController.hpp"
 #include "controller/YearController.hpp"
-#include "model/Models.h"
 #include "verify/Initialization.h"
 
 
-void run(const model::BinaryPath& bConf)
+template<typename config>
+void run(const config &b_conf)
 {
     component::AppComponent component;
 
@@ -32,14 +31,14 @@ void run(const model::BinaryPath& bConf)
 
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
 
-    auto albumController = std::make_shared<controller::AlbumController>(bConf);
-    auto artistController = std::make_shared<controller::ArtistController>(bConf);
-    auto coverArtController = std::make_shared<controller::CoverArtController>(bConf);
-    auto gnrController = std::make_shared<controller::GenreController>(bConf);
-    auto logController = std::make_shared<controller::LoginController>(bConf);
-    auto regController = std::make_shared<controller::RegisterController>(bConf);
-    auto sngController = std::make_shared<controller::SongController>(bConf);
-    auto yearController = std::make_shared<controller::YearController>(bConf);
+    auto albumController = std::make_shared<controller::AlbumController>(b_conf);
+    auto artistController = std::make_shared<controller::ArtistController>(b_conf);
+    auto coverArtController = std::make_shared<controller::CoverArtController>(b_conf);
+    auto gnrController = std::make_shared<controller::GenreController>(b_conf);
+    auto logController = std::make_shared<controller::LoginController>(b_conf);
+    auto regController = std::make_shared<controller::RegisterController>(b_conf);
+    auto sngController = std::make_shared<controller::SongController>(b_conf);
+    auto yearController = std::make_shared<controller::YearController>(b_conf);
 
     albumController->addEndpointsToRouter(router);
     artistController->addEndpointsToRouter(router);
@@ -63,13 +62,13 @@ int main(int argc, char **argv)
 {
     oatpp::base::Environment::init();
     
-    model::BinaryPath bConf(std::move(argv[0]));
+    icarus_lib::binary_path b_conf(std::move(argv[0]));
 
     if (argc > 1)
     {
         if (!verify::Initialization<>::skipVerification(argv[1]))
         {
-            verify::Initialization<>::checkIcarus(bConf);
+            verify::Initialization<>::checkIcarus(b_conf);
         }
         else
         {
@@ -78,10 +77,10 @@ int main(int argc, char **argv)
     } 
     else
     {
-        verify::Initialization<>::checkIcarus(bConf);
+        verify::Initialization<>::checkIcarus(b_conf);
     }
 
-    run(bConf);
+    run<icarus_lib::binary_path>(b_conf);
 
     oatpp::base::Environment::destroy();
 

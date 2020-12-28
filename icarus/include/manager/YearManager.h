@@ -1,22 +1,22 @@
 #ifndef YEARMANAGER_H_
 #define YEARMANAGER_H_
 
-#include "model/Models.h"
+#include "icarus_lib/icarus.h"
 
 namespace manager {
     class YearManager {
     public:
-        YearManager(const model::BinaryPath&);
+        YearManager(const icarus_lib::binary_path &);
 
-        model::Year retrieveYear(model::Year&);
-        model::Year saveYear(const model::Song&);
+        icarus_lib::year retrieveYear(icarus_lib::year &);
+        icarus_lib::year saveYear(const icarus_lib::song&);
 
-        void deleteYear(const model::Song&);
-        void updateYear(model::Song&, const model::Song&);
+        void deleteYear(const icarus_lib::song&);
+        void updateYear(icarus_lib::song&, const icarus_lib::song&);
 
-        static void printYear(const model::Year&);
+        static void printYear(const icarus_lib::year&);
     private:
-        model::BinaryPath m_bConf;
+        icarus_lib::binary_path m_bConf;
     };
 }
 

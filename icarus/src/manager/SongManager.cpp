@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <random>
 
+#include "icarus_lib/icarus.h"
 #include <nlohmann/json.hpp>
 //#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
@@ -22,7 +23,7 @@
 namespace fs = std::filesystem;
 
 namespace manager {
-    SongManager::SongManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    SongManager::SongManager(const icarus_lib::binary_path& bConf) : m_bConf(bConf) { }
 
 
     std::pair<bool, type::SongUpload> SongManager::saveSong(model::Song& song) {

@@ -8,7 +8,7 @@
 #include "type/SongFilter.h"
 
 namespace database {
-    SongRepository::SongRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
+    SongRepository::SongRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
     std::vector<model::Song> SongRepository::retrieveRecords() {

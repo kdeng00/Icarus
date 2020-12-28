@@ -8,7 +8,7 @@
 #include <cstring>
 
 namespace database {
-    AlbumRepository::AlbumRepository(const model::BinaryPath& bConf) : BaseRepository(bConf) { }
+    AlbumRepository::AlbumRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
     std::vector<model::Album> AlbumRepository::retrieveRecords() {

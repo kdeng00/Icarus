@@ -11,7 +11,7 @@
 #include "manager/DirectoryManager.h"
 
 namespace manager {
-    model::Token TokenManager::retrieveToken(const model::BinaryPath& bConf) {
+    model::Token TokenManager::retrieveToken(const icarus_lib::binary_path & bConf) {
 		auto cred = parseAuthCredentials(bConf);
 		auto reqObj = createTokenBody(cred);
 
@@ -75,7 +75,7 @@ namespace manager {
 		return false;
     }
 
-    bool TokenManager::testAuth(const model::BinaryPath& bConf) {
+    bool TokenManager::testAuth(const icarus_lib::binary_path & bConf) {
 		auto cred = parseAuthCredentials(bConf);
 		auto reqObj = createTokenBody(cred);
 
@@ -111,7 +111,7 @@ namespace manager {
     }
 
 
-    model::AuthCredentials TokenManager::parseAuthCredentials(const model::BinaryPath& bConf) {
+    model::AuthCredentials TokenManager::parseAuthCredentials(const icarus_lib::binary_path & bConf) {
 		auto con = DirectoryManager::credentialConfigContent(bConf);
 
 		model::AuthCredentials auth;

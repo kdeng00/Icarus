@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
 #include "model/Models.h"
 #include "type/GenreFilter.h"
@@ -12,7 +14,7 @@
 namespace database {
     class GenreRepository : public BaseRepository {
     public:
-        GenreRepository(const model::BinaryPath&);
+        GenreRepository(const icarus_lib::binary_path&);
 
         std::vector<model::Genre> retrieveRecords();
 

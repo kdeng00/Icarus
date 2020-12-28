@@ -5,6 +5,8 @@
 #include <memory>
 #include <tuple>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/BaseRepository.h"
 #include "model/Models.h"
 #include "type/SaltFilter.h"
@@ -13,7 +15,7 @@
 namespace database {
     class UserRepository : BaseRepository {
     public:
-        UserRepository(const model::BinaryPath&);
+        UserRepository(const icarus_lib::binary_path &);
 
         model::User retrieveUserRecord(model::User&, type::UserFilter);
         model::PassSec retrieverUserSaltRecord(model::PassSec&, type::SaltFilter);

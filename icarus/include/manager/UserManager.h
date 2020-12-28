@@ -3,13 +3,15 @@
 
 #include <iostream>
 
+#include "icarus_lib/icarus.h"
+
 #include "dto/LoginResultDto.hpp"
 #include "model/Models.h"
 
 namespace manager {
     class UserManager {
     public:
-        UserManager(const model::BinaryPath&);
+        UserManager(const icarus_lib::binary_path &);
 
         model::RegisterResult registerUser(model::User&);
 
@@ -18,7 +20,7 @@ namespace manager {
 
         void printUser(const model::User&);
     private:
-        model::BinaryPath m_bConf;
+        icarus_lib::binary_path  m_bConf;
     };
 }
 

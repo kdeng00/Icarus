@@ -2,12 +2,14 @@
 
 #include <iostream>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/AlbumRepository.h"
 #include "model/Models.h"
 #include "type/AlbumFilter.h"
 
 namespace manager {
-    AlbumManager::AlbumManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    AlbumManager::AlbumManager(const icarus_lib::binary_path& bConf) : m_bConf(bConf) { }
 
 
     model::Album AlbumManager::retrieveAlbum(model::Album& album) {

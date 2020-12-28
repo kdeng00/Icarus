@@ -6,7 +6,7 @@
 #include "type/GenreFilter.h"
 
 namespace manager {
-    GenreManager::GenreManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    GenreManager::GenreManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
     model::Genre GenreManager::retrieveGenre(model::Genre& genre) {

@@ -2,22 +2,24 @@
 
 #include <iostream>
 
+#include "icarus_lib/icarus.h"
+
 #include "database/YearRepository.h"
 #include "type/YearFilter.h"
 
 namespace manager {
-    YearManager::YearManager(const model::BinaryPath& bConf) : m_bConf(bConf) { }
+    YearManager::YearManager(const icarus_lib::binary_path &bConf) : m_bConf(bConf) { }
 
 
-    model::Year YearManager::retrieveYear(model::Year& year) {
+    icarus_lib::year YearManager::retrieveYear(icarus_lib::year& year) {
 		database::YearRepository yearRepo(m_bConf);
 		year = yearRepo.retrieveRecord(year, type::YearFilter::year);
 
 		return year;
     }
 
-    model::Year YearManager::saveYear(const model::Song& song) {
-		model::Year year;
+    icarus_lib::year YearManager::saveYear(const icarus_lib::song& song) {
+		icarus_lib::year year;
 		year.year = song.year;
 
 		database::YearRepository yearRepo(m_bConf);
@@ -30,8 +32,8 @@ namespace manager {
 		return year;
     }
 
-    void YearManager::deleteYear(const model::Song& song) {
-		model::Year year(song);
+    void YearManager::deleteYear(const icarus_lib::song& song) {
+		icarus_lib::year year(song);
 
 		database::YearRepository yrRepo(m_bConf);
 		auto yrWSC = yrRepo.retrieveRecordWithSongCount(year, type::YearFilter::id);
@@ -46,9 +48,9 @@ namespace manager {
 		yrRepo.deleteYear(year, type::YearFilter::id);
     }
 
-    void YearManager::updateYear(model::Song& updatedSong,
-		const model::Song& currSong) {
-		model::Year year;
+    void YearManager::updateYear(icarus_lib::song& updatedSong,
+		const icarus_lib::song& currSong) {
+		icarus_lib::year year;
 		year.year = updatedSong.year;
 
 		database::YearRepository albRepo(m_bConf);
@@ -63,7 +65,7 @@ namespace manager {
 		updatedSong.yearId = year.id;
     }
 
-    void YearManager::printYear(const model::Year& year) {
+    void YearManager::printYear(const icarus_lib::year& year) {
 		std::cout << "\nyear record\n";
 		std::cout << "id: " << year.id << "\n";
 		std::cout << "year: " << year.year << "\n";

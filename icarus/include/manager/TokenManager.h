@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <cpr/cpr.h>
+#include "icarus_lib/icarus.h"
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
@@ -18,16 +19,16 @@ namespace manager {
     public:
         TokenManager() = default;
 
-        model::Token retrieveToken(const model::BinaryPath&);
+        model::Token retrieveToken(const icarus_lib::binary_path &);
 
         bool isTokenValid(std::string&, type::Scope);
-        bool testAuth(const model::BinaryPath&);
+        bool testAuth(const icarus_lib::binary_path &);
     private:
         cpr::Response sendRequest(std::string_view, nlohmann::json&);
 
         nlohmann::json createTokenBody(const model::AuthCredentials&);
 
-        model::AuthCredentials parseAuthCredentials(const model::BinaryPath&);
+        model::AuthCredentials parseAuthCredentials(const icarus_lib::binary_path &);
 
         std::vector<std::string> extractScopes(const jwt::decoded_jwt&&);
         std::pair<bool, std::vector<std::string>> fetchAuthHeader(const std::string&);

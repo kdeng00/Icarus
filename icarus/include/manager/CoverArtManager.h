@@ -4,12 +4,14 @@
 #include <string>
 #include <utility>
 
+#include "icarus_lib/icarus.h"
+
 #include "model/Models.h"
 
 namespace manager {
     class CoverArtManager {
     public:
-        CoverArtManager(const model::BinaryPath& bConf);
+        CoverArtManager(const icarus_lib::binary_path & bConf);
 
         model::Cover saveCover(const model::Song&);
 
@@ -21,7 +23,7 @@ namespace manager {
     private:
         std::string createImagePath(const model::Song&);
 
-        model::BinaryPath m_bConf;
+        icarus_lib::binary_path  m_bConf;
     };
 }
 

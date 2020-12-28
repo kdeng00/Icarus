@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace database {
-    ArtistRepository::ArtistRepository(const model::BinaryPath& binConf) : 
+    ArtistRepository::ArtistRepository(const icarus_lib::binary_path & binConf) : 
             BaseRepository(binConf) { }
 
 

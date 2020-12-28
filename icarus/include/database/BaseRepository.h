@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
 
 #include "model/Models.h"
@@ -12,7 +13,7 @@ namespace database {
     public:
         BaseRepository() = default;
         BaseRepository(const std::string&);
-        BaseRepository(const model::BinaryPath&);
+        BaseRepository(const icarus_lib::binary_path &);
 
         bool testConnection();
     protected:
@@ -24,10 +25,10 @@ namespace database {
         model::DatabaseConnection details;
     private:
         void intitalizeDetails();
-        void initializeDetails(const model::BinaryPath&);
+        void initializeDetails(const icarus_lib::binary_path &);
 
         std::string path;
-        model::BinaryPath m_binConf;
+        icarus_lib::binary_path  m_binConf;
     };
 }
 

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
 
 #include "database/BaseRepository.h"
@@ -13,7 +14,7 @@
 namespace database {
     class CoverArtRepository : public BaseRepository {
     public:
-        CoverArtRepository(const model::BinaryPath&);
+        CoverArtRepository(const icarus_lib::binary_path &);
 
         std::vector<model::Cover> retrieveRecords();
 

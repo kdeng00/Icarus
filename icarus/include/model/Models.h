@@ -5,6 +5,7 @@
 #include <vector>
 
 namespace model {
+    /**
     class Song {
     public:
         Song() = default;
@@ -171,6 +172,7 @@ namespace model {
 
         std::string path;
     };
+    */
 }
 
 #endif
