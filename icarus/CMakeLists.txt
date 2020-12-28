@@ -14,7 +14,6 @@ set(CMAKE_TOOLCHAIN_FILE
 message("toolchain file ${CMAKE_TOOLCHAIN_FILE}")
 
 
-project(icarus CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
