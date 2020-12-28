@@ -79,16 +79,19 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/database.json ${CMAKE_BINARY_DIR}/bin
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
 
-find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
 find_package(oatpp CONFIG REQUIRED)
+
+find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 
 
 
 add_executable(icarus ${SOURCES})
 
 
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt)
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json cpr bcrypt)

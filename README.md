@@ -20,7 +20,7 @@ One can interface with Icarus the music server either by:
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
 * libcurl
-* libopenssl (Choice of using the system's ssl library or using the one from the cpr library)
+* libopenssl
 * libmariadb
 * [TagLib](https://github.com/taglib/taglib)
 * [oatpp](https://github.com/oatpp/oatpp)
@@ -155,7 +155,7 @@ git clone --recursive https://github.com/kdeng00/icarus
 
 cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install nlohmann-json cpr taglib jwt-cpp libmariadb oatpp
+./vcpkg install nlohmann-json curl openssl cpr taglib jwt-cpp libmariadb oatpp
 
 cd ../3rdparty/libbcrypt/
 make
@@ -163,8 +163,8 @@ make
 cd ../..
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SYSTEM_CURL=ON
-cmake --build .
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+cmake --build . -j
 bin/icarus
 ```
 Runs the server on localhost port 5002
