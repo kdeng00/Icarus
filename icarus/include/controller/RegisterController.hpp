@@ -12,7 +12,7 @@
 
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/UserManager.h"
+#include "manager/UserManager.hpp"
 
 using namespace dto;
 

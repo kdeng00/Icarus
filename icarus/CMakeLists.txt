@@ -35,7 +35,6 @@ set(SOURCES
     src/database/CoverArtRepository.cpp
     src/database/GenreRepository.cpp
     src/database/SongRepository.cpp
-    src/database/UserRepository.cpp
     src/database/YearRepository.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
@@ -45,7 +44,6 @@ set(SOURCES
     src/manager/GenreManager.cpp
     src/manager/SongManager.cpp
     src/manager/TokenManager.cpp
-    src/manager/UserManager.cpp
     src/manager/YearManager.cpp
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp
