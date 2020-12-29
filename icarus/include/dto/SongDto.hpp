@@ -4,8 +4,6 @@
 #include <oatpp/core/Types.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 
-#include "model/Models.h"
-
 namespace dto
 {
     #include OATPP_CODEGEN_BEGIN(DTO)

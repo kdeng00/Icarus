@@ -3,8 +3,6 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "model/Models.h"
-
 namespace manager {
     class GenreManager {
     public:
