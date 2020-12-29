@@ -24,7 +24,6 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/ArtistManager.h"
 #include "manager/TokenManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/ArtistFilter.h"
 
@@ -91,7 +90,7 @@ namespace controller
                               "Not allowed");
 
 		    database::ArtistRepository artRepo(m_bConf);
-		    model::Artist artDb(id);
+		    icarus_lib::artist artDb(id);
 
 		    OATPP_ASSERT_HTTP(artRepo.doesArtistExist(artDb, 
                         type::ArtistFilter::id) , Status::CODE_403, "artist does not exist");

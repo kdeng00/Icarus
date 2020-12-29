@@ -11,7 +11,7 @@ namespace database {
             BaseRepository(binConf) { }
 
 
-    std::vector<model::Artist> ArtistRepository::retrieveRecords() {
+    std::vector<icarus_lib::artist> ArtistRepository::retrieveRecords() {
         auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
         const std::string query = "SELECT * FROM Artist";
@@ -27,8 +27,8 @@ namespace database {
         return artists;
     }
 
-    std::pair<model::Artist, int> ArtistRepository::retrieveRecordWithSongCount(
-            model::Artist& artist, type::ArtistFilter filter = type::ArtistFilter::id) {
+    std::pair<icarus_lib::artist, int> ArtistRepository::retrieveRecordWithSongCount(
+            icarus_lib::artist& artist, type::ArtistFilter filter = type::ArtistFilter::id) {
 		std::cout << "retrieving artist record with song count\n";
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
@@ -71,7 +71,7 @@ namespace database {
 		return artWSC;
     }
 
-    model::Artist ArtistRepository::retrieveRecord(model::Artist& artist, 
+    icarus_lib::artist ArtistRepository::retrieveRecord(icarus_lib::artist& artist, 
             type::ArtistFilter filter) {
 		std::cout << "retrieving artist record\n";
 		std::stringstream qry;
@@ -82,7 +82,7 @@ namespace database {
 		MYSQL_BIND params[1];
 		memset(params, 0, sizeof(params));
 
-		auto artistLength = artist.artist.size();
+		auto artistLength = artist.name.size();
 		switch (filter) {
 		    case type::ArtistFilter::id:
 		        qry << "art.ArtistId = ?";
@@ -96,7 +96,7 @@ namespace database {
 		        qry << "art.Artist = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
-		        params[0].buffer = (char*)artist.artist.c_str();
+		        params[0].buffer = (char*)artist.name.c_str();
 		        params[0].length = &artistLength;
 		        params[0].is_null = 0;
 		        break;
@@ -121,7 +121,7 @@ namespace database {
 		return artist;
     }
 
-    bool ArtistRepository::doesArtistExist(const model::Artist& artist, type::ArtistFilter filter) {
+    bool ArtistRepository::doesArtistExist(const icarus_lib::artist& artist, type::ArtistFilter filter) {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 
@@ -131,7 +131,7 @@ namespace database {
 		std::stringstream qry;
 		qry << "SELECT * FROM Artist WHERE ";
 
-		auto artistLength = artist.artist.size();
+		auto artistLength = artist.name.size();
 		switch (filter) {
 		    case type::ArtistFilter::id:
 		        qry << "ArtistId = ?";
@@ -145,7 +145,7 @@ namespace database {
 		        qry << "Artist = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
-		        params[0].buffer = (char*)artist.artist.c_str();
+		        params[0].buffer = (char*)artist.name.c_str();
 		        params[0].length = &artistLength;
 		        params[0].is_null = 0;
 		        break;
@@ -171,7 +171,7 @@ namespace database {
 		return (rowCount > 0) ? true : false;
     }
 
-    void ArtistRepository::saveRecord(const model::Artist& artist) {
+    void ArtistRepository::saveRecord(const icarus_lib::artist& artist) {
 		std::cout << "inserting artist record\n";
 
 		auto conn = setupMysqlConnection();
@@ -185,8 +185,8 @@ namespace database {
 		memset(params, 0, sizeof(params));
 
 		params[0].buffer_type = MYSQL_TYPE_STRING;
-		params[0].buffer = (char*)artist.artist.c_str();
-		auto artistLength = artist.artist.size();
+		params[0].buffer = (char*)artist.name.c_str();
+		auto artistLength = artist.name.size();
 		params[0].length = &artistLength;
 		params[0].is_null = 0;
 
@@ -199,7 +199,7 @@ namespace database {
 		std::cout<< "inserted artist record\n";
     }
 
-    void ArtistRepository::deleteArtist(const model::Artist& artist, 
+    void ArtistRepository::deleteArtist(const icarus_lib::artist& artist, 
             type::ArtistFilter filter = type::ArtistFilter::id) {
 		std::cout << "delete Artist record\n";
 		std::stringstream qry;
@@ -236,10 +236,10 @@ namespace database {
 		std::cout << "deleted artist record\n";
     }
 
-    std::vector<model::Artist> ArtistRepository::parseRecords(MYSQL_STMT *stmt) {
+    std::vector<icarus_lib::artist> ArtistRepository::parseRecords(MYSQL_STMT *stmt) {
 		mysql_stmt_store_result(stmt);
 
-		std::vector<model::Artist> artists;
+		std::vector<icarus_lib::artist> artists;
 		artists.reserve(mysql_stmt_num_rows(stmt));
 
 		constexpr auto valAmt = 2;
@@ -248,7 +248,7 @@ namespace database {
 
         for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
             if (mysql_stmt_field_count(stmt) > 0) {
-                model::Artist art;
+                icarus_lib::artist art;
                 auto metaBuff = metadataBuffer();
                 auto bindedValues = valueBind(art, metaBuff);
                 status = mysql_stmt_bind_result(stmt, bindedValues.get());
@@ -258,7 +258,7 @@ namespace database {
 
                 if (status == 1 || status == MYSQL_NO_DATA) break;
 
-                art.artist = std::get<0>(metaBuff);
+                art.name = std::get<0>(metaBuff);
                 artists.push_back(art);
             }
             std::cout << "fetching next result\n";
@@ -268,12 +268,12 @@ namespace database {
     }
 
 
-    std::pair<model::Artist, int> ArtistRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
+    std::pair<icarus_lib::artist, int> ArtistRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
 		std::cout << "parsing artist record with song count\n";
 		mysql_stmt_store_result(stmt);
         const auto rowCount = mysql_stmt_num_rows(stmt);
 
-        model::Artist artist;
+        icarus_lib::artist artist;
 
         auto metaBuff = metadataBuffer();
         auto songCount = 0;
@@ -287,7 +287,7 @@ namespace database {
         auto status = mysql_stmt_bind_result(stmt, val.get());
         status = mysql_stmt_fetch(stmt);
 
-        artist.artist = std::get<0>(metaBuff);
+        artist.name = std::get<0>(metaBuff);
 
         std::cout << "done parsing album record with song count\n";
 
@@ -295,7 +295,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> ArtistRepository::valueBind(model::Artist& artist,
+    std::shared_ptr<MYSQL_BIND> ArtistRepository::valueBind(icarus_lib::artist& artist,
             std::tuple<char*>& metadata) {
         constexpr auto valueCount = 2;
         constexpr auto wordLen = 1024;
@@ -312,7 +312,7 @@ namespace database {
         return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> ArtistRepository::valueBindWithSongCount(model::Artist& artist,
+    std::shared_ptr<MYSQL_BIND> ArtistRepository::valueBindWithSongCount(icarus_lib::artist& artist,
             std::tuple<char*>& metadata, int& songCount) {
         constexpr auto valueCount = 3;
         constexpr auto wordLen = 1024;
@@ -342,17 +342,17 @@ namespace database {
     }
 
 
-    model::Artist ArtistRepository::parseRecord(MYSQL_STMT *stmt) {
+    icarus_lib::artist ArtistRepository::parseRecord(MYSQL_STMT *stmt) {
 		std::cout << "parsing artist record\n";
 		mysql_stmt_store_result(stmt);
 
-		model::Artist art;
+		icarus_lib::artist art;
         auto metaBuff = metadataBuffer();
         auto bindedValues = valueBind(art, metaBuff);
         auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
         status = mysql_stmt_fetch(stmt);
 
-        art.artist = std::get<0>(metaBuff);
+        art.name = std::get<0>(metaBuff);
 
 		std::cout << "done parsing artist record\n";
 

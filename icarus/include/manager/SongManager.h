@@ -10,7 +10,6 @@
 #include <nlohmann/json.hpp>
 
 #include "dto/SongDto.hpp"
-#include "model/Models.h"
 #include "type/SongChanged.h"
 #include "type/SongUpload.h"
 
@@ -19,29 +18,29 @@ namespace manager {
     public:
         SongManager(const icarus_lib::binary_path &);
 
-        std::pair<bool, type::SongUpload> saveSong(model::Song&);
+        std::pair<bool, type::SongUpload> saveSong(icarus_lib::song&);
 
-        bool didSongChange(const model::Song&, const model::Song&);
-        bool requiresFilesystemChange(const model::Song&, const model::Song&);
-        bool deleteSong(model::Song&);
-        bool updateSong(model::Song&);
+        bool didSongChange(const icarus_lib::song&, const icarus_lib::song&);
+        bool requiresFilesystemChange(const icarus_lib::song&, const icarus_lib::song&);
+        bool deleteSong(icarus_lib::song&);
+        bool updateSong(icarus_lib::song&);
 
-        static void printSong(const model::Song&);
+        static void printSong(const icarus_lib::song&);
     private:
-        std::map<type::SongChanged, bool> changesInSong(const model::Song&, const model::Song&);
+        std::map<type::SongChanged, bool> changesInSong(const icarus_lib::song&, const icarus_lib::song&);
 
-        std::string createSongPath(const model::Song&);
+        std::string createSongPath(const icarus_lib::song&);
 
-        void assignMiscId(model::Song&, const model::Song&);
-        void assignMiscFields(std::map<type::SongChanged, bool>&, model::Song&, 
-            const model::Song&);
-        void saveSongTemp(model::Song&);
-        void saveMisc(model::Song&);
-        void deleteMisc(const model::Song&);
-        void deleteMiscExceptCoverArt(const model::Song&);
+        void assignMiscId(icarus_lib::song&, const icarus_lib::song&);
+        void assignMiscFields(std::map<type::SongChanged, bool>&, icarus_lib::song&, 
+            const icarus_lib::song&);
+        void saveSongTemp(icarus_lib::song&);
+        void saveMisc(icarus_lib::song&);
+        void deleteMisc(const icarus_lib::song&);
+        void deleteMiscExceptCoverArt(const icarus_lib::song&);
         void updateMisc(const std::map<type::SongChanged, bool>&, 
-            model::Song&, const model::Song&);
-        void modifySongOnFilesystem(model::Song&, const model::Song&);
+            icarus_lib::song&, const icarus_lib::song&);
+        void modifySongOnFilesystem(icarus_lib::song&, const icarus_lib::song&);
 
         icarus_lib::binary_path  m_bConf;
     };

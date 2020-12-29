@@ -8,7 +8,6 @@
 #include "icarus_lib/icarus.h"
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/AlbumFilter.h"
 
 namespace database {
@@ -16,29 +15,29 @@ namespace database {
     public:
         AlbumRepository(const icarus_lib::binary_path&);
 
-        std::vector<model::Album> retrieveRecords();
+        std::vector<icarus_lib::album> retrieveRecords();
 
-        std::pair<model::Album, int> retrieveRecordWithSongCount(model::Album&, type::AlbumFilter);
+        std::pair<icarus_lib::album, int> retrieveRecordWithSongCount(icarus_lib::album&, type::AlbumFilter);
 
-        model::Album retrieveRecord(model::Album&, type::AlbumFilter);
+        icarus_lib::album retrieveRecord(icarus_lib::album&, type::AlbumFilter);
 
-        bool doesAlbumExists(const model::Album&, type::AlbumFilter);
+        bool doesAlbumExists(const icarus_lib::album&, type::AlbumFilter);
 
-        void saveAlbum(const model::Album&);
-        void deleteAlbum(const model::Album&, type::AlbumFilter);
+        void saveAlbum(const icarus_lib::album&);
+        void deleteAlbum(const icarus_lib::album&, type::AlbumFilter);
     private:
-        std::vector<model::Album> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::album> parseRecords(MYSQL_STMT*);
 
-        std::pair<model::Album, int> parseRecordWithSongCount(MYSQL_STMT*);
+        std::pair<icarus_lib::album, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Album&, 
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::album&, 
                 std::tuple<char*, char*>&);
-        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Album&, 
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(icarus_lib::album&, 
                 std::tuple<char*, char*>&, int&);
 
         std::tuple<char*, char*> metadataBuffer();
 
-        model::Album parseRecord(MYSQL_STMT*);
+        icarus_lib::album parseRecord(MYSQL_STMT*);
     };
 }
 

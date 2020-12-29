@@ -11,7 +11,7 @@ namespace database {
             BaseRepository(bConf) { }
 
 
-	std::vector<model::Cover> CoverArtRepository::retrieveRecords() {
+	std::vector<icarus_lib::cover> CoverArtRepository::retrieveRecords() {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 		const std::string query = "SELECT * FROM CoverArt";
@@ -27,7 +27,7 @@ namespace database {
 		return coverArts;
     }
 
-    model::Cover CoverArtRepository::retrieveRecord(model::Cover& cov, 
+    icarus_lib::cover CoverArtRepository::retrieveRecord(icarus_lib::cover& cov, 
             type::CoverFilter filter = type::CoverFilter::id) {
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
@@ -38,7 +38,7 @@ namespace database {
 		MYSQL_BIND params[1];
 		memset(params, 0, sizeof(params));
 
-		auto songTitleLength = cov.songTitle.size();
+		auto songTitleLength = cov.song_title.size();
 		switch (filter) {
 		    case type::CoverFilter::id:
 		        qry << "CoverArtId = ?";
@@ -52,7 +52,7 @@ namespace database {
 		        qry << "SongTitle = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
-		        params[0].buffer = (char*)cov.songTitle.c_str();
+		        params[0].buffer = (char*)cov.song_title.c_str();
 		        params[0].length = &songTitleLength;
 		        params[0].is_null = 0;
 		        break;
@@ -77,7 +77,7 @@ namespace database {
     }
 
 
-    bool CoverArtRepository::doesCoverArtExist(const model::Cover& cover, 
+    bool CoverArtRepository::doesCoverArtExist(const icarus_lib::cover& cover, 
             type::CoverFilter filter) {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
@@ -88,7 +88,7 @@ namespace database {
 		std::stringstream qry;
 		qry << "SELECT * FROM CoverArt WHERE ";
 
-		auto titleLength = cover.songTitle.size();
+		auto titleLength = cover.song_title.size();
 		switch (filter) {
 		    case type::CoverFilter::id:
 		        qry << "CoverArtId = ?";
@@ -102,7 +102,7 @@ namespace database {
 		        qry << "SongTitle = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_STRING;
-		        params[0].buffer = (char*)cover.songTitle.c_str();
+		        params[0].buffer = (char*)cover.song_title.c_str();
 		        params[0].length = &titleLength;
 		        params[0].is_null = 0;
 		        break;
@@ -129,7 +129,7 @@ namespace database {
     }
 
 
-    void CoverArtRepository::deleteRecord(const model::Cover& cov, 
+    void CoverArtRepository::deleteRecord(const icarus_lib::cover& cov, 
             type::CoverFilter filter) {
 		auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
@@ -165,7 +165,7 @@ namespace database {
         std::cout << "deleted CoverArt record\n";
     }
 
-    void CoverArtRepository::saveRecord(const model::Cover& cov) {
+    void CoverArtRepository::saveRecord(const icarus_lib::cover& cov) {
 		std::cout << "saving cover art record";
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
@@ -179,14 +179,14 @@ namespace database {
 		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 
 		params[0].buffer_type = MYSQL_TYPE_STRING;
-		params[0].buffer = (char*)cov.songTitle.c_str();
-		auto songTitleLength = cov.songTitle.size();
+		params[0].buffer = (char*)cov.song_title.c_str();
+		auto songTitleLength = cov.song_title.size();
 		params[0].length = &songTitleLength;
 		params[0].is_null = 0;
 
 		params[1].buffer_type = MYSQL_TYPE_STRING;
-		params[1].buffer = (char*)cov.imagePath.c_str();
-		auto imagePathLength = cov.imagePath.size();
+		params[1].buffer = (char*)cov.image_path.c_str();
+		auto imagePathLength = cov.image_path.size();
 		params[1].length = &imagePathLength;
 		params[1].is_null = 0;
 
@@ -199,7 +199,7 @@ namespace database {
 		std::cout << "saved cover art record\n";
     }
 
-    void CoverArtRepository::updateRecord(const model::Cover& cover) {
+    void CoverArtRepository::updateRecord(const icarus_lib::cover& cover) {
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
@@ -212,16 +212,16 @@ namespace database {
 		MYSQL_BIND params[3];
 		memset(params, 0, sizeof(params));
 
-		auto songTitleLength = cover.songTitle.size();
-		auto imagePathLength = cover.imagePath.size();
+		auto songTitleLength = cover.song_title.size();
+		auto imagePathLength = cover.image_path.size();
 
 		params[0].buffer_type = MYSQL_TYPE_STRING;
-		params[0].buffer = (char*)cover.songTitle.c_str();
+		params[0].buffer = (char*)cover.song_title.c_str();
 		params[0].length = &songTitleLength;
 		params[0].is_null = 0;
 
 		params[1].buffer_type = MYSQL_TYPE_STRING;
-		params[1].buffer = (char*)cover.imagePath.c_str();
+		params[1].buffer = (char*)cover.image_path.c_str();
 		params[1].length = &imagePathLength;
 		params[1].is_null = 0;
 
@@ -242,19 +242,19 @@ namespace database {
     }
 
 
-    std::vector<model::Cover> CoverArtRepository::parseRecords(MYSQL_STMT *stmt) {
+    std::vector<icarus_lib::cover> CoverArtRepository::parseRecords(MYSQL_STMT *stmt) {
 		mysql_stmt_store_result(stmt);
 		const auto rowCount = mysql_stmt_num_rows(stmt);
 		std::cout << "number of results " << rowCount << "\n";
 
-		std::vector<model::Cover> coverArts;
+		std::vector<icarus_lib::cover> coverArts;
 		coverArts.reserve(rowCount);
 
         constexpr auto valAmt = 3;
 
         for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
             if (mysql_stmt_field_count(stmt) > 0) {
-                model::Cover cover;
+                icarus_lib::cover cover;
                 auto metaBuff = metadataBuffer();
                 auto bindedValues = valueBind(cover, metaBuff);
                 status = mysql_stmt_bind_result(stmt, bindedValues.get());
@@ -264,8 +264,8 @@ namespace database {
 
                 if (status == 1 || status == MYSQL_NO_DATA) break;
 
-                cover.songTitle = std::get<0>(metaBuff);
-                cover.imagePath = std::get<1>(metaBuff);
+                cover.song_title = std::get<0>(metaBuff);
+                cover.image_path = std::get<1>(metaBuff);
                 coverArts.push_back(cover);
             }
             std::cout << "fetching next result\n";
@@ -275,7 +275,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> CoverArtRepository::valueBind(model::Cover& cover,
+    std::shared_ptr<MYSQL_BIND> CoverArtRepository::valueBind(icarus_lib::cover& cover,
             std::tuple<char*, char*>& metadata) {
         constexpr auto valueCount = 3;
         constexpr auto wordLen = 1024;
@@ -306,18 +306,18 @@ namespace database {
     }
 
 
-    model::Cover CoverArtRepository::parseRecord(MYSQL_STMT *stmt) {
+    icarus_lib::cover CoverArtRepository::parseRecord(MYSQL_STMT *stmt) {
 		std::cout << "parsing cover art record\n";
 		mysql_stmt_store_result(stmt);
-		model::Cover cover;
+		icarus_lib::cover cover;
 
         auto metaBuff = metadataBuffer();
         auto bindedValues = valueBind(cover, metaBuff);
         auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
         status = mysql_stmt_fetch(stmt);
 
-        cover.songTitle = std::get<0>(metaBuff);
-        cover.imagePath = std::get<1>(metaBuff);
+        cover.song_title = std::get<0>(metaBuff);
+        cover.image_path = std::get<1>(metaBuff);
 
 		std::cout << "done parsing cover art record\n";
 

@@ -23,7 +23,6 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/CoverArtManager.h"
 #include "manager/TokenManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/CoverFilter.h"
 
@@ -84,7 +83,7 @@ namespace controller
                               "Not allowed");
 
 		    database::CoverArtRepository covRepo(m_bConf);
-		    model::Cover covDb;
+		    icarus_lib::cover covDb;
 		    covDb.id = id;
 
 		    OATPP_ASSERT_HTTP(covRepo.doesCoverArtExist(covDb, 
@@ -112,11 +111,11 @@ namespace controller
                               Status::CODE_403, "Not allowed");
 
 		    database::CoverArtRepository covRepo(m_bConf);
-		    model::Cover covDb;
+		    icarus_lib::cover covDb;
 		    covDb.id = id;
 		    covDb = covRepo.retrieveRecord(covDb, type::CoverFilter::id);
 
-		    auto rawCover = oatpp::base::StrBuffer::loadFromFile(covDb.imagePath.c_str());
+		    auto rawCover = oatpp::base::StrBuffer::loadFromFile(covDb.image_path.c_str());
 		    auto response = createResponse(Status::CODE_200, rawCover);
 		        
 		    response->putHeader(Header::CONTENT_TYPE, "image/*");

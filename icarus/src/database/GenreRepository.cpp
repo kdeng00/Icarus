@@ -9,7 +9,7 @@ namespace database {
     GenreRepository::GenreRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
-    std::vector<model::Genre> GenreRepository::retrieveRecords() {
+    std::vector<icarus_lib::genre> GenreRepository::retrieveRecords() {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 		const std::string query = "SELECT * FROM Genre";
@@ -25,8 +25,8 @@ namespace database {
 		return genres;
     }
 
-    std::pair<model::Genre, int> GenreRepository::retrieveRecordWithSongCount(
-            model::Genre& genre, type::GenreFilter filter = type::GenreFilter::id) {
+    std::pair<icarus_lib::genre, int> GenreRepository::retrieveRecordWithSongCount(
+            icarus_lib::genre& genre, type::GenreFilter filter = type::GenreFilter::id) {
 		std::cout << "retrieving genre record with song count\n";
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
@@ -69,7 +69,7 @@ namespace database {
 		return gnrWSC;
     }
 
-    model::Genre GenreRepository::retrieveRecord(model::Genre& genre, type::GenreFilter filter) {
+    icarus_lib::genre GenreRepository::retrieveRecord(icarus_lib::genre& genre, type::GenreFilter filter) {
 		std::cout << "retrieving genre record\n";
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
@@ -118,7 +118,7 @@ namespace database {
 		return genre;
     }
 
-    bool GenreRepository::doesGenreExist(const model::Genre& genre, type::GenreFilter filter) {
+    bool GenreRepository::doesGenreExist(const icarus_lib::genre& genre, type::GenreFilter filter) {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 
@@ -168,7 +168,7 @@ namespace database {
 		return (rowCount > 0) ? true : false;
     }
 
-    void GenreRepository::saveRecord(const model::Genre& genre) {
+    void GenreRepository::saveRecord(const icarus_lib::genre& genre) {
 		std::cout << "inserting genre record\n";
 
 		auto conn = setupMysqlConnection();
@@ -196,7 +196,7 @@ namespace database {
 		std::cout << "inserted record\n";
     }
 
-    void GenreRepository::deleteRecord(const model::Genre& genre, 
+    void GenreRepository::deleteRecord(const icarus_lib::genre& genre, 
             type::GenreFilter filter = type::GenreFilter::id) {
 		std::cout << "deleting genre record\n";
 		std::stringstream qry;
@@ -234,17 +234,17 @@ namespace database {
     }
 
 
-    std::vector<model::Genre> GenreRepository::parseRecords(MYSQL_STMT *stmt) {
+    std::vector<icarus_lib::genre> GenreRepository::parseRecords(MYSQL_STMT *stmt) {
 		mysql_stmt_store_result(stmt);
 
-		std::vector<model::Genre> genres;
+		std::vector<icarus_lib::genre> genres;
 		genres.reserve(mysql_stmt_num_rows(stmt));
 
 		constexpr auto valAmt = 2;
 
 		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
             if (mysql_stmt_field_count(stmt) > 0) {
-                model::Genre genre;
+                icarus_lib::genre genre;
                 auto metaBuff = metadataBuffer();
                 auto bindedValues = valueBind(genre, metaBuff);
                 status = mysql_stmt_bind_result(stmt, bindedValues.get());
@@ -263,12 +263,12 @@ namespace database {
 		return genres;
     }
 
-    std::pair<model::Genre, int> GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
+    std::pair<icarus_lib::genre, int> GenreRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
 		std::cout << "parsing genre record with song count\n";
 		mysql_stmt_store_result(stmt);
         const auto rowCount = mysql_stmt_num_rows(stmt);
 
-		model::Genre genre;
+		icarus_lib::genre genre;
 		int songCount = 0;
 
         auto metaBuff = metadataBuffer();
@@ -290,7 +290,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBind(model::Genre& genre,
+    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBind(icarus_lib::genre& genre,
             std::tuple<char*>& metadata) {
         constexpr auto valueCount = 2;
         constexpr auto wordLen = 1024;
@@ -307,7 +307,7 @@ namespace database {
         return values;
     }
     
-    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBindWithSongCount(model::Genre& genre,
+    std::shared_ptr<MYSQL_BIND> GenreRepository::valueBindWithSongCount(icarus_lib::genre& genre,
             std::tuple<char*>& metadata, int& songCount) {
         constexpr auto valueCount = 3;
         constexpr auto wordLen = 1024;
@@ -336,11 +336,11 @@ namespace database {
     }
 
 
-    model::Genre GenreRepository::parseRecord(MYSQL_STMT *stmt) {
+    icarus_lib::genre GenreRepository::parseRecord(MYSQL_STMT *stmt) {
         std::cout << "parsing genre record\n";
         mysql_stmt_store_result(stmt);
 
-		model::Genre genre;
+		icarus_lib::genre genre;
         auto metaBuff = metadataBuffer();
         auto bindedValues = valueBind(genre, metaBuff);
         auto status = mysql_stmt_bind_result(stmt, bindedValues.get());

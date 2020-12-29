@@ -17,7 +17,7 @@ namespace manager {
 
 		utility::PasswordEncryption passEnc;
 		auto hashed = passEnc.hashPassword(user);
-		user.password = hashed.hashPassword;
+		user.password = hashed.hash_password;
 
 		database::UserRepository usrRepo(m_bConf);
 		usrRepo.saveUserRecord(user);
@@ -27,8 +27,8 @@ namespace manager {
 
 		std::cout << usr.username << "\n";
 		usr = usrRepo.retrieveUserRecord(usr, type::UserFilter::username);
-		hashed.hashPassword = usr.password;
-		hashed.userId = usr.id;
+		hashed.hash_password = usr.password;
+		hashed.user_id = usr.id;
 
 		usrRepo.saveUserSalt(hashed);
 		result.registered = true;

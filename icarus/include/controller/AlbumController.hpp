@@ -24,7 +24,6 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/AlbumManager.h"
 #include "manager/TokenManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/AlbumFilter.h"
 
@@ -92,7 +91,7 @@ namespace controller
                         type::Scope::retrieveAlbum), Status::CODE_403, "Not allowed");
 
             database::AlbumRepository albRepo(m_bConf);
-            model::Album albDb(id);
+            icarus_lib::album albDb(id);
 
             OATPP_ASSERT_HTTP(albRepo.doesAlbumExists(albDb, 
                         type::AlbumFilter::id) , Status::CODE_403, "album does not exist");

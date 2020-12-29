@@ -8,7 +8,6 @@
 #include <mysql/mysql.h>
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/CoverFilter.h"
 
 namespace database {
@@ -16,24 +15,24 @@ namespace database {
     public:
         CoverArtRepository(const icarus_lib::binary_path &);
 
-        std::vector<model::Cover> retrieveRecords();
+        std::vector<icarus_lib::cover> retrieveRecords();
 
-        model::Cover retrieveRecord(model::Cover&, type::CoverFilter);
+        icarus_lib::cover retrieveRecord(icarus_lib::cover&, type::CoverFilter);
         
-        bool doesCoverArtExist(const model::Cover&, type::CoverFilter);
+        bool doesCoverArtExist(const icarus_lib::cover&, type::CoverFilter);
 
-        void deleteRecord(const model::Cover&, type::CoverFilter = type::CoverFilter::id);
-        void saveRecord(const model::Cover&);
-        void updateRecord(const model::Cover&);
+        void deleteRecord(const icarus_lib::cover&, type::CoverFilter = type::CoverFilter::id);
+        void saveRecord(const icarus_lib::cover&);
+        void updateRecord(const icarus_lib::cover&);
     private:
-        std::vector<model::Cover> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::cover> parseRecords(MYSQL_STMT*);
 
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Cover&,
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::cover&,
                 std::tuple<char*, char*>&);
 
         std::tuple<char*, char*> metadataBuffer();
 
-        model::Cover parseRecord(MYSQL_STMT*);
+        icarus_lib::cover parseRecord(MYSQL_STMT*);
     };
 }
 

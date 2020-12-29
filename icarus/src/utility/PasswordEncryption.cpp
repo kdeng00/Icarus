@@ -7,8 +7,8 @@
 
 namespace utility {
 
-    model::PassSec PasswordEncryption::hashPassword(const model::User& user) {
-        model::PassSec passSec;
+    icarus_lib::pass_sec PasswordEncryption::hashPassword(const icarus_lib::user& user) {
+        icarus_lib::pass_sec passSec;
 
         std::unique_ptr<char[]> salt(new char[BCRYPT_HASHSIZE]);
         std::unique_ptr<char[]> hash(new char[BCRYPT_HASHSIZE]);
@@ -19,22 +19,22 @@ namespace utility {
         bcrypt_hashpw(user.password.c_str(), salt.get(), hash.get());
 
         passSec.salt = salt.get();
-        passSec.hashPassword = hash.get();
+        passSec.hash_password = hash.get();
 
-        std::cout << "hash: " << passSec.hashPassword << "\n";
+        std::cout << "hash: " << passSec.hash_password << "\n";
         std::cout << "salt: " << passSec.salt << "\n";
 
         return passSec;
     }
 
 
-    bool PasswordEncryption::isPasswordValid(const model::User& user, 
-            const model::PassSec& userSalt) {
+    bool PasswordEncryption::isPasswordValid(const icarus_lib::user& user, 
+            const icarus_lib::pass_sec& userSalt) {
         std::unique_ptr<char[]> passwordHashed(new char[BCRYPT_HASHSIZE]);
 
         bcrypt_hashpw(user.password.c_str(), userSalt.salt.c_str(), passwordHashed.get());
 
-        return (userSalt.hashPassword.compare(passwordHashed.get()) == 0) ? true : false;
+        return (userSalt.hash_password.compare(passwordHashed.get()) == 0) ? true : false;
     }
 
 

@@ -8,7 +8,6 @@
 #include "icarus_lib/icarus.h"
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/GenreFilter.h"
 
 namespace database {
@@ -16,29 +15,29 @@ namespace database {
     public:
         GenreRepository(const icarus_lib::binary_path&);
 
-        std::vector<model::Genre> retrieveRecords();
+        std::vector<icarus_lib::genre> retrieveRecords();
 
-        std::pair<model::Genre, int> retrieveRecordWithSongCount(model::Genre&, type::GenreFilter);
+        std::pair<icarus_lib::genre, int> retrieveRecordWithSongCount(icarus_lib::genre&, type::GenreFilter);
 
-        model::Genre retrieveRecord(model::Genre&, type::GenreFilter);
+        icarus_lib::genre retrieveRecord(icarus_lib::genre&, type::GenreFilter);
 
-        bool doesGenreExist(const model::Genre&, type::GenreFilter);
+        bool doesGenreExist(const icarus_lib::genre&, type::GenreFilter);
 
-        void saveRecord(const model::Genre&);
-        void deleteRecord(const model::Genre&, type::GenreFilter);
+        void saveRecord(const icarus_lib::genre&);
+        void deleteRecord(const icarus_lib::genre&, type::GenreFilter);
     private:
-        std::vector<model::Genre> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::genre> parseRecords(MYSQL_STMT*);
 
-        std::pair<model::Genre, int> parseRecordWithSongCount(MYSQL_STMT*);
+        std::pair<icarus_lib::genre, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Genre&,
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::genre&,
                 std::tuple<char*>&);
-        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Genre&,
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(icarus_lib::genre&,
                 std::tuple<char*>&, int&);
 
         std::tuple<char*> metadataBuffer();
 
-        model::Genre parseRecord(MYSQL_STMT*);
+        icarus_lib::genre parseRecord(MYSQL_STMT*);
     };
 }
 

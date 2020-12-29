@@ -5,22 +5,21 @@
 #include "icarus_lib/icarus.h"
 
 #include "database/AlbumRepository.h"
-#include "model/Models.h"
 #include "type/AlbumFilter.h"
 
 namespace manager {
     AlbumManager::AlbumManager(const icarus_lib::binary_path& bConf) : m_bConf(bConf) { }
 
 
-    model::Album AlbumManager::retrieveAlbum(model::Album& album) {
+    icarus_lib::album AlbumManager::retrieveAlbum(icarus_lib::album& album) {
         database::AlbumRepository albRepo(m_bConf);
         album = std::move(albRepo.retrieveRecord(album, type::AlbumFilter::title));
 
         return album;
     }
 
-    model::Album AlbumManager::saveAlbum(const model::Song& song) {
-        model::Album album(song);
+    icarus_lib::album AlbumManager::saveAlbum(const icarus_lib::song& song) {
+        icarus_lib::album album(song);
     
         database::AlbumRepository albRepo(m_bConf);
         // TODO: check for existence with the title and the artist
@@ -34,8 +33,8 @@ namespace manager {
     }
 
 
-    void AlbumManager::deleteAlbum(const model::Song& song) {
-        model::Album album(song);
+    void AlbumManager::deleteAlbum(const icarus_lib::song& song) {
+        icarus_lib::album album(song);
 
         database::AlbumRepository albRepo(m_bConf);
         auto albWSC = albRepo.retrieveRecordWithSongCount(album, type::AlbumFilter::id);
@@ -49,9 +48,9 @@ namespace manager {
         albRepo.deleteAlbum(album, type::AlbumFilter::id);
     }
 
-    void AlbumManager::updateAlbum(model::Song& updatedSong,
-            const model::Song& currSong) {
-        model::Album album(updatedSong);
+    void AlbumManager::updateAlbum(icarus_lib::song& updatedSong,
+            const icarus_lib::song& currSong) {
+        icarus_lib::album album(updatedSong);
 
         database::AlbumRepository albRepo(m_bConf);
         if (!albRepo.doesAlbumExists(album, type::AlbumFilter::title)) {
@@ -62,10 +61,10 @@ namespace manager {
         }
 
         album = albRepo.retrieveRecord(album, type::AlbumFilter::title);
-        updatedSong.albumId = album.id;
+        updatedSong.album_id = album.id;
     }
 
-    void AlbumManager::printAlbum(const model::Album& album) {
+    void AlbumManager::printAlbum(const icarus_lib::album& album) {
         std::cout << "\nalbum record\n";
         std::cout << "id: " << album.id << "\n";
         std::cout << "title: " << album.title << "\n";

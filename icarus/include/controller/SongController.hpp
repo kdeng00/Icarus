@@ -30,7 +30,6 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/SongManager.h"
 #include "manager/TokenManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/SongFilter.h"
 #include "type/SongUpload.h"
@@ -86,7 +85,7 @@ namespace controller
 
 		    std::vector<unsigned char> data(*buff, *buff + buffSize);
 
-		    model::Song sng;
+		    icarus_lib::song sng;
 		    sng.data = std::move(data);
 		
 		    manager::SongManager songMgr(m_bConf);
@@ -148,7 +147,7 @@ namespace controller
                               Status::CODE_403, "Not allowed");
 
 		    database::SongRepository songRepo(m_bConf);
-		    model::Song songDb(id);
+		    icarus_lib::song songDb(id);
 
 		    if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
 		        return songDoesNotExist();
@@ -175,7 +174,7 @@ namespace controller
 
 
 		    database::SongRepository songRepo(m_bConf);
-		    model::Song songDb(id);
+		    icarus_lib::song songDb(id);
 
 		    if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
 		        return songDoesNotExist();
@@ -183,7 +182,7 @@ namespace controller
 
 		    songDb = songRepo.retrieveRecord(songDb, type::SongFilter::id);
 
-		    auto rawSong = oatpp::base::StrBuffer::loadFromFile(songDb.songPath.c_str());
+		    auto rawSong = oatpp::base::StrBuffer::loadFromFile(songDb.song_path.c_str());
 		    
 		    auto response = createResponse(Status::CODE_200, rawSong);
 		    response->putHeader(Header::CONTENT_TYPE, "audio/mpeg");
@@ -227,7 +226,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::deleteSong), 
                               Status::CODE_403, "Not allowed");
 
-		    model::Song song(id);
+		    icarus_lib::song song(id);
 
 		    manager::SongManager sngMgr(m_bConf);
 		    auto result = sngMgr.deleteSong(song);
@@ -252,7 +251,7 @@ namespace controller
                               Status::CODE_403, "Not allowed");
 
 		    database::SongRepository songRepo(m_bConf);
-		    model::Song songDb(id);
+		    icarus_lib::song songDb(id);
 
 		    if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
 		        return songDoesNotExist();
@@ -262,7 +261,7 @@ namespace controller
 
 		    constexpr auto dSize = 1024;
 
-            auto callback = std::make_shared<callback::StreamCallback>(songDb.songPath);
+            auto callback = std::make_shared<callback::StreamCallback>(songDb.song_path);
 		    auto db = std::make_shared<oatpp::web::protocol::http::outgoing::StreamingBody>(
                     callback
                     );

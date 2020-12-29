@@ -3,14 +3,14 @@
 
 #include <string>
 
-#include "model/Models.h"
+#include "icarus_lib/icarus.h"
 
 namespace utility {
 class PasswordEncryption {
 public:
-    model::PassSec hashPassword(const model::User&);
+    icarus_lib::pass_sec hashPassword(const icarus_lib::user&);
 
-    bool isPasswordValid(const model::User&, const model::PassSec&);
+    bool isPasswordValid(const icarus_lib::user&, const icarus_lib::pass_sec&);
 private:
     constexpr int saltSize() noexcept;
 };

@@ -8,7 +8,6 @@
 #include "icarus_lib/icarus.h"
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/ArtistFilter.h"
 
 namespace database {
@@ -16,30 +15,30 @@ namespace database {
     public:
         ArtistRepository(const icarus_lib::binary_path&);
 
-        std::vector<model::Artist> retrieveRecords();
+        std::vector<icarus_lib::artist> retrieveRecords();
 
-        std::pair<model::Artist, int> retrieveRecordWithSongCount(
-                model::Artist&, type::ArtistFilter);
+        std::pair<icarus_lib::artist, int> retrieveRecordWithSongCount(
+                icarus_lib::artist&, type::ArtistFilter);
 
-        model::Artist retrieveRecord(model::Artist&, type::ArtistFilter);
+        icarus_lib::artist retrieveRecord(icarus_lib::artist&, type::ArtistFilter);
 
-        bool doesArtistExist(const model::Artist&, type::ArtistFilter);
+        bool doesArtistExist(const icarus_lib::artist&, type::ArtistFilter);
 
-        void saveRecord(const model::Artist&);
-        void deleteArtist(const model::Artist&, type::ArtistFilter);
+        void saveRecord(const icarus_lib::artist&);
+        void deleteArtist(const icarus_lib::artist&, type::ArtistFilter);
     private:
-        std::vector<model::Artist> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::artist> parseRecords(MYSQL_STMT*);
 
-        std::pair<model::Artist, int> parseRecordWithSongCount(MYSQL_STMT*);
+        std::pair<icarus_lib::artist, int> parseRecordWithSongCount(MYSQL_STMT*);
 
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Artist&,
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::artist&,
                 std::tuple<char*>&);
-        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(model::Artist&,
+        std::shared_ptr<MYSQL_BIND> valueBindWithSongCount(icarus_lib::artist&,
                 std::tuple<char*>&, int&);
 
         std::tuple<char*> metadataBuffer();
 
-        model::Artist parseRecord(MYSQL_STMT*);
+        icarus_lib::artist parseRecord(MYSQL_STMT*);
     };
 }
 

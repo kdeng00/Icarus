@@ -24,7 +24,6 @@
 #include "manager/GenreManager.h"
 #include "manager/TokenManager.h"
 #include "manager/YearManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/GenreFilter.h"
 
@@ -82,7 +81,7 @@ namespace controller
                     type::Scope::retrieveGenre), Status::CODE_403, "Not allowed");
 
 		    database::GenreRepository gnrRepo(m_bConf);
-		    model::Genre gnrDb(id);
+		    icarus_lib::genre gnrDb(id);
 
 		    OATPP_ASSERT_HTTP(gnrRepo.doesGenreExist(gnrDb, 
                     type::GenreFilter::id) , Status::CODE_403, "genre does not exist");

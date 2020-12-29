@@ -3,20 +3,18 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "model/Models.h"
-
 namespace manager {
     class AlbumManager {
     public:
         AlbumManager(const icarus_lib::binary_path &);
 
-        model::Album retrieveAlbum(model::Album&);
-        model::Album saveAlbum(const model::Song&);
+        icarus_lib::album retrieveAlbum(icarus_lib::album&);
+        icarus_lib::album saveAlbum(const icarus_lib::song&);
 
-        void deleteAlbum(const model::Song&);
-        void updateAlbum(model::Song&, const model::Song&);
+        void deleteAlbum(const icarus_lib::song&);
+        void updateAlbum(icarus_lib::song&, const icarus_lib::song&);
 
-        static void printAlbum(const model::Album&);
+        static void printAlbum(const icarus_lib::album&);
     private:
         icarus_lib::binary_path  m_bConf;
     };

@@ -229,7 +229,7 @@ namespace manager {
 
     void DirectoryManager::deleteSong(const icarus_lib::song song) {
         std::cout << "deleting song\n";
-        auto songPath = fs::path(song.songPath);
+        auto songPath = fs::path(song.song_path);
 
         if (!fs::exists(songPath)) {
             std::cout << "song does not exists\n";

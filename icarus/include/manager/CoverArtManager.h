@@ -6,22 +6,20 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "model/Models.h"
-
 namespace manager {
     class CoverArtManager {
     public:
         CoverArtManager(const icarus_lib::binary_path & bConf);
 
-        model::Cover saveCover(const model::Song&);
+        icarus_lib::cover saveCover(const icarus_lib::song&);
 
-        std::pair<bool, std::string> defaultCover(const model::Cover&);
+        std::pair<bool, std::string> defaultCover(const icarus_lib::cover&);
         
-        void deleteCover(const model::Song&);
-        void updateCover(const model::Song&, const model::Song&);
-        void updateCoverRecord(const model::Song&);
+        void deleteCover(const icarus_lib::song&);
+        void updateCover(const icarus_lib::song&, const icarus_lib::song&);
+        void updateCoverRecord(const icarus_lib::song&);
     private:
-        std::string createImagePath(const model::Song&);
+        std::string createImagePath(const icarus_lib::song&);
 
         icarus_lib::binary_path  m_bConf;
     };

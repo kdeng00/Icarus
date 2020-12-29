@@ -10,13 +10,13 @@ namespace manager {
     public:
         GenreManager(const icarus_lib::binary_path &);
 
-        model::Genre retrieveGenre(model::Genre&);
-        model::Genre saveGenre(const model::Song&);
+        icarus_lib::genre retrieveGenre(icarus_lib::genre&);
+        icarus_lib::genre saveGenre(const icarus_lib::song&);
 
-        void deleteGenre(const model::Song&);
-        void updateGenre(model::Song&, const model::Song&);
+        void deleteGenre(const icarus_lib::song&);
+        void updateGenre(icarus_lib::song&, const icarus_lib::song&);
 
-        static void printGenre(const model::Genre&);
+        static void printGenre(const icarus_lib::genre&);
     private:
         icarus_lib::binary_path  m_bConf;
     };

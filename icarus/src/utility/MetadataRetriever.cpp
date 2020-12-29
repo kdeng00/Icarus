@@ -14,8 +14,8 @@
 namespace fs = std::filesystem;
 
 namespace utility {
-    model::Song MetadataRetriever::retrieveMetadata(model::Song& song) {
-		TagLib::MPEG::File sameFile(song.songPath.c_str());
+    icarus_lib::song MetadataRetriever::retrieveMetadata(icarus_lib::song& song) {
+		TagLib::MPEG::File sameFile(song.song_path.c_str());
 		auto tag = sameFile.ID3v2Tag();
 		song.title = tag->title().toCString(true);
 		song.artist = tag->artist().toCString(true);
@@ -30,7 +30,7 @@ namespace utility {
 		constexpr auto id3AlbumArtistName = "TPE2";
 
 		auto discFrame = tag->frameList(id3DiscName);
-		auto albumArtistFrame = tag->frameList(id3AlbumArtistName);
+		auto cgFrame = tag->frameList(id3AlbumArtistName);
 		if (discFrame.isEmpty()) {
 		    constexpr auto discDefaultVal = "1";
 		    TagLib::ID3v2::TextIdentificationFrame *emptyFrame = 
@@ -43,34 +43,34 @@ namespace utility {
 		    song.disc = std::stoi(discFrame.front()->toString().toCString());
 		}
 
-		if (albumArtistFrame.isEmpty()) {
+		if (cgFrame.isEmpty()) {
 		    TagLib::ID3v2::TextIdentificationFrame *emptyFrame = 
 		            new TagLib::ID3v2::TextIdentificationFrame(id3AlbumArtistName);
 		    tag->addFrame(emptyFrame);
 		    emptyFrame->setText(song.artist.c_str());
 		    sameFile.save();
 		} else {
-		    song.albumArtist = albumArtistFrame.front()->toString().toCString(true);
+		    song.album_artist = cgFrame.front()->toString().toCString(true);
 		}
 
 		return song;
     }
 
-    model::Cover MetadataRetriever::updateCoverArt(const model::Song& song, model::Cover& cov, 
+    icarus_lib::cover MetadataRetriever::updateCoverArt(const icarus_lib::song& song, icarus_lib::cover& cov, 
 		    const std::string& stockCoverPath) {
-		TagLib::MPEG::File sngF(song.songPath.c_str());
+		TagLib::MPEG::File sngF(song.song_path.c_str());
 		auto tag = sngF.ID3v2Tag();
 		auto frameList = tag->frameListMap()["APIC"];
 
 		if (frameList.isEmpty()) {
-		    cov.imagePath.append("CoverArt.png");
+		    cov.image_path.append("CoverArt.png");
         
-		    if (!fs::exists(cov.imagePath)) {
+		    if (!fs::exists(cov.image_path)) {
 		        std::cout << "copying stock cover path\n";
-		        fs::copy(stockCoverPath, cov.imagePath);
+		        fs::copy(stockCoverPath, cov.image_path);
 		    }
 
-		    ImageFile stockImg(cov.imagePath.c_str());
+		    ImageFile stockImg(cov.image_path.c_str());
 
 		    TagLib::ID3v2::AttachedPictureFrame *pic = 
 				    new TagLib::ID3v2::AttachedPictureFrame;
@@ -85,29 +85,29 @@ namespace utility {
 		    auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
 		            frameList.front());
         
-		    auto imgPath = manager::DirectoryManager::createDirectoryProcess(song, cov.imagePath);
+		    auto imgPath = manager::DirectoryManager::createDirectoryProcess(song, cov.image_path);
 		    imgPath.append(song.title);
 		    imgPath.append(".png");
-		    cov.imagePath = imgPath;
+		    cov.image_path = imgPath;
 
-		    std::fstream imgSave(cov.imagePath, std::ios::out | 
+		    std::fstream imgSave(cov.image_path, std::ios::out | 
 		            std::ios::binary);
 		    imgSave.write(frame->picture().data(), frame->picture().size());
 		    imgSave.close();
-		    std::cout << "saved to " << cov.imagePath << "\n";
+		    std::cout << "saved to " << cov.image_path << "\n";
 		}
 
 		return cov;
     }
 
     // tags song with the stock cover art
-    model::Cover MetadataRetriever::applyStockCoverArt(
-		    const model::Song& song, model::Cover& cov, 
+    icarus_lib::cover MetadataRetriever::applyStockCoverArt(
+		    const icarus_lib::song& song, icarus_lib::cover& cov, 
 		    const std::string& stockCoverPath) {
-		TagLib::MPEG::File songFile(song.songPath.c_str());
+		TagLib::MPEG::File songFile(song.song_path.c_str());
 		auto tag = songFile.ID3v2Tag();
 
-		ImageFile stockImg(cov.imagePath.c_str());
+		ImageFile stockImg(cov.image_path.c_str());
 		TagLib::ID3v2::AttachedPictureFrame *pic = 
 				new TagLib::ID3v2::AttachedPictureFrame;
 
@@ -126,28 +126,28 @@ namespace utility {
 
     // extracts cover art from the song and save it to the
     // appropriate directory
-    model::Cover MetadataRetriever::applyCoverArt(const model::Song& song,
-		    model::Cover& cov) {
-		TagLib::MPEG::File songFile(song.songPath.c_str());
+    icarus_lib::cover MetadataRetriever::applyCoverArt(const icarus_lib::song& song,
+		    icarus_lib::cover& cov) {
+		TagLib::MPEG::File songFile(song.song_path.c_str());
 		auto tag = songFile.ID3v2Tag();
 		auto frameList = tag->frameListMap()["APIC"];
 
 		auto frame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(
 				frameList.front());
         
-		std::fstream imgSave(cov.imagePath, std::ios::out | 
+		std::fstream imgSave(cov.image_path, std::ios::out | 
 				std::ios::binary);
 		imgSave.write(frame->picture().data(), frame->picture().size());
 		imgSave.close();
 
-		std::cout << "saved to " << cov.imagePath << "\n";
+		std::cout << "saved to " << cov.image_path << "\n";
 
 		return cov;
     }
 
 
-    bool MetadataRetriever::songContainsCoverArt(const model::Song& song) {
-		TagLib::MPEG::File songFile(song.songPath.c_str());
+    bool MetadataRetriever::songContainsCoverArt(const icarus_lib::song& song) {
+		TagLib::MPEG::File songFile(song.song_path.c_str());
 		auto tag = songFile.ID3v2Tag();
 		auto frameList = tag->frameListMap()["APIC"];
 
@@ -155,9 +155,9 @@ namespace utility {
     }
 
 
-    void MetadataRetriever::updateMetadata(model::Song& sngUpdated, const model::Song& sngOld) {
+    void MetadataRetriever::updateMetadata(icarus_lib::song& sngUpdated, const icarus_lib::song& sngOld) {
 		std::cout << "updating metadata\n";
-		TagLib::MPEG::File file(sngOld.songPath.c_str());
+		TagLib::MPEG::File file(sngOld.song_path.c_str());
 		auto tag = file.ID3v2Tag();
     
 		if (sngUpdated.title.size() > 0) {
@@ -166,16 +166,16 @@ namespace utility {
 		if (sngUpdated.artist.size() > 0) {
 		    file.tag()->setArtist(sngUpdated.artist);
 		}
-		if (sngUpdated.albumArtist.size() > 0) {
+		if (sngUpdated.album_artist.size() > 0) {
 		    constexpr auto frameId = "TPE2";
-		    auto albumArtistFrame = tag->frameList(frameId);
-		    if (albumArtistFrame.isEmpty()) {
+		    auto cgFrame = tag->frameList(frameId);
+		    if (cgFrame.isEmpty()) {
 		        TagLib::ID3v2::TextIdentificationFrame *frame =
 		                new TagLib::ID3v2::TextIdentificationFrame(frameId);
-		        frame->setText(sngUpdated.albumArtist.c_str());
+		        frame->setText(sngUpdated.album_artist.c_str());
 		        tag->addFrame(frame);
 		    } else {
-		        albumArtistFrame.front()->setText(sngUpdated.albumArtist.c_str());
+		        cgFrame.front()->setText(sngUpdated.album_artist.c_str());
 		    }
 
 		    file.save();

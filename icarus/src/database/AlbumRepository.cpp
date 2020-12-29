@@ -11,7 +11,7 @@ namespace database {
     AlbumRepository::AlbumRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
-    std::vector<model::Album> AlbumRepository::retrieveRecords() {
+    std::vector<icarus_lib::album> AlbumRepository::retrieveRecords() {
         auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
 
@@ -28,7 +28,7 @@ namespace database {
     }
 
 
-    std::pair<model::Album, int> AlbumRepository::retrieveRecordWithSongCount(model::Album& album, 
+    std::pair<icarus_lib::album, int> AlbumRepository::retrieveRecordWithSongCount(icarus_lib::album& album, 
             type::AlbumFilter filter = type::AlbumFilter::id) {
         std::cout << "retrieving album with song count\n";
         std::stringstream qry;
@@ -69,7 +69,7 @@ namespace database {
         return albWSC;
     }
 
-    model::Album AlbumRepository::retrieveRecord(model::Album& album, type::AlbumFilter filter) {
+    icarus_lib::album AlbumRepository::retrieveRecord(icarus_lib::album& album, type::AlbumFilter filter) {
         std::cout << "retrieving album record\n";
         std::stringstream qry;
         auto conn = setupMysqlConnection();
@@ -119,7 +119,7 @@ namespace database {
         return album;
     }
 
-    bool AlbumRepository::doesAlbumExists(const model::Album& album, type::AlbumFilter filter) {
+    bool AlbumRepository::doesAlbumExists(const icarus_lib::album& album, type::AlbumFilter filter) {
         auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
 
@@ -169,7 +169,7 @@ namespace database {
         return (rowCount > 0) ? true : false;
     }
 
-    void AlbumRepository::saveAlbum(const model::Album& album) {
+    void AlbumRepository::saveAlbum(const icarus_lib::album& album) {
         std::cout << "beginning to insert album record\n";
 
         auto conn = setupMysqlConnection();
@@ -208,7 +208,7 @@ namespace database {
 		std::cout << "done inserting album record\n";
     }
 
-    void AlbumRepository::deleteAlbum(const model::Album& album, 
+    void AlbumRepository::deleteAlbum(const icarus_lib::album& album, 
             type::AlbumFilter filter = type::AlbumFilter::id) {
 		std::cout << "deleting album record\n";
 
@@ -244,11 +244,11 @@ namespace database {
     }
 
 
-    std::vector<model::Album> AlbumRepository::parseRecords(MYSQL_STMT* stmt) {
+    std::vector<icarus_lib::album> AlbumRepository::parseRecords(MYSQL_STMT* stmt) {
 		std::cout << "parsing album record\n";
 		mysql_stmt_store_result(stmt);
 
-		std::vector<model::Album> albums;
+		std::vector<icarus_lib::album> albums;
 		albums.reserve(mysql_stmt_num_rows(stmt));
 
 		const auto valAmt = 3;
@@ -257,7 +257,7 @@ namespace database {
 
 		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
 		    if (mysql_stmt_field_count(stmt) > 0) {
-		        model::Album alb;
+		        icarus_lib::album alb;
 		        auto metaBuff = metadataBuffer();
 		        auto bindedValues = valueBind(alb, metaBuff);
 		        status = mysql_stmt_bind_result(stmt, bindedValues.get());
@@ -280,12 +280,12 @@ namespace database {
     }
 
 
-    std::pair<model::Album, int> AlbumRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
+    std::pair<icarus_lib::album, int> AlbumRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
 		std::cout << "parsing album record with song count\n";
 		mysql_stmt_store_result(stmt);
 		auto rowCount = mysql_stmt_num_rows(stmt);
 
-		model::Album album;
+		icarus_lib::album album;
 		auto metaBuff = metadataBuffer();
 		int songCount = 0;
 		auto val = valueBindWithSongCount(album, metaBuff, songCount);
@@ -309,7 +309,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> AlbumRepository::valueBind(model::Album& album, 
+    std::shared_ptr<MYSQL_BIND> AlbumRepository::valueBind(icarus_lib::album& album, 
             std::tuple<char*, char*>& metadata) {
 	    constexpr auto wordLen = 1024;
 	    constexpr auto valueCount = 4;
@@ -332,7 +332,7 @@ namespace database {
 		return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> AlbumRepository::valueBindWithSongCount(model::Album& album, 
+    std::shared_ptr<MYSQL_BIND> AlbumRepository::valueBindWithSongCount(icarus_lib::album& album, 
             std::tuple<char*, char*>& metadata, int& songCount) {
         constexpr auto wordLen = 1024;
         constexpr auto valueCount = 5;
@@ -369,13 +369,13 @@ namespace database {
     }
 
 
-    model::Album AlbumRepository::parseRecord(MYSQL_STMT *stmt)
+    icarus_lib::album AlbumRepository::parseRecord(MYSQL_STMT *stmt)
     {
         std::cout << "parsing album record\n";
         mysql_stmt_store_result(stmt);
         auto rows = mysql_stmt_num_rows(stmt);
 
-        model::Album album;
+        icarus_lib::album album;
         auto metaBuff = metadataBuffer();
         auto bindedValues = valueBind(album, metaBuff);
         auto status = mysql_stmt_bind_result(stmt, bindedValues.get());

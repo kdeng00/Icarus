@@ -11,7 +11,6 @@
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
-#include "model/Models.h"
 #include "type/Scopes.h"
 
 namespace manager {
@@ -19,16 +18,16 @@ namespace manager {
     public:
         TokenManager() = default;
 
-        model::Token retrieveToken(const icarus_lib::binary_path &);
+        icarus_lib::token retrieveToken(const icarus_lib::binary_path &);
 
         bool isTokenValid(std::string&, type::Scope);
         bool testAuth(const icarus_lib::binary_path &);
     private:
         cpr::Response sendRequest(std::string_view, nlohmann::json&);
 
-        nlohmann::json createTokenBody(const model::AuthCredentials&);
+        nlohmann::json createTokenBody(const icarus_lib::auth_credentials&);
 
-        model::AuthCredentials parseAuthCredentials(const icarus_lib::binary_path &);
+        icarus_lib::auth_credentials parseAuthCredentials(const icarus_lib::binary_path &);
 
         std::vector<std::string> extractScopes(const jwt::decoded_jwt&&);
         std::pair<bool, std::vector<std::string>> fetchAuthHeader(const std::string&);

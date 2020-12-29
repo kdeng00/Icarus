@@ -8,7 +8,6 @@
 #include "icarus_lib/icarus.h"
 #include <nlohmann/json.hpp>
 
-#include "model/Models.h"
 #include "type/PathType.h"
 
 namespace manager {
@@ -16,8 +15,8 @@ namespace manager {
     public:
         DirectoryManager() = default;
 
-        static std::string createDirectoryProcess(const model::Song&, const std::string&);
-        static std::string createDirectoryProcess(const model::Song&, 
+        static std::string createDirectoryProcess(const icarus_lib::song&, const std::string&);
+        static std::string createDirectoryProcess(const icarus_lib::song&, 
                 const icarus_lib::binary_path &, type::PathType);
         static std::string configPath(std::string_view);
         static std::string configPath(const icarus_lib::binary_path &);
@@ -28,16 +27,16 @@ namespace manager {
         static nlohmann::json databaseConfigContent(const icarus_lib::binary_path &);
         static nlohmann::json pathConfigContent(const icarus_lib::binary_path &);
 
-        static void deleteDirectories(model::Song, const std::string&);
+        static void deleteDirectories(icarus_lib::song, const std::string&);
 
         void deleteCoverArtFile(const std::string&, const std::string&);
 
     private:
         std::filesystem::path relativeDiscSongPathFilesystem(const std::filesystem::path&, 
-                const model::Song&);
-        std::string relativeDiscSongPath(const std::filesystem::path&, const model::Song&);
+                const icarus_lib::song&);
+        std::string relativeDiscSongPath(const std::filesystem::path&, const icarus_lib::song&);
 
-        void deleteSong(const model::Song);
+        void deleteSong(const icarus_lib::song);
     };
 }
 

@@ -9,15 +9,15 @@ namespace manager {
     GenreManager::GenreManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
-    model::Genre GenreManager::retrieveGenre(model::Genre& genre) {
+    icarus_lib::genre GenreManager::retrieveGenre(icarus_lib::genre& genre) {
 		database::GenreRepository gnrRepo(m_bConf);
 		genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
 
 		return genre;
     }
 
-    model::Genre GenreManager::saveGenre(const model::Song& song) {
-		model::Genre genre;
+    icarus_lib::genre GenreManager::saveGenre(const icarus_lib::song& song) {
+		icarus_lib::genre genre;
 		genre.category = song.genre;
 		
 		database::GenreRepository gnrRepo(m_bConf);
@@ -31,8 +31,8 @@ namespace manager {
     }
 
 
-    void GenreManager::deleteGenre(const model::Song& song) {
-		model::Genre genre(song);
+    void GenreManager::deleteGenre(const icarus_lib::song& song) {
+		icarus_lib::genre genre(song);
 
 		database::GenreRepository gnrRepo(m_bConf);
 		auto gnrWSC = gnrRepo.retrieveRecordWithSongCount(genre, type::GenreFilter::id);
@@ -47,9 +47,9 @@ namespace manager {
 		gnrRepo.deleteRecord(genre, type::GenreFilter::id);
     }
 
-    void GenreManager::updateGenre(model::Song& updatedSong,
-		    const model::Song& currSong) {
-		model::Genre genre;
+    void GenreManager::updateGenre(icarus_lib::song& updatedSong,
+		    const icarus_lib::song& currSong) {
+		icarus_lib::genre genre;
 		genre.category = updatedSong.genre;
 
 		database::GenreRepository gnrRepo(m_bConf);
@@ -61,10 +61,10 @@ namespace manager {
 		}
 
 		genre = gnrRepo.retrieveRecord(genre, type::GenreFilter::category);
-		updatedSong.genreId = genre.id;
+		updatedSong.genre_id = genre.id;
     }
 
-    void GenreManager::printGenre(const model::Genre& genre) {
+    void GenreManager::printGenre(const icarus_lib::genre& genre) {
 		std::cout << "genre record\n";
 		std::cout << "id: " << genre.id << "\n";
 		std::cout << "category: " << genre.category << "\n";

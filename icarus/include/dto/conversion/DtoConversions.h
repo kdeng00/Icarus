@@ -18,7 +18,6 @@
 #include "dto/LoginResultDto.hpp"
 #include "dto/SongDto.hpp"
 #include "dto/YearDto.hpp"
-#include "model/Models.h"
 
 using namespace dto;
 
@@ -34,8 +33,8 @@ namespace dto::conversion
             auto logRes = LoginResultDto::createShared();
             logRes->id = (user.id != 0) ? user.id : 0;
             logRes->username = (!user.username.empty()) ? user.username.c_str() : "None";
-            logRes->token = (!token.accessToken.empty()) ? token.access_token.c_str() : "None";
-            logRes->token_type = (!token.tokenType.empty()) ? token.token_type.c_str() : "None";
+            logRes->token = (!token.access_token.empty()) ? token.access_token.c_str() : "None";
+            logRes->token_type = (!token.token_type.empty()) ? token.token_type.c_str() : "None";
             logRes->expiration = (token.expiration != 0) ? token.expiration : 0;
 
             return logRes;
@@ -70,7 +69,7 @@ namespace dto::conversion
         {
             auto result = ArtistDto::createShared();
             result->id = (artist.id != 0) ? artist.id : 0;
-            result->artist = (!artist.artist.empty()) ? artist.name.c_str() : "None";
+            result->artist = (!artist.name.empty()) ? artist.name.c_str() : "None";
 
             return result;
         }
@@ -81,7 +80,7 @@ namespace dto::conversion
         {
             auto result = CoverArtDto::createShared();
             result->id = cover.id != 0 ? cover.id : 0;
-            result->songTitle = (!cover.songTitle.empty()) ? cover.song_title.c_str() : "None";
+            result->songTitle = (!cover.song_title.empty()) ? cover.song_title.c_str() : "None";
 
             return result;
         }
@@ -130,7 +129,7 @@ namespace dto::conversion
         template<typename D = oatpp::Object<SongDto>>
         static icarus_lib::song toSong(const D &songDto)
         {
-            Song song;
+            icarus_lib::song song;
             song.id = (songDto->id.getPtr() == nullptr) ? 0 : *songDto->id;
             song.title = (songDto->title == nullptr) ? "" : songDto->title->c_str();
             song.album = (songDto->album == nullptr) ? "" : songDto->album->c_str();
@@ -151,7 +150,7 @@ namespace dto::conversion
         template<typename D = oatpp::Object<UserDto>>
         static icarus_lib::user toUser(const D &userDto)
         {
-            User user;
+            icarus_lib::user user;
             user.id = (userDto->userId.getPtr()) ? 0 : *userDto->userId;
             user.firstname = (userDto->firstname == nullptr) ? "" : userDto->firstname->c_str();
             user.lastname = (userDto->lastname == nullptr) ? "" : userDto->lastname->c_str();

@@ -15,20 +15,20 @@ namespace manager {
     CoverArtManager::CoverArtManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
-    model::Cover CoverArtManager::saveCover(const model::Song& song) {
+    icarus_lib::cover CoverArtManager::saveCover(const icarus_lib::song& song) {
         auto pathConfigContent = DirectoryManager::pathConfigContent(m_bConf);
         auto stockCoverPath = DirectoryManager::configPath(m_bConf);
         stockCoverPath.append("/CoverArt.png");
 
         utility::MetadataRetriever meta;
-        model::Cover cov;
-        cov.songTitle = song.title;
+        icarus_lib::cover cov;
+        cov.song_title = song.title;
 
         if (meta.songContainsCoverArt(song)) {
-            cov.imagePath = createImagePath(song);
+            cov.image_path = createImagePath(song);
             cov = meta.applyCoverArt(song, cov);
         } else {
-            cov.imagePath = pathConfigContent["cover_root_path"].get<std::string>();
+            cov.image_path = pathConfigContent["cover_root_path"].get<std::string>();
             cov = meta.applyStockCoverArt(song, cov, stockCoverPath);
         }
 
@@ -48,7 +48,7 @@ namespace manager {
 
 
     std::pair<bool, std::string> CoverArtManager::defaultCover(
-            const model::Cover& cover) {
+            const icarus_lib::cover& cover) {
 
         auto paths = DirectoryManager::pathConfigContent(m_bConf);
         const auto coverArtPath = 
@@ -58,7 +58,7 @@ namespace manager {
         auto stockCoverArtPath = coverArtPath;
         stockCoverArtPath.append("CoverArt.png");
 
-        if (stockCoverArtPath.compare(cover.imagePath) == 0) {
+        if (stockCoverArtPath.compare(cover.image_path) == 0) {
             return std::make_pair(true, coverArtPath);
         } else {
             return std::make_pair(false, coverArtPath);
@@ -66,17 +66,17 @@ namespace manager {
     }
 
 
-    void CoverArtManager::deleteCover(const model::Song& song) {
+    void CoverArtManager::deleteCover(const icarus_lib::song& song) {
         database::CoverArtRepository covRepo(m_bConf);
 
-        model::Cover cov(song.coverArtId);
+        icarus_lib::cover cov(song.cover_art_id);
 
         cov = covRepo.retrieveRecord(cov, type::CoverFilter::id);
         covRepo.deleteRecord(cov);
 
         auto result = defaultCover(cov);
         if (!result.first) {
-            fs::remove(cov.imagePath);
+            fs::remove(cov.image_path);
             std::cout << "deleting cover art\n";
             const auto coverArtPath = result.second;
         } else {
@@ -87,10 +87,10 @@ namespace manager {
         DirectoryManager::deleteDirectories(song, result.second);
     }
 
-    void CoverArtManager::updateCover(const model::Song& updatedSong,
-            const model::Song& currSong) {
+    void CoverArtManager::updateCover(const icarus_lib::song& updatedSong,
+            const icarus_lib::song& currSong) {
         database::CoverArtRepository covRepo(m_bConf);
-        model::Cover cover(updatedSong.coverArtId);
+        icarus_lib::cover cover(updatedSong.cover_art_id);
         cover = covRepo.retrieveRecord(cover, type::CoverFilter::id);
 
         auto result = defaultCover(cover);
@@ -99,16 +99,16 @@ namespace manager {
             return;
         }
 
-        auto imagePath = createImagePath(updatedSong);
+        auto image_path = createImagePath(updatedSong);
 
-        fs::copy(cover.imagePath, imagePath);
-        fs::remove(cover.imagePath);
+        fs::copy(cover.image_path, image_path);
+        fs::remove(cover.image_path);
 
         DirectoryManager::deleteDirectories(currSong, result.second);
     }
 
-    void CoverArtManager::updateCoverRecord(const model::Song& updatedSong) {
-        model::Cover updatedCover(updatedSong);
+    void CoverArtManager::updateCoverRecord(const icarus_lib::song& updatedSong) {
+        icarus_lib::cover updatedCover(updatedSong);
         auto updatedImagePath = createImagePath(updatedSong);
 
         database::CoverArtRepository covRepo(m_bConf);
@@ -116,20 +116,20 @@ namespace manager {
     }
 
 
-    std::string CoverArtManager::createImagePath(const model::Song& song) {
-        auto imagePath = DirectoryManager::createDirectoryProcess(
+    std::string CoverArtManager::createImagePath(const icarus_lib::song& song) {
+        auto image_path = DirectoryManager::createDirectoryProcess(
                 song, m_bConf, type::PathType::coverArt);
 
         if (song.track != 0) {
-            imagePath.append("track");
+            image_path.append("track");
             auto trackNum = (song.track > 9) ?
                     std::to_string(song.track) : "0" + std::to_string(song.track);
-            imagePath.append(trackNum);
+            image_path.append(trackNum);
         } else {
-            imagePath.append(song.title);
+            image_path.append(song.title);
         }
-        imagePath.append(".png");
+        image_path.append(".png");
 
-        return imagePath;
+        return image_path;
     }
 }
