@@ -151,13 +151,14 @@ namespace dto::conversion
         static icarus_lib::user toUser(const D &userDto)
         {
             icarus_lib::user user;
-            user.id = (userDto->userId.getPtr()) ? 0 : *userDto->userId;
+            user.id = (userDto->userId.getPtr() == nullptr) ? 0 : *userDto->userId;
             user.firstname = (userDto->firstname == nullptr) ? "" : userDto->firstname->c_str();
             user.lastname = (userDto->lastname == nullptr) ? "" : userDto->lastname->c_str();
             user.phone = (userDto->phone == nullptr) ? "" : userDto->phone->c_str();
             user.email = (userDto->email == nullptr) ? "" : userDto->email->c_str();
             user.username = (userDto->username == nullptr) ? "" : userDto->username->c_str();
             user.password = (userDto->password == nullptr) ? "" : userDto->password->c_str();
+            std::cout << "done\n";
 
 
             return user;

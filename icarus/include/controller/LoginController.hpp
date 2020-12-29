@@ -35,7 +35,7 @@ namespace controller
         {
 		    OATPP_LOGI("icarus", "logging in");
 
-		    manager::UserManager usrMgr(m_bConf);
+		    manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
 		    auto user = dto::conversion::DtoConversions::toUser(usr);
 
 		    if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {

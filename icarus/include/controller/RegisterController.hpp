@@ -32,7 +32,7 @@ namespace controller
         ENDPOINT("POST", "api/v1/register", registerUser, 
                  BODY_DTO(oatpp::Object<UserDto>, usr))
         {
-            manager::UserManager usrMgr(m_bConf);
+            manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
             auto user = conversion::DtoConversions::toUser(usr);
 
             OATPP_LOGI("icarus", "Dto converted");
