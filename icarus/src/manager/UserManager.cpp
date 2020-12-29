@@ -10,8 +10,8 @@ namespace manager {
     UserManager::UserManager(const icarus_lib::binary_path & bConf) : m_bConf(bConf) { }
 
 
-    model::RegisterResult UserManager::registerUser(model::User& user) {
-		model::RegisterResult result;
+    icarus_lib::register_result UserManager::registerUser(icarus_lib::user& user) {
+		icarus_lib::register_result result;
 		result.username = user.username;
 		printUser(user);
 
@@ -22,7 +22,7 @@ namespace manager {
 		database::UserRepository usrRepo(m_bConf);
 		usrRepo.saveUserRecord(user);
 
-		model::User usr;
+		icarus_lib::user usr;
 		usr.username = user.username;
 
 		std::cout << usr.username << "\n";
@@ -39,22 +39,22 @@ namespace manager {
     }
 
 
-    bool UserManager::doesUserExist(const model::User& user) {
+    bool UserManager::doesUserExist(const icarus_lib::user& user) {
 		database::UserRepository userRepo(m_bConf);
 
 		return userRepo.doesUserRecordExist(user, type::UserFilter::username);
     }
 
-    bool UserManager::validatePassword(const model::User& user) {
+    bool UserManager::validatePassword(const icarus_lib::user& user) {
 		database::UserRepository userRepo(m_bConf);
-		model::User usr;
+		icarus_lib::user usr;
 		usr.username = user.username;
 		usr = userRepo.retrieveUserRecord(usr, type::UserFilter::username);
 
-		model::PassSec userSec;
-		userSec.userId = usr.id;
+		icarus_lib::pass_sec userSec;
+		userSec.user_id = usr.id;
 		userSec = userRepo.retrieverUserSaltRecord(userSec, type::SaltFilter::userId);
-		userSec.hashPassword = usr.password;
+		userSec.hash_password = usr.password;
 
 		utility::PasswordEncryption passEnc;
 
@@ -62,7 +62,7 @@ namespace manager {
     }
 
 
-    void UserManager::printUser(const model::User& user) {
+    void UserManager::printUser(const icarus_lib::user& user) {
 		std::cout << "\nuser info\n";
 		std::cout << "id: " << user.id << "\n";
 		std::cout << "firstname: " << user.firstname << "\n";

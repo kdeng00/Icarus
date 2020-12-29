@@ -6,8 +6,6 @@
 #include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
 
-#include "model/Models.h"
-
 namespace database {
     class BaseRepository {
     public:
@@ -18,11 +16,11 @@ namespace database {
         bool testConnection();
     protected:
         MYSQL* setupMysqlConnection();
-        MYSQL* setupMysqlConnection(model::DatabaseConnection);
+        MYSQL* setupMysqlConnection(icarus_lib::database_connection);
 
         MYSQL_RES* performMysqlQuery(MYSQL*, const std::string&);
 
-        model::DatabaseConnection details;
+        icarus_lib::database_connection details;
     private:
         void intitalizeDetails();
         void initializeDetails(const icarus_lib::binary_path &);

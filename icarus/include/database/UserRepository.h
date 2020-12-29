@@ -8,7 +8,6 @@
 #include "icarus_lib/icarus.h"
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/SaltFilter.h"
 #include "type/UserFilter.h"
 
@@ -17,13 +16,13 @@ namespace database {
     public:
         UserRepository(const icarus_lib::binary_path &);
 
-        model::User retrieveUserRecord(model::User&, type::UserFilter);
-        model::PassSec retrieverUserSaltRecord(model::PassSec&, type::SaltFilter);
+        icarus_lib::user retrieveUserRecord(icarus_lib::user&, type::UserFilter);
+        icarus_lib::pass_sec retrieverUserSaltRecord(icarus_lib::pass_sec&, type::SaltFilter);
 
-        bool doesUserRecordExist(const model::User&, type::UserFilter);
+        bool doesUserRecordExist(const icarus_lib::user&, type::UserFilter);
 
-        void saveUserRecord(const model::User&);
-        void saveUserSalt(const model::PassSec&);
+        void saveUserRecord(const icarus_lib::user&);
+        void saveUserSalt(const icarus_lib::pass_sec&);
     private:
         struct UserLengths;
         struct SaltLengths;
@@ -40,20 +39,20 @@ namespace database {
             unsigned long saltLength;
         };
 
-        std::shared_ptr<MYSQL_BIND> insertUserValues(const model::User&, 
+        std::shared_ptr<MYSQL_BIND> insertUserValues(const icarus_lib::user&, 
                 std::shared_ptr<UserLengths>);
-        std::shared_ptr<MYSQL_BIND> insertSaltValues(const model::PassSec&, 
+        std::shared_ptr<MYSQL_BIND> insertSaltValues(const icarus_lib::pass_sec&, 
                 std::shared_ptr<SaltLengths>);
-        std::shared_ptr<MYSQL_BIND> valueBind(model::User&, 
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::user&, 
                 std::tuple<char*, char*, char*, char*, char*, char*>&);
-        std::shared_ptr<MYSQL_BIND> saltValueBind(model::PassSec&, char*);
-        std::shared_ptr<UserLengths> fetchUserLengths(const model::User&);
-        std::shared_ptr<SaltLengths> fetchSaltLengths(const model::PassSec&);
+        std::shared_ptr<MYSQL_BIND> saltValueBind(icarus_lib::pass_sec&, char*);
+        std::shared_ptr<UserLengths> fetchUserLengths(const icarus_lib::user&);
+        std::shared_ptr<SaltLengths> fetchSaltLengths(const icarus_lib::pass_sec&);
 
         std::tuple<char*, char*, char*, char*, char*, char*> fetchUV();
 
-        model::User parseRecord(MYSQL_STMT*);
-        model::PassSec parseSaltRecord(MYSQL_STMT*);
+        icarus_lib::user parseRecord(MYSQL_STMT*);
+        icarus_lib::pass_sec parseSaltRecord(MYSQL_STMT*);
     };
 }
 

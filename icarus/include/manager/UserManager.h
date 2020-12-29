@@ -6,19 +6,18 @@
 #include "icarus_lib/icarus.h"
 
 #include "dto/LoginResultDto.hpp"
-#include "model/Models.h"
 
 namespace manager {
     class UserManager {
     public:
         UserManager(const icarus_lib::binary_path &);
 
-        model::RegisterResult registerUser(model::User&);
+        icarus_lib::register_result registerUser(icarus_lib::user&);
 
-        bool doesUserExist(const model::User&);
-        bool validatePassword(const model::User&);
+        bool doesUserExist(const icarus_lib::user&);
+        bool validatePassword(const icarus_lib::user&);
 
-        void printUser(const model::User&);
+        void printUser(const icarus_lib::user&);
     private:
         icarus_lib::binary_path  m_bConf;
     };

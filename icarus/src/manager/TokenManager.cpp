@@ -11,7 +11,7 @@
 #include "manager/DirectoryManager.h"
 
 namespace manager {
-    model::Token TokenManager::retrieveToken(const icarus_lib::binary_path & bConf) {
+    icarus_lib::token TokenManager::retrieveToken(const icarus_lib::binary_path & bConf) {
 		auto cred = parseAuthCredentials(bConf);
 		auto reqObj = createTokenBody(cred);
 
@@ -22,7 +22,7 @@ namespace manager {
 		auto r = sendRequest(uri, reqObj);
 		auto postRes = nlohmann::json::parse(r.text);
 
-		model::Token lr(std::move(postRes["access_token"].get<std::string>()),
+		icarus_lib::token lr(std::move(postRes["access_token"].get<std::string>()),
 				std::move(postRes["token_type"].get<std::string>()), 
 				postRes["expires_in"].get<int>());
 
@@ -100,26 +100,26 @@ namespace manager {
     }
 
 
-    nlohmann::json TokenManager::createTokenBody(const model::AuthCredentials& auth) {
+    nlohmann::json TokenManager::createTokenBody(const icarus_lib::auth_credentials& auth) {
 		nlohmann::json obj;
-		obj["client_id"] = auth.clientId;
-		obj["client_secret"] = auth.clientSecret;
-		obj["audience"] = auth.apiIdentifier;
+		obj["client_id"] = auth.client_id;
+		obj["client_secret"] = auth.client_secret;
+		obj["audience"] = auth.api_identifier;
 		obj["grant_type"] = "client_credentials";
 
 		return obj;
     }
 
 
-    model::AuthCredentials TokenManager::parseAuthCredentials(const icarus_lib::binary_path & bConf) {
+    icarus_lib::auth_credentials TokenManager::parseAuthCredentials(const icarus_lib::binary_path & bConf) {
 		auto con = DirectoryManager::credentialConfigContent(bConf);
 
-		model::AuthCredentials auth;
+		icarus_lib::auth_credentials auth;
 		auth.uri = "https://";
 		auth.uri.append(con["domain"]);
-		auth.apiIdentifier = con["api_identifier"];
-		auth.clientId = con["client_id"];
-		auth.clientSecret = con["client_secret"];
+		auth.api_identifier = con["api_identifier"];
+		auth.client_id = con["client_id"];
+		auth.client_secret = con["client_secret"];
 		auth.endpoint = "oauth/token";
 
 		return auth;

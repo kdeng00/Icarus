@@ -16,7 +16,6 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/TokenManager.h"
 #include "manager/UserManager.h"
-#include "model/Models.h"
 
 namespace controller
 {

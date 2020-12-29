@@ -23,7 +23,6 @@
 #include "dto/YearDto.hpp"
 #include "manager/TokenManager.h"
 #include "manager/YearManager.h"
-#include "model/Models.h"
 #include "type/Scopes.h"
 #include "type/YearFilter.h"
 
@@ -84,7 +83,7 @@ namespace controller
                               Status::CODE_403, "Not allowed");
 
 		    database::YearRepository yrRepo(m_bConf);
-		    model::Year yrDb(id);
+		    icarus_lib::year yrDb(id);
 
 		    OATPP_ASSERT_HTTP(yrRepo.doesYearExist(yrDb, 
                               type::YearFilter::id), 

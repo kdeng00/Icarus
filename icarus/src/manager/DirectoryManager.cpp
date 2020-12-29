@@ -8,7 +8,7 @@
 namespace fs = std::filesystem;
 
 namespace manager {
-    std::string DirectoryManager::createDirectoryProcess(const model::Song& song, 
+    std::string DirectoryManager::createDirectoryProcess(const icarus_lib::song& song, 
             const std::string& rootPath) {
         auto currPath = fs::path(rootPath);
 
@@ -27,7 +27,7 @@ namespace manager {
             fs::create_directory(artPath);
         }
 
-        auto albPath = fs::path(artPath.string() + "/" + song.albumArtist);
+        auto albPath = fs::path(artPath.string() + "/" + song.album_artist);
         if (fs::exists(albPath)) {
             std::cout << "album path exists\n";
         } else {
@@ -47,7 +47,7 @@ namespace manager {
         return discPath.string() + "/";
     }
 
-    std::string DirectoryManager::createDirectoryProcess(const model::Song& song, 
+    std::string DirectoryManager::createDirectoryProcess(const icarus_lib::song& song, 
             const icarus_lib::binary_path & bConf, type::PathType pType) {
         auto path = pathConfigContent(bConf)[retrievePathType(pType)];
         auto rootPath = path.get<std::string>();
@@ -60,7 +60,7 @@ namespace manager {
             fs::create_directory(currPath);
         }
 
-        auto artPath = fs::path(currPath.string() + song.albumArtist);
+        auto artPath = fs::path(currPath.string() + song.album_artist);
         if (fs::exists(artPath)) {
             std::cout << "artist path exists\n";
         } else {
@@ -149,9 +149,9 @@ namespace manager {
     }
 
 
-    void DirectoryManager::deleteDirectories(model::Song song, const std::string& rootPath) {
+    void DirectoryManager::deleteDirectories(icarus_lib::song song, const std::string& rootPath) {
         std::cout << "checking for empty directories to delete\n";
-        const std::string art(rootPath + std::string("/") + song.albumArtist);
+        const std::string art(rootPath + std::string("/") + song.album_artist);
         const std::string alb(art + "/" + song.album);
         const std::string disc(alb + "/" + std::to_string(song.disc) + "/");
 
@@ -196,7 +196,7 @@ namespace manager {
 
 
     fs::path DirectoryManager::relativeDiscSongPathFilesystem(const fs::path& albPath, 
-            const model::Song& song) {
+            const icarus_lib::song& song) {
         std::string albPathStr(albPath.string() + "/disc");
         if (song.disc >= 10) {
             albPathStr.append(std::to_string(song.disc));
@@ -213,7 +213,7 @@ namespace manager {
 
 
     std::string DirectoryManager::relativeDiscSongPath(const fs::path& albPath, 
-            const model::Song& song) {
+            const icarus_lib::song& song) {
         std::string albPathStr(albPath.string() + "/disc");
         if (song.disc >= 10) {
             albPathStr.append(std::to_string(song.disc));
@@ -227,7 +227,7 @@ namespace manager {
     }
 
 
-    void DirectoryManager::deleteSong(const model::Song song) {
+    void DirectoryManager::deleteSong(const icarus_lib::song song) {
         std::cout << "deleting song\n";
         auto songPath = fs::path(song.songPath);
 

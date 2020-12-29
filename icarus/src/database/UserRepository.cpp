@@ -10,7 +10,7 @@ namespace database {
     UserRepository::UserRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
-    model::User UserRepository::retrieveUserRecord(model::User& user, 
+    icarus_lib::user UserRepository::retrieveUserRecord(icarus_lib::user& user, 
             type::UserFilter filter = type::UserFilter::username) {
         std::stringstream qry;
         auto conn = setupMysqlConnection();
@@ -59,7 +59,7 @@ namespace database {
         return user;
     }
 
-    model::PassSec UserRepository::retrieverUserSaltRecord(model::PassSec& userSec, 
+    icarus_lib::pass_sec UserRepository::retrieverUserSaltRecord(icarus_lib::pass_sec& userSec, 
             type::SaltFilter filter) {
         std::stringstream qry;
         auto conn = setupMysqlConnection();
@@ -75,7 +75,7 @@ namespace database {
                 qry << "UserId = ?";
 
                 params[0].buffer_type = MYSQL_TYPE_LONG;
-                params[0].buffer = (char*)&userSec.userId;
+                params[0].buffer = (char*)&userSec.user_id;
                 params[0].length = 0;
                 params[0].is_null = 0;
                 break;
@@ -99,7 +99,7 @@ namespace database {
     }
 
 
-    bool UserRepository::doesUserRecordExist(const model::User& user, type::UserFilter filter) {
+    bool UserRepository::doesUserRecordExist(const icarus_lib::user& user, type::UserFilter filter) {
         std::stringstream qry;
         auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
@@ -140,7 +140,7 @@ namespace database {
     }
 
 
-    void UserRepository::saveUserRecord(const model::User& user) {
+    void UserRepository::saveUserRecord(const icarus_lib::user& user) {
         std::cout << "inserting user record\n";
         auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
@@ -161,7 +161,7 @@ namespace database {
         mysql_close(conn);
     }
 
-    void UserRepository::saveUserSalt(const model::PassSec& userSec) {
+    void UserRepository::saveUserSalt(const icarus_lib::pass_sec& userSec) {
         std::cout << "inserting user salt record\n";
 
         auto conn = setupMysqlConnection();
@@ -184,7 +184,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> UserRepository::insertUserValues(const model::User& user, 
+    std::shared_ptr<MYSQL_BIND> UserRepository::insertUserValues(const icarus_lib::user& user, 
             std::shared_ptr<UserRepository::UserLengths> lengths) {
         std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(6, sizeof(MYSQL_BIND)));
 
@@ -221,21 +221,21 @@ namespace database {
         return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> UserRepository::insertSaltValues(const model::PassSec& passSec,
+    std::shared_ptr<MYSQL_BIND> UserRepository::insertSaltValues(const icarus_lib::pass_sec& passSec,
             std::shared_ptr<UserRepository::SaltLengths> lengths) {
         std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(6, sizeof(MYSQL_BIND)));
 
         values.get()[0].buffer_type = MYSQL_TYPE_STRING;
-        values.get()[0].buffer = (char*)passSec.hashPassword.c_str();
+        values.get()[0].buffer = (char*)passSec.hash_password.c_str();
         values.get()[0].length = &(lengths->saltLength);
 
         values.get()[1].buffer_type = MYSQL_TYPE_LONG;
-        values.get()[1].buffer = (char*)&passSec.userId;
+        values.get()[1].buffer = (char*)&passSec.user_id;
 
         return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> UserRepository::valueBind(model::User& user,
+    std::shared_ptr<MYSQL_BIND> UserRepository::valueBind(icarus_lib::user& user,
             std::tuple<char*, char*, char*, char*, char*, char*>& us) {
         std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(7, sizeof(MYSQL_BIND)));
         constexpr auto strLen = 1024;
@@ -270,7 +270,7 @@ namespace database {
         return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> UserRepository::saltValueBind(model::PassSec& userSalt, 
+    std::shared_ptr<MYSQL_BIND> UserRepository::saltValueBind(icarus_lib::pass_sec& userSalt, 
             char *salt) {
         std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*) std::calloc(3, sizeof(MYSQL_BIND)));
         constexpr auto strLen = 1024;
@@ -283,13 +283,13 @@ namespace database {
         values.get()[1].buffer_length = strLen;
 
         values.get()[2].buffer_type = MYSQL_TYPE_LONG;
-        values.get()[2].buffer = (char*)&userSalt.userId;
+        values.get()[2].buffer = (char*)&userSalt.user_id;
 
         return values;
     }
 
     std::shared_ptr<UserRepository::UserLengths> UserRepository::fetchUserLengths(
-            const model::User& user) {
+            const icarus_lib::user& user) {
         auto userLen = std::make_shared<UserLengths>();
         userLen->firstnameLength = user.firstname.size();
         userLen->lastnameLength = user.lastname.size();
@@ -302,7 +302,7 @@ namespace database {
     }
 
     std::shared_ptr<UserRepository::SaltLengths> UserRepository::fetchSaltLengths(
-            const model::PassSec& passSec) {
+            const icarus_lib::pass_sec& passSec) {
         auto saltLen = std::make_shared<SaltLengths>();
         saltLen->saltLength = passSec.salt.size();
 
@@ -322,8 +322,8 @@ namespace database {
     }
 
 
-    model::User UserRepository::parseRecord(MYSQL_STMT *stmt) {
-        model::User user;
+    icarus_lib::user UserRepository::parseRecord(MYSQL_STMT *stmt) {
+        icarus_lib::user user;
         auto usv = fetchUV();
     
         auto bindedValues = valueBind(user, usv);
@@ -340,8 +340,8 @@ namespace database {
         return user;
     }
 
-    model::PassSec UserRepository::parseSaltRecord(MYSQL_STMT* stmt) {
-        model::PassSec userSalt;
+    icarus_lib::pass_sec UserRepository::parseSaltRecord(MYSQL_STMT* stmt) {
+        icarus_lib::pass_sec userSalt;
         char saltKey[1024];
 
         auto bindedValues = saltValueBind(userSalt, saltKey);

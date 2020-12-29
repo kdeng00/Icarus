@@ -11,7 +11,7 @@ namespace database {
     SongRepository::SongRepository(const icarus_lib::binary_path & bConf) : BaseRepository(bConf) { }
 
 
-    std::vector<model::Song> SongRepository::retrieveRecords() {
+    std::vector<icarus_lib::song> SongRepository::retrieveRecords() {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 		std::stringstream qry;
@@ -31,7 +31,7 @@ namespace database {
     }
 
 
-    model::Song SongRepository::retrieveRecord(const model::Song& song, type::SongFilter filter) {
+    icarus_lib::song SongRepository::retrieveRecord(const icarus_lib::song& song, type::SongFilter filter) {
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
@@ -59,7 +59,7 @@ namespace database {
 
 		auto titleLength = song.title.size();
 		auto artistLength = song.artist.size();
-        auto albumArtistLength = song.albumArtist.size();
+        auto albumArtistLength = song.album_artist.size();
         auto albumLength = song.album.size();
 		switch (filter) {
 		    case type::SongFilter::id:
@@ -108,7 +108,7 @@ namespace database {
                 params[1].is_null = 0;
 
                 params[2].buffer_type = MYSQL_TYPE_STRING;
-                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].buffer = (char*)song.album_artist.c_str();
                 params[2].length = &albumArtistLength;
                 params[2].is_null = 0;
                 break;
@@ -126,7 +126,7 @@ namespace database {
                 params[1].is_null = 0;
 
                 params[2].buffer_type = MYSQL_TYPE_STRING;
-                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].buffer = (char*)song.album_artist.c_str();
                 params[2].length = &titleLength;
                 params[2].is_null = 0;
 
@@ -157,7 +157,7 @@ namespace database {
     }
 
 
-    bool SongRepository::doesSongExist(const model::Song& song, type::SongFilter filter) {
+    bool SongRepository::doesSongExist(const icarus_lib::song& song, type::SongFilter filter) {
 		std::cout << "checking to see if song exists\n";
 		std::stringstream qry;
 		auto conn = setupMysqlConnection();
@@ -186,7 +186,7 @@ namespace database {
 
 		auto titleLength = song.title.size();
 		auto artistLength = song.artist.size();
-        auto albumArtistLength = song.albumArtist.size();
+        auto albumArtistLength = song.album_artist.size();
         auto albumLength = song.album.size();
 		switch (filter) {
 		    case type::SongFilter::id:
@@ -232,7 +232,7 @@ namespace database {
                 params[1].is_null = 0;
 
                 params[1].buffer_type = MYSQL_TYPE_STRING;
-                params[1].buffer = (char*)song.albumArtist.c_str();
+                params[1].buffer = (char*)song.album_artist.c_str();
                 params[1].length = &albumArtistLength;
                 params[1].is_null = 0;
                 break;
@@ -250,7 +250,7 @@ namespace database {
                 params[1].is_null = 0;
 
                 params[2].buffer_type = MYSQL_TYPE_STRING;
-                params[2].buffer = (char*)song.albumArtist.c_str();
+                params[2].buffer = (char*)song.album_artist.c_str();
                 params[2].length = &titleLength;
                 params[2].is_null = 0;
 
@@ -281,7 +281,7 @@ namespace database {
 		return (rowCount > 0) ? true : false;
     }
 
-    bool SongRepository::deleteRecord(const model::Song& song) {
+    bool SongRepository::deleteRecord(const icarus_lib::song& song) {
 		auto conn = setupMysqlConnection();
 		auto status = 0;
 
@@ -294,7 +294,7 @@ namespace database {
 		return (result == 0) ? true : false;
     }
 
-    void SongRepository::saveRecord(const model::Song& song) {
+    void SongRepository::saveRecord(const icarus_lib::song& song) {
 		std::cout << "beginning to insert song record\n";
 		auto conn = setupMysqlConnection();
 		auto status = 0;
@@ -355,33 +355,33 @@ namespace database {
 		params[7].is_null = 0;
 
 		params[8].buffer_type = MYSQL_TYPE_STRING;
-		params[8].buffer = (char*)song.songPath.c_str();
-		auto pathLength = song.songPath.size();
+		params[8].buffer = (char*)song.song_path.c_str();
+		auto pathLength = song.song_path.size();
 		params[8].length = &pathLength;
 		params[8].is_null = 0;
 
 		params[9].buffer_type = MYSQL_TYPE_LONG;
-		params[9].buffer = (char*)&song.coverArtId;
+		params[9].buffer = (char*)&song.cover_art_id;
 		params[9].length = 0;
 		params[9].is_null = 0;
 
 		params[10].buffer_type = MYSQL_TYPE_LONG;
-		params[10].buffer = (char*)&song.artistId;
+		params[10].buffer = (char*)&song.artist_id;
 		params[10].length = 0;
 		params[10].is_null = 0;
 
 		params[11].buffer_type = MYSQL_TYPE_LONG;
-		params[11].buffer = (char*)&song.albumId;
+		params[11].buffer = (char*)&song.album_id;
 		params[11].length = 0;
 		params[11].is_null = 0;
 		
 		params[12].buffer_type = MYSQL_TYPE_LONG;
-		params[12].buffer = (char*)&song.genreId;
+		params[12].buffer = (char*)&song.genre_id;
 		params[12].length = 0;
 		params[12].is_null = 0;
 
 		params[13].buffer_type = MYSQL_TYPE_LONG;
-		params[13].buffer = (char*)&song.yearId;
+		params[13].buffer = (char*)&song.year_id;
 		params[13].length = 0;
 		params[13].is_null = 0;
 
@@ -394,7 +394,7 @@ namespace database {
 		std::cout << "done inserting song record\n";
     }
 
-    void SongRepository::updateRecord(const model::Song& song) {
+    void SongRepository::updateRecord(const icarus_lib::song& song) {
 		std::cout << "executing query to update record\n";
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
@@ -440,33 +440,33 @@ namespace database {
 		params[4].is_null = 0;
 
 		params[5].buffer_type = MYSQL_TYPE_STRING;
-		params[5].buffer = (char*)song.songPath.c_str();
-		auto pathLength = song.songPath.size();
+		params[5].buffer = (char*)song.song_path.c_str();
+		auto pathLength = song.song_path.size();
 		params[5].length = &pathLength;
 		params[5].is_null = 0;
 
 		params[6].buffer_type = MYSQL_TYPE_LONG;
-		params[6].buffer = (char*)&song.coverArtId;
+		params[6].buffer = (char*)&song.cover_art_id;
 		params[6].length = 0;
 		params[6].is_null = 0;
 
 		params[7].buffer_type = MYSQL_TYPE_LONG;
-		params[7].buffer = (char*)&song.artistId;
+		params[7].buffer = (char*)&song.artist_id;
 		params[7].length = 0;
 		params[7].is_null = 0;
 
 		params[8].buffer_type = MYSQL_TYPE_LONG;
-		params[8].buffer = (char*)&song.albumId;
+		params[8].buffer = (char*)&song.album_id;
 		params[8].length = 0;
 		params[8].is_null = 0;
 		
 		params[9].buffer_type = MYSQL_TYPE_LONG;
-		params[9].buffer = (char*)&song.genreId;
+		params[9].buffer = (char*)&song.genre_id;
 		params[9].length = 0;
 		params[9].is_null = 0;
 
 		params[10].buffer_type = MYSQL_TYPE_LONG;
-		params[10].buffer = (char*)&song.yearId;
+		params[10].buffer = (char*)&song.year_id;
 		params[10].length = 0;
 		params[10].is_null = 0;
 
@@ -485,7 +485,7 @@ namespace database {
     }
 
 
-    std::shared_ptr<MYSQL_BIND> SongRepository::valueBind(model::Song& song,
+    std::shared_ptr<MYSQL_BIND> SongRepository::valueBind(icarus_lib::song& song,
 	        std::tuple<char*, char*, char*, char*, char*, char*>& metadata) {
 		constexpr auto strLen = 1024;
 		constexpr auto valueCount = 16;
@@ -530,19 +530,19 @@ namespace database {
 		values.get()[9].buffer_length = strLen;
 
 		values.get()[10].buffer_type = MYSQL_TYPE_LONG;
-		values.get()[10].buffer = (char*)&song.coverArtId;
+		values.get()[10].buffer = (char*)&song.cover_art_id;
 
 		values.get()[11].buffer_type = MYSQL_TYPE_LONG;
-		values.get()[11].buffer = (char*)&song.artistId;
+		values.get()[11].buffer = (char*)&song.artist_id;
 
 		values.get()[12].buffer_type = MYSQL_TYPE_LONG;
-		values.get()[12].buffer = (char*)&song.albumId;;
+		values.get()[12].buffer = (char*)&song.album_id;;
 
 		values.get()[13].buffer_type = MYSQL_TYPE_LONG;
-		values.get()[13].buffer = (char*)&song.genreId;
+		values.get()[13].buffer = (char*)&song.genre_id;
 
 		values.get()[14].buffer_type = MYSQL_TYPE_LONG;
-		values.get()[14].buffer = (char*)&song.yearId;
+		values.get()[14].buffer = (char*)&song.year_id;
 
 		values.get()[15].buffer_type = MYSQL_TYPE_STRING;
 		values.get()[15].buffer = (char*)std::get<5>(metadata);
@@ -565,11 +565,11 @@ namespace database {
     }
 
 
-    std::vector<model::Song> SongRepository::parseRecords(MYSQL_STMT *stmt) {
+    std::vector<icarus_lib::song> SongRepository::parseRecords(MYSQL_STMT *stmt) {
 		::mysql_stmt_store_result(stmt);
 		auto c = ::mysql_stmt_num_rows(stmt);
 		std::cout << "number of results " << c << "\n";
-		std::vector<model::Song> songs;
+		std::vector<icarus_lib::song> songs;
 		songs.reserve(c);
 
 		auto status = 0;
@@ -577,7 +577,7 @@ namespace database {
 
 		while (status == 0) {
 		    if (::mysql_stmt_field_count(stmt) > 0) {
-		        model::Song song;
+		        icarus_lib::song song;
 		        auto metaBuff = metadataBuffer();
 		        auto val = valueBind(song, metaBuff);
 
@@ -595,8 +595,8 @@ namespace database {
 		            song.artist = std::get<1>(metaBuff);
 		            song.album = std::get<2>(metaBuff);
 		            song.genre = std::get<3>(metaBuff);
-		            song.songPath = std::get<4>(metaBuff);
-		            song.albumArtist = std::get<5>(metaBuff);
+		            song.song_path = std::get<4>(metaBuff);
+		            song.album_artist = std::get<5>(metaBuff);
 
     		        songs.push_back(song);
 		        }
@@ -609,10 +609,10 @@ namespace database {
     }
 
 
-    model::Song SongRepository::parseRecord(MYSQL_STMT *stmt) {
+    icarus_lib::song SongRepository::parseRecord(MYSQL_STMT *stmt) {
 		mysql_stmt_store_result(stmt);
 		std::cout << "amount of rows: " << mysql_stmt_num_rows(stmt) << "\n";
-		model::Song song;
+		icarus_lib::song song;
 		auto metaBuff = metadataBuffer();
 		auto bindedValues = valueBind(song, metaBuff);
 		auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
@@ -622,8 +622,8 @@ namespace database {
 		song.artist = std::get<1>(metaBuff);
 		song.album = std::get<2>(metaBuff);
 		song.genre = std::get<3>(metaBuff);
-		song.songPath = std::get<4>(metaBuff);
-		song.albumArtist = std::get<5>(metaBuff);
+		song.song_path = std::get<4>(metaBuff);
+		song.album_artist = std::get<5>(metaBuff);
 		
 		std::cout << "done parsing record\n";
 

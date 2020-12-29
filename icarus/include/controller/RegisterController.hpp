@@ -13,7 +13,6 @@
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/UserManager.h"
-#include "model/Models.h"
 
 using namespace dto;
 

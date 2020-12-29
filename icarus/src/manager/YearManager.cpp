@@ -20,7 +20,7 @@ namespace manager {
 
     icarus_lib::year YearManager::saveYear(const icarus_lib::song& song) {
 		icarus_lib::year year;
-		year.year = song.year;
+		year.song_year = song.year;
 
 		database::YearRepository yearRepo(m_bConf);
 		if (!yearRepo.doesYearExist(year, type::YearFilter::year)) {
@@ -51,7 +51,7 @@ namespace manager {
     void YearManager::updateYear(icarus_lib::song& updatedSong,
 		const icarus_lib::song& currSong) {
 		icarus_lib::year year;
-		year.year = updatedSong.year;
+		year.song_year = updatedSong.year;
 
 		database::YearRepository albRepo(m_bConf);
 		if (!albRepo.doesYearExist(year, type::YearFilter::year)) {
@@ -62,12 +62,12 @@ namespace manager {
 		}
 
 		year = albRepo.retrieveRecord(year, type::YearFilter::year);
-		updatedSong.yearId = year.id;
+		updatedSong.year_id = year.id;
     }
 
     void YearManager::printYear(const icarus_lib::year& year) {
 		std::cout << "\nyear record\n";
 		std::cout << "id: " << year.id << "\n";
-		std::cout << "year: " << year.year << "\n";
+		std::cout << "year: " << year.song_year << "\n";
     }
 }

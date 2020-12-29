@@ -41,7 +41,7 @@ namespace database {
         return conn;
     }
 
-    MYSQL* BaseRepository::setupMysqlConnection(model::DatabaseConnection details) {
+    MYSQL* BaseRepository::setupMysqlConnection(icarus_lib::database_connection details) {
         MYSQL *connection = mysql_init(NULL);
 
         // connect to the database with the details attached.

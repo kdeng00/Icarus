@@ -9,7 +9,6 @@
 #include <mysql/mysql.h>
 
 #include "database/BaseRepository.h"
-#include "model/Models.h"
 #include "type/SongFilter.h"
 
 namespace database {
@@ -17,24 +16,24 @@ namespace database {
     public:
         SongRepository(const icarus_lib::binary_path &);
 
-        std::vector<model::Song> retrieveRecords();
+        std::vector<icarus_lib::song> retrieveRecords();
 
-        model::Song retrieveRecord(const model::Song&, type::SongFilter = type::SongFilter::id);
+        icarus_lib::song retrieveRecord(const icarus_lib::song&, type::SongFilter = type::SongFilter::id);
 
-        bool doesSongExist(const model::Song&, type::SongFilter = type::SongFilter::id);
-        bool deleteRecord(const model::Song&);
+        bool doesSongExist(const icarus_lib::song&, type::SongFilter = type::SongFilter::id);
+        bool deleteRecord(const icarus_lib::song&);
 
-        void saveRecord(const model::Song&);
-        void updateRecord(const model::Song&);
+        void saveRecord(const icarus_lib::song&);
+        void updateRecord(const icarus_lib::song&);
     private:
-        std::shared_ptr<MYSQL_BIND> valueBind(model::Song&, 
+        std::shared_ptr<MYSQL_BIND> valueBind(icarus_lib::song&, 
             std::tuple<char*, char*, char*, char*, char*, char*>&);
 
         std::tuple<char*, char*, char*, char*, char*, char*> metadataBuffer();
 
-        std::vector<model::Song> parseRecords(MYSQL_STMT*);
+        std::vector<icarus_lib::song> parseRecords(MYSQL_STMT*);
 
-        model::Song parseRecord(MYSQL_STMT*);
+        icarus_lib::song parseRecord(MYSQL_STMT*);
     };
 }
 
