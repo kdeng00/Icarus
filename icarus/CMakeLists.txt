@@ -70,6 +70,7 @@ set_target_properties(bcrypt PROPERTIES IMPORTED_LOCATION
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/database.json ${CMAKE_BINARY_DIR}/bin/database.json COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/icarus_keys.json ${CMAKE_BINARY_DIR}/bin/icarus_keys.json COPYONLY)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/paths.json ${CMAKE_BINARY_DIR}/bin/paths.json COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/Images/Stock/CoverArt.png ${CMAKE_BINARY_DIR}/bin/CoverArt.png COPYONLY)
 

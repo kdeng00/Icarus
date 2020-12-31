@@ -1,4 +1,4 @@
 {
-    "rsa_public_key_path": "/path/to/pub.asc",
-    "rsa_private_key_path": "/path/to/prv.asc"
+    "rsa_public_key_path": "/path/to/pub.pem",
+    "rsa_private_key_path": "/path/to/prv.pem"
 }

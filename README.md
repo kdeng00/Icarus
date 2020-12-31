@@ -19,8 +19,8 @@ One can interface with Icarus the music server either by:
 * GCC >= 8.0
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
-* libcurl
-* libopenssl
+* [libcurl](https://www.github.com/curl/curl)
+* [libopenssl](https://www.github.com/openssl/openssl)
 * libmariadb
 * [TagLib](https://github.com/taglib/taglib)
 * [oatpp](https://github.com/oatpp/oatpp)
@@ -31,10 +31,35 @@ One can interface with Icarus the music server either by:
 
 ## Getting started
 There are several things that need to be completed to properly setup and secure the API.
+0. Create public and private keys
 1. Auth0 API configuration
 2. API filesystem paths
 3. Database connection string
 4. Migrations
+
+
+### Creating public and private keys
+Make sure you have openssl installed and have it either in your path environment variable or execute the software via a path. Have somewhere that you would like to store the public and private keys on the filesystem. Once you have that in mind let's just call that the ``root_path`` ``/home/soko/icarus/keys/``. The ``private`` and ``public`` keys will be stored in that directory with the following names respectively ``icarus_private-key.pem`` and ``icarus_public-key.pem``. You must be comfortable enough with the command line to run a few commands.
+1. Change directory to the ``root_path``
+```Bash
+cd root_path
+```
+2. Create the private key
+```Bash
+openssl genrsa -out ``private`` 2048
+```
+3. Create the public key
+```Bash
+openssl rsa -in ``private`` -pubout -out ``public``
+```
+4. Take notice of the absolute paths of the keys and save the paths in the ``icarus_keys.json`` file like so:
+```Json
+    "rsa_public_path": "/home/soko/icarus/keys/icarus_public-key.pem",
+    "rsa_private_path": "/home/soko/icarus/keys/icarus_private-key.pem"
+```
+
+That's it.
+
 
 ### Auth0 API configuration
 
