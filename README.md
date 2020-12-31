@@ -31,11 +31,11 @@ One can interface with Icarus the music server either by:
 
 ## Getting started
 There are several things that need to be completed to properly setup and secure the API.
-0. Create public and private keys
-1. Auth0 API configuration
-2. API filesystem paths
-3. Database connection string
-4. Migrations
+1. Create public and private keys
+2. Auth0 API configuration (Pending removal)
+3. API filesystem paths
+4. Database connection string
+5. Migrations
 
 
 ### Creating public and private keys
@@ -46,11 +46,11 @@ cd root_path
 ```
 2. Create the private key
 ```Bash
-openssl genrsa -out ``private`` 2048
+openssl genrsa -out private 2048
 ```
 3. Create the public key
 ```Bash
-openssl rsa -in ``private`` -pubout -out ``public``
+openssl rsa -in private -pubout -out public
 ```
 4. Take notice of the absolute paths of the keys and save the paths in the ``icarus_keys.json`` file like so:
 ```Json
@@ -61,7 +61,7 @@ openssl rsa -in ``private`` -pubout -out ``public``
 That's it.
 
 
-### Auth0 API configuration
+### Auth0 API configuration (Soon to be removed)
 
 Securing Icarus is required, preventing the API from being publicly accessible. To do so, create an Auth0 account (it's free), for the sake of this section of the documentation, I will not go over how to create an Auth0 account. Once created, create a tentant and proceed to create an API
 <h1 align=center>

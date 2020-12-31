@@ -7,6 +7,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <chrono>
 #include <cstdlib>
 
 #include <cpr/cpr.h>
@@ -42,6 +43,43 @@ namespace manager
 				    postRes["expires_in"].get<int>());
 
 		    return lr;
+        }
+
+        template <typename token_t = icarus_lib::token, typename config_path = icarus_lib::binary_path>
+        token_t create_token(const config_path &config)
+        {
+            std::cout << "Fetching icarus key config\n";
+            auto t = DirectoryManager::keyConfigContent(config);
+            // std::cout << t.dump(4) << "\n";
+
+            std::string private_key_path(t["rsa_private_key_path"]);
+            std::string public_key_path(t["rsa_public_key_path"]);
+
+            // std::cout << "prv key path " << private_key_path << "\n";
+            // std::cout << "pub key path " << public_key_path << "\n";
+
+            auto private_key = DirectoryManager::contentOfPath(private_key_path);
+            auto public_key = DirectoryManager::contentOfPath(public_key_path);
+
+            // std::cout << private_key << "\n";
+            // std::cout << public_key << "\n";
+
+            auto current_time = std::chrono::system_clock::now();
+            constexpr auto hours_expire = 4;
+
+            // TODO: Continue to work on this.
+
+            auto tok = jwt::create()
+                .set_issuer("icarus")
+                .set_type("JWS")
+                .set_issued_at(current_time)
+                .set_expires_at(current_time + std::chrono::hours(hours_expire))
+                .sign(jwt::algorithm::rs256(public_key, private_key, "", ""));
+
+            token_t token;
+            token.access_token = tok;
+
+            return token;
         }
 
         bool isTokenValid(std::string &auth, type::Scope scope)

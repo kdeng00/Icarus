@@ -50,6 +50,8 @@ namespace controller
 
 		    manager::TokenManager tok;
 		    auto token = tok.retrieveToken(m_bConf);
+            std::cout << "fetching other token\n";
+            auto other_token = tok.create_token(m_bConf);
 
 		    auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
 		    logRes->message = "Successful";
