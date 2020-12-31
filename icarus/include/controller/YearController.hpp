@@ -21,7 +21,7 @@
 #include "database/YearRepository.h"
 #include "dto/conversion/DtoConversions.h"
 #include "dto/YearDto.hpp"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "manager/YearManager.h"
 #include "type/Scopes.h"
 #include "type/YearFilter.h"

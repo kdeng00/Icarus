@@ -22,7 +22,7 @@
 #include "dto/GenreDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/GenreManager.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "manager/YearManager.h"
 #include "type/Scopes.h"
 #include "type/GenreFilter.h"

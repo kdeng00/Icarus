@@ -43,7 +43,6 @@ set(SOURCES
     src/manager/DirectoryManager.cpp
     src/manager/GenreManager.cpp
     src/manager/SongManager.cpp
-    # src/manager/TokenManager.cpp
     src/manager/YearManager.cpp
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp

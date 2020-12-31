@@ -19,7 +19,7 @@
 #include "controller/RegisterController.hpp"
 #include "controller/SongController.hpp"
 #include "controller/YearController.hpp"
-#include "verify/Initialization.h"
+#include "verify/Initialization.hpp"
 
 
 template<typename config>

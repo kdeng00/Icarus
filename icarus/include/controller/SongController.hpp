@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "icarus_lib/icarus.h"
+#include <icarus_lib/icarus.h>
 #include <oatpp/core/async/Coroutine.hpp>
 #include "oatpp/core/data/stream/ChunkedBuffer.hpp"
 #include "oatpp/core/data/stream/FileStream.hpp"
@@ -29,7 +29,7 @@
 #include "dto/SongDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/SongManager.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "type/Scopes.h"
 #include "type/SongFilter.h"
 #include "type/SongUpload.h"

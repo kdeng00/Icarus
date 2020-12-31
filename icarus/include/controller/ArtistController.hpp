@@ -23,7 +23,7 @@
 #include "dto/ArtistDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/ArtistManager.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "type/Scopes.h"
 #include "type/ArtistFilter.h"
 

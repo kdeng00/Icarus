@@ -23,7 +23,7 @@
 #include "dto/AlbumDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/AlbumManager.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "type/Scopes.h"
 #include "type/AlbumFilter.h"
 

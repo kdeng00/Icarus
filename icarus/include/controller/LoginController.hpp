@@ -14,7 +14,7 @@
 #include "dto/conversion/DtoConversions.h"
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "manager/UserManager.hpp"
 
 namespace controller

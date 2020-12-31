@@ -22,7 +22,7 @@
 #include "dto/CoverArtDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/CoverArtManager.h"
-#include "manager/TokenManager.h"
+#include "manager/TokenManager.hpp"
 #include "type/Scopes.h"
 #include "type/CoverFilter.h"
 
