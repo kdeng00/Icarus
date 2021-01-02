@@ -29,7 +29,8 @@
 #include "dto/SongDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/SongManager.h"
-#include "manager/TokenManager.hpp"
+// #include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "type/Scopes.h"
 #include "type/SongFilter.h"
 #include "type/SongUpload.h"
@@ -59,7 +60,8 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    // manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                               type::Scope::upload), 
                               Status::CODE_403, "Not allowed");
@@ -113,7 +115,8 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    // manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveSong), 
                               Status::CODE_403, "Not allowed");
 
@@ -142,7 +145,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveSong), 
                               Status::CODE_403, "Not allowed");
 
@@ -168,7 +171,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::download), 
                               Status::CODE_403, "Not allowed");
 
@@ -199,7 +202,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                     type::Scope::updateSong), Status::CODE_403, "Not allowed");
             
@@ -222,7 +225,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::deleteSong), 
                               Status::CODE_403, "Not allowed");
 
@@ -246,7 +249,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::stream), 
                               Status::CODE_403, "Not allowed");
 

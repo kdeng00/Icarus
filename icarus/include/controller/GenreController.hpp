@@ -22,7 +22,8 @@
 #include "dto/GenreDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/GenreManager.h"
-#include "manager/TokenManager.hpp"
+// #include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "manager/YearManager.h"
 #include "type/Scopes.h"
 #include "type/GenreFilter.h"
@@ -48,7 +49,8 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    // manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                     type::Scope::retrieveGenre), Status::CODE_403, "Not allowed");
 
@@ -76,7 +78,7 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                     type::Scope::retrieveGenre), Status::CODE_403, "Not allowed");
 

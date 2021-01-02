@@ -11,7 +11,8 @@
 
 #include "database/BaseRepository.h"
 #include "manager/DirectoryManager.h"
-#include "manager/TokenManager.hpp"
+// #include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "type/PathType.h"
 
 namespace fs = std::filesystem;
@@ -43,7 +44,7 @@ namespace verify
     private:
         static bool confirmConfigAuth(const Config &bConf)
         {
-            manager::TokenManager tokMgr;
+            manager::token_manager tokMgr;
 
             return tokMgr.testAuth(bConf);
         }

@@ -21,7 +21,8 @@
 #include "database/YearRepository.h"
 #include "dto/conversion/DtoConversions.h"
 #include "dto/YearDto.hpp"
-#include "manager/TokenManager.hpp"
+// #include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "manager/YearManager.h"
 #include "type/Scopes.h"
 #include "type/YearFilter.h"
@@ -48,7 +49,8 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    // manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                               type::Scope::retrieveYear),
                               Status::CODE_403, "Not allowed");
@@ -77,7 +79,8 @@ namespace controller
 		    OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
 		    auto auth = authHeader->std_str();
-		    manager::TokenManager tok;
+		    // manager::TokenManager tok;
+		    manager::token_manager tok;
 		    OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                               type::Scope::retrieveYear),
                               Status::CODE_403, "Not allowed");

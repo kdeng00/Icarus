@@ -14,7 +14,7 @@
 #include "dto/conversion/DtoConversions.h"
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "manager/UserManager.hpp"
 
 namespace controller
@@ -22,44 +22,43 @@ namespace controller
     class LoginController : public BaseController
     {
     public:
-		LoginController(const icarus_lib::binary_path &bConf, 
+        LoginController(const icarus_lib::binary_path &bConf, 
                         OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, object_mapper)) : 
-							BaseController(bConf, object_mapper)
+                            BaseController(bConf, object_mapper)
         {
         }
 
 
-		#include OATPP_CODEGEN_BEGIN(ApiController)
+        #include OATPP_CODEGEN_BEGIN(ApiController)
     
-		ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(oatpp::Object<UserDto>, usr))
+        ENDPOINT("POST", "/api/v1/login", data, BODY_DTO(oatpp::Object<UserDto>, usr))
         {
-		    OATPP_LOGI("icarus", "logging in");
+            OATPP_LOGI("icarus", "logging in");
 
-		    manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
-		    auto user = dto::conversion::DtoConversions::toUser(usr);
+            manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
+            auto user = dto::conversion::DtoConversions::toUser(usr);
 
-		    if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
-		    	auto logRes = dto::LoginResultDto::createShared();
+            if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
+                auto logRes = dto::LoginResultDto::createShared();
 
-		        logRes->message = "invalid credentials";
+                logRes->message = "invalid credentials";
 
-		        std::cout << "user does not exist\n";
+                std::cout << "user does not exist\n";
 
-		        return createDtoResponse(Status::CODE_401, logRes);
-		    }
+                return createDtoResponse(Status::CODE_401, logRes);
+            }
 
-		    manager::TokenManager tok;
-		    auto token = tok.retrieveToken(m_bConf);
-            std::cout << "fetching other token\n";
-            auto other_token = tok.create_token(m_bConf);
+            manager::token_manager tok;
+            auto token = tok.create_token(m_bConf);
+            // auto token = tok.retrieveToken(m_bConf);
 
-		    auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
-		    logRes->message = "Successful";
+            auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
+            logRes->message = "Successful";
 
-		    return createDtoResponse(Status::CODE_200, logRes);
-		}
+            return createDtoResponse(Status::CODE_200, logRes);
+        }
 
-		#include OATPP_CODEGEN_END(ApiController)
+        #include OATPP_CODEGEN_END(ApiController)
     private:
     };
 }

@@ -23,7 +23,8 @@
 #include "dto/AlbumDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/AlbumManager.h"
-#include "manager/TokenManager.hpp"
+// #include "manager/TokenManager.hpp"
+#include "manager/Manager.h"
 #include "type/Scopes.h"
 #include "type/AlbumFilter.h"
 
@@ -52,7 +53,8 @@ namespace controller
 
             auto auth = authHeader->std_str();
 
-            manager::TokenManager tok;
+            // manager::TokenManager tok;
+            manager::token_manager tok;
 
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                         type::Scope::retrieveAlbum), Status::CODE_403, "Not allowed");
@@ -85,7 +87,8 @@ namespace controller
 
             auto auth = authHeader->std_str();
 
-            manager::TokenManager tok;
+            // manager::TokenManager tok;
+            manager::token_manager tok;
 
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                         type::Scope::retrieveAlbum), Status::CODE_403, "Not allowed");
