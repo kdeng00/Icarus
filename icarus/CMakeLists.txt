@@ -86,6 +86,12 @@ find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/3rdparty/soci)
 
 
+set(WITH_TESTS OFF)
+set(WITH_ODBC OFF)
+set(WITH_FIREBIRD OFF)
+set(WITH_BOOST OFF)
+set(WITH_SQLITE3 OFF)
+set(WITH_ORACLE OFF)
 
 add_executable(icarus ${SOURCES})
 

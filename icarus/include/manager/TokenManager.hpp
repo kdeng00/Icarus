@@ -50,8 +50,9 @@ namespace manager
             return lr;
         }
 
-        template <typename config_path = icarus_lib::binary_path>
-        token_val create_token(const config_path &config)
+        template <typename config_path = icarus_lib::binary_path,
+                  typename user = icarus_lib::user>
+        token_val create_token(const config_path &config, const user& usr)
         {
             std::cout << "Fetching icarus key config\n";
             auto t = DirectoryManager::keyConfigContent(config);
@@ -68,16 +69,22 @@ namespace manager
             auto ss = all_scopes_spaced<std::string_view>(scopes);
 
             token_val token;
+            token.originally_issued = current_time;
+            token.originally_expires = current_time + std::chrono::hours(hours_till_expire());
 
             auto tok = jwt::create()
                 .set_issuer("icarus")
                 .set_type("JWS")
-                .set_issued_at(current_time)
-                .set_expires_at(current_time + std::chrono::hours(hours_till_expire()))
+                .set_issued_at(token.originally_issued)
+                .set_expires_at(token.originally_expires)
                 .set_payload_claim("scope", jwt::claim(ss))
                 .sign(jwt::algorithm::rs256(public_key, private_key, "", ""));
 
             token.access_token = tok;
+
+            database::token_rep repo(config);
+            repo.create_token(token, usr);
+
 
             return token;
         }

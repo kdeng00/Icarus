@@ -5,10 +5,10 @@
 #include <string>
 #include <memory>
 
-#include "icarus_lib/icarus.h"
-#include "oatpp/core/macro/codegen.hpp"
-#include "oatpp/core/macro/component.hpp"
-#include "oatpp/web/server/api/ApiController.hpp"
+#include <icarus_lib/icarus.h>
+#include <oatpp/core/macro/codegen.hpp>
+#include <oatpp/core/macro/component.hpp>
+#include <oatpp/web/server/api/ApiController.hpp>
 
 #include "controller/BaseController.hpp"
 #include "dto/conversion/DtoConversions.h"
@@ -48,8 +48,11 @@ namespace controller
                 return createDtoResponse(Status::CODE_401, logRes);
             }
 
+            database::UserRepository<icarus_lib::user> usr_repo(m_bConf);
+            user = usr_repo.retrieveUserRecord(user);
+
             manager::token_manager tok;
-            auto token = tok.create_token(m_bConf);
+            auto token = tok.create_token(m_bConf, user);
             // auto token = tok.retrieveToken(m_bConf);
 
             auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
