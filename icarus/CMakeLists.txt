@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 
-set(VCPKG_ROOT_PATH ${CMAKE_SOURCE_DIR}/3rdparty/vcpkg)
+set(VCPKG_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdparty/vcpkg)
 
 message("The vcpkg root path ${VCPKG_ROOT_PATH}")
 
@@ -55,17 +55,20 @@ set(ICARUS_INCLUDE_DIR
 )
 
 set (BCRYPTLIB
-    ${CMAKE_CURRENT_LIST_DIR}/../3rdparty/libbcrypt
+    ${CMAKE_CURRENT_LIST_DIR}/3rdparty/libbcrypt
 )
 
 
-include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB})
+message("Default triplet ${VCPKG_DEFAULT_TRIPLET}")
+
+include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB} ${CMAKE_CURRENT_LIST_DIR}/3rdparty/vcpkg/installed/${VCPKG_TRIPLET}/include/mysql)
+include_directories(${CMAKE_BINARY_DIR}/icarus/3rdparty/soci/include)
 
 
 add_library(bcrypt STATIC IMPORTED)
 
 set_target_properties(bcrypt PROPERTIES IMPORTED_LOCATION
-    "${CMAKE_CURRENT_LIST_DIR}/../3rdparty/libbcrypt/bcrypt.a"
+    "${CMAKE_CURRENT_LIST_DIR}/3rdparty/libbcrypt/bcrypt.a"
 )
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/authcredentials.json ${CMAKE_BINARY_DIR}/bin/authcredentials.json COPYONLY)
@@ -82,6 +85,8 @@ find_package(cpr CONFIG REQUIRED)
 find_package(oatpp CONFIG REQUIRED)
 
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/3rdparty/soci)
 
 
 

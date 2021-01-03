@@ -5,11 +5,14 @@
 	path = 3rdparty/ormpp
 	url = https://github.com/qicosmos/ormpp
 [submodule "3rdparty/libbcrypt"]
-	path = 3rdparty/libbcrypt
+	path = icarus/3rdparty/libbcrypt
 	url = https://github.com/rg3/libbcrypt
 [submodule "3rdparty/vcpkg"]
-	path = 3rdparty/vcpkg
+	path = icarus/3rdparty/vcpkg
 	url = https://github.com/microsoft/vcpkg
 [submodule "icarus_lib"]
 	path = icarus_lib
 	url = https://github.com/kdeng00/icarus_lib
+[submodule "3rdparty/soci"]
+	path = icarus/3rdparty/soci
+	url = https://github.com/soci/soci

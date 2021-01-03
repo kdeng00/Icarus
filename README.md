@@ -22,6 +22,7 @@ One can interface with Icarus the music server either by:
 * [libcurl](https://www.github.com/curl/curl)
 * [libopenssl](https://www.github.com/openssl/openssl)
 * libmariadb
+* [soci](https://github.com/soci/soci)
 * [TagLib](https://github.com/taglib/taglib)
 * [oatpp](https://github.com/oatpp/oatpp)
 * [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
@@ -185,12 +186,15 @@ cd icarus/3rdparty/vcpkg
 cd ../3rdparty/libbcrypt/
 make
 
-cd ../..
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=RELEASE
-cmake --build . -j
-bin/icarus
+cd ../../..
+
+# Set environment variable for icarus' vcpkg
+set ICARUS_VCPKG_ROOT=/project_root/3rdparty/vcpkg
+set VCPKG_TRIPLET=x64-linux
+
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_TOOLCHAIN_FILE=$ICARUS_VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TRIPLET=$VCPKG_TRIPLET -B build -S .
+cmake --build build -j
+build/bin/icarus
 ```
 Runs the server on localhost port 5002
 
