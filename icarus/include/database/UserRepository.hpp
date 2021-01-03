@@ -21,7 +21,9 @@ namespace database {
         UserRepository(const icarus_lib::binary_path &config) :
                             BaseRepository(config)
         {
+            this->table_name = "User";
         }
+
 
         user_val retrieveUserRecord(user_val &user, 
                                     type::UserFilter filter = type::UserFilter::username)
@@ -111,6 +113,7 @@ namespace database {
             return userSec;
         }
 
+        [[deprecated("Use user_exists() function instead")]]
         bool doesUserRecordExist(const user_val &user, type::UserFilter filter)
         {
             std::stringstream qry;
@@ -150,6 +153,27 @@ namespace database {
             mysql_close(conn);
 
             return (rowCount > 0) ? true : false;
+        }
+
+        template<typename filter_type = type::UserFilter>
+        bool user_exists(const user_val &user, filter_type filter = filter_type::username)
+        {
+            soci::session conn;
+            create_connection(conn);
+
+            std::stringstream qry;
+            qry << "SELECT * FROM " << this->table_name << " WHERE ";
+            qry << "Username = :username LIMIT 1";
+
+            soci::statement stmt = (conn.prepare << qry.str(), 
+                    soci::use(user.username, "username"));
+            stmt.execute();
+
+            const auto rows = stmt.get_affected_rows();
+
+            conn.close();
+
+            return (rows > 0) ? true : false;
         }
 
         void saveUserRecord(const user_val &user)

@@ -31,7 +31,6 @@ set(SOURCES
     src/callback/StreamCallback.cpp
     src/database/AlbumRepository.cpp
     src/database/ArtistRepository.cpp
-    src/database/BaseRepository.cpp
     src/database/CoverArtRepository.cpp
     src/database/GenreRepository.cpp
     src/database/SongRepository.cpp
@@ -58,8 +57,6 @@ set (BCRYPTLIB
     ${CMAKE_CURRENT_LIST_DIR}/3rdparty/libbcrypt
 )
 
-
-message("Default triplet ${VCPKG_DEFAULT_TRIPLET}")
 
 include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB} ${CMAKE_CURRENT_LIST_DIR}/3rdparty/vcpkg/installed/${VCPKG_TRIPLET}/include/mysql)
 include_directories(${CMAKE_BINARY_DIR}/icarus/3rdparty/soci/include)
@@ -93,5 +90,6 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/3rdparty/soci)
 add_executable(icarus ${SOURCES})
 
 
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag mariadb nlohmann_json nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt icarus_lib)
+target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag nlohmann_json nlohmann_json::nlohmann_json OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt icarus_lib)
+target_link_libraries(icarus PRIVATE soci_core soci_mysql)
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})
