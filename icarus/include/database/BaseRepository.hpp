@@ -2,6 +2,7 @@
 #define BASE_REPOSITORY_H_
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <icarus_lib/icarus.h>

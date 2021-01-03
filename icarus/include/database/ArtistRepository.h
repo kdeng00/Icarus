@@ -7,7 +7,7 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "database/BaseRepository.h"
+#include "database/BaseRepository.hpp"
 #include "type/ArtistFilter.h"
 
 namespace database {

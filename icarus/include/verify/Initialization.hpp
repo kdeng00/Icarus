@@ -7,11 +7,10 @@
 #include <vector>
 #include <utility>
 
-#include "icarus_lib/icarus.h"
+#include <icarus_lib/icarus.h>
 
-#include "database/BaseRepository.h"
+#include "database/BaseRepository.hpp"
 #include "manager/DirectoryManager.h"
-// #include "manager/TokenManager.hpp"
 #include "manager/Manager.h"
 #include "type/PathType.h"
 

@@ -18,6 +18,7 @@
 #include <nlohmann/json.hpp>
 
 #include "manager/DirectoryManager.h"
+#include "database/Repositories.hpp"
 #include "type/Scopes.h"
 
 namespace manager
@@ -66,6 +67,8 @@ namespace manager
             auto scopes = all_scopes<std::string_view>();
             auto ss = all_scopes_spaced<std::string_view>(scopes);
 
+            token_val token;
+
             auto tok = jwt::create()
                 .set_issuer("icarus")
                 .set_type("JWS")
@@ -74,7 +77,6 @@ namespace manager
                 .set_payload_claim("scope", jwt::claim(ss))
                 .sign(jwt::algorithm::rs256(public_key, private_key, "", ""));
 
-            token_val token;
             token.access_token = tok;
 
             return token;

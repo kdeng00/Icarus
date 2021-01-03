@@ -10,7 +10,7 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "database/BaseRepository.h"
+#include "database/BaseRepository.hpp"
 #include "type/SaltFilter.h"
 #include "type/UserFilter.h"
 
