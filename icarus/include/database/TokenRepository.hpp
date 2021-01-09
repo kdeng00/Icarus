@@ -9,6 +9,7 @@
 #include <icarus_lib/icarus.h>
 
 #include "database/BaseRepository.hpp"
+#include "type/Filter.h"
 #include "utility/General.hpp"
 
 namespace database
@@ -49,25 +50,19 @@ namespace database
         }
 
 
-        token retrieve_token(token &&tokn)
+        template<typename filter_type = type::TokenFilter>
+        token retrieve_token(token &&tokn, filter_type filter = filter_type::token_id)
         {
             connection conn;
             create_connection<connection>(conn);
 
-            std::stringstream qry;
-            qry << "SELECT * FROM " << this->table_name;
-            qry << " WHERE " << this->table_name << "Id";
-            qry << " = :token_id LIMIT 1";
+            auto rows = prepare_query<soci::row, soci::rowset, filter_type>(conn, tokn, filter);
 
-            soci::rowset<soci::row> rows = (conn.prepare << qry.str(),
-                    soci::use(tokn.token_id, "token_id"));
-
-            auto r = rows.begin();
+            auto &r = rows.begin();
             auto t = parse_record<soci::row>(r);
             tokn.access_token = t.access_token;
-            tokn.orginally_issued = t.originally_issued;
-            tokn.originally_expires = t.originally_expires;
-            tokn.refresh_count = t.refresh_count;
+            tokn.issued = t.issued;
+            tokn.expires = t.expires;
 
             conn.close();
 
@@ -84,8 +79,8 @@ namespace database
 
             std::stringstream buff;
 	        buff << "INSERT INTO " << this->table_name << " (AccessToken, ";
-            buff << "OriginallyIssued, ";
-	        buff << "OriginallyExpires, UserId) VALUES(:access_token, ";
+            buff << "Issued, ";
+	        buff << "Expires, UserId) VALUES(:access_token, ";
 	        buff << ":originally_issued, :originally_expires, :user_id)";
 	
 	        const auto query = buff.str();
@@ -94,12 +89,11 @@ namespace database
             auto func1 = General::convert_time_point_to_tm<std::chrono::system_clock::time_point,
                                                            std::tm>;
 	
-            auto issued = func1(tokn.originally_issued);
-            auto expires = func1(tokn.originally_expires);
+            auto issued = func1(tokn.issued);
+            auto expires = func1(tokn.expires);
 	
 	        soci::statement stmt = (conn.prepare << query, soci::use(tokn.access_token, "access_token"),
-	            soci::use(issued, "originally_issued"),
-	            soci::use(expires, "originally_expires"),
+	            soci::use(issued, "originally_issued"), soci::use(expires, "originally_expires"),
 	            soci::use(usr.id, "user_id"));
 	
 	        stmt.execute();
@@ -111,9 +105,47 @@ namespace database
         }
 
         // Deletes Token record by id
-        int delete_token(const token &tokn)
+        template<typename filter_type = type::TokenFilter, typename statement = soci::statement>
+        int delete_token(const token &tokn, filter_type filter = filter_type::token_id)
         {
-            return 0;
+            connection conn;
+            create_connection<connection>(conn);
+
+            statement stmt;
+
+            std::stringstream qry;
+            qry << "DELETE FROM " << this->table_name << " WHERE ";
+
+            switch(filter)
+            {
+            case filter_type::token_id:
+                qry << "TokenId = :token_id";
+                stmt = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"));
+                break;
+            case filter_type::access_token:
+                qry << "AccessToken = :access_token";
+                stmt = (conn.prepare << qry.str(), soci::use(tokn.access_token, "access_token"));
+                break;
+            case filter_type::user_id:
+                qry << "UserId = :user_id";
+                stmt = (conn.prepare << qry.str(), soci::use(tokn.user_id, "user_id"));
+                break;
+            case filter_type::token_and_user:
+                qry << "TokenId = :token_id AND UserId = :user_id";
+                stmt = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"),
+                        soci::use(tokn.user_id, "user_id"));
+                break;
+            default:
+                qry << "TokenId = :token_id";
+                stmt = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"));
+                break;
+            }
+
+            stmt.execute();
+            const auto affected_rows = stmt.get_affected_rows();
+
+
+            return affected_rows;
         }
 
 
@@ -123,6 +155,45 @@ namespace database
             return false;
         }
     private:
+        template<typename row_item, template <typename> class row_container,
+                 typename filter_type>
+        auto prepare_query(const connection &conn, token &&tokn, filter_type filter)
+        {
+            std::stringstream qry;
+            qry << "SELECT * FROM " << this->table_name << " WHERE ";
+
+
+            row_container<row_item> some_rows;
+
+            switch(filter)
+            {
+            case type::TokenFilter::id:
+                qry << "TokenId = :token_id";
+                some_rows = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"));
+                break;
+            case type::TokenFilter::access_token:
+                qry << "AccessToken = :access_token";
+                some_rows = (conn.prepare << qry.str(), soci::use(tokn.access_token, "access_token"));
+                break;
+            case type::TokenFilter::user_id:
+                qry << "UserId = :user_id";
+                some_rows = (conn.prepare << qry.str(), soci::use(tokn.user_id, "user_id"));
+                break;
+            case type::TokenFilter::token_and_user:
+                qry << "TokenId = :token_id AND UserId = :user_id";
+                some_rows = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"),
+                        soci::use(tokn.user_id, "user_id"));
+                break;
+            default:
+                qry << "TokenId = :token_id";
+                some_rows = (conn.prepare << qry.str(), soci::use(tokn.token_id, "token_id"));
+                break;
+            }
+
+
+            return some_rows;
+        }
+
         template<typename row_item>
         token parse_record(const row_item &row)
         {
@@ -137,15 +208,11 @@ namespace database
             token tokn;
             tokn.token_id = row.template get<int>("TokenId");
             tokn.access_token = row.template get<std::string>("AccessToken", str_default);
-            auto orig_issued = row.template get<std::tm>("OriginallyIssued", tm_default);
-            auto orig_expires = row.template get<std::tm>("OriginallyExpires", tm_default);
-            auto refresh_issued = row.template get<std::tm>("RefreshedIssued", tm_default);
-            auto refresh_expires = row.template get<std::tm>("RefreshedExpires", tm_default);
-            tokn.originally_issued = func1(orig_issued);
-            tokn.originally_expires = func1(orig_expires);
-            tokn.refresh_issued = func1(refresh_issued);
-            tokn.refresh_expires = func1(refresh_expires);
-            tokn.refresh_count = row.template get<int>("RefreshCount", int_default);
+            auto orig_issued = row.template get<std::tm>("Issued", tm_default);
+            auto orig_expires = row.template get<std::tm>("Expires", tm_default);
+            tokn.refresh_token = row.template get<bool>("RefreshToken");
+            tokn.issued = func1(orig_issued);
+            tokn.expires = func1(orig_expires);
             tokn.active = row.template get<bool>("Active");
             tokn.user_id = row.template get<int>("UserId", int_default);
 

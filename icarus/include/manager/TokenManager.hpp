@@ -7,7 +7,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include <vector>
 #include <chrono>
 #include <algorithm>
 #include <cstdlib>
@@ -17,6 +16,7 @@
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
 
+#include "manager/BaseManager.hpp"
 #include "manager/DirectoryManager.h"
 #include "database/Repositories.hpp"
 #include "type/Scopes.h"
@@ -24,10 +24,13 @@
 namespace manager
 {
     template<typename token_val>
-    class TokenManager
+    class TokenManager : public BaseManager<icarus_lib::binary_path>
     {
     public:
         TokenManager() = default;
+        TokenManager(icarus_lib::binary_path &config) : BaseManager(config)
+        {
+        }
 
         template <typename config_path = icarus_lib::binary_path>
         [[deprecated("This function has been deprecated")]]
@@ -50,8 +53,7 @@ namespace manager
             return lr;
         }
 
-        template <typename config_path = icarus_lib::binary_path,
-                  typename user = icarus_lib::user>
+        template <typename config_path = icarus_lib::binary_path, typename user = icarus_lib::user>
         token_val create_token(const config_path &config, const user& usr)
         {
             std::cout << "Fetching icarus key config\n";
@@ -69,15 +71,16 @@ namespace manager
             auto ss = all_scopes_spaced<std::string_view>(scopes);
 
             token_val token;
-            token.originally_issued = current_time;
-            token.originally_expires = current_time + std::chrono::hours(hours_till_expire());
+            token.issued = current_time;
+            token.expires = current_time + std::chrono::hours(hours_till_expire());
 
             auto tok = jwt::create()
                 .set_issuer("icarus")
                 .set_type("JWS")
-                .set_issued_at(token.originally_issued)
-                .set_expires_at(token.originally_expires)
+                .set_issued_at(token.issued)
+                .set_expires_at(token.expires)
                 .set_payload_claim("scope", jwt::claim(ss))
+                .set_payload_claim("username", jwt::claim(usr.username))
                 .sign(jwt::algorithm::rs256(public_key, private_key, "", ""));
 
             token.access_token = tok;
@@ -87,6 +90,44 @@ namespace manager
 
 
             return token;
+        }
+
+
+
+        template<typename scope = type::Scope, template <typename, typename> class token_result = std::pair>
+        auto is_token_valid(token_val &tokn, scope scp)
+        {
+            token_result<bool, std::string> result;
+
+            auto decoded = is_token_verified(tokn);
+
+            if (!decoded.first)
+            {
+                result.first = false;
+                result.second = "Invalid";
+
+                return result;
+            }
+
+            for (auto &payload : decoded.second.get_payload_claims())
+            {
+                if (payload.first.compare("iat") == 0)
+                {
+                    auto issued_val = payload.second;
+                }
+                else if (payload.first.compare("exp") == 0)
+                {
+                    auto expired_val = payload.second;
+                }
+                else if (payload.first.compare("scope") == 0)
+                {
+                }
+            }
+
+            result.first = true;
+            result.second = "Valid token";
+
+            return result;
         }
 
         bool isTokenValid(std::string &auth, type::Scope scope)
@@ -176,8 +217,7 @@ namespace manager
         }
 
 
-        template<typename config_path = icarus_lib::binary_path,
-                 typename auth_cred = icarus_lib::auth_credentials>
+        template<typename config_path = icarus_lib::binary_path, typename auth_cred = icarus_lib::auth_credentials>
         auth_cred parseAuthCredentials(const config_path &bConf)
         {
             auto con = DirectoryManager::credentialConfigContent(bConf);
@@ -194,8 +234,7 @@ namespace manager
         }
 
 
-        template<typename str_type = std::string,
-                 typename container = std::vector<str_type>,
+        template<typename str_type = std::string, typename container = std::vector<str_type>,
                  typename jwt_decoded = jwt::decoded_jwt>
         container extractScopes(jwt_decoded &&decoded)
         {
@@ -212,8 +251,7 @@ namespace manager
                     str_type allScopes(scs);
                     std::istringstream iss(allScopes);
 
-                    scopes.assign(std::istream_iterator<str_type>(iss), 
-                            std::istream_iterator<str_type>());
+                    scopes.assign(std::istream_iterator<str_type>(iss), std::istream_iterator<str_type>());
                 }
             }
 
@@ -221,28 +259,58 @@ namespace manager
         }
 
 
-        template<typename str_type = std::string,
-                 typename container = std::vector<str_type>,
+        template<typename str_type = std::string, typename container = std::vector<str_type>,
                  typename pair = std::pair<bool, container>>
         pair fetchAuthHeader(const str_type &auth)
         {
             std::istringstream iss(auth);
-            container authHeader{std::istream_iterator<std::string>(iss),
-                    std::istream_iterator<std::string>()};
+            container authHeader{std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>()};
 
             bool foundBearer = false;
 
-            if (std::any_of(authHeader.begin(), authHeader.end(), 
-                   [&](std::string_view word)
-                   { 
-                       return (word.compare("Bearer") == 0); 
-                   }))
+            auto lamb = std::any_of(authHeader.begin(), authHeader.end(), [&](std::string_view word)
+                { 
+                    return (word.compare("Bearer") == 0); 
+                });
+
+            if (lamb)
             {
                 std::cout << "Bearer found\n";
                 foundBearer = true;
             }
 
             return std::make_pair(foundBearer, authHeader);
+        }
+
+
+        auto is_token_verified(const token_val &tokn)
+        {
+            auto t = DirectoryManager::keyConfigContent(m_config);
+
+            std::string private_key_path(t["rsa_private_key_path"]);
+            std::string public_key_path(t["rsa_public_key_path"]);
+
+            auto private_key = DirectoryManager::contentOfPath(private_key_path);
+            auto public_key = DirectoryManager::contentOfPath(public_key_path);
+
+            auto verify = jwt::verify()
+                .allow_algorithm(jwt::algorithm::rs256(public_key, private_key, "", ""
+                            ))
+                .with_issuer("icarus");
+            auto decoded = jwt::decode(tokn.access_token);
+
+            try
+            {
+                verify.verify(decoded);
+            }
+            catch (jwt::signature_verification_exception &e)
+            {
+                auto s = e;
+                std::cout << "Something happend: " << e.what() << "\n";
+                return std::make_pair(false, jwt::decoded_jwt(tokn.access_token));
+            }
+
+            return std::make_pair(true, decoded);
         }
 
 
@@ -264,8 +332,7 @@ namespace manager
             return scopes;
         }
 
-        template<typename val_t, 
-                 typename array_t = std::array<val_t, 11>>
+        template<typename val_t, typename array_t = std::array<val_t, 11>>
         auto all_scopes_spaced(array_t &scopes)
         {
             std::stringstream ss;
@@ -285,16 +352,20 @@ namespace manager
             return 4;
         }
 
+        // Hours in which a refreshed token will expire
+        constexpr auto refresh_token_expiration() noexcept
+        {
+            return 24;
+        }
 
-        template<typename str_val = std::string, 
-                 typename container = std::vector<str_val>>
+
+        template<typename str_val = std::string, typename container = std::vector<str_val>>
         auto tokenSupportsScope(const container &scopes, str_val &&scope)
         {
-            return std::any_of(scopes.begin(), scopes.end(), 
-                               [&scope](std::string_view foundScope)
-                               {
-                                   return (foundScope.compare(scope) == 0);
-                               });
+            return std::any_of(scopes.begin(), scopes.end(), [&scope](std::string_view foundScope)
+                {
+                    return (foundScope.compare(scope) == 0);
+                });
         }
     };
 }

@@ -4,8 +4,10 @@
 #include <memory>
 
 #include <icarus_lib/icarus.h>
+#include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
 #include <oatpp/web/server/api/ApiController.hpp>
+#include <oatpp/web/server/handler/AuthorizationHandler.hpp>
 
 
 namespace controller
@@ -18,6 +20,12 @@ namespace controller
                     oatpp::web::server::api::ApiController(object_mapper),
                     m_bConf(bConf)
             {
+                setDefaultAuthorizationHandler(std::make_shared<oatpp::web::server::handler::BearerAuthorizationHandler>("Authorization"));
+            }
+
+            constexpr auto no_auth_header_key()
+            {
+                return "No Authorization key provided";
             }
 
             icarus_lib::binary_path m_bConf;

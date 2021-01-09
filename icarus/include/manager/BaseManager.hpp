@@ -1,7 +1,7 @@
 #ifndef BASEMANAGER_H_
 #define BASEMANAGER_H_
 
-#include "icarus_lib/icarus.h"
+#include <icarus_lib/icarus.h>
 
 namespace manager
 {
@@ -9,6 +9,7 @@ namespace manager
     class BaseManager
     {
     protected:
+        BaseManager() = default;
         BaseManager(const config_detail &config) :
             m_config(config)
         {

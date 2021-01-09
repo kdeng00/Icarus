@@ -11,14 +11,7 @@
 
 
 #include "component/AppComponent.hpp"
-#include "controller/ArtistController.hpp"
-#include "controller/AlbumController.hpp"
-#include "controller/CoverArtController.hpp"
-#include "controller/GenreController.hpp"
-#include "controller/LoginController.hpp"
-#include "controller/RegisterController.hpp"
-#include "controller/SongController.hpp"
-#include "controller/YearController.hpp"
+#include "controller/Controllers.hpp"
 #include "verify/Initialization.hpp"
 
 
@@ -31,14 +24,14 @@ void run(const config &b_conf)
 
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
 
-    auto albumController = std::make_shared<controller::AlbumController>(b_conf);
-    auto artistController = std::make_shared<controller::ArtistController>(b_conf);
-    auto coverArtController = std::make_shared<controller::CoverArtController>(b_conf);
-    auto gnrController = std::make_shared<controller::GenreController>(b_conf);
-    auto logController = std::make_shared<controller::LoginController>(b_conf);
-    auto regController = std::make_shared<controller::RegisterController>(b_conf);
-    auto sngController = std::make_shared<controller::SongController>(b_conf);
-    auto yearController = std::make_shared<controller::YearController>(b_conf);
+    auto albumController = std::make_shared<controller::album_controller>(b_conf);
+    auto artistController = std::make_shared<controller::artist_controller>(b_conf);
+    auto coverArtController = std::make_shared<controller::cover_art_controller>(b_conf);
+    auto gnrController = std::make_shared<controller::genre_controller>(b_conf);
+    auto logController = std::make_shared<controller::login_controller>(b_conf);
+    auto regController = std::make_shared<controller::register_controller>(b_conf);
+    auto sngController = std::make_shared<controller::song_controller>(b_conf);
+    auto yearController = std::make_shared<controller::year_controller>(b_conf);
 
     albumController->addEndpointsToRouter(router);
     artistController->addEndpointsToRouter(router);

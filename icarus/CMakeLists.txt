@@ -38,7 +38,7 @@ endif()
 
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "enforcing c++ standard requirement" FORCE)
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "setting c++ standard" FORCE)
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "setting c++ standard" FORCE)
 
 message("Using c++ ${CMAKE_CXX_STANDARD} features")
 
