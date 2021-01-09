@@ -15,8 +15,8 @@ One can interface with Icarus the music server either by:
 ## Built With
 
 
-* C++ >= C++17
-* GCC >= 8.0
+* C++
+* Compiler with C++20 support
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
 * [libcurl](https://www.github.com/curl/curl)
@@ -183,7 +183,7 @@ cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg install nlohmann-json curl openssl cpr taglib jwt-cpp libmariadb oatpp
 
-cd ../..
+cd ../../..
 make -C icarus/3rdparty/libbcrypt
 
 cmake -B build -S .
