@@ -183,16 +183,10 @@ cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg install nlohmann-json curl openssl cpr taglib jwt-cpp libmariadb oatpp
 
-cd ../3rdparty/libbcrypt/
-make
+cd ../..
+make -C icarus/3rdparty/libbcrypt
 
-cd ../../..
-
-# Set environment variable for icarus' vcpkg
-set ICARUS_VCPKG_ROOT=/project_root/3rdparty/vcpkg
-set VCPKG_TRIPLET=x64-linux
-
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_TOOLCHAIN_FILE=$ICARUS_VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TRIPLET=$VCPKG_TRIPLET -B build -S .
+cmake -B build -S .
 cmake --build build -j
 build/bin/icarus
 ```
