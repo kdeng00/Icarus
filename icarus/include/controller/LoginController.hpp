@@ -48,7 +48,7 @@ namespace controller
                 return createDtoResponse(Status::CODE_401, logRes);
             }
 
-            database::UserRepository<icarus_lib::user> usr_repo(m_bConf);
+            database::UserRepository usr_repo(m_bConf);
             user = usr_repo.retrieveUserRecord(user);
 
             manager::token_manager tok;

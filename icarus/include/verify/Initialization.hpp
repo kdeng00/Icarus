@@ -9,7 +9,7 @@
 
 #include <icarus_lib/icarus.h>
 
-#include "database/BaseRepository.hpp"
+#include "database/BaseRepository.h"
 #include "manager/DirectoryManager.h"
 #include "manager/Manager.h"
 #include "type/PathType.h"
@@ -18,7 +18,6 @@ namespace fs = std::filesystem;
 
 namespace verify
 {
-    // template<typename Config = model::BinaryPath>
     template<typename Config = icarus_lib::binary_path>
     class Initialization
     {

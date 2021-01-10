@@ -1,19 +1,33 @@
 #include "database/YearRepository.h"
 
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <cstring>
 
+using std::string;
+using std::stringstream;
+using std::vector;
+using std::pair;
+using std::shared_ptr;
+using std::cout;
+
+using icarus_lib::year;
+using icarus_lib::binary_path;
+
+using type::YearFilter;
+
 namespace database {
-    YearRepository::YearRepository(const icarus_lib::binary_path &bConf) : BaseRepository(bConf) { }
+    YearRepository::YearRepository(const binary_path &bConf) : BaseRepository(bConf)
+    {
+    }
 
 
-    std::vector<icarus_lib::year> YearRepository::retrieveRecords() {
+    vector<year> YearRepository::retrieveRecords()
+    {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
-		const std::string query = "SELECT * FROM Year";
+		const string query = "SELECT * FROM Year";
 
 		mysql_stmt_prepare(stmt, query.c_str(), query.size());
 		mysql_stmt_execute(stmt);
@@ -26,10 +40,10 @@ namespace database {
 		return yearRecs;
     }
 
-    std::pair<icarus_lib::year, int> YearRepository::retrieveRecordWithSongCount(icarus_lib::year& year, 
-            type::YearFilter filter) {
-		std::cout << "retrieving year record with song count\n";
-		std::stringstream qry;
+    pair<year, int> YearRepository::retrieveRecordWithSongCount(year& year, YearFilter filter)
+    {
+		cout << "retrieving year record with song count\n";
+		stringstream qry;
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 
@@ -40,7 +54,7 @@ namespace database {
 		std::memset(params, 0, sizeof(params));
 
 		switch (filter) {
-		    case type::YearFilter::id:
+		    case YearFilter::id:
 		        qry << "sng.YearId = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -65,14 +79,15 @@ namespace database {
 		mysql_stmt_close(stmt);
 		mysql_close(conn);
 
-		std::cout << "retrieved year record with song count\n";
+		cout << "retrieved year record with song count\n";
 
 		return yearWSC;
     }
 
-    icarus_lib::year YearRepository::retrieveRecord(icarus_lib::year& year, type::YearFilter filter) {
-		std::cout << "retrieving year record\n";
-		std::stringstream qry;
+    year YearRepository::retrieveRecord(year& year, YearFilter filter)
+    {
+		cout << "retrieving year record\n";
+		stringstream qry;
 		auto conn = setupMysqlConnection();
         auto stmt = mysql_stmt_init(conn);
 		qry << "SELECT yr.* FROM Year yr WHERE ";
@@ -81,7 +96,7 @@ namespace database {
         std::memset(params, 0, sizeof(0));
 
 		switch (filter) {
-		    case type::YearFilter::id:
+		    case YearFilter::id:
 		        qry << "yr.YearId = ?";
 
                 params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -89,7 +104,7 @@ namespace database {
                 params[0].length = 0;
                 params[0].is_null = 0;
 		        break;
-		    case type::YearFilter::year:
+		    case YearFilter::year:
 		        qry << "yr.Year = ?";
 
                 params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -114,24 +129,25 @@ namespace database {
         mysql_stmt_close(stmt);
 		mysql_close(conn);
 
-		std::cout << "retrieved record\n";
+		cout << "retrieved record\n";
 
 		return year;
     }
 
 
-    bool YearRepository::doesYearExist(const icarus_lib::year& year, type::YearFilter filter) {
+    bool YearRepository::doesYearExist(const year& year, YearFilter filter)
+    {
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 
-		std::stringstream qry;
+		stringstream qry;
 		qry << "SELECT * FROM Year WHERE ";
 
 		MYSQL_BIND params[1];
 		memset(params, 0, sizeof(params));
 
 		switch (filter) {
-		    case type::YearFilter::id:
+		    case YearFilter::id:
 		        qry << "YearId = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -139,7 +155,7 @@ namespace database {
 		        params[0].length = 0;
 		        params[0].is_null = 0;
 		        break;
-		    case type::YearFilter::year:
+		    case YearFilter::year:
 		        qry << "Year = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -158,7 +174,7 @@ namespace database {
 		status = mysql_stmt_bind_param(stmt, params);
 		status = mysql_stmt_execute(stmt);
 
-		std::cout << "the query has been performed\n";
+		cout << "the query has been performed\n";
 
 		mysql_stmt_store_result(stmt);
 		auto rowCount = mysql_stmt_num_rows(stmt);
@@ -170,13 +186,14 @@ namespace database {
     }
 
 
-    void YearRepository::saveRecord(const icarus_lib::year& year) {
-		std::cout << "saving year record\n";
+    void YearRepository::saveRecord(const year& year)
+    {
+		cout << "saving year record\n";
 
 		auto conn = setupMysqlConnection();
 		MYSQL_STMT *stmt = mysql_stmt_init(conn);
 
-		const std::string query("INSERT INTO Year(Year) VALUES(?)");
+		const string query("INSERT INTO Year(Year) VALUES(?)");
 
 		auto status = mysql_stmt_prepare(stmt, query.c_str(), query.size());
 
@@ -194,13 +211,13 @@ namespace database {
 		mysql_stmt_close(stmt);
 		mysql_close(conn);
 
-		std::cout << "saved record\n";
+		cout << "saved record\n";
     }
 
-    void YearRepository::deleteYear(const icarus_lib::year& year, 
-            type::YearFilter filter) {
-		std::cout << "deleting year record\n";
-		std::stringstream qry;
+    void YearRepository::deleteYear(const year& year, YearFilter filter)
+    {
+		cout << "deleting year record\n";
+		stringstream qry;
 		auto conn = setupMysqlConnection();
 		auto stmt = mysql_stmt_init(conn);
 
@@ -210,7 +227,7 @@ namespace database {
 		std::memset(params, 0, sizeof(params));
 
 		switch (filter) {
-		    case type::YearFilter::id:
+		    case YearFilter::id:
 		        qry << "YearId = ?";
 
 		        params[0].buffer_type = MYSQL_TYPE_LONG;
@@ -231,19 +248,21 @@ namespace database {
 		mysql_stmt_close(stmt);
 		mysql_close(conn);
 
-		std::cout << "deleted year record\n";
+		cout << "deleted year record\n";
     }
 
 
-    std::vector<icarus_lib::year> YearRepository::parseRecords(MYSQL_STMT *stmt) {
+    vector<year> YearRepository::parseRecords(MYSQL_STMT *stmt)
+    {
 		mysql_stmt_store_result(stmt);
         const auto rowCount = mysql_stmt_num_rows(stmt);
 
-		std::vector<icarus_lib::year> yearRecs;
+		vector<year> yearRecs;
 		yearRecs.reserve(rowCount);
 
-		if (mysql_stmt_field_count(stmt) == 0) {
-		    std::cout << "field count is 0\n";
+		if (mysql_stmt_field_count(stmt) == 0) 
+        {
+		    cout << "field count is 0\n";
 		    return yearRecs;
 		}
 
@@ -251,11 +270,13 @@ namespace database {
 		unsigned long len[valAmt];
 		my_bool nullRes[valAmt];
 
-		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt)) {
-            if (mysql_stmt_field_count(stmt) > 0) {
-		        icarus_lib::year yearRec;
+		for (auto status = 0; status == 0; status = mysql_stmt_next_result(stmt))
+        {
+            if (mysql_stmt_field_count(stmt) > 0)
+            {
+		        year yearRec;
 
-		        std::cout << "fetching statement result\n";
+		        cout << "fetching statement result\n";
                 auto bindedValues = valueBind(yearRec);
                 status = mysql_stmt_bind_result(stmt, bindedValues.get());
 		        status = mysql_stmt_fetch(stmt);
@@ -264,21 +285,23 @@ namespace database {
 
 		        yearRecs.push_back(yearRec);
             }
-            std::cout << "fetching next result\n";
+            cout << "fetching next result\n";
 		}
 
 		return yearRecs;
     }
 
-    std::pair<icarus_lib::year, int> YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt) {
-		std::cout << "parsing year record\n";
+    pair<year, int> YearRepository::parseRecordWithSongCount(MYSQL_STMT *stmt)
+    {
+		cout << "parsing year record\n";
 		mysql_stmt_store_result(stmt);
 
-		icarus_lib::year year;
+		year year;
 		int songCount = 0;
 
-		if (mysql_stmt_num_rows(stmt) == 0) {
-		    std::cout << "no results\n";
+		if (mysql_stmt_num_rows(stmt) == 0)
+        {
+		    cout << "no results\n";
 		    return std::make_pair(year, songCount);
 		}
 
@@ -287,15 +310,16 @@ namespace database {
 		auto status = mysql_stmt_bind_result(stmt, val.get());
 		status = mysql_stmt_fetch(stmt);
 
-		std::cout << "parsed year record from the database\n";
+		cout << "parsed year record from the database\n";
 
 		return std::make_pair(year, songCount);
     }
 
 
-    std::shared_ptr<MYSQL_BIND> YearRepository::valueBind(icarus_lib::year& year) {
+    shared_ptr<MYSQL_BIND> YearRepository::valueBind(year& year)
+    {
         constexpr auto valueCount = 2;
-        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+        shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
                 std::calloc(valueCount, sizeof(MYSQL_BIND)));
 
         values.get()[0].buffer_type = MYSQL_TYPE_LONG;
@@ -307,10 +331,10 @@ namespace database {
         return values;
     }
 
-    std::shared_ptr<MYSQL_BIND> YearRepository::valueBindWithSongCount(icarus_lib::year& year,
+    shared_ptr<MYSQL_BIND> YearRepository::valueBindWithSongCount(year& year,
             int& songCount) {
         constexpr auto valueCount = 3;
-        std::shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
+        shared_ptr<MYSQL_BIND> values((MYSQL_BIND*)
                 std::calloc(valueCount, sizeof(MYSQL_BIND)));
 
         values.get()[0].buffer_type = MYSQL_TYPE_LONG;
@@ -326,16 +350,16 @@ namespace database {
     }
 
 
-    icarus_lib::year YearRepository::parseRecord(MYSQL_STMT *stmt) {
-        std::cout << "parsing year record\n";
+    year YearRepository::parseRecord(MYSQL_STMT *stmt) {
+        cout << "parsing year record\n";
         mysql_stmt_store_result(stmt);
 
-		icarus_lib::year year;
+		year year;
         auto bindedValues = valueBind(year);
         auto status = mysql_stmt_bind_result(stmt, bindedValues.get());
         status = mysql_stmt_fetch(stmt);
 
-        std::cout << "done parsing year record\n";
+        cout << "done parsing year record\n";
 
 		return year;
     }

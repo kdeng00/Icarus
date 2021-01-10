@@ -5,7 +5,7 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "database/UserRepository.hpp"
+#include "database/UserRepository.h"
 #include "dto/LoginResultDto.hpp"
 #include "manager/BaseManager.hpp"
 #include "type/SaltFilter.h"
@@ -35,7 +35,7 @@ namespace manager {
             auto hashed = passEnc.hashPassword(user);
             user.password = hashed.hash_password;
 
-            database::UserRepository<user_val> usrRepo(m_config);
+            database::UserRepository usrRepo(m_config);
             usrRepo.saveUserRecord(user);
 
             user_val usr;
@@ -57,7 +57,7 @@ namespace manager {
 
         bool doesUserExist(const user_val &user)
         {
-            database::UserRepository<user_val> userRepo(m_config);
+            database::UserRepository userRepo(m_config);
 
             // return userRepo.doesUserRecordExist(user, type::UserFilter::username);
             return userRepo.user_exists(user);
@@ -65,7 +65,7 @@ namespace manager {
 
         bool validatePassword(const user_val &user)
         {
-            database::UserRepository<user_val> userRepo(m_config);
+            database::UserRepository userRepo(m_config);
             user_val usr;
             usr.username = user.username;
             usr = userRepo.retrieveUserRecord(usr, type::UserFilter::username);

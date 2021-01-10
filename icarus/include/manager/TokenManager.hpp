@@ -18,7 +18,7 @@
 
 #include "manager/BaseManager.hpp"
 #include "manager/DirectoryManager.h"
-#include "database/Repositories.hpp"
+#include "database/Repositories.h"
 #include "type/Scopes.h"
 
 namespace manager
@@ -85,7 +85,7 @@ namespace manager
 
             token.access_token = tok;
 
-            database::token_rep repo(config);
+            database::token_repo repo(config);
             repo.create_token(token, usr);
 
 

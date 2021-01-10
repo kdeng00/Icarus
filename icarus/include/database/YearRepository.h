@@ -7,7 +7,7 @@
 
 #include "icarus_lib/icarus.h"
 
-#include "database/BaseRepository.hpp"
+#include "database/BaseRepository.h"
 #include "type/YearFilter.h"
 
 namespace database {

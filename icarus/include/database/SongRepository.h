@@ -8,7 +8,7 @@
 #include "icarus_lib/icarus.h"
 #include <mysql/mysql.h>
 
-#include "database/BaseRepository.hpp"
+#include "database/BaseRepository.h"
 #include "type/SongFilter.h"
 
 namespace database {

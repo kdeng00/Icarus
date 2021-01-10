@@ -38,7 +38,7 @@ endif()
 
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "enforcing c++ standard requirement" FORCE)
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "setting c++ standard" FORCE)
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "setting c++ standard" FORCE)
 
 message("Using c++ ${CMAKE_CXX_STANDARD} features")
 
@@ -51,9 +51,12 @@ set(SOURCES
     src/callback/StreamCallback.cpp
     src/database/AlbumRepository.cpp
     src/database/ArtistRepository.cpp
+    src/database/BaseRepository.cpp
     src/database/CoverArtRepository.cpp
     src/database/GenreRepository.cpp
     src/database/SongRepository.cpp
+    src/database/TokenRepository.cpp
+    src/database/UserRepository.cpp
     src/database/YearRepository.cpp
     src/Main.cpp
     src/manager/AlbumManager.cpp
