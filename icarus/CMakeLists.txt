@@ -65,10 +65,13 @@ set(SOURCES
     src/manager/DirectoryManager.cpp
     src/manager/GenreManager.cpp
     src/manager/SongManager.cpp
+    src/manager/TokenManager.cpp
+    src/manager/UserManager.cpp
     src/manager/YearManager.cpp
     src/utility/ImageFile.cpp
     src/utility/MetadataRetriever.cpp
     src/utility/PasswordEncryption.cpp
+    src/verify/Initialization.cpp
 )
 
 
@@ -130,7 +133,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/3rdparty/soci)
 add_executable(icarus ${SOURCES})
 
 
-target_link_libraries(icarus PRIVATE "-lstdc++fs" oatpp::oatpp tag nlohmann_json nlohmann_json::nlohmann_json)
+target_link_libraries(icarus PRIVATE oatpp::oatpp tag nlohmann_json nlohmann_json::nlohmann_json)
 target_link_libraries(icarus PRIVATE OpenSSL::SSL OpenSSL::Crypto CURL::libcurl cpr bcrypt icarus_lib)
 target_link_libraries(icarus PRIVATE soci_core soci_mysql)
 target_include_directories(icarus PRIVATE ${JWT_CPP_INCLUDE_DIRS})

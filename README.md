@@ -1,6 +1,6 @@
 # Icarus
 
-Icarus is a music streaming API Server, allowing access to stream your personal music collection
+Icarus is a music streaming API Server, allowing access to stream your personal music collection. Currently Icarus only supports Linux. Specifically 64-bit linux systems.
 
 ### Interfacing With Icarus
 
@@ -16,7 +16,7 @@ One can interface with Icarus the music server either by:
 
 
 * C++
-* Compiler with C++20 support
+* Compiler with C++17 support
 * [json](https://www.github.com/nlohmann/json)
 * [cpr](https://www.github.com/whoshuu/cpr)
 * [libcurl](https://www.github.com/curl/curl)
@@ -33,10 +33,9 @@ One can interface with Icarus the music server either by:
 ## Getting started
 There are several things that need to be completed to properly setup and secure the API.
 1. Create public and private keys
-2. Auth0 API configuration (Pending removal)
-3. API filesystem paths
-4. Database connection string
-5. Migrations
+2. API filesystem paths
+3. Database connection string
+4. Migrations
 
 
 ### Creating public and private keys
@@ -61,60 +60,6 @@ openssl rsa -in private -pubout -out public
 
 That's it.
 
-
-### Auth0 API configuration (Soon to be removed)
-
-Securing Icarus is required, preventing the API from being publicly accessible. To do so, create an Auth0 account (it's free), for the sake of this section of the documentation, I will not go over how to create an Auth0 account. Once created, create a tentant and proceed to create an API
-<h1 align=center>
-    <img src="Images/Configuration/create_api.png" width=100%>
-</h1>
-
-Create the API and enter an approrpiate name and identified. For the identified, append **api** like in the example
-<h1 align="center">
-    <img src="Images/Configuration/enter_api_info.png" width=100%>
-</h1>
-Replace [domain] with the domain name of the created tenant. This can be found in the Default App from the Application menu. Replace [identifier] with the identifer root name in the appsettings environment file. Not the friendly name but the root name of the identifier, omitting the http protocol and the *api* path.
-
-```Json
-  "domain": "[domain].auth0.com", 
-  "api_identifier": "https://[identifier]/api",
-  "client_id": "iamunique",
-  "client_secret": "Icankeepasecret"
-```
-
-Click on permissions to create the permissions for the API.
-<h1 align "center">
-    <img src="Images/Configuration/configure_api.png" width=100%>
-</h1>
-
-The permissions ensure that a validated user can interact with the API with a token that has not expired. Ensure that the permissions match, the description can change but the permission identifier must match.
-<h1 align="center">
-    <img src="Images/Configuration/permissions.png" width=100%>
-</h1>
-
-On the left side, click on Application and create a new Application. Choose the Machine to Machine Application
-<h1 align="center">
-    <img src="Images/Configuration/create_m2m.png" width=100%>
-</h1>
-
-With the grant permissions you created from the API, enable all the permissions. This is important because if they are not enabled then even with a valid token the request will return 403 (unauthorized)
-<h1 align="center">
-    <img src="Images/Configuration/authorize_app.png" width=100%>
-</h1>
-
-From the Application page, copy the client id and client secret. These values will be used for the API to interact with API.
-<h1 align="center">
-    <img src="Images/Configuration/api_cred.png" width=100%>
-</h1>
-Enter the information in the corresponding ``authcredentials.json`` file  
-```Json
-{
-  "domain": "somedomain.auth0.com",
-  "api_identifier": "https://squawk/api"
-  "client_id": "clientidhere",
-  "client_secret": "illkeepyoumydirtylittlesecret"
-}
-```
 
 ### API filesystem paths
 

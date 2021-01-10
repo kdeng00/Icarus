@@ -7,15 +7,15 @@
 #include <icarus_lib/icarus.h>
 
 #include "controller/BaseController.hpp"
-#include "database/AlbumRepository.h"
+#include "database/Repositories.h"
 #include "dto/AlbumDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/AlbumManager.h"
 #include "manager/Manager.h"
 #include "type/Scopes.h"
 #include "type/AlbumFilter.h"
 
 using namespace dto;
+using manager::token_manager;
 
 namespace controller
 {
@@ -40,14 +40,14 @@ namespace controller
 
             auto auth = authHeader->std_str();
 
-            manager::token_manager tok;
+            token_manager tok;
 
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                         type::Scope::retrieveAlbum), Status::CODE_403, "Not allowed");
 
             std::cout << "starting process of retrieving album\n";
 
-            database::AlbumRepository albRepo(m_bConf);
+            database::album_repo albRepo(m_bConf);
 
             auto albsDb = albRepo.retrieveRecords();
 
@@ -73,13 +73,12 @@ namespace controller
 
             auto auth = authHeader->std_str();
 
-            // manager::TokenManager tok;
-            manager::token_manager tok;
+            token_manager tok;
 
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                         type::Scope::retrieveAlbum), Status::CODE_403, "Not allowed");
 
-            database::AlbumRepository albRepo(m_bConf);
+            database::album_repo albRepo(m_bConf);
             icarus_lib::album albDb(id);
 
             OATPP_ASSERT_HTTP(albRepo.doesAlbumExists(albDb, 

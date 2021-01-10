@@ -10,7 +10,7 @@
 
 #include "component/AppComponent.hpp"
 #include "controller/Controllers.h"
-#include "verify/Initialization.hpp"
+#include "verify/Initialization.h"
 
 using std::cout;
 using std::shared_ptr;
@@ -60,9 +60,9 @@ int main(int argc, char **argv)
 
     if (argc > 1)
     {
-        if (!verify::Initialization<>::skipVerification(argv[1]))
+        if (!verify::Initialization::skipVerification(argv[1]))
         {
-            verify::Initialization<>::checkIcarus(b_conf);
+            verify::Initialization::checkIcarus(b_conf);
         }
         else
         {
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     } 
     else
     {
-        verify::Initialization<>::checkIcarus(b_conf);
+        verify::Initialization::checkIcarus(b_conf);
     }
 
     run<icarus_lib::binary_path>(b_conf);

@@ -4,39 +4,52 @@
 #include <filesystem>
 #include <random>
 
-#include "icarus_lib/icarus.h"
+#include <icarus_lib/icarus.h>
 #include <nlohmann/json.hpp>
-//#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
-#include "oatpp/web/server/api/ApiController.hpp"
+#include <oatpp/web/server/api/ApiController.hpp>
 
-#include "database/CoverArtRepository.h"
-#include "database/SongRepository.h"
-#include "manager/AlbumManager.h"
-#include "manager/ArtistManager.h"
-#include "manager/CoverArtManager.h"
-#include "manager/DirectoryManager.h"
-#include "manager/GenreManager.h"
-#include "manager/YearManager.h"
+#include "database/Repositories.h"
+#include "manager/Manager.h"
 #include "type/PathType.h"
 #include "utility/MetadataRetriever.h"
 
 namespace fs = std::filesystem;
 
+using std::string;
+using std::string_view;
+using std::pair;
+using std::cout;
+using std::fstream;
+using std::to_string;
+using std::map;
+
+
+using icarus_lib::binary_path;
+using icarus_lib::song;
+using icarus_lib::album;
+
+using utility::MetadataRetriever;
+using type::SongChanged;
+using type::SongFilter;
+
 namespace manager {
-    SongManager::SongManager(const icarus_lib::binary_path& bConf) : m_bConf(bConf) { }
+    SongManager::SongManager(const binary_path& bConf) : m_bConf(bConf)
+    {
+    }
 
 
-    std::pair<bool, type::SongUpload> SongManager::saveSong(icarus_lib::song& song) {
+    pair<bool, type::SongUpload> SongManager::saveSong(song& song)
+    {
 		saveSongTemp(song);
-		utility::MetadataRetriever meta;
+		MetadataRetriever meta;
 		auto data = std::move(song.data);
 		song = meta.retrieveMetadata(song);
 		song.data = std::move(data);
 
 		database::SongRepository songRepo(m_bConf);
-		if (songRepo.doesSongExist(song, type::SongFilter::titleAlbArtistAlbum)) {
-		    std::cout << "\ntitle: " << song.title << "\nartist: " << song.artist << "\n";
-		    std::cout << "does not exist\n";
+		if (songRepo.doesSongExist(song, SongFilter::titleAlbArtistAlbum)) {
+		    cout << "\ntitle: " << song.title << "\nartist: " << song.artist << "\n";
+		    cout << "does not exist\n";
 		    return std::make_pair(false, type::SongUpload::AlreadyExist);
 		}
 
@@ -45,14 +58,14 @@ namespace manager {
 		printSong(song);
 
 		songRepo.saveRecord(song);
-		song = songRepo.retrieveRecord(song, type::SongFilter::titleAlbArtistAlbum);
+		song = songRepo.retrieveRecord(song, SongFilter::titleAlbArtistAlbum);
 
 		return std::make_pair(true, type::SongUpload::Successful);
     }
 
 
-    bool SongManager::didSongChange(const icarus_lib::song& updatedSong, 
-		    const icarus_lib::song& currSong) {
+    bool SongManager::didSongChange(const song& updatedSong, 
+		    const song& currSong) {
 		if (!updatedSong.title.empty()) {
 		    return true;
 		}
@@ -72,8 +85,8 @@ namespace manager {
 		return false;
     }
 
-    bool SongManager::requiresFilesystemChange(const icarus_lib::song& updatedSong, 
-		    const icarus_lib::song& currSong) {
+    bool SongManager::requiresFilesystemChange(const song& updatedSong, 
+		    const song& currSong) {
 		if (updatedSong.title.compare(currSong.title) != 0) {
 		    return true;
 		}
@@ -87,38 +100,38 @@ namespace manager {
 		return false;
     }
 
-    bool SongManager::deleteSong(icarus_lib::song& song) {
+    bool SongManager::deleteSong(song& song) {
 		database::SongRepository songRepo(m_bConf);
 
-		if (!songRepo.doesSongExist(song, type::SongFilter::id)) {
-		    std::cout << "song does not exist\n";
+		if (!songRepo.doesSongExist(song, SongFilter::id)) {
+		    cout << "song does not exist\n";
 		    return false;
 		}
 
-		song = songRepo.retrieveRecord(song, type::SongFilter::id);
+		song = songRepo.retrieveRecord(song, SongFilter::id);
 
-		auto paths = DirectoryManager::pathConfigContent(m_bConf);
+		auto paths = directory_manager::pathConfigContent(m_bConf);
 
 		auto deleted = songRepo.deleteRecord(song);
 
 		if (!deleted) {
-		    std::cout << "song not deleted from databases\n";
+		    cout << "song not deleted from databases\n";
 		    return deleted;
 		}
 		deleteMisc(song);
 
 		fs::remove(song.song_path);
-		DirectoryManager::deleteDirectories(song, paths["root_music_path"].get<std::string>());
+		directory_manager::deleteDirectories(song, paths["root_music_path"].get<string>());
 		return deleted;
     }
 
-    bool SongManager::updateSong(icarus_lib::song& updatedSong) {
+    bool SongManager::updateSong(song& updatedSong) {
 		database::SongRepository songRepo(m_bConf);
-		icarus_lib::song currSong(updatedSong.id);
+		song currSong(updatedSong.id);
 
-		currSong = songRepo.retrieveRecord(currSong, type::SongFilter::id);
+		currSong = songRepo.retrieveRecord(currSong, SongFilter::id);
 		if (!didSongChange(updatedSong, currSong)) {
-		    std::cout << "no change to the song\n";
+		    cout << "no change to the song\n";
 		    return false;
 		}
 
@@ -143,66 +156,67 @@ namespace manager {
     }
 
 
-    void SongManager::printSong(const icarus_lib::song& song) {
-		std::cout << "\nsong" << "\n";
-		std::cout << "title: " << song.title << "\n";
-		std::cout << "artist: " << song.artist << "\n";
-		std::cout << "album artist: " << song.album_artist << "\n";
-		std::cout << "album: " << song.album << "\n";
-		std::cout << "genre: " << song.genre << "\n";
-		std::cout << "duration: " << song.duration << "\n";
-		std::cout << "year: " << song.year << "\n";
-		std::cout << "track: " << song.track << "\n";
-		std::cout << "disc: " << song.disc << "\n";
-		std::cout << "song path: " << song.song_path << "\n";
-		std::cout << "cover art id: " << song.cover_art_id << "\n";
-		std::cout << "album id: " << song.album_id << "\n";
-		std::cout << "artist id: " << song.artist_id << "\n";
-		std::cout << "genre id: " << song.genre_id << "\n";
-		std::cout << "year id: " << song.year_id << "\n";
+    void SongManager::printSong(const song& song) {
+		cout << "\nsong" << "\n";
+		cout << "title: " << song.title << "\n";
+		cout << "artist: " << song.artist << "\n";
+		cout << "album artist: " << song.album_artist << "\n";
+		cout << "album: " << song.album << "\n";
+		cout << "genre: " << song.genre << "\n";
+		cout << "duration: " << song.duration << "\n";
+		cout << "year: " << song.year << "\n";
+		cout << "track: " << song.track << "\n";
+		cout << "disc: " << song.disc << "\n";
+		cout << "song path: " << song.song_path << "\n";
+		cout << "cover art id: " << song.cover_art_id << "\n";
+		cout << "album id: " << song.album_id << "\n";
+		cout << "artist id: " << song.artist_id << "\n";
+		cout << "genre id: " << song.genre_id << "\n";
+		cout << "year id: " << song.year_id << "\n";
     }
 
 
-    std::map<type::SongChanged, bool> SongManager::changesInSong(
-		    const icarus_lib::song& updatedSong, const icarus_lib::song& currSong) {
-		    std::map<type::SongChanged, bool> songChanges;
+    map<SongChanged, bool> SongManager::changesInSong(const song& updatedSong, 
+                                                      const song& currSong)
+    {
+	    map<SongChanged, bool> songChanges;
 
-		std::string_view updatedTitle = updatedSong.title;
-		std::string_view updatedArtist = updatedSong.artist;
-		std::string_view updatedAlbum = updatedSong.album;
-		std::string_view updatedGenre = updatedSong.genre;
+		string_view updatedTitle = updatedSong.title;
+		string_view updatedArtist = updatedSong.artist;
+		string_view updatedAlbum = updatedSong.album;
+		string_view updatedGenre = updatedSong.genre;
 
-		songChanges[type::SongChanged::title] = 
+		songChanges[SongChanged::title] = 
 				(currSong.title.compare(updatedTitle) != 0 && 
 				 updatedTitle.size() > 0) ? true : false;
 
-		songChanges[type::SongChanged::artist] = 
+		songChanges[SongChanged::artist] = 
 				(currSong.artist.compare(updatedArtist) != 0 && 
 				 updatedArtist.size() > 0) ? true : false;
 
-		songChanges[type::SongChanged::album] = 
+		songChanges[SongChanged::album] = 
 				(currSong.album.compare(updatedAlbum) != 0 && 
 				 updatedAlbum.size() > 0) ? true : false;
 
-		songChanges[type::SongChanged::genre] = 
+		songChanges[SongChanged::genre] = 
 				(currSong.genre.compare(updatedGenre) != 0 && 
 				 updatedGenre.size() > 0) ? true : false;
 
-		songChanges[type::SongChanged::year] =
+		songChanges[SongChanged::year] =
 				(updatedSong.year != 0) ? true : false;
 
 		return songChanges;
 }
 
 
-    std::string SongManager::createSongPath(const icarus_lib::song& song) {
-		auto song_path = DirectoryManager::createDirectoryProcess(
+    string SongManager::createSongPath(const song& song) {
+		auto song_path = directory_manager::createDirectoryProcess(
 				song, m_bConf, type::PathType::music);
 
 		if (song.track != 0) {
 		    song_path.append("track");
 		    auto trackNum = (song.track > 9) ?
-				    std::to_string(song.track) : "0" + std::to_string(song.track);
+				    to_string(song.track) : "0" + to_string(song.track);
 		    song_path.append(trackNum);
 		} else {
 		    song_path.append(song.title);
@@ -214,36 +228,36 @@ namespace manager {
 
 
     // used to prevent empty values to appear in the updated song
-    void SongManager::assignMiscFields(
-		    std::map<type::SongChanged, bool>& songChanges, icarus_lib::song& updatedSong,
-		    const icarus_lib::song& currSong) {
-		std::cout << "assigning miscellanes fields to updated song\n";
+    void SongManager::assignMiscFields(map<SongChanged, bool>& songChanges, song& updatedSong,
+		                               const song& currSong)
+    {
+		cout << "assigning miscellanes fields to updated song\n";
 		updatedSong.track = currSong.track;
 		for (auto scIter = songChanges.begin(); scIter != songChanges.end(); ++scIter) {
-		    type::SongChanged key = scIter->first;
+		    SongChanged key = scIter->first;
 		    bool changed = songChanges.at(key);
 
 		    if (!changed) {
                 switch (key) {
-		            case type::SongChanged::title:
+		            case SongChanged::title:
 		                updatedSong.title = currSong.title;
-		                std::cout << "title has not been changed\n";
+		                cout << "title has not been changed\n";
 		                break;
-                    case type::SongChanged::artist:
+                    case SongChanged::artist:
                         updatedSong.artist = currSong.artist;
-                        std::cout << "artist has not been changed\n";
+                        cout << "artist has not been changed\n";
                         break;
-                    case type::SongChanged::album:
+                    case SongChanged::album:
                         updatedSong.album = currSong.album;
-                        std::cout << "album has not been changed\n";
+                        cout << "album has not been changed\n";
                         break;
-                    case type::SongChanged::genre:
+                    case SongChanged::genre:
                         updatedSong.genre = currSong.genre;
-                        std::cout << "genre has not been changed\n";
+                        cout << "genre has not been changed\n";
                         break;
-                    case::type::SongChanged::year:
+                    case::SongChanged::year:
                         updatedSong.year = currSong.year;
-                        std::cout << "year has not been changed\n";
+                        cout << "year has not been changed\n";
                     default:
                         break;
                 }
@@ -252,9 +266,9 @@ namespace manager {
     }
 
     // used to dump miscellaneous id to the updated song
-    void SongManager::assignMiscId(icarus_lib::song& updatedSong,
-            const icarus_lib::song& currSong) {
-        std::cout << "assigning miscellaneous Id's to updated song\n";
+    void SongManager::assignMiscId(song& updatedSong,
+            const song& currSong) {
+        cout << "assigning miscellaneous Id's to updated song\n";
         updatedSong.artist_id = currSong.artist_id;
         updatedSong.album_id = currSong.album_id;
         updatedSong.genre_id = currSong.genre_id;
@@ -263,63 +277,63 @@ namespace manager {
     }
 
     // saves song to a temporary path
-    void SongManager::saveSongTemp(icarus_lib::song& song) {
-        auto config = DirectoryManager::pathConfigContent(m_bConf);
+    void SongManager::saveSongTemp(song& song) {
+        auto config = directory_manager::pathConfigContent(m_bConf);
 
-        auto tmpSongPath = config["temp_root_path"].get<std::string>();
+        auto tmpSongPath = config["temp_root_path"].get<string>();
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<std::mt19937::result_type> dist(1,1000);
 
-        tmpSongPath.append(std::to_string(dist(rng)));
+        tmpSongPath.append(to_string(dist(rng)));
         tmpSongPath.append(".mp3");
 
-        std::fstream s(tmpSongPath, std::fstream::binary | std::fstream::out);
+        fstream s(tmpSongPath, fstream::binary | fstream::out);
         s.write((char*)&song.data[0], song.data.size());
         s.close();
 
         song.song_path = tmpSongPath;
     }
 
-    void SongManager::saveMisc(icarus_lib::song& song) {
-        CoverArtManager covMgr(m_bConf);
-        auto pathConfigContent = DirectoryManager::pathConfigContent(m_bConf);
-        auto musicRootPath = pathConfigContent["root_music_path"].get<std::string>();
+    void SongManager::saveMisc(song& song) {
+        cover_art_manager covMgr(m_bConf);
+        auto pathConfigContent = directory_manager::pathConfigContent(m_bConf);
+        auto musicRootPath = pathConfigContent["root_music_path"].get<string>();
 
         auto cov = covMgr.saveCover(song);
         const auto song_path = createSongPath(song);
 
         if (fs::exists(song_path)) {
-            std::cout << "deleting old song with the same metadata\n";
+            cout << "deleting old song with the same metadata\n";
             fs::remove(song_path);
         }
-        std::cout << "copying song to the appropriate directory\n";
-        std::cout << song.song_path << "\n";
-        std::cout << song_path << "\n";
+        cout << "copying song to the appropriate directory\n";
+        cout << song.song_path << "\n";
+        cout << song_path << "\n";
         fs::copy(song.song_path, song_path);
         fs::remove(song.song_path);
         song.song_path = std::move(song_path);
-        std::cout << "copied song to the appropriate directory\n";
+        cout << "copied song to the appropriate directory\n";
 
-        AlbumManager albMgr(m_bConf);
+        album_manager albMgr(m_bConf);
         auto album = albMgr.saveAlbum(song);
         album = albMgr.retrieveAlbum(album);
-        AlbumManager::printAlbum(album);
+        album_manager::printAlbum(album);
 
-        ArtistManager artMgr(m_bConf);
+        artist_manager artMgr(m_bConf);
         auto artist = artMgr.saveArtist(song);
         artist = artMgr.retrieveArtist(artist);
-        ArtistManager::printArtist(artist);
+        artist_manager::printArtist(artist);
 
-        GenreManager gnrMgr(m_bConf);
+        genre_manager gnrMgr(m_bConf);
         auto genre = gnrMgr.saveGenre(song);
         genre = gnrMgr.retrieveGenre(genre);
-        GenreManager::printGenre(genre);
+        genre_manager::printGenre(genre);
 
-        YearManager yrMgr(m_bConf);
+        year_manager yrMgr(m_bConf);
         auto year = yrMgr.saveYear(song);
         year = yrMgr.retrieveYear(year);
-        YearManager::printYear(year);
+        year_manager::printYear(year);
 
         song.cover_art_id = cov.id;
         song.album_id = album.id;
@@ -327,70 +341,70 @@ namespace manager {
         song.genre_id = genre.id;
         song.year_id = year.id;
 
-        std::cout << "done with miscellaneous database records\n";
+        cout << "done with miscellaneous database records\n";
     }
 
-    void SongManager::deleteMisc(const icarus_lib::song& song) {
-        CoverArtManager covMgr(m_bConf);
+    void SongManager::deleteMisc(const song& song) {
+        cover_art_manager covMgr(m_bConf);
         covMgr.deleteCover(song);
 
-        AlbumManager albMgr(m_bConf);
+        album_manager albMgr(m_bConf);
         albMgr.deleteAlbum(song);
 
-        ArtistManager artMgr(m_bConf);
+        artist_manager artMgr(m_bConf);
         artMgr.deleteArtist(song);
 
-        GenreManager gnrMgr(m_bConf);
+        genre_manager gnrMgr(m_bConf);
         gnrMgr.deleteGenre(song);
 
-        YearManager yrMgr(m_bConf);
+        year_manager yrMgr(m_bConf);
         yrMgr.deleteYear(song);
     }
 
     // deletes miscellanes records
-    void SongManager::deleteMiscExceptCoverArt(const icarus_lib::song& song) {
-        AlbumManager albMgr(m_bConf);
+    void SongManager::deleteMiscExceptCoverArt(const song& song) {
+        album_manager albMgr(m_bConf);
         albMgr.deleteAlbum(song);
 
-        ArtistManager artMgr(m_bConf);
+        artist_manager artMgr(m_bConf);
         artMgr.deleteArtist(song);
 
-        GenreManager gnrMgr(m_bConf);
+        genre_manager gnrMgr(m_bConf);
         gnrMgr.deleteGenre(song);
 
-        YearManager yrMgr(m_bConf);
+        year_manager yrMgr(m_bConf);
         yrMgr.deleteYear(song);
     }
 
-    void SongManager::updateMisc(
-            const std::map<type::SongChanged, bool>& songChanges,
-            icarus_lib::song& updatedSong, const icarus_lib::song& currSong) {
-        auto titleChange = songChanges.at(type::SongChanged::title);
-        auto artistChange = songChanges.at(type::SongChanged::artist);
-        auto albumChange = songChanges.at(type::SongChanged::album);
-        auto genreChange = songChanges.at(type::SongChanged::genre);
-        auto yearChange = songChanges.at(type::SongChanged::year);
+    void SongManager::updateMisc(const map<SongChanged, bool>& songChanges, song& updatedSong, 
+                                 const song& currSong)
+{
+        auto titleChange = songChanges.at(SongChanged::title);
+        auto artistChange = songChanges.at(SongChanged::artist);
+        auto albumChange = songChanges.at(SongChanged::album);
+        auto genreChange = songChanges.at(SongChanged::genre);
+        auto yearChange = songChanges.at(SongChanged::year);
 
         if (artistChange) {
-            ArtistManager artMgr(m_bConf);
+            artist_manager artMgr(m_bConf);
             artMgr.updateArtist(updatedSong, currSong);
         }
         if (albumChange) {
-            AlbumManager albMgr(m_bConf);
+            album_manager albMgr(m_bConf);
             albMgr.updateAlbum(updatedSong, currSong);
         }
         if (genreChange) {
-            GenreManager gnrMgr(m_bConf);
+            genre_manager gnrMgr(m_bConf);
             gnrMgr.updateGenre(updatedSong, currSong);
         }
         if (yearChange) {
-            YearManager yrMgr(m_bConf);
+            year_manager yrMgr(m_bConf);
             yrMgr.updateYear(updatedSong, currSong);
         }
 
         // determins to update the cover art record
         if (titleChange || artistChange || albumChange) {
-            CoverArtManager covMgr(m_bConf);
+            cover_art_manager covMgr(m_bConf);
             covMgr.updateCoverRecord(updatedSong);
         }
 
@@ -400,24 +414,24 @@ namespace manager {
         deleteMiscExceptCoverArt(currSong);
     }
 
-    void SongManager::modifySongOnFilesystem(icarus_lib::song& updatedSong, 
-            const icarus_lib::song& currSong) {
-        std::cout << "preparing to modify song\n";
+    void SongManager::modifySongOnFilesystem(song& updatedSong, 
+            const song& currSong) {
+        cout << "preparing to modify song\n";
         auto song_path = createSongPath(updatedSong);
         updatedSong.song_path = std::move(song_path);
 
-        std::cout << "new path " << updatedSong.song_path << "\n";
+        cout << "new path " << updatedSong.song_path << "\n";
 
         fs::copy(currSong.song_path, updatedSong.song_path);
         fs::remove(currSong.song_path);
 
-        auto paths = DirectoryManager::pathConfigContent(m_bConf);
+        auto paths = directory_manager::pathConfigContent(m_bConf);
         const auto musicRootPath = 
-            paths[DirectoryManager::retrievePathType(
-                type::PathType::music)].get<std::string>();
-        DirectoryManager::deleteDirectories(currSong, musicRootPath);
+            paths[directory_manager::retrievePathType(
+                type::PathType::music)].get<string>();
+        directory_manager::deleteDirectories(currSong, musicRootPath);
 
-        CoverArtManager covMgr(m_bConf);
+        cover_art_manager covMgr(m_bConf);
         covMgr.updateCover(updatedSong, currSong);
     }
 }

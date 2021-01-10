@@ -4,6 +4,7 @@
 
 #include "database/AlbumRepository.h"
 #include "database/ArtistRepository.h"
+#include "database/BaseRepository.h"
 #include "database/CoverArtRepository.h"
 #include "database/GenreRepository.h"
 #include "database/SongRepository.h"
@@ -17,6 +18,7 @@ namespace database
 
     using album_repo = AlbumRepository;
     using artist_repo = ArtistRepository;
+    using base_repo = BaseRepository;
     using cover_art_repository = CoverArtRepository;
     using genre_repository = GenreRepository;
     using song_repo = SongRepository;

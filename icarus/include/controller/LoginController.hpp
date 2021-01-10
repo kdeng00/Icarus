@@ -11,9 +11,9 @@
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/Manager.h"
-#include "manager/UserManager.hpp"
 
-using icarus_lib::binary_path;
+
+using manager::user_manager;
 
 namespace controller
 {
@@ -33,7 +33,7 @@ namespace controller
         {
             OATPP_LOGI("icarus", "logging in");
 
-            manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
+            user_manager usrMgr(m_bConf);
             auto user = dto::conversion::DtoConversions::toUser(usr);
 
             if (!usrMgr.doesUserExist(user) || !usrMgr.validatePassword(user)) {
@@ -51,7 +51,6 @@ namespace controller
 
             manager::token_manager tok;
             auto token = tok.create_token(m_bConf, user);
-            // auto token = tok.retrieveToken(m_bConf);
 
             auto logRes = dto::conversion::DtoConversions::toLoginResultDto(user, token);
             logRes->message = "Successful";

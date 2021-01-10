@@ -17,10 +17,9 @@
 
 #include "callback/StreamCallback.h"
 #include "controller/BaseController.hpp"
-#include "database/SongRepository.h"
+#include "database/Repositories.h"
 #include "dto/SongDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/SongManager.h"
 #include "manager/Manager.h"
 #include "type/Scopes.h"
 #include "type/SongFilter.h"
@@ -28,6 +27,13 @@
 
 
 using namespace dto;
+using namespace manager;
+
+using oatpp::web::server::handler::DefaultBearerAuthorizationObject;
+using oatpp::web::protocol::http::outgoing::Response;
+using oatpp::web::mime::multipart::PartList;
+
+using database::song_repo;
 
 
 namespace controller
@@ -45,26 +51,37 @@ namespace controller
 
         // endpoint for uploading a song
         ENDPOINT("POST", "/api/v1/song/data", songUpload, 
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request))
         {
+            /**
             auto authHeader = request->getHeader("Authorization");
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Empty Authorization key");
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                               type::Scope::upload), 
                               Status::CODE_403, "Not allowed");
+            */
 
-            auto mp = 
-                std::make_shared<oatpp::web::mime::multipart::PartList>
-                (request->getHeaders());
+            icarus_lib::token tokn;
+            tokn.access_token = auth_object->token->std_str();
+            token_manager tok(m_bConf);
+
+            auto scope = type::Scope::upload;
+            auto res = tok.is_token_valid(tokn, scope);
+            
+            OATPP_ASSERT_HTTP(res.first, Status::CODE_403, res.second.c_str());
+
+            auto mp = std::make_shared<PartList>(request->getHeaders());
 
             oatpp::web::mime::multipart::Reader mp_reader = mp.get();
 
-            mp_reader.setDefaultPartReader(
-                    oatpp::web::mime::multipart::createInMemoryPartReader(30 * 1024 * 1024));
+            constexpr auto reader_size = 30 * 1024 * 1024;
 
+            auto create_mem = oatpp::web::mime::multipart::createInMemoryPartReader;
+            mp_reader.setDefaultPartReader(create_mem(reader_size));
 
             request->transferBody(&mp_reader);
 
@@ -80,7 +97,7 @@ namespace controller
             icarus_lib::song sng;
             sng.data = std::move(data);
         
-            manager::SongManager songMgr(m_bConf);
+            song_manager songMgr(m_bConf);
             const auto result =  songMgr.saveSong(sng);
 
             if (!result.first) {
@@ -99,18 +116,19 @@ namespace controller
 
         // endpoint for retrieving all song records in json format
         ENDPOINT("GET", "/api/v1/song", songRecords, 
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request))
         {
             auto authHeader = request->getHeader("Authorization");
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, no_auth_header_key());
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::retrieveSong), 
                               Status::CODE_403, "Not allowed");
 
             std::cout << "starting process of retrieving songs\n";
-            database::SongRepository songRepo(m_bConf);
+            song_repo songRepo(m_bConf);
             auto songsDb = songRepo.retrieveRecords();
             auto songs = oatpp::Vector<oatpp::Object<dto::SongDto>>::createShared();
 
@@ -128,19 +146,19 @@ namespace controller
 
         // endpoint for retrieving song record by the song id in json format
         ENDPOINT("GET", "/api/v1/song/{id}", songRecord,
-                 AUTHORIZATION(std::shared_ptr<oatpp::web::server::handler::DefaultBearerAuthorizationObject>, auth_object),
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id))
         {
             icarus_lib::token tokn;
             tokn.access_token = auth_object->token->std_str();
-            manager::token_manager tok(m_bConf);
+            token_manager tok(m_bConf);
 
             auto scope = type::Scope::retrieveSong;
             auto res = tok.is_token_valid(tokn, scope);
             
             OATPP_ASSERT_HTTP(res.first, Status::CODE_403, res.second.c_str());
 
-            database::SongRepository songRepo(m_bConf);
+            song_repo songRepo(m_bConf);
             icarus_lib::song songDb(id);
 
             if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
@@ -156,18 +174,19 @@ namespace controller
         }
 
         ENDPOINT("GET", "/api/v1/song/data/{id}", downloadSong, 
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id))
         {
             auto authHeader = request->getHeader("Authorization");
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::download), 
                               Status::CODE_403, "Not allowed");
 
 
-            database::SongRepository songRepo(m_bConf);
+            song_repo songRepo(m_bConf);
             icarus_lib::song songDb(id);
 
             if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
@@ -185,6 +204,7 @@ namespace controller
         }
 
         ENDPOINT("UPDATE", "/api/v1/song/{id}", songUpdate,
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request),
                  BODY_DTO(oatpp::Object<SongDto>, songDto), PATH(Int32, id))
         {
@@ -193,12 +213,12 @@ namespace controller
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, 
                     type::Scope::updateSong), Status::CODE_403, "Not allowed");
             
             auto updatedSong = dto::conversion::DtoConversions::toSong(songDto);
-            manager::SongManager songMgr(m_bConf);
+            song_manager songMgr(m_bConf);
             auto result = songMgr.updateSong(updatedSong);
 
             if (!result) {
@@ -210,19 +230,20 @@ namespace controller
 
         // endpoint to delete a song
         ENDPOINT("DELETE", "api/v1/song/data/{id}", songDelete, 
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request),   PATH(Int32, id))
         {
             auto authHeader = request->getHeader("Authorization");
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::deleteSong), 
                               Status::CODE_403, "Not allowed");
 
             icarus_lib::song song(id);
 
-            manager::SongManager sngMgr(m_bConf);
+            song_manager sngMgr(m_bConf);
             auto result = sngMgr.deleteSong(song);
 
             if (!result) {
@@ -234,17 +255,29 @@ namespace controller
 
         // endpoint for streaming a song
         ENDPOINT("GET", "/api/v1/song/stream/{id}", streamSong,
+                 AUTHORIZATION(std::shared_ptr<DefaultBearerAuthorizationObject>, auth_object),
                  REQUEST(std::shared_ptr<IncomingRequest>, request), PATH(Int32, id))
         {
+            /**
             auto authHeader = request->getHeader("Authorization");
             OATPP_ASSERT_HTTP(authHeader, Status::CODE_403, "Nope");
 
             auto auth = authHeader->std_str();
-            manager::token_manager tok;
+            token_manager tok;
             OATPP_ASSERT_HTTP(tok.isTokenValid(auth, type::Scope::stream), 
                               Status::CODE_403, "Not allowed");
+            */
 
-            database::SongRepository songRepo(m_bConf);
+            icarus_lib::token tokn;
+            tokn.access_token = auth_object->token->std_str();
+            token_manager tok(m_bConf);
+
+            auto scope = type::Scope::stream;
+            auto res = tok.is_token_valid(tokn, scope);
+            
+            OATPP_ASSERT_HTTP(res.first, Status::CODE_403, res.second.c_str());
+
+            song_repo songRepo(m_bConf);
             icarus_lib::song songDb(id);
 
             if (!songRepo.doesSongExist(songDb, type::SongFilter::id)) {
@@ -269,8 +302,7 @@ namespace controller
 
         #include OATPP_CODEGEN_END(ApiController)
     private:
-        std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> 
-            songDoesNotExist()
+        std::shared_ptr<Response> songDoesNotExist()
         {
             return createResponse(Status::CODE_404, "Song not found");
         }

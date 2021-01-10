@@ -10,9 +10,10 @@
 #include "controller/BaseController.hpp"
 #include "dto/LoginResultDto.hpp"
 #include "dto/conversion/DtoConversions.h"
-#include "manager/UserManager.hpp"
+#include "manager/Manager.h"
 
 using namespace dto;
+using namespace manager;
 
 namespace controller
 {
@@ -30,7 +31,7 @@ namespace controller
         ENDPOINT("POST", "api/v1/register", registerUser, 
                  BODY_DTO(oatpp::Object<UserDto>, usr))
         {
-            manager::UserManager<icarus_lib::user> usrMgr(m_bConf);
+            manager::user_manager usrMgr(m_bConf);
             auto user = conversion::DtoConversions::toUser(usr);
 
             OATPP_LOGI("icarus", "Dto converted");

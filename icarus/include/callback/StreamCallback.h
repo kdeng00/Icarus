@@ -6,7 +6,6 @@
 #include "oatpp/core/data/stream/FileStream.hpp"
 #include "oatpp/core/data/stream/Stream.hpp"
 #include "oatpp/core/async/Coroutine.hpp"
-//#include "oatpp/web/protocol/http/outgoing/ChunkedBody.hpp"
 
 namespace callback {
     class StreamCallback : public oatpp::data::stream::ReadCallback {

@@ -8,33 +8,44 @@
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 
+using oatpp::network::ConnectionHandler;
+using oatpp::network::tcp::server::ConnectionProvider;
+using oatpp::network::ServerConnectionProvider;
+using oatpp::web::server::HttpRouter;
+using oatpp::web::server::HttpConnectionHandler;
+using oatpp::data::mapping::ObjectMapper;
+
 namespace component {
     class AppComponent {
     public:
-        OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, 
-                               serverConnectionProvider)([&]
-        {
-            return oatpp::network::tcp::server::ConnectionProvider::createShared({"127.0.0.1", appPort<v_uint16>(), oatpp::network::Address::IP_4});
-        }());
+        
+        OATPP_CREATE_COMPONENT(std::shared_ptr<ServerConnectionProvider>, serverConnectionProvider)
+            ([&]
+            {
+                return ConnectionProvider::createShared({"127.0.0.1", 
+                                                         appPort<v_uint16>(), 
+                                                         oatpp::network::Address::IP_4});
+            }());
 
-        OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, httpRouter)([]
-        {
-            return oatpp::web::server::HttpRouter::createShared();
-        }());
+        OATPP_CREATE_COMPONENT(std::shared_ptr<HttpRouter>, httpRouter)
+            ([]
+            {
+                return HttpRouter::createShared();
+            }());
 
-       OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>, 
-                serverConnectionHandler)([]
-       {
-            OATPP_COMPONENT(std::shared_ptr<oatpp::web::server::HttpRouter>, router);
+        OATPP_CREATE_COMPONENT(std::shared_ptr<ConnectionHandler>, serverConnectionHandler)
+            ([]
+            {
+                OATPP_COMPONENT(std::shared_ptr<HttpRouter>, router);
 
-            return oatpp::web::server::HttpConnectionHandler::createShared(router);
-        }());
+                return HttpConnectionHandler::createShared(router);
+            }());
 
-        OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::data::mapping::ObjectMapper>, 
-                apiObjectMapper)([] 
-        {
-            return oatpp::parser::json::mapping::ObjectMapper::createShared();
-        }());
+        OATPP_CREATE_COMPONENT(std::shared_ptr<ObjectMapper>, apiObjectMapper)
+            ([] 
+            {
+                return oatpp::parser::json::mapping::ObjectMapper::createShared();
+            }());
     private:
         template<typename Val>
         constexpr Val appPort() noexcept
