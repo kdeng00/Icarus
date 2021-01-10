@@ -3,27 +3,22 @@
 
 #include <filesystem>
 #include <iostream>
-#include <fstream>
 #include <limits>
-#include <string>
-#include <memory>
-#include <vector>
 
-#include "icarus_lib/icarus.h"
-#include "oatpp/core/data/stream/ChunkedBuffer.hpp"
-#include "oatpp/core/data/stream/FileStream.hpp"
-#include "oatpp/core/macro/codegen.hpp"
-#include "oatpp/core/macro/component.hpp"
-#include "oatpp/web/mime/multipart/InMemoryPartReader.hpp"
-#include "oatpp/web/mime/multipart/Reader.hpp"
-#include "oatpp/web/server/api/ApiController.hpp"
+#include <icarus_lib/icarus.h>
+#include <oatpp/core/data/stream/ChunkedBuffer.hpp>
+#include <oatpp/core/data/stream/FileStream.hpp>
+#include <oatpp/core/macro/codegen.hpp>
+#include <oatpp/core/macro/component.hpp>
+#include <oatpp/web/mime/multipart/InMemoryPartReader.hpp>
+#include <oatpp/web/mime/multipart/Reader.hpp>
+#include <oatpp/web/server/api/ApiController.hpp>
 
 #include "controller/BaseController.hpp"
 #include "database/ArtistRepository.h"
 #include "dto/ArtistDto.hpp"
 #include "dto/conversion/DtoConversions.h"
 #include "manager/ArtistManager.h"
-// #include "manager/TokenManager.hpp"
 #include "manager/Manager.h"
 #include "type/Scopes.h"
 #include "type/ArtistFilter.h"

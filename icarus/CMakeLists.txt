@@ -83,6 +83,7 @@ set (BCRYPTLIB
 
 include_directories(${ICARUS_INCLUDE_DIR} ${BCRYPTLIB} ${CMAKE_CURRENT_LIST_DIR}/3rdparty/vcpkg/installed/${VCPKG_TRIPLET}/include/mysql)
 include_directories(${CMAKE_BINARY_DIR}/icarus/3rdparty/soci/include)
+include_directories(${CMAKE_SOURCE_DIR}/icarus_lib/include)
 
 
 add_library(bcrypt STATIC IMPORTED)

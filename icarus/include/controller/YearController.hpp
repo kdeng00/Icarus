@@ -2,26 +2,14 @@
 #define YEARCONTROLLER_H_
 
 #include <iostream>
-#include <fstream>
 #include <limits>
-#include <string>
-#include <memory>
-#include <vector>
 
-#include "icarus_lib/icarus.h"
-#include "oatpp/core/data/stream/ChunkedBuffer.hpp"
-#include "oatpp/core/data/stream/FileStream.hpp"
-#include "oatpp/core/macro/codegen.hpp"
-#include "oatpp/core/macro/component.hpp"
-#include "oatpp/web/mime/multipart/InMemoryPartReader.hpp"
-#include "oatpp/web/mime/multipart/Reader.hpp"
-#include "oatpp/web/server/api/ApiController.hpp"
+#include <icarus_lib/icarus.h>
 
 #include "controller/BaseController.hpp"
 #include "database/YearRepository.h"
 #include "dto/conversion/DtoConversions.h"
 #include "dto/YearDto.hpp"
-// #include "manager/TokenManager.hpp"
 #include "manager/Manager.h"
 #include "manager/YearManager.h"
 #include "type/Scopes.h"

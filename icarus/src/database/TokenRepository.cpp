@@ -183,7 +183,6 @@ namespace database
         qry << "SELECT * FROM " << this->table_name << " WHERE ";
 
 
-        // soci::rowset<soci::row> some_rows;
         auto d = std::shared_ptr<soci::rowset<soci::row>>(nullptr);
 
         switch(filter)

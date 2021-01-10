@@ -2,13 +2,10 @@
 #define REGISTERCONTROLLER_H_
 
 #include <iostream>
-#include <memory>
 
-#include "icarus_lib/icarus.h"
-#include "oatpp/core/macro/codegen.hpp"
-#include "oatpp/core/macro/component.hpp"
-#include "oatpp/core/Types.hpp"
-#include "oatpp/web/server/api/ApiController.hpp"
+#include <icarus_lib/icarus.h>
+#include <oatpp/core/Types.hpp>
+#include <oatpp/web/server/api/ApiController.hpp>
 
 #include "controller/BaseController.hpp"
 #include "dto/LoginResultDto.hpp"

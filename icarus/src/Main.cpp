@@ -1,9 +1,7 @@
 #include <iostream>
-#include <exception>
 #include <memory>
-#include <string>
 
-#include "icarus_lib/icarus.h"
+#include <icarus_lib/icarus.h>
 #include <mysql/mysql.h>
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
 #include <oatpp/network/Server.hpp>
@@ -11,8 +9,11 @@
 
 
 #include "component/AppComponent.hpp"
-#include "controller/Controllers.hpp"
+#include "controller/Controllers.h"
 #include "verify/Initialization.hpp"
+
+using std::cout;
+using std::shared_ptr;
 
 
 template<typename config>
@@ -42,7 +43,7 @@ void run(const config &b_conf)
     sngController->addEndpointsToRouter(router);
     yearController->addEndpointsToRouter(router);
 
-    OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider);
+    OATPP_COMPONENT(shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider);
 
     oatpp::network::Server server(connectionProvider, connectionHandler);
 
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::cout << "skiping verifyication\n";
+            cout << "skiping verifyication\n";
         }
     } 
     else

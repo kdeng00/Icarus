@@ -3,12 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include <memory>
 
 #include <icarus_lib/icarus.h>
-#include <oatpp/core/macro/codegen.hpp>
-#include <oatpp/core/macro/component.hpp>
-#include <oatpp/web/server/api/ApiController.hpp>
 
 #include "controller/BaseController.hpp"
 #include "dto/conversion/DtoConversions.h"
@@ -16,6 +12,8 @@
 #include "dto/conversion/DtoConversions.h"
 #include "manager/Manager.h"
 #include "manager/UserManager.hpp"
+
+using icarus_lib::binary_path;
 
 namespace controller
 {
