@@ -38,6 +38,10 @@ using database::song_repo;
 
 namespace controller
 {
+    /// Song controller class
+    /** 
+     * Contains HTTP endpoints that interact with songs
+     */
     class SongController : public BaseController
     {
     public:

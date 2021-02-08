@@ -27,10 +27,12 @@ One can interface with Icarus the music server either by:
 * [oatpp](https://github.com/oatpp/oatpp)
 * [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
 * [libbcrypt](https://github.com/rg3/libbcrypt)
+* doxygen
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 
 ## Getting started
+
 There are several things that need to be completed to properly setup and secure the API.
 1. Create public and private keys
 2. API filesystem paths
@@ -39,6 +41,7 @@ There are several things that need to be completed to properly setup and secure 
 
 
 ### Creating public and private keys
+
 Make sure you have openssl installed and have it either in your path environment variable or execute the software via a path. Have somewhere that you would like to store the public and private keys on the filesystem. Once you have that in mind let's just call that the ``root_path`` ``/home/soko/icarus/keys/``. The ``private`` and ``public`` keys will be stored in that directory with the following names respectively ``icarus_private-key.pem`` and ``icarus_public-key.pem``. You must be comfortable enough with the command line to run a few commands.
 1. Change directory to the ``root_path``
 ```Bash
@@ -64,6 +67,7 @@ That's it.
 ### API filesystem paths
 
 For the purposes of properly uploading, downloading, updating, deleting, and streaming songs the API filesystem paths must be configured. For that purpose you have to open the ``paths.json`` file. What is meant by this is that the `root_music_path` directory where all music will be stored must exist. The `cover_root_path`, `archive_root_path`, and `temp_root_path` paths must exist and be accessible. An example on a Linux system:
+
 ```Json
 {
   "root_music_path": "/dev/null/music/",
@@ -72,6 +76,7 @@ For the purposes of properly uploading, downloading, updating, deleting, and str
   "archive_root_path": "/dev/null/music/archive/"
 }
 ```
+
 * `root_music_path` - Where music will be stored in the following convention: *`Artist/Album/Songs`*
 * `temp_music_path` - Where music will be stored when uploding songs to the server until the metadata has been fully parsed and entered into the database. Upon completion the files will be deleted and moved to the appropriate path in the `root_music_path`
 * `cover_root_path` - Where cover art of music will be saved to.
@@ -83,6 +88,7 @@ For the purposes of properly uploading, downloading, updating, deleting, and str
 ### Database connection string
 
 In order for Database functionality to be operable, there must be a valid connection string and MySQL credentials with appropriate permissions. **At the moment there is only support for MySQL**. Edit the database.json file accordingly. An example of the fields to change are below:
+
 ```Json
 {
 
@@ -93,6 +99,7 @@ In order for Database functionality to be operable, there must be a valid connec
  
 }
 ```
+
 * server - The address or domain name of the MySQL server
 * database - The database name
 * username - Username
@@ -113,7 +120,7 @@ Prior to starting the API, the database must be created. The following tables ar
 * CoverArt
 
 There is a MySQL script to create these tables, it can be found in the [Scripts/MySQL/](https://github.com/amazing-username/Icarus/blob/master/Scripts/MySQL/create_database.sql) directory. Just merely execute:
-```shell
+```BASH
 mysql -u dblikedecibel -p < Scripts/MySQL/create_database.sql
 ```
 
@@ -121,7 +128,8 @@ From this point the database has been successfully created. Metadata and song fi
 
 
 ## Building and Running
-```
+
+```BASH
 git clone --recursive https://github.com/kdeng00/icarus
 
 cd icarus/3rdparty/vcpkg
@@ -136,6 +144,17 @@ cmake --build build -j
 build/bin/icarus
 ```
 Runs the server on localhost port 5002
+
+### Documentation
+
+Icarus uses doxygen to generate documenation. Doxygen should already be installed on your
+system and set in your PATH environment environment variable. Change into the directory
+``icarus``, also where the doxygen configuration file can be found. Then execute the
+following command:
+
+```Bash
+doxygen icarus.dox
+```
 
 ## Contributing
 
