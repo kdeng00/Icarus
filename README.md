@@ -28,6 +28,7 @@ One can interface with Icarus the music server either by:
 * [jwt-cpp](https://github.com/Thalhammer/jwt-cpp)
 * [libbcrypt](https://github.com/rg3/libbcrypt)
 * doxygen
+* catch2
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
 
@@ -134,7 +135,7 @@ git clone --recursive https://github.com/kdeng00/icarus
 
 cd icarus/3rdparty/vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install nlohmann-json curl openssl cpr taglib jwt-cpp libmariadb oatpp
+./vcpkg install nlohmann-json curl openssl cpr taglib jwt-cpp libmariadb oatpp catch2
 
 cd ../../..
 make -C icarus/3rdparty/libbcrypt
