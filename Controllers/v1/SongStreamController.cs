@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -22,6 +23,7 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private ILogger<SongStreamController> _logger;
+        private IConfiguration _config;
         #endregion
 
 
@@ -30,9 +32,10 @@ namespace Icarus.Controllers.V1
 
 
         #region Constructor
-        public SongStreamController(ILogger<SongStreamController> logger)
+        public SongStreamController(ILogger<SongStreamController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
         }
         #endregion
 
@@ -42,10 +45,9 @@ namespace Icarus.Controllers.V1
         [Authorize("stream:songs")]
         public async Task<IActionResult> Get(int id)
         {
-            var songStore= HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
+            var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
-            var song = songStore.GetSong(new Song { Id = id });
+            var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
 
             var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read);
             stream.Position = 0;

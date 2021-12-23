@@ -1,0 +1,95 @@
+CREATE DATABASE Icarus;
+
+USE Icarus;
+
+CREATE TABLE CoverArt (
+    CoverArtID INT NOT NULL AUTO_INCREMENT,
+    SongTitle TEXT NOT NULL,
+    ImagePath TEXT NOT NULL,
+
+    PRIMARY KEY (CoverArtID)
+);
+
+CREATE TABLE Album (
+    AlbumID INT NOT NULL AUTO_INCREMENT,
+    Title TEXT NOT NULL,
+    Artist TEXT NOT NULL,
+    Year INT NOT NULL,
+
+    PRIMARY KEY (AlbumID)
+);
+
+CREATE TABLE Artist (
+    ArtistID INT NOT NULL AUTO_INCREMENT,
+    Artist TEXT NOT NULL,
+
+    PRIMARY KEY (ArtistID)
+);
+
+CREATE TABLE Genre (
+    GenreID INT NOT NULL AUTO_INCREMENT,
+    Category TEXT NOT NULL,
+
+    PRIMARY KEY (GenreID)
+);
+
+
+CREATE TABLE Song (
+    SongID INT NOT NULL AUTO_INCREMENT,
+    Title TEXT NOT NULL,
+    Artist TEXT NOT NULL,
+    Album TEXT NOT NULL,
+    Genre TEXT NOT NULL,
+    Year INT NOT NULL,
+    Duration INT NOT NULL,
+    Track INT NOT NULL,
+    Disc INT NOT NULL,
+    SongPath TEXT NOT NULL,
+    CoverArtID INT NOT NULL,
+    ArtistID INT NOT NULL,
+    AlbumID INT NOT NULL,
+    GenreID INT NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (SongID),
+    CONSTRAINT FK_Song_CoverArtID FOREIGN KEY (CoverArtID) REFERENCES CoverArt (CoverArtID),
+    CONSTRAINT FK_Song_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist (ArtistID),
+    CONSTRAINT FK_Song_AlbumID FOREIGN KEY (AlbumID) REFERENCES Album (AlbumID),
+    CONSTRAINT FK_Song_GenreID FOREIGN KEY (GenreID) REFERENCES Genre (GenreID)
+);
+
+CREATE TABLE User (
+    UserID INT NOT NULL AUTO_INCREMENT,
+    Firstname TEXT NOT NULL,
+    Lastname TEXT NOT NULL,
+    Email TEXT NOT NULL,
+    Phone TEXT NOT NULL,
+    Username TEXT NOT NULL,
+    Password TEXT NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Status TEXT DEFAULT 'Active',
+    LastLogin DATETIME NULL,
+
+    PRIMARY KEY (UserID)
+);
+
+CREATE TABLE Salt (
+    SaltID INT NOT NULL AUTO_INCREMENT,
+    Salt TEXT NOT NULL,
+    UserID INT NOT NULL,
+
+    PRIMARY KEY (SaltID),
+    CONSTRAINT FK_Salt_UserID FOREIGN KEY (UserID) REFERENCES User (UserID)
+);
+
+CREATE TABLE Token (
+    TokenID INT NOT NULL AUTO_INCREMENT,
+    AccessToken TEXT NOT NULL,
+    TokenType TEXT NOT NULL,
+    Expires DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Issued DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UserID INT NOT NULL,
+
+    PRIMARY KEY (TokenID),
+    CONSTRAINT FK_Token_UserID FOREIGN KEY (UserID) REFERENCES User (UserID)
+);

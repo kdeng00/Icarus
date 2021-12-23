@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Icarus.Controllers.Managers;
 using Icarus.Models;
 using Icarus.Database.Contexts;
-using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
 {
@@ -23,12 +22,6 @@ namespace Icarus.Controllers.V1
     public class SongDataController : ControllerBase
     {
         #region Fields
-        private SongRepository _songRepository;
-        private AlbumRepository _albumRepository;
-        private ArtistRepository _artistRepository;
-        private GenreRepository _genreRepository;
-        private YearRepository _yearRepository;
-        private CoverArtRepository _coverArtRepository;
         private IConfiguration _config;
         private ILogger<SongDataController> _logger;
         private SongManager _songMgr;
@@ -50,33 +43,6 @@ namespace Icarus.Controllers.V1
         }
         #endregion
 
-        private void Initialize()
-        {
-            _songRepository = HttpContext
-                .RequestServices
-                .GetService
-                (typeof(SongRepository)) as SongRepository;
-
-            _albumRepository = HttpContext
-                .RequestServices
-                .GetService(typeof(AlbumRepository)) as AlbumRepository;
-
-            _artistRepository = HttpContext
-                .RequestServices
-                .GetService(typeof(ArtistRepository)) as ArtistRepository;
-
-            _genreRepository = HttpContext
-                .RequestServices
-                .GetService(typeof(GenreRepository)) as GenreRepository;
-
-            _yearRepository = HttpContext
-                .RequestServices
-                .GetService(typeof(YearRepository)) as YearRepository;
-
-            _coverArtRepository = HttpContext
-                .RequestServices
-                .GetService(typeof(CoverArtRepository)) as CoverArtRepository;
-        }
 
 
         [HttpGet("{id}")]
@@ -84,7 +50,6 @@ namespace Icarus.Controllers.V1
         [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
-            Initialize();
             var songMetaData = _songRepository.GetSong(id); 
             
             SongData song = await _songMgr.RetrieveSong(songMetaData);
@@ -98,8 +63,6 @@ namespace Icarus.Controllers.V1
         {
             try
             {
-                Initialize();
-
                 Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
@@ -127,10 +90,8 @@ namespace Icarus.Controllers.V1
         [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {
-            Initialize();
-
-            var songMetaData = new Song{ Id = id };
-            Console.WriteLine($"Id {songMetaData.Id}");
+            var songMetaData = new Song{ SongID = id };
+            Console.WriteLine($"Id {songMetaData.SongID}");
             songMetaData = _songRepository.GetSong(songMetaData);
 
             if (string.IsNullOrEmpty(songMetaData.Title))

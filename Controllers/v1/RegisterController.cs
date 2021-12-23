@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -41,12 +41,12 @@ namespace Icarus.Controllers.V1
             user.Password = pe.HashPassword(user);
             user.EmailVerified = false;
 
-            UserRepository context = HttpContext.RequestServices
-                .GetService(typeof(UserRepository)) as UserRepository;
+            var context = new UserContext(_config.GetConnectionString("DefaultConnection"));
 
             try
             {
-                context.SaveUser(user);
+                context.Add(user);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace Icarus.Controllers.V1
                 Username = user.Username
             };
 
-            if (context.DoesUserExist(user))
+            if (context.Users.FirstOrDefault(sng => sng.Username.Equals(user.Username)) != null)
             {
                 registerResult.Message = "Successful registration";
                 registerResult.SuccessfullyRegistered = true;

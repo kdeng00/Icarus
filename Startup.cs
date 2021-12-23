@@ -25,7 +25,7 @@ using NLog.Web.AspNetCore;
 using Icarus.Authorization;
 using Icarus.Authorization.Handlers;
 using Icarus.Database.Contexts;
-using Icarus.Database.Repositories;
+// using Icarus.Database.Repositories;
 
 namespace Icarus
 {
@@ -107,6 +107,7 @@ namespace Icarus
 
             var connString = Configuration.GetConnectionString("DefaultConnection");
 
+            /**
             services.Add(new ServiceDescriptor(typeof(SongRepository), 
                 new SongRepository(connString)));  
 
@@ -127,6 +128,7 @@ namespace Icarus
 
             services.Add(new ServiceDescriptor(typeof(UserRepository), 
                 new UserRepository(connString)));
+            */
 
             services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
             services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
