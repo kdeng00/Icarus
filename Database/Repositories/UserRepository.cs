@@ -37,7 +37,7 @@ namespace Icarus.Database.Repositories
                 {
                     conn.Open();
                     string query = "INSERT INTO User(Username, Password, Nickname, Email" +
-                        ", PhoneNumber, Firstname, Lastname, EmailVerified) " +
+                        ", Phone, Firstname, Lastname, EmailVerified) " +
                         "VALUES(@Username, @Password, @Nickname, @Email, @PhoneNumber," +
                         " @Firstname, @Lastname, @EmailVerified)";
 

@@ -44,7 +44,17 @@ namespace Icarus.Controllers.V1
             UserRepository context = HttpContext.RequestServices
                 .GetService(typeof(UserRepository)) as UserRepository;
 
-            context.SaveUser(user);
+            try
+            {
+                context.SaveUser(user);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.Message;
+                var stackTrace = ex.StackTrace;
+
+                Console.WriteLine($"An error occurred: {msg}");
+            }
 
             var registerResult = new RegisterResult
             {
