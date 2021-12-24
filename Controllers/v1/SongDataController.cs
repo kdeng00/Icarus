@@ -61,6 +61,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpPost]
+        [Route("private-scoped")]
         [Authorize("upload:songs")]
         public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
         {

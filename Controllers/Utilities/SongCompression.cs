@@ -52,7 +52,7 @@ namespace Icarus.Controllers.Utilities
 				var archivePath = RetrieveCompressesSongPath(song);
 				Console.WriteLine($"Compressed song saved to: {archivePath}");
 				
-				songData.Data = System.IO.File.ReadAllBytes(archivePath);
+				songData.Data = await System.IO.File.ReadAllBytesAsync(archivePath);
 			}
 			catch(Exception ex)
 			{

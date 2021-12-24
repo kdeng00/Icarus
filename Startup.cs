@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using NLog.Web.AspNetCore;
@@ -22,7 +24,6 @@ using NLog.Web.AspNetCore;
 using Icarus.Authorization;
 using Icarus.Authorization.Handlers;
 using Icarus.Database.Contexts;
-// using Icarus.Database.Repositories;
 
 namespace Icarus
 {
@@ -40,17 +41,17 @@ namespace Icarus
         {
             services.AddControllers();
 
-            string domain = $"https://{Configuration["Auth0:Domain"]}/";
+            var auth_id = Configuration["Auth0:Domain"];
+            var domain = $"https://{auth_id}/";
+            var audience = Configuration["Auth0:ApiIdentifier"];
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.Authority = domain;
-                options.Audience = Configuration["Auth0:ApiIdentifier"];
-            });
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => 
+                {
+                    options.Authority = domain;
+                    options.Audience = audience;
+                });
 
             services.AddAuthorization(options =>
             {
@@ -104,35 +105,12 @@ namespace Icarus
 
             var connString = Configuration.GetConnectionString("DefaultConnection");
 
-            /**
-            services.Add(new ServiceDescriptor(typeof(SongRepository), 
-                new SongRepository(connString)));  
-
-            services.Add(new ServiceDescriptor(typeof(AlbumRepository),
-                new AlbumRepository(connString)));
-
-            services.Add(new ServiceDescriptor(typeof(ArtistRepository),
-                new ArtistRepository(connString)));
-
-            services.Add(new ServiceDescriptor(typeof(GenreRepository),
-                new GenreRepository(connString)));
-
-            services.Add(new ServiceDescriptor(typeof(YearRepository),
-                new YearRepository(connString)));
-
-            services.Add(new ServiceDescriptor(typeof(CoverArtRepository),
-                new CoverArtRepository(connString)));
-
-            services.Add(new ServiceDescriptor(typeof(UserRepository), 
-                new UserRepository(connString)));
-            */
 
             services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
             services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
             services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
             services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
-            // services.AddDbContext<YearContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
         }
 
@@ -142,6 +120,7 @@ namespace Icarus
             // NOTE: Dev-related configuration can be done when env.IsDevelopment() evaluated to true
 
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

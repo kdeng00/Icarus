@@ -168,10 +168,7 @@ namespace Icarus.Controllers.Managers
         
         
         
-        public async Task SaveSongToFileSystem(IFormFile songFile/**, SongRepository songStore,
-                AlbumRepository albumStore, ArtistRepository artistStore,
-                GenreRepository genreStore, YearRepository yearStore,
-                CoverArtRepository coverArtStore*/)
+        public async Task SaveSongToFileSystem(IFormFile songFile)
         {
             try
             {
@@ -208,9 +205,8 @@ namespace Icarus.Controllers.Managers
                 var coverMgr = new CoverArtManager(_config);
                 var coverArt = coverMgr.SaveCoverArt(song);
 
-                coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);//, 
-                SaveSongToDatabase(song);/**, songStore, albumStore, artistStore, genreStore,
-                        yearStore);*/
+                coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);
+                SaveSongToDatabase(song);
             }
             catch (Exception ex)
             {
@@ -242,7 +238,7 @@ namespace Icarus.Controllers.Managers
 
         private async Task<SongData> RetrieveSongFromFileSystem(Song details)
         {
-            byte[] uncompressedSong = System.IO.File.ReadAllBytes(details.SongPath);
+            byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath);
             
             return new SongData
             {
@@ -265,6 +261,7 @@ namespace Icarus.Controllers.Managers
 
             _logger.Info("Assigning song filename");
             song.Filename = songFile.FileName;
+            song.DateCreated = DateTime.Now;
 
             return song;
         }
