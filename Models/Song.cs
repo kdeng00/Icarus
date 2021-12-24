@@ -26,29 +26,36 @@ namespace Icarus.Models
 		[JsonProperty("song_path")]
 		public string SongPath { get; set; }
 
+		// [JsonIgnore]
+		// public Album Album { get; set; }
 		[JsonIgnore]
-		public Album Album { get; set; }
-		[JsonIgnore]
-		public int? AlbumId { get; set; }
+		public int? AlbumID { get; set; }
 
+		/**
 		[JsonIgnore]
 		public Artist SongArtist { get; set; }
+		*/
 		[JsonIgnore]
-		public int? ArtistId { get; set; }
-
+		public int? ArtistID { get; set; }
+		/**
 		[JsonIgnore]
 		public Genre SongGenre { get; set; }
+		*/
 		[JsonIgnore]
-		public int? GenreId { get; set; }
+		public int? GenreID { get; set; }
 
-		[JsonIgnore]
-		public Year SongYear { get; set; }
-		[JsonIgnore]
-		public int? YearId { get; set; }
+		// [JsonIgnore]
+		// public Year SongYear { get; set; }
+		// [JsonIgnore]
+		// public int? YearId { get; set; }
 
+		/**
 		[JsonIgnore]
 		public CoverArt SongCoverArt { get; set; }
+		*/
 		[JsonIgnore]
-		public int? CoverArtId { get; set; }
+		public int? CoverArtID { get; set; }
+		[JsonProperty("date_created")]
+		public DateTime DateCreated { get; set; }
     }
 }

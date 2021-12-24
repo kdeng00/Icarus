@@ -13,7 +13,6 @@ namespace Icarus.Controllers.Managers
     public class TokenManager : BaseManager
     {
         #region Fields
-        private IConfiguration _config;
         private string _clientId;
         private string _clientSecret;
         private string _audience;
@@ -64,7 +63,7 @@ namespace Icarus.Controllers.Managers
 
             return new LoginResult
             {
-                UserId = user.Id, Username = user.Username, Token = tokenResult.AccessToken,
+                UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
                 TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
                 Message = "Successfully retrieved token"
             };

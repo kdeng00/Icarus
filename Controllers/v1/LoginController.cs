@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -20,6 +20,7 @@ namespace Icarus.Controllers.V1
     public class LoginController : ControllerBase
     {
         #region Fields
+        private string _connectionString;
         private IConfiguration _config;
         private ILogger<LoginController> _logger;
         #endregion
@@ -32,8 +33,9 @@ namespace Icarus.Controllers.V1
         #region Contructors
         public LoginController(IConfiguration config, ILogger<LoginController> logger)
         {
-            _config = config;
             _logger = logger;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -41,8 +43,7 @@ namespace Icarus.Controllers.V1
         #region HTTP endpoints
         public IActionResult Post([FromBody] User user)
         {
-            UserRepository context = HttpContext.RequestServices
-                .GetService(typeof(UserRepository)) as UserRepository;
+            var context = new UserContext(_connectionString);
 
             _logger.LogInformation("Starting process of validating credentials");
             
@@ -54,9 +55,9 @@ namespace Icarus.Controllers.V1
                 Username = user.Username
             };
 
-            if (context.DoesUserExist(user))
+            if (context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username)) != null)
             {
-                user = context.RetrieveUser(user);
+                user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username));
 
                 var validatePass = new PasswordEncryption();
                 var validated = validatePass.VerifyPassword(user, password);

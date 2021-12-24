@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
-using MySql.Data;
-using MySql.Data.EntityFrameworkCore.Extensions;
-using MySql.Data.MySqlClient;    
 
 using Icarus.Models;
         
@@ -28,54 +25,59 @@ namespace Icarus.Database.Contexts
 			modelBuilder.Entity<Song>()
 				.ToTable("Song");
 
+			/**
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.Album)
 			.WithMany(al => al.Songs)
-			.HasForeignKey(s => s.AlbumId)
+			.HasForeignKey(s => s.AlbumID)
 			.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(sa => sa.SongArtist)
 			.WithMany(ar => ar.Songs)
-			.HasForeignKey(s => s.ArtistId)
+			.HasForeignKey(s => s.ArtistID)
 			.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.SongGenre)
 			.WithMany(gnr => gnr.Songs)
-			.HasForeignKey(s => s.GenreId)
+			.HasForeignKey(s => s.GenreID)
 			.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.SongYear)
 			.WithMany(yr => yr.Songs)
-			.HasForeignKey(s => s.YearId)
+			.HasForeignKey(s => s.YearID)
 			.OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<Song>()
 				.HasOne(s => s.SongCoverArt)
 				.WithMany(ca => ca.Songs)
-				.HasForeignKey(s => s.CoverArtId)
+				.HasForeignKey(s => s.CoverArtID)
 				.OnDelete(DeleteBehavior.SetNull);
+			*/
 
 			modelBuilder.Entity<Song>()
 				.Property(s => s.Year)
 			.IsRequired(false);
 			modelBuilder.Entity<Song>()
-				.Property(s => s.YearId)
+				.Property(s => s.GenreID)
 			.IsRequired(false);
 			modelBuilder.Entity<Song>()
-				.Property(s => s.GenreId)
+				.Property(s => s.ArtistID)
 			.IsRequired(false);
 			modelBuilder.Entity<Song>()
-				.Property(s => s.ArtistId)
+				.Property(s => s.AlbumID)
 			.IsRequired(false);
 			modelBuilder.Entity<Song>()
-				.Property(s => s.AlbumId)
+			.Property(s => s.CoverArtID)
 			.IsRequired(false);
-			modelBuilder.Entity<Song>()
-			.Property(s => s.CoverArtId)
-			.IsRequired(false);
+		}
+
+
+		public Song RetrieveRecord(Song song)
+		{
+            return Songs.FirstOrDefault(sng => sng.SongID == song.SongID);
 		}
 
 

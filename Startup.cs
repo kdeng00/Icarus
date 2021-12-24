@@ -15,9 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data;
-using MySql.Data.EntityFrameworkCore.Extensions;
-using MySql.Data.MySqlClient;    
 using NLog;
 using NLog.Web;
 using NLog.Web.AspNetCore;
@@ -135,12 +132,12 @@ namespace Icarus
             services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
             services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
-            services.AddDbContext<YearContext>(options => options.UseMySQL(connString));
+            // services.AddDbContext<YearContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
         }
 
         // Called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // NOTE: Dev-related configuration can be done when env.IsDevelopment() evaluated to true
 

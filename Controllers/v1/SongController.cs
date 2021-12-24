@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -22,6 +22,7 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private readonly ILogger<SongController> _logger;
+        private string _connectionString;
         private IConfiguration _config;
         private SongManager _songMgr;
         #endregion
@@ -35,6 +36,7 @@ namespace Icarus.Controllers.V1
         public SongController(IConfiguration config, ILogger<SongController> logger)
         {
             _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
             _logger = logger;
             _songMgr = new SongManager(config);
         }
@@ -49,10 +51,9 @@ namespace Icarus.Controllers.V1
             Console.WriteLine("Attemtping to retrieve songs");
             _logger.LogInformation("Attempting to retrieve songs");
             
-            SongRepository context = HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
+            var context = new SongContext(_connectionString);
 
-            songs = context.GetAllSongs();
+            songs = context.Songs.ToList();
 
             if (songs.Count > 0)
                 return Ok(songs);
@@ -64,15 +65,14 @@ namespace Icarus.Controllers.V1
         [Authorize("read:song_details")]
         public IActionResult Get(int id)
         {
-            SongRepository context = HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
+            var context = new SongContext(_connectionString);
             
-            Song song = new Song { Id = id };
-            song = context.GetSong(song);
+            Song song = new Song { SongID = id };
+            song = context.RetrieveRecord(song);
 
             Console.WriteLine("Here");
 
-            if (song.Id != 0)
+            if (song.SongID != 0)
                 return Ok(song);
             else
                 return NotFound();
@@ -82,33 +82,19 @@ namespace Icarus.Controllers.V1
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Song song)
         {
-            SongRepository context = HttpContext.RequestServices
-                .GetService(typeof(SongRepository)) as SongRepository;
+            var context = new SongContext(_connectionString);
 
-            ArtistRepository artistStore = HttpContext.RequestServices
-                .GetService(typeof(ArtistRepository)) as ArtistRepository;
-
-            AlbumRepository albumStore = HttpContext.RequestServices
-                .GetService(typeof(AlbumRepository)) as AlbumRepository;
-            
-            GenreRepository genreStore = HttpContext.RequestServices
-                .GetService(typeof(GenreRepository)) as GenreRepository;
-
-            YearRepository yearStore = HttpContext.RequestServices
-                .GetService(typeof(YearRepository)) as YearRepository;
-
-            song.Id = id;
+            song.SongID = id;
             Console.WriteLine("Retrieving filepath of song");
             _logger.LogInformation("Retrieving filepath of song");
 
-            if (!context.DoesSongExist(song))
+            if (!context.DoesRecordExist(song))
                 return NotFound(new SongResult
                 {
                         Message = "Song does not exist"
                 });
 
-            var songRes = _songMgr.UpdateSong(song, context, albumStore, artistStore, genreStore, 
-                yearStore);
+            var songRes = _songMgr.UpdateSong(song);
 
             return Ok(songRes);
         }

@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
-using MySql.Data;
-using MySql.Data.EntityFrameworkCore.Extensions;
-using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
@@ -27,10 +24,14 @@ namespace Icarus.Database.Contexts
                 .ToTable("CoverArt");
         }
 
+        public CoverArt RetrieveRecord(CoverArt cover)
+        {
+            return CoverArtImages.FirstOrDefault(cov => cov.CoverArtID == cover.CoverArtID);
+        }
 
         public bool DoesRecordExist(CoverArt cover)
         {
-            return CoverArtImages.FirstOrDefault(cov => cov.CoverArtId == cover.CoverArtId) != null ? true : false;
+            return CoverArtImages.FirstOrDefault(cov => cov.CoverArtID == cover.CoverArtID) != null ? true : false;
         }
     }
 }

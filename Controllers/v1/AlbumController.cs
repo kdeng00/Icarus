@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +20,8 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private readonly ILogger<AlbumController> _logger;
+        private string _connectionString;
+        private IConfiguration _config;
         #endregion
 
 
@@ -27,9 +30,11 @@ namespace Icarus.Controllers.V1
 
 
         #region Constructors
-        public AlbumController(ILogger<AlbumController> logger)
+        public AlbumController(ILogger<AlbumController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -41,10 +46,9 @@ namespace Icarus.Controllers.V1
         {
             List<Album> albums = new List<Album>();
 
-            AlbumRepository albumStoreContext = HttpContext.RequestServices
-                .GetService(typeof(AlbumRepository)) as AlbumRepository;
+            var albumContext = new AlbumContext(_connectionString);
 
-            albums = albumStoreContext.GetAlbums();
+            albums = albumContext.Albums.ToList();
 
             if (albums.Count > 0)
                 return Ok(albums);
@@ -58,15 +62,14 @@ namespace Icarus.Controllers.V1
         {
             Album album = new Album
             {
-                AlbumId = id
+                AlbumID = id
             };
 
-            AlbumRepository albumStoreContext = HttpContext.RequestServices
-                .GetService(typeof(AlbumRepository)) as AlbumRepository;
+            var albumContext = new AlbumContext(_connectionString);
 
-            if (albumStoreContext.DoesAlbumExist(album))
+            if (albumContext.DoesRecordExist(album))
             {
-                album = albumStoreContext.GetAlbum(album);
+                album = albumContext.RetrieveRecord(album);
 
                 return Ok(album);
             }

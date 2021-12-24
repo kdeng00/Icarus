@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
-using MySql.Data;
-using MySql.Data.EntityFrameworkCore.Extensions;
-using MySql.Data.MySqlClient;
 
 using Icarus.Models;
 
@@ -27,9 +24,14 @@ namespace Icarus.Database.Contexts
         }
 
 
+        public Genre RetrieveRecord(Genre genre)
+        {
+            return Genres.FirstOrDefault(gnr => gnr.GenreID == genre.GenreID);
+        }
+
         public bool DoesRecordExist(Genre genre)
         {
-            return Genres.FirstOrDefault(gnr => gnr.GenreId == genre.GenreId) != null ? true : false;
+            return Genres.FirstOrDefault(gnr => gnr.GenreID == genre.GenreID) != null ? true : false;
         }
     }
 }

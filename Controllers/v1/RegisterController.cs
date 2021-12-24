@@ -19,6 +19,7 @@ namespace Icarus.Controllers.V1
     public class RegisterController : ControllerBase
     {
         #region Fields
+        private string _connectionString;
         private IConfiguration _config;
         #endregion
 
@@ -31,6 +32,7 @@ namespace Icarus.Controllers.V1
         public RegisterController(IConfiguration config)
         {
             _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -40,11 +42,14 @@ namespace Icarus.Controllers.V1
             PasswordEncryption pe = new PasswordEncryption();
             user.Password = pe.HashPassword(user);
             user.EmailVerified = false;
+            user.Status = "Registered";
+            user.DateCreated = DateTime.Now;
 
-            var context = new UserContext(_config.GetConnectionString("DefaultConnection"));
+            UserContext context = null;
 
             try
             {
+                context = new UserContext(_config.GetConnectionString("DefaultConnection"));
                 context.Add(user);
                 context.SaveChanges();
             }

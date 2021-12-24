@@ -46,17 +46,16 @@ namespace Icarus.Controllers.Utilities
         public static void PrintMetadata(Song song)
         {
             Console.WriteLine("\n\nMetadata of the song:");
-            Console.WriteLine($"Id: {song.Id}");
+            Console.WriteLine($"ID: {song.SongID}");
             Console.WriteLine($"Title: {song.Title}");
             Console.WriteLine($"Artist: {song.Artist}");
             Console.WriteLine($"Album: {song.AlbumTitle}");
             Console.WriteLine($"Genre: {song.Genre}");
             Console.WriteLine($"Year: {song.Year}");
             Console.WriteLine($"Duration: {song.Duration}");
-            Console.WriteLine($"AlbumId: {song.AlbumId}");
-            Console.WriteLine($"ArtistId: {song.ArtistId}");
-            Console.WriteLine($"GenreId: {song.GenreId}");
-            Console.WriteLine($"YearId: {song.YearId}");
+            Console.WriteLine($"AlbumID: {song.AlbumID}");
+            Console.WriteLine($"ArtistID: {song.ArtistID}");
+            Console.WriteLine($"GenreID: {song.GenreID}");
             Console.WriteLine($"Song Path: {song.SongPath}");
             Console.WriteLine($"Filename: {song.Filename}");
             Console.WriteLine("\n");
@@ -237,7 +236,7 @@ namespace Icarus.Controllers.Utilities
         {
             _updatedSong = new Song
             {
-                Id = song.Id,
+                SongID = song.SongID,
                 Title = song.Title,
                 AlbumTitle = song.AlbumTitle,
                 Artist = song.Artist,
@@ -271,7 +270,7 @@ namespace Icarus.Controllers.Utilities
             Console.WriteLine($"\n\n{message}");
             Console.WriteLine($"Title: {song.Title}");
             Console.WriteLine($"Artist: {song.Artist}");
-            Console.WriteLine($"Album: {song.Album}");
+            Console.WriteLine($"Album: {song.AlbumTitle}");
             Console.WriteLine($"Genre: {song.Genre}");
             Console.WriteLine($"Year: {song.Year}");
             Console.WriteLine($"Duration: {song.Duration}\n\n");

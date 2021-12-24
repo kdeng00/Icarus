@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -19,6 +19,8 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private readonly ILogger<ArtistController> _logger;
+        private string _connectionString;
+        private IConfiguration _config;
         #endregion
 
 
@@ -27,9 +29,11 @@ namespace Icarus.Controllers.V1
 
 
         #region Constructors
-        public ArtistController(ILogger<ArtistController> logger)
+        public ArtistController(ILogger<ArtistController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -39,10 +43,9 @@ namespace Icarus.Controllers.V1
         [Authorize("read:artists")]
         public IActionResult Get()
         {
-            ArtistRepository artistStoreContext = HttpContext.RequestServices
-                .GetService(typeof(ArtistRepository)) as ArtistRepository;
+            var artistContext = new ArtistContext(_connectionString);
 
-            var artists = artistStoreContext.GetArtists();
+            var artists = artistContext.Artists.ToList();
 
             if (artists.Count > 0)
                 return Ok(artists);
@@ -56,15 +59,14 @@ namespace Icarus.Controllers.V1
         {
             Artist artist = new Artist
             {
-                ArtistId = id
+                ArtistID = id
             };
             
-            ArtistRepository artistStoreContext = HttpContext.RequestServices
-                .GetService(typeof(ArtistRepository)) as ArtistRepository;
+            var artistContext = new ArtistContext(_connectionString);
 
-            if (artistStoreContext.DoesArtistExist(artist))
+            if (artistContext.DoesRecordExist(artist))
             {
-                artist = artistStoreContext.GetArtist(artist);
+                artist = artistContext.RetrieveRecord(artist);
 
                 return Ok(artist);
             }

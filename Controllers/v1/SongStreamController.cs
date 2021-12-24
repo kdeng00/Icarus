@@ -23,6 +23,7 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private ILogger<SongStreamController> _logger;
+        private string _connectionString;
         private IConfiguration _config;
         #endregion
 
@@ -36,6 +37,7 @@ namespace Icarus.Controllers.V1
         {
             _logger = logger;
             _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -56,7 +58,11 @@ namespace Icarus.Controllers.V1
             _logger.LogInformation("Starting to stream song...>");
             Console.WriteLine("Starting to streamsong...");
 
-            return File(stream, "application/octet-stream", filename);
+            var file = await Task.Run(() => {
+                return File(stream, "application/octet-stream", filename);
+            });
+
+            return file;
         }
         #endregion
     }

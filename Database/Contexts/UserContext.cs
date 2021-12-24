@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;    
 using System.Linq;
 
+// using MySql.Data.EntityFrameworkCore;
+// using MySql.Data;
+// using MySql.Data.EntityFrameworkCore.Extensions;
+// using MySql.Data.Entity;
+// using MySql.Data.MySqlClient;    
 using Microsoft.EntityFrameworkCore;
-using MySql.Data;
-using MySql.Data.EntityFrameworkCore.Extensions;
-using MySql.Data.MySqlClient;    
 
 using Icarus.Models;
         
@@ -32,6 +34,11 @@ namespace Icarus.Database.Contexts
                 .Property(u => u.DateCreated).HasDefaultValue(DateTime.Now);
         }
 
+        
+        public User RetrieveRecord(User user)
+        {
+            return Users.FirstOrDefault(usr => usr.UserID == user.UserID);
+        }
 
         public bool DoesRecordExist(User user)
         {

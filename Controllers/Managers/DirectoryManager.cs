@@ -12,7 +12,6 @@ namespace Icarus.Controllers.Managers
     public class DirectoryManager : BaseManager
     {
         #region Fields
-        private IConfiguration _config;
         private Song _song;
         private string _rootSongDirectory;
         private string _songDirectory;

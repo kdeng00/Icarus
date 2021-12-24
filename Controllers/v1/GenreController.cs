@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
@@ -17,6 +18,8 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private readonly ILogger<GenreController> _logger;
+        private string _connectionString;
+        private IConfiguration _config;
         #endregion
 
 
@@ -25,9 +28,11 @@ namespace Icarus.Controllers.V1
 
 
         #region Constructors
-        public GenreController(ILogger<GenreController> logger)
+        public GenreController(ILogger<GenreController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
@@ -39,10 +44,9 @@ namespace Icarus.Controllers.V1
         {
             var genres = new List<Genre>();
 
-            var genreStore = HttpContext.RequestServices
-                .GetService(typeof(GenreRepository)) as GenreRepository;
+            var genreStore = new GenreContext(_connectionString);
 
-            genres = genreStore.GetGenres();
+            genres = genreStore.Genres.ToList();
 
             if (genres.Count > 0)
                 return Ok(genres);
@@ -56,15 +60,14 @@ namespace Icarus.Controllers.V1
         {
             var genre = new Genre
             {
-                GenreId = id
+                GenreID = id
             };
 
-            var genreStore = HttpContext.RequestServices
-                .GetService(typeof(GenreRepository)) as GenreRepository;
+            var genreStore = new GenreContext(_connectionString);
 
-            if (genreStore.DoesGenreExist(genre))
+            if (genreStore.DoesRecordExist(genre))
             {
-                genre =  genreStore.GetGenre(genre);
+                genre =  genreStore.RetrieveRecord(genre);
 
                 return Ok(genre);
             }

@@ -31,6 +31,8 @@ namespace Icarus.Models
 		public bool EmailVerified { get; set; }
         [JsonProperty("date_created")]
 		public DateTime DateCreated { get; set; }
+		[JsonProperty("status")]
+		public string Status { get; set; }
 		[JsonProperty("last_login")]
 		public DateTime? LastLogin { get; set; }
     }

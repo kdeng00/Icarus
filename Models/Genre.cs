@@ -8,8 +8,8 @@ namespace Icarus.Models
 {
     public class Genre
     {
-        [JsonProperty("id")]
-		public int GenreId { get; set; }
+        [JsonProperty("genre_id")]
+		public int GenreID { get; set; }
 		[JsonProperty("genre")]
 		public string GenreName { get; set; }
 		[JsonProperty("song_count")]
@@ -17,6 +17,7 @@ namespace Icarus.Models
 		public int SongCount { get; set; }
 
 		[JsonIgnore]
+		[NotMapped]
 		public List<Song> Songs { get; set; }
     }
 }

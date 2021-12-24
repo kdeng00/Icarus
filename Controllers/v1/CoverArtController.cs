@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
-using Icarus.Database.Repositories;
+using Icarus.Database.Contexts;
 using Icarus.Models;
 
 namespace Icarus.Controllers.V1
@@ -20,26 +21,27 @@ namespace Icarus.Controllers.V1
     {
         #region Fields
         private readonly ILogger<CoverArtController> _logger;
+        private string _connectionString;
+        private IConfiguration _config;
         #endregion
 
 
         #region Constructors
-        public CoverArtController(ILogger<CoverArtController> logger)
+        public CoverArtController(ILogger<CoverArtController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
         }
         #endregion
 
 
         #region HTTP Routes
-        public async Task<IActionResult> Get()
+        public IActionResult Get()
         {
-            var coverArtRepository = HttpContext
-                .RequestServices
-                .GetService(
-                        typeof(CoverArtRepository)) as CoverArtRepository;
+            var coverArtContext = new CoverArtContext(_connectionString);
 
-            var coverArtRecords = coverArtRepository.GetCoverArtRecords();
+            var coverArtRecords = coverArtContext.CoverArtImages.ToList();
 
             if (coverArtRecords == null)
             {
@@ -51,26 +53,22 @@ namespace Icarus.Controllers.V1
                 _logger.LogInformation("Found cover art records");
                 return Ok(coverArtRecords);
             }
-
         }
 
         [HttpGet("{id}")]
         [Authorize("download:cover_art")]
         public async Task<IActionResult> Get(int id)
         {
-            var coverArt = new CoverArt { CoverArtId = id };
+            var coverArt = new CoverArt { CoverArtID = id };
 
-            var coverArtRepository = HttpContext
-                .RequestServices
-                .GetService(
-                        typeof(CoverArtRepository)) as CoverArtRepository;
+            var coverArtContext = new CoverArtContext(_connectionString);
 
-            coverArt = coverArtRepository.GetCoverArt(coverArt);
+            coverArt = coverArtContext.RetrieveRecord(coverArt);
 
             if (coverArt != null)
             {
                 _logger.LogInformation("Found cover art record");
-                var coverArtBytes = System.IO.File.ReadAllBytes(
+                var coverArtBytes = await System.IO.File.ReadAllBytesAsync(
                         coverArt.ImagePath);
 
                 return File(coverArtBytes, "application/x-msdownload", 

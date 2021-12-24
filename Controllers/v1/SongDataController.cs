@@ -22,6 +22,7 @@ namespace Icarus.Controllers.V1
     public class SongDataController : ControllerBase
     {
         #region Fields
+        private string _connectionString;
         private IConfiguration _config;
         private ILogger<SongDataController> _logger;
         private SongManager _songMgr;
@@ -37,6 +38,7 @@ namespace Icarus.Controllers.V1
         public SongDataController(IConfiguration config, ILogger<SongDataController> logger)
         {
             _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
             _logger = logger;
             _songTempDir = _config.GetValue<string>("TemporaryMusicPath");
             _songMgr = new SongManager(config, _songTempDir);
@@ -50,7 +52,8 @@ namespace Icarus.Controllers.V1
         [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
-            var songMetaData = _songRepository.GetSong(id); 
+            var songContext = new SongContext(_connectionString);
+            var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
             SongData song = await _songMgr.RetrieveSong(songMetaData);
             
@@ -69,14 +72,13 @@ namespace Icarus.Controllers.V1
                 var uploads = _songTempDir;
                 Console.WriteLine($"Song Root Path {uploads}");
                 _logger.LogInformation($"Song root path {uploads}");
+
                 foreach (var sng in songData)
                     if (sng.Length > 0) {
                         Console.WriteLine($"Song filename {sng.FileName}");
                         _logger.LogInformation($"Song filename {sng.FileName}");
 
-                        await _songMgr.SaveSongToFileSystem(sng, _songRepository,
-                            	_albumRepository, _artistRepository,
-                            	_genreRepository, _yearRepository, _coverArtRepository);
+                        await _songMgr.SaveSongToFileSystem(sng);
                     }
             }
             catch (Exception ex)
@@ -90,9 +92,12 @@ namespace Icarus.Controllers.V1
         [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {
+            var songContext = new SongContext(_connectionString);
+
             var songMetaData = new Song{ SongID = id };
             Console.WriteLine($"Id {songMetaData.SongID}");
-            songMetaData = _songRepository.GetSong(songMetaData);
+
+            songMetaData = songContext.RetrieveRecord(songMetaData);
 
             if (string.IsNullOrEmpty(songMetaData.Title))
             {
@@ -103,10 +108,7 @@ namespace Icarus.Controllers.V1
             {
                 _logger.LogInformation("Starting process of deleting song from the filesystem and database");
 
-                _songMgr.DeleteSong(songMetaData, _songRepository, 
-                        _albumRepository, _artistRepository,
-                        _genreRepository, _yearRepository, 
-                        _coverArtRepository);
+                _songMgr.DeleteSong(songMetaData);
 
                 return Ok();
             }

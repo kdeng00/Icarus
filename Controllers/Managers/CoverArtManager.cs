@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
 using System.IO;
 
 using Icarus.Constants;
 using Icarus.Controllers.Utilities;
+using Icarus.Database.Contexts;
 using Icarus.Models;
 using Icarus.Types;
 
@@ -13,36 +16,39 @@ namespace Icarus.Controllers.Managers
     {
         #region Fields
         private string _rootCoverArtPath;
+        private CoverArtContext _coverArtContext;
         private byte[] _stockCoverArt = null;
         #endregion
 
 
         #region Constructors
-        public CoverArtManager(string rootPath)
+        public CoverArtManager(IConfiguration config)
         {
-            _rootCoverArtPath = rootPath;
+            _config = config;
+            _connectionString = _config.GetConnectionString("DefaultConnection");
+            _rootCoverArtPath = _config.GetValue<string>("CoverArtPath");
             Initialize();
         }
         #endregion
 
 
         #region Methods
-        public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt, 
-                CoverArtRepository coverArtRepository)
+        public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt)
         {
             _logger.Info("Saving cover art record to the database");
-            coverArtRepository.SaveCoverArt(coverArt);
+            _coverArtContext.Add(coverArt);
+            var songTitle = coverArt.SongTitle;
 
-            coverArt = coverArtRepository.GetCoverArt(CoverArtField.SongTitle,
-                    coverArt);
+            coverArt = _coverArtContext.CoverArtImages.FirstOrDefault(cov => cov.SongTitle.Equals(songTitle));
 
-            song.CoverArtId = coverArt.CoverArtId;
+            song.CoverArtID = coverArt.CoverArtID;
         }
-        public void DeleteCoverArtFromDatabase(CoverArt coverArt, 
-                CoverArtRepository coverArtRepository)
+        public void DeleteCoverArtFromDatabase(CoverArt coverArt)
         {
             _logger.Info("Attempting to delete cover art from the database");
-            coverArtRepository.DeleteCoverArt(coverArt);
+
+            _coverArtContext.Remove(coverArt);
+            _coverArtContext.SaveChanges();
         }
         public void DeleteCoverArt(CoverArt coverArt)
         {
@@ -109,8 +115,15 @@ namespace Icarus.Controllers.Managers
             return null;
         }
 
+        public CoverArt GetCoverArt(Song song)
+        {
+            return _coverArtContext.CoverArtImages.FirstOrDefault(cov => cov.SongTitle.Equals(song.Title));
+        }
+
         private void Initialize()
         {
+            _coverArtContext = new CoverArtContext(_connectionString);
+
             if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
                 _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
 
