@@ -70,11 +70,12 @@ namespace Icarus.Controllers.Utilities
 			try
 			{
 				using (ZipFile zip = new ZipFile())
-			{
-				zip.AddFile(songDetails.SongPath);
-				zip.Save(tmpZipFilePath);
-			}
-			Console.WriteLine("Successfully compressed");
+				{
+					zip.AddFile(songDetails.SongPath());
+					zip.Save(tmpZipFilePath);
+				}
+
+				Console.WriteLine("Successfully compressed");
 			}
 			catch (Exception ex)
 			{

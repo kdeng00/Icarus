@@ -9,17 +9,17 @@ namespace Icarus.Models
     public class Album
     {
         [JsonProperty("album_id")]
-		public int AlbumID { get; set; }
-		[JsonProperty("title")]
-		public string Title { get; set; }
-		[JsonProperty("album_artist")]
-		public string AlbumArtist { get; set; }
-		[JsonProperty("song_count")]
-		[NotMapped]
-		public int SongCount { get; set; }
+        public int AlbumID { get; set; }
+        [JsonProperty("title")]
+        public string Title { get; set; }
+        [JsonProperty("album_artist")]
+        public string AlbumArtist { get; set; }
+        [JsonProperty("song_count")]
+        [NotMapped]
+        public int SongCount { get; set; }
 
-		[JsonIgnore]
-		[NotMapped]
-		public List<Song> Songs { get; set; }
+        [JsonIgnore]
+        [NotMapped]
+        public List<Song> Songs { get; set; }
     }
 }

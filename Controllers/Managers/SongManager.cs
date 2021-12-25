@@ -48,14 +48,6 @@ namespace Icarus.Controllers.Managers
 
 
         #region Constructors
-        /**
-        public SongManager()
-        {
-            Initialize();
-            InitializeConnection();
-        }
-        */
-
         public SongManager(IConfiguration config)
         {
             _config = config;
@@ -71,8 +63,7 @@ namespace Icarus.Controllers.Managers
 
 
         #region Methods
-        public SongResult UpdateSong(Song song)/**, SongRepository songStore, AlbumRepository albumStore,
-                ArtistRepository artistStore, GenreRepository genreStore, YearRepository yearStore)*/
+        public SongResult UpdateSong(Song song)
         {
             var result = new SongResult();
 
@@ -133,10 +124,7 @@ namespace Icarus.Controllers.Managers
             return successful;
         }
 
-        public void DeleteSong(Song song)/**, SongRepository songStore, 
-                AlbumRepository albumStore, ArtistRepository artistStore, 
-                GenreRepository genreStore, YearRepository yearStore, 
-                CoverArtRepository coverStore)*/
+        public void DeleteSong(Song song)
         {
             try
             {
@@ -149,13 +137,12 @@ namespace Icarus.Controllers.Managers
                 _logger.Info("Song deleted from the filesystem");
 
                 var coverMgr = new CoverArtManager(_config);
-                // var coverArt = coverStore.GetCoverArt(song);
+
                 var coverArt = coverMgr.GetCoverArt(song);
                 coverMgr.DeleteCoverArt(coverArt);
 
                 coverMgr.DeleteCoverArtFromDatabase(coverArt);
-                DeleteSongFromDatabase(song/**, songStore, albumStore, artistStore,
-                        genreStore, yearStore*/);
+                DeleteSongFromDatabase(song);
             }
             catch (Exception ex)
             {
@@ -306,8 +293,7 @@ namespace Icarus.Controllers.Managers
         
 
         
-        private void SaveSongToDatabase(Song song)/**, SongRepository songStore, AlbumRepository albumStore,
-                ArtistRepository artistStore, GenreRepository genreStore, YearRepository yearStore)*/
+        private void SaveSongToDatabase(Song song)
         {
             _logger.Info("Starting process to save the song to the database");
 
@@ -320,7 +306,7 @@ namespace Icarus.Controllers.Managers
             _logger.Info(info);
             _songContext.Add(song);
         }
-        private void SaveAlbumToDatabase(ref Song song)//, AlbumRepository albumStore)
+        private void SaveAlbumToDatabase(ref Song song)
         {
             _logger.Info("Starting process to save the album record of the song to the database");
 
@@ -349,7 +335,7 @@ namespace Icarus.Controllers.Managers
 
             song.AlbumID = album.AlbumID;
         }
-        private void SaveArtistToDatabase(ref Song song)//, ArtistRepository artistStore)
+        private void SaveArtistToDatabase(ref Song song)
         {
             _logger.Info("Starting process to save the artist record of the song to the database");
 
@@ -378,7 +364,7 @@ namespace Icarus.Controllers.Managers
 
             song.ArtistID = artist.ArtistID;
         }
-        private void SaveGenreToDatabase(ref Song song)//, GenreRepository genreStore)
+        private void SaveGenreToDatabase(ref Song song)
         {
             _logger.Info("Starting process to save the genre record of the song to the database");
 
@@ -450,7 +436,7 @@ namespace Icarus.Controllers.Managers
             return true;
         }
 
-        private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord)//, AlbumRepository albumStore)
+        private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord)
         {
             var albumContext = new AlbumContext(_connectionString);
 
@@ -504,7 +490,7 @@ namespace Icarus.Controllers.Managers
                 return existingAlbumRecord;
             }
         }
-        private Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord)//, ArtistRepository artistStore)
+        private Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord)
         {
             var artistContext = new ArtistContext(_connectionString);
 
@@ -553,7 +539,7 @@ namespace Icarus.Controllers.Managers
                 return existingArtistRecord;
             }
         }
-        private Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord)//, GenreRepository genreStore)
+        private Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord)
         {
             var genreContext = new GenreContext(_connectionString);
             var oldGenreRecord = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldSongRecord.Genre));
@@ -601,8 +587,7 @@ namespace Icarus.Controllers.Managers
             }
         }
         
-        private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, /**SongRepository songStore,*/
-                ref SongResult result)
+        private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, ref SongResult result)
         {
             var updatedSongRecord = new Song
             {
@@ -705,20 +690,19 @@ namespace Icarus.Controllers.Managers
             result.SongTitle = updatedSongRecord.Title;
         }
 
-        private void DeleteSongFromDatabase(Song song)/**, SongRepository songStore, AlbumRepository albumStore,
-                ArtistRepository artistStore, GenreRepository genreStore, YearRepository yearStore)*/
+        private void DeleteSongFromDatabase(Song song)
         {
             _logger.Info("Starting process to delete records related to the song from the database");
 
-            DeleteAlbumFromDatabase(song);//, albumStore);
-            DeleteArtistFromDatabase(song);//, artistStore);
-            DeleteGenreFromDatabase(song);//, genreStore);
+            DeleteAlbumFromDatabase(song);
+            DeleteArtistFromDatabase(song);
+            DeleteGenreFromDatabase(song);
 
             var sngContext = new SongContext(_connectionString);
             sngContext.Songs.Remove(song);
             sngContext.SaveChanges();
         }
-        private void DeleteAlbumFromDatabase(Song song)// AlbumRepository albumStore)
+        private void DeleteAlbumFromDatabase(Song song)
         {
             var albumContext = new AlbumContext(_connectionString);
 
@@ -736,7 +720,7 @@ namespace Icarus.Controllers.Managers
                 albumContext.SaveChanges();
             }
         }
-        private void DeleteArtistFromDatabase(Song song)//, ArtistRepository artistStore)
+        private void DeleteArtistFromDatabase(Song song)
         {
             var artistContext = new ArtistContext(_connectionString);
 
@@ -754,7 +738,7 @@ namespace Icarus.Controllers.Managers
                 artistContext.SaveChanges();
             }
         }
-        private void DeleteGenreFromDatabase(Song song)//, GenreRepository genreStore)
+        private void DeleteGenreFromDatabase(Song song)
         {
             var genreContext = new GenreContext(_connectionString);
 
