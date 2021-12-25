@@ -81,6 +81,7 @@ namespace Icarus.Controllers.Managers
             {
                 var dirMgr = new DirectoryManager(_rootCoverArtPath);
                 dirMgr.CreateDirectory(song);
+                // TODO:  Do not use metadata for file structure
                 var imagePath = dirMgr.SongDirectory + song.Title + ".png";
                 var coverArt = new CoverArt
                 {

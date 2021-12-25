@@ -56,7 +56,7 @@ namespace Icarus.Controllers.Utilities
             Console.WriteLine($"AlbumID: {song.AlbumID}");
             Console.WriteLine($"ArtistID: {song.ArtistID}");
             Console.WriteLine($"GenreID: {song.GenreID}");
-            Console.WriteLine($"Song Path: {song.SongPath}");
+            Console.WriteLine($"Song Path: {song.SongPath()}");
             Console.WriteLine($"Filename: {song.Filename}");
             Console.WriteLine("\n");
 
@@ -105,7 +105,7 @@ namespace Icarus.Controllers.Utilities
             try
             {
                 Console.WriteLine("Fetching image");
-                var tag = TagLib.File.Create(song.SongPath);
+                var tag = TagLib.File.Create(song.SongPath());
                 byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
             
                 return imgBytes;
@@ -125,7 +125,7 @@ namespace Icarus.Controllers.Utilities
             {
                 Console.WriteLine("Updating song metadata"); 
                 _logger.Info("Updating song metadata");
-                var filePath = song.SongPath;
+                var filePath = song.SongPath();
                 TagLib.File fileTag = TagLib.File.Create(filePath);
                 fileTag.Tag.Title = song.Title;
                 fileTag.Tag.Genres = new []{song.Genre};
@@ -162,7 +162,7 @@ namespace Icarus.Controllers.Utilities
         {
             Console.WriteLine("Updating song's cover art");
 
-            var tag = TagLib.File.Create(song.SongPath);
+            var tag = TagLib.File.Create(song.SongPath());
             var pics = tag.Tag.Pictures;
             Array.Resize(ref pics, 1);
 
@@ -177,7 +177,7 @@ namespace Icarus.Controllers.Utilities
 
         private void PerformUpdate(Song updatedSong, SortedDictionary<string, bool> checkedValues)
         {
-            var filePath = updatedSong.SongPath;
+            var filePath = updatedSong.SongPath();
             var title = updatedSong.Title;
             var artist = updatedSong.Artist;
             var album = updatedSong.AlbumTitle;
@@ -244,7 +244,7 @@ namespace Icarus.Controllers.Utilities
                 Year = song.Year,
                 Duration = song.Duration,
                 Filename = song.Filename,
-                SongPath = song.SongPath
+                SongDirectory = song.SongDirectory
             };
         }
         private void PrintMetadata()

@@ -51,7 +51,7 @@ namespace Icarus.Controllers.V1
 
             var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
 
-            var stream = new FileStream(song.SongPath, FileMode.Open, FileAccess.Read);
+            var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
             stream.Position = 0;
             var filename = $"{song.Title}.mp3";
 

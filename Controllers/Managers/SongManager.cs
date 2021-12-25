@@ -70,7 +70,8 @@ namespace Icarus.Controllers.Managers
             try
             {
                 var oldSongRecord = _songContext.RetrieveRecord(song);
-                song.SongPath = oldSongRecord.SongPath;
+                song.Filename = oldSongRecord.Filename;
+                song.SongDirectory = oldSongRecord.SongDirectory;
 
                 MetadataRetriever updateMetadata = new MetadataRetriever();
                 updateMetadata.UpdateMetadata(song, oldSongRecord);
@@ -109,7 +110,7 @@ namespace Icarus.Controllers.Managers
             bool successful = false;
             try
             {
-                var songPath = songMetaData.SongPath;
+                var songPath = songMetaData.SongPath();
                 System.IO.File.Delete(songPath);
                 successful = true;
                 DirectoryManager dirMgr = new DirectoryManager(_config, songMetaData);
@@ -163,7 +164,8 @@ namespace Icarus.Controllers.Managers
 
                 var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
                 var song = await SaveSongTemp(songFile, fileTempPath);
-                song.SongPath = fileTempPath;
+                song.SongDirectory = _tempDirectoryRoot;
+                song.Filename = songFile.FileName;
 
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
@@ -184,7 +186,8 @@ namespace Icarus.Controllers.Managers
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await (songFile.CopyToAsync(fileStream));
-                    song.SongPath = filePath;
+                    song.SongDirectory = dirMgr.SongDirectory;
+
 
                     _logger.Info("Song successfully saved to filesystem");
                 }
@@ -225,7 +228,7 @@ namespace Icarus.Controllers.Managers
 
         private async Task<SongData> RetrieveSongFromFileSystem(Song details)
         {
-            byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath);
+            byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath());
             
             return new SongData
             {
@@ -403,7 +406,7 @@ namespace Icarus.Controllers.Managers
 
         private bool DeleteSongFromFilesystem(Song song)
         {
-            var songPath = song.SongPath;
+            var songPath = song.SongPath();
 
             _logger.Info("Deleting song from the filesystem");
 
@@ -422,7 +425,7 @@ namespace Icarus.Controllers.Managers
         }
         private bool DoesSongExistOnFilesystem(Song song)
         {
-            var songPath = song.SongPath;
+            var songPath = song.SongPath();
 
             if (!System.IO.File.Exists(songPath))
             {
@@ -598,7 +601,7 @@ namespace Icarus.Controllers.Managers
                 Genre = oldSongRecord.Genre,
                 Year = oldSongRecord.Year,
                 Filename = oldSongRecord.Filename,
-                SongPath = oldSongRecord.SongPath,
+                SongDirectory = oldSongRecord.SongDirectory,
                 ArtistID = oldSongRecord.ArtistID,
                 AlbumID = oldSongRecord.AlbumID,
                 GenreID = oldSongRecord.GenreID
@@ -644,7 +647,7 @@ namespace Icarus.Controllers.Managers
                 _logger.Info("Change to song's album or artist");
 
                 DirectoryManager dirMgr = new DirectoryManager(_config);
-                var oldSongPath = updatedSongRecord.SongPath;
+                var oldSongPath = updatedSongRecord.SongPath();
                 var newSongPath = dirMgr.GenerateSongPath(updatedSongRecord);
                 var filename = updatedSongRecord.Filename;
 
@@ -664,7 +667,8 @@ namespace Icarus.Controllers.Managers
                     Console.WriteLine("New path does not exist when it should");
                 }
 
-                updatedSongRecord.SongPath = newSongPath + filename;
+                updatedSongRecord.SongDirectory = newSongPath;
+                updatedSongRecord.Filename = filename;
                 
                 _logger.Info("Deleting old song path");
 
