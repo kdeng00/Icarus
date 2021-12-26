@@ -11,6 +11,7 @@ namespace Icarus.Models
         [JsonProperty("genre_id")]
         public int GenreID { get; set; }
         [JsonProperty("genre")]
+        [Column("Category")]
         public string GenreName { get; set; }
         [JsonProperty("song_count")]
         [NotMapped]

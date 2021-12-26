@@ -11,6 +11,7 @@ namespace Icarus.Models
         [JsonProperty("artist_id")]
         public int ArtistID { get; set; }
         [JsonProperty("name")]
+        [Column("Artist")]
         public string Name { get; set; }
         [JsonProperty("song_count")]
         [NotMapped]

@@ -55,15 +55,15 @@ namespace Icarus.Controllers.V1
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
-            SongData song = await _songMgr.RetrieveSong(songMetaData);
+            var song = await _songMgr.RetrieveSong(songMetaData);
             
             return File(song.Data, "application/x-msdownload", songMetaData.Filename);
         }
 
-        [HttpPost]
+        [HttpPost("upload"), DisableRequestSizeLimit]
         [Route("private-scoped")]
         [Authorize("upload:songs")]
-        public async Task Post([FromForm(Name = "file")] List<IFormFile> songData)
+        public async Task<IActionResult> Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
             try
             {
@@ -81,12 +81,16 @@ namespace Icarus.Controllers.V1
 
                         await _songMgr.SaveSongToFileSystem(sng);
                     }
+
+                return Ok();
             }
             catch (Exception ex)
             {
                 var msg = ex.Message;
                 _logger.LogError(msg, "An error occurred");
             }
+
+            return NotFound();
         }
 
         [HttpDelete("{id}")]

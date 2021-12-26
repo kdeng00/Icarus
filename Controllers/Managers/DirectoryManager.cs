@@ -50,24 +50,7 @@ namespace Icarus.Controllers.Managers
         #region Methods
         public void CreateDirectory()
         {
-            try
-            {
-                _songDirectory = AlbumDirectory();
-
-                if (!Directory.Exists(_songDirectory))
-                {
-                    Directory.CreateDirectory(_songDirectory);
-                    Console.WriteLine("The directory has been created");
-                }
-
-
-                Console.WriteLine($"The song will be saved in the following" +
-                  $" directory: {_songDirectory}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred {ex.Message}");
-            }
+            CreateDirectory(_song);
         }
         public void CreateDirectory(Song song)
         {
@@ -209,33 +192,40 @@ namespace Icarus.Controllers.Managers
 
         private string AlbumDirectory()
         {
-            string directory = _rootSongDirectory;
-            directory += $@"{_song.Artist}/{_song.AlbumTitle}/";
-
-            return directory;
+            return AlbumDirectory(_song);
         }
         private string AlbumDirectory(Song song)
         {
-            var directory = _rootSongDirectory;
-            directory += $@"{song.Artist}/{song.AlbumTitle}/";
+            var directory = ArtistDirectory(song);
+            var segment = SerializeValue(song.AlbumTitle);
+            directory += $@"{segment}/";
             Console.WriteLine($"Album directory {directory}");
 
             return directory;
         }
         private string ArtistDirectory()
         {
-            var directory = _rootSongDirectory;
-            directory += $@"{_song.Artist}/";
-
-            return directory;
+            return ArtistDirectory(_song);
         }
         private string ArtistDirectory(Song song)
         {
             var directory = _rootSongDirectory;
-            directory += $@"{song.Artist}/";
+            var segment = SerializeValue(song.Artist);
+            directory += $@"{segment}/";
             Console.WriteLine($"Artist directory {directory}");
 
             return directory;
+        }
+
+        private string SerializeValue(string value)
+        {
+            const int length = 15;
+            const string chars = "ABCDEF0123456789";
+            var random = new Random();
+            var output = new string(Enumerable.Repeat(chars, length).Select(s =>
+                s[random.Next(s.Length)]).ToArray());
+
+            return output;
         }
         #endregion
     }

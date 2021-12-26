@@ -162,18 +162,15 @@ namespace Icarus.Controllers.Managers
             {
                 _logger.Info("Starting the process of saving the song to the filesystem");
 
-                var fileTempPath = Path.Combine(_tempDirectoryRoot, songFile.FileName);
-                var song = await SaveSongTemp(songFile, fileTempPath);
-                song.SongDirectory = _tempDirectoryRoot;
-                song.Filename = songFile.FileName;
+                var song = await SaveSongTemp(songFile);
+                System.IO.File.Delete(song.SongPath());
 
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
 
-                System.IO.File.Delete(fileTempPath);
-
-                var filePath = dirMgr.SongDirectory;
-                var songFilename = songFile.FileName;
+                var fileDir = dirMgr.SongDirectory;
+                var filePath = fileDir;
+                var songFilename = song.Filename;
 
                 if (!songFilename.EndsWith(".mp3"))
                     filePath += $"{songFilename}.mp3";
@@ -187,7 +184,6 @@ namespace Icarus.Controllers.Managers
                 {
                     await (songFile.CopyToAsync(fileStream));
                     song.SongDirectory = dirMgr.SongDirectory;
-
 
                     _logger.Info("Song successfully saved to filesystem");
                 }
@@ -209,7 +205,8 @@ namespace Icarus.Controllers.Managers
         
         public async Task<SongData> RetrieveSong(Song songMetaData)
         {
-            SongData song = new SongData();
+            var song = new SongData();
+
             try
             {
                 Console.WriteLine("Fetching song from filesystem");
@@ -235,9 +232,11 @@ namespace Icarus.Controllers.Managers
                 Data = uncompressedSong
             };
         }
-        private async Task<Song> SaveSongTemp(IFormFile songFile, string filePath)
+        private async Task<Song> SaveSongTemp(IFormFile songFile)
         {
             var song = new Song();
+            var filename = song.GenerateFilename();
+            var filePath = Path.Combine(_tempDirectoryRoot, filename);
 
 
             using (var filestream = new FileStream(filePath, FileMode.Create))
@@ -250,7 +249,8 @@ namespace Icarus.Controllers.Managers
             song =  meta.RetrieveMetaData(filePath);
 
             _logger.Info("Assigning song filename");
-            song.Filename = songFile.FileName;
+            song.Filename = filename;
+            song.SongDirectory = _tempDirectoryRoot;
             song.DateCreated = DateTime.Now;
 
             return song;
@@ -300,14 +300,15 @@ namespace Icarus.Controllers.Managers
         {
             _logger.Info("Starting process to save the song to the database");
 
-            SaveAlbumToDatabase(ref song);//, albumStore);
-            SaveArtistToDatabase(ref song);//, artistStore);
-            SaveGenreToDatabase(ref song);//, genreStore);
+            SaveAlbumToDatabase(ref song);
+            SaveArtistToDatabase(ref song);
+            SaveGenreToDatabase(ref song);
 
             var info = "Saving Song to DB";
             Console.WriteLine(info);
             _logger.Info(info);
             _songContext.Add(song);
+            _songContext.SaveChanges();
         }
         private void SaveAlbumToDatabase(ref Song song)
         {
@@ -318,22 +319,22 @@ namespace Icarus.Controllers.Managers
             album.Title = song.AlbumTitle;
             album.AlbumArtist = song.Artist;
             var albumTitle = song.AlbumTitle;
+            var albumArtist = song.Artist;
             AlbumContext albumContext = new AlbumContext(_connectionString);
 
-            if (!(albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle)) != null))
+            var albumRetrieved = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle) && alb.AlbumArtist.Equals(albumArtist));
+
+            if (albumRetrieved == null)
             {
                 album.SongCount = 1;
                 albumContext.Add(album);
-                album = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle));
+                albumContext.SaveChanges();
+
                 Console.WriteLine($"Album Id {album.AlbumID}");
             }
             else
             {
-                var albumRetrieved = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle));
                 album.AlbumID = albumRetrieved.AlbumID;
-                album.SongCount = albumRetrieved.SongCount + 1;
-
-                albumContext.Update(album);
             }
 
             song.AlbumID = album.AlbumID;
@@ -349,20 +350,17 @@ namespace Icarus.Controllers.Managers
             var artistTitle = artist.Name;
             ArtistContext artistContext = new ArtistContext(_connectionString);
 
-            if (!(artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle)) != null))
+            var artistRetrieved = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle));
+
+            if (artistRetrieved == null)
             {
                 artist.SongCount = 1;
                 artistContext.Add(artist);
-                artist = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle));
+                artistContext.SaveChanges();
             }
             else
             {
-                var artistRetrieved = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle));
                 artist.ArtistID = artistRetrieved.ArtistID;
-                artist.SongCount = artistRetrieved.SongCount + 1;
-
-                artistContext.Update(artist);
-                artistContext.SaveChanges();
             }
 
             song.ArtistID = artist.ArtistID;
@@ -379,12 +377,14 @@ namespace Icarus.Controllers.Managers
 
             var genreName = song.Genre;
             var genreContext = new GenreContext(_connectionString);
+            var genreRetrieved = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName));
 
-            if (! (genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName)) != null))
+            if (genreRetrieved == null)
             {
                 genreContext.Add(genre);
+                genreContext.SaveChanges();
                 Console.WriteLine("Going to find genre");
-                genre = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName));
+
                 var genreDump = $"Genre ID {genre.GenreID} GenreName {genre.GenreName}" +
                     $" Genre song Count {genre.SongCount}";
                 Console.WriteLine(genreDump);
@@ -392,12 +392,7 @@ namespace Icarus.Controllers.Managers
             }
             else
             {
-                var genreRetrieved = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName));
                 genre.GenreID = genreRetrieved.GenreID;
-                genre.SongCount = genreRetrieved.SongCount + 1;
-
-                genreContext.Update(genre);
-                genreContext.SaveChanges();
             }
 
             song.GenreID = genre.GenreID;

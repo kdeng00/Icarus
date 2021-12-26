@@ -37,9 +37,7 @@ namespace Icarus.Controllers.Managers
         {
             _logger.Info("Saving cover art record to the database");
             _coverArtContext.Add(coverArt);
-            var songTitle = coverArt.SongTitle;
-
-            coverArt = _coverArtContext.CoverArtImages.FirstOrDefault(cov => cov.SongTitle.Equals(songTitle));
+            _coverArtContext.SaveChanges();
 
             song.CoverArtID = coverArt.CoverArtID;
         }
@@ -80,14 +78,18 @@ namespace Icarus.Controllers.Managers
             try
             {
                 var dirMgr = new DirectoryManager(_rootCoverArtPath);
+                var defaultExtension = ".png";
                 dirMgr.CreateDirectory(song);
-                // TODO:  Do not use metadata for file structure
-                var imagePath = dirMgr.SongDirectory + song.Title + ".png";
+
                 var coverArt = new CoverArt
                 {
-                    SongTitle = song.Title,
-                    ImagePath = imagePath
+                    SongTitle = song.Title
                 };
+
+                var segment = coverArt.GenerateFilename(0);
+                var imagePath = dirMgr.SongDirectory + segment + defaultExtension;
+
+                coverArt.ImagePath = imagePath;
 
                 var metaData = new MetadataRetriever();
                 var imgBytes = metaData.RetrieveCoverArtBytes(song);
@@ -100,7 +102,7 @@ namespace Icarus.Controllers.Managers
                 else
                 {
                     _logger.Info("Song has no cover art, applying stock cover art");
-                    coverArt.ImagePath = _rootCoverArtPath + "CoverArt.png";
+                    coverArt.ImagePath = _rootCoverArtPath + $"{segment}{defaultExtension}";
                     metaData.UpdateCoverArt(song, coverArt);
                     File.WriteAllBytes(coverArt.ImagePath, _stockCoverArt);
                 }
