@@ -119,28 +119,7 @@ namespace Icarus.Controllers.Utilities
             return null;
         }
 
-        public void UpdateMetadata(Song song)
-        {
-            try
-            {
-                Console.WriteLine("Updating song metadata"); 
-                _logger.Info("Updating song metadata");
-                var filePath = song.SongPath();
-                TagLib.File fileTag = TagLib.File.Create(filePath);
-                fileTag.Tag.Title = song.Title;
-                fileTag.Tag.Genres = new []{song.Genre};
-                fileTag.Save();
-                Console.WriteLine("Song metadata updated");
-                _logger.Info("Song metadata updated");
-
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                Console.WriteLine($"An error occurred: \n{msg}");
-                _logger.Error(msg, "An error occurred");
-            }
-        }
+        
         public void UpdateMetadata(Song updatedSong, Song oldSong)
         {
             try
@@ -184,6 +163,7 @@ namespace Icarus.Controllers.Utilities
             var genre = updatedSong.Genre;
             var year = updatedSong.Year;
             TagLib.File fileTag = TagLib.File.Create(filePath);
+
             try
             {
                 Console.WriteLine($"Updating metadata of {title}");
@@ -192,7 +172,6 @@ namespace Icarus.Controllers.Utilities
                 foreach (var key in checkedValues.Keys)
                 {
                     bool result = checkedValues[key];
-
 
                     if (!result)
                         switch (key.ToLower())
@@ -234,18 +213,7 @@ namespace Icarus.Controllers.Utilities
         }
         private void InitializeUpdatedSong(Song song)
         {
-            _updatedSong = new Song
-            {
-                SongID = song.SongID,
-                Title = song.Title,
-                AlbumTitle = song.AlbumTitle,
-                Artist = song.Artist,
-                Genre = song.Genre,
-                Year = song.Year,
-                Duration = song.Duration,
-                Filename = song.Filename,
-                SongDirectory = song.SongDirectory
-            };
+            _updatedSong = song;
         }
         private void PrintMetadata()
         {
@@ -289,6 +257,7 @@ namespace Icarus.Controllers.Utilities
             var songValues = new SortedDictionary<string, bool>();
             Console.WriteLine("Checking for null data");
             _logger.Info("Checking for null data");
+
             try
             {
                 songValues["Title"] = String.IsNullOrEmpty(song.Title);
@@ -298,7 +267,7 @@ namespace Icarus.Controllers.Utilities
 
                 if (song.Year == null)
                     songValues["Year"] = true;
-                else if (song.Year==0)
+                else if (song.Year == 0)
                     songValues["Year"] = true;
                 else
                     songValues["Year"] = false;

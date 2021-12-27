@@ -45,6 +45,10 @@ namespace Icarus.Models
         #endregion
 
 
+        #region Constructors
+        #endregion
+
+
         #region Methods
         public string SongPath()
         {
@@ -60,7 +64,7 @@ namespace Icarus.Models
             return fullPath;
         }
 
-        public string GenerateFilename()
+        public string GenerateFilename(int flag = 0)
         {
             const int length = 25;
             const string chars = "ABCDEF0123456789";
@@ -69,7 +73,7 @@ namespace Icarus.Models
                 s[random.Next(s.Length)]).ToArray());
             var extension = ".mp3";
 
-            return $"{filename}{extension}";
+            return flag == 0 ? filename : $"{filename}{extension}";
         }
         #endregion
     }

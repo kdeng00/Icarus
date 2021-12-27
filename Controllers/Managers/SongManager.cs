@@ -66,6 +66,12 @@ namespace Icarus.Controllers.Managers
         public SongResult UpdateSong(Song song)
         {
             var result = new SongResult();
+            if (!DoesSongExist(song))
+            {
+                result.SongTitle = song.Title;
+                result.Message = "Song does not exist";
+                return result;
+            }
 
             try
             {
@@ -78,16 +84,17 @@ namespace Icarus.Controllers.Managers
 
                 var updatedSong = updateMetadata.UpdatedSongRecord;
 
-                var updatedAlbum = UpdateAlbumInDatabase(oldSongRecord, updatedSong);
+                var albMgr = new AlbumManager(_config);
+                var gnrMgr = new GenreManager(_config);
+                var artMgr = new ArtistManager(_config);
+                var updatedAlbum = albMgr.UpdateAlbumInDatabase(oldSongRecord, updatedSong);
                 oldSongRecord.AlbumID = updatedAlbum.AlbumID;
 
-                var updatedArtist = UpdateArtistInDatabase(oldSongRecord, updatedSong);
+                var updatedArtist = artMgr.UpdateArtistInDatabase(oldSongRecord, updatedSong);
                 oldSongRecord.ArtistID = updatedArtist.ArtistID;
 
-                var updatedGenre = UpdateGenreInDatabase(oldSongRecord, updatedSong);
-                Console.WriteLine($"Old Genre Id {oldSongRecord.GenreID}");
+                var updatedGenre = gnrMgr.UpdateGenreInDatabase(oldSongRecord, updatedSong);
                 oldSongRecord.GenreID = updatedGenre.GenreID;
-                Console.WriteLine($"Updated Genre ID {updatedGenre.GenreID}");
 
                 UpdateSongInDatabase(ref oldSongRecord, ref updatedSong, ref result);
 
@@ -125,6 +132,15 @@ namespace Icarus.Controllers.Managers
             return successful;
         }
 
+        public bool DoesSongExist(Song song)
+        {
+            if (!_songContext.DoesRecordExist(song))
+            {
+                return false;
+            }
+
+            return true;
+        }
         public void DeleteSong(Song song)
         {
             try
@@ -153,9 +169,6 @@ namespace Icarus.Controllers.Managers
         }
 
 
-        
-        
-        
         public async Task SaveSongToFileSystem(IFormFile songFile)
         {
             try
@@ -183,7 +196,7 @@ namespace Icarus.Controllers.Managers
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await (songFile.CopyToAsync(fileStream));
-                    song.SongDirectory = dirMgr.SongDirectory;
+                    song.SongDirectory = fileDir;
 
                     _logger.Info("Song successfully saved to filesystem");
                 }
@@ -300,102 +313,18 @@ namespace Icarus.Controllers.Managers
         {
             _logger.Info("Starting process to save the song to the database");
 
-            SaveAlbumToDatabase(ref song);
-            SaveArtistToDatabase(ref song);
-            SaveGenreToDatabase(ref song);
+            var albumMgr = new AlbumManager(_config);
+            var artistMgr = new ArtistManager(_config);
+            var genreMgr = new GenreManager(_config);
+            albumMgr.SaveAlbumToDatabase(ref song);
+            artistMgr.SaveArtistToDatabase(ref song);
+            genreMgr.SaveGenreToDatabase(ref song);
 
             var info = "Saving Song to DB";
             Console.WriteLine(info);
             _logger.Info(info);
             _songContext.Add(song);
             _songContext.SaveChanges();
-        }
-        private void SaveAlbumToDatabase(ref Song song)
-        {
-            _logger.Info("Starting process to save the album record of the song to the database");
-
-            var album = new Album();
-
-            album.Title = song.AlbumTitle;
-            album.AlbumArtist = song.Artist;
-            var albumTitle = song.AlbumTitle;
-            var albumArtist = song.Artist;
-            AlbumContext albumContext = new AlbumContext(_connectionString);
-
-            var albumRetrieved = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle) && alb.AlbumArtist.Equals(albumArtist));
-
-            if (albumRetrieved == null)
-            {
-                album.SongCount = 1;
-                albumContext.Add(album);
-                albumContext.SaveChanges();
-
-                Console.WriteLine($"Album Id {album.AlbumID}");
-            }
-            else
-            {
-                album.AlbumID = albumRetrieved.AlbumID;
-            }
-
-            song.AlbumID = album.AlbumID;
-        }
-        private void SaveArtistToDatabase(ref Song song)
-        {
-            _logger.Info("Starting process to save the artist record of the song to the database");
-
-            var artist = new Artist();
-
-            artist.Name = song.Artist;
-            artist.SongCount = 1;
-            var artistTitle = artist.Name;
-            ArtistContext artistContext = new ArtistContext(_connectionString);
-
-            var artistRetrieved = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle));
-
-            if (artistRetrieved == null)
-            {
-                artist.SongCount = 1;
-                artistContext.Add(artist);
-                artistContext.SaveChanges();
-            }
-            else
-            {
-                artist.ArtistID = artistRetrieved.ArtistID;
-            }
-
-            song.ArtistID = artist.ArtistID;
-        }
-        private void SaveGenreToDatabase(ref Song song)
-        {
-            _logger.Info("Starting process to save the genre record of the song to the database");
-
-            var genre = new Genre
-            {
-                GenreName = song.Genre,
-                SongCount = 1
-            };
-
-            var genreName = song.Genre;
-            var genreContext = new GenreContext(_connectionString);
-            var genreRetrieved = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName));
-
-            if (genreRetrieved == null)
-            {
-                genreContext.Add(genre);
-                genreContext.SaveChanges();
-                Console.WriteLine("Going to find genre");
-
-                var genreDump = $"Genre ID {genre.GenreID} GenreName {genre.GenreName}" +
-                    $" Genre song Count {genre.SongCount}";
-                Console.WriteLine(genreDump);
-                _logger.Info(genreDump);
-            }
-            else
-            {
-                genre.GenreID = genreRetrieved.GenreID;
-            }
-
-            song.GenreID = genre.GenreID;
         }
         
 
@@ -420,9 +349,7 @@ namespace Icarus.Controllers.Managers
         }
         private bool DoesSongExistOnFilesystem(Song song)
         {
-            var songPath = song.SongPath();
-
-            if (!System.IO.File.Exists(songPath))
+            if (!System.IO.File.Exists(song.SongPath()))
             {
                 _logger.Info("Song does not exist on the filesystem");
 
@@ -434,175 +361,10 @@ namespace Icarus.Controllers.Managers
             return true;
         }
 
-        private Album UpdateAlbumInDatabase(Song oldSongRecord, Song newSongRecord)
-        {
-            var albumContext = new AlbumContext(_connectionString);
-
-            var albumRecord = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(oldSongRecord.AlbumTitle));
-            var oldAlbumTitle = oldSongRecord.AlbumTitle;
-            var oldAlbumArtist = oldSongRecord.Artist;
-            var newAlbumTitle = newSongRecord.AlbumTitle;
-            var newAlbumArtist = newSongRecord.Artist;
-
-            var info = string.Empty;
-
-            if (string.IsNullOrEmpty(newAlbumArtist))
-                newAlbumArtist = oldAlbumArtist;
-            if (string.IsNullOrEmpty(newAlbumTitle))
-                newAlbumTitle = oldAlbumTitle;
-
-            if ((string.IsNullOrEmpty(newAlbumTitle) && string.IsNullOrEmpty(newAlbumArtist) || 
-                        oldAlbumTitle.Equals(newAlbumTitle) && oldAlbumArtist.Equals(newAlbumArtist)))
-            {
-                _logger.Info("No change to the song's album");
-                return albumRecord;
-            }
-
-            info = "Change to the song's album";
-            _logger.Info(info);
-
-            if (!(albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(newSongRecord.AlbumTitle)) != null))
-            {
-                _logger.Info("Creating new album record");
-
-                var newAlbumRecord = new Album
-                {
-                    Title = newAlbumTitle,
-                    AlbumArtist = newAlbumArtist
-                };
-
-                albumContext.Add(newAlbumRecord);
-
-                return albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(oldSongRecord.AlbumTitle));
-            }
-            else
-            {
-                _logger.Info("Updating existing album record");
-
-                var existingAlbumRecord = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(newSongRecord.AlbumTitle));
-                existingAlbumRecord.AlbumArtist = newAlbumArtist;
-
-                albumContext.Update(existingAlbumRecord);
-                albumContext.SaveChanges();
-
-                return existingAlbumRecord;
-            }
-        }
-        private Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord)
-        {
-            var artistContext = new ArtistContext(_connectionString);
-
-            var oldArtistRecord = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(oldSongRecord.AlbumTitle));
-            var oldArtistName = oldArtistRecord.Name;
-            var newArtistName = newSongRecord.Artist;
-
-            if (string.IsNullOrEmpty(newArtistName) || oldArtistName.Equals(newArtistName))
-            {
-                _logger.Info("No change to the song's Artist");
-                return oldArtistRecord;
-            }
-
-            _logger.Info("Change to the song's record found");
-
-            if (oldArtistRecord.SongCount <= 1)
-            {
-                _logger.Info("Deleting artist record that no longer has any songs");
-
-                artistContext.Remove(oldArtistRecord);
-                artistContext.SaveChanges();
-            }
-
-            if (!(artistContext.Artists.FirstOrDefault(art => art.Name.Equals(oldSongRecord.AlbumTitle)) != null))
-            {
-                _logger.Info("Creating new artist record");
-
-                var newArtistRecord = new Artist
-                {
-                    Name = newArtistName
-                };
-
-                artistContext.Add(newArtistRecord);
-                
-                return artistContext.Artists.FirstOrDefault(art => art.Name.Equals(newSongRecord.AlbumTitle));
-            }
-            else
-            {
-                _logger.Info("Updating existing artist record");
-
-                var existingArtistRecord = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(newSongRecord.AlbumTitle));
-
-                artistContext.Update(existingArtistRecord);
-                artistContext.SaveChanges();
-
-                return existingArtistRecord;
-            }
-        }
-        private Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord)
-        {
-            var genreContext = new GenreContext(_connectionString);
-            var oldGenreRecord = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldSongRecord.Genre));
-            var oldGenreName = oldGenreRecord.GenreName;
-            var newGenreName = newSongRecord.Genre;
-
-            if (string.IsNullOrEmpty(newGenreName) || oldGenreName.Equals(newGenreName))
-            {
-                _logger.Info("No change to the song's Genre");
-                return oldGenreRecord;
-            }
-
-            _logger.Info("Change to the song's genre found");
-
-            if (oldGenreRecord.SongCount <= 1)
-            {
-                _logger.Info("Deleting genre record");
-
-                genreContext.Remove(oldGenreRecord);
-                genreContext.SaveChanges();
-            }
-
-            if (!(genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldSongRecord.Genre)) != null))
-            {
-                _logger.Info("Creating new genre record");
-
-                var newGenreRecord = new Genre
-                {
-                    GenreName = newGenreName
-                };
-
-                genreContext.Add(newGenreRecord);
-
-                return genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(newGenreRecord.GenreName));
-            }
-            else
-            {
-                _logger.Info("Updating existing genre record");
-
-                var existingGenreRecord = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldGenreRecord.GenreName));
-
-                genreContext.Update(existingGenreRecord);
-                genreContext.SaveChanges();
-                return genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(existingGenreRecord.GenreName));
-            }
-        }
         
         private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, ref SongResult result)
         {
-            var updatedSongRecord = new Song
-            {
-                SongID = oldSongRecord.SongID,
-                Title = oldSongRecord.Title,
-                Artist = oldSongRecord.Artist,
-                AlbumTitle = oldSongRecord.AlbumTitle,
-                Genre = oldSongRecord.Genre,
-                Year = oldSongRecord.Year,
-                Filename = oldSongRecord.Filename,
-                SongDirectory = oldSongRecord.SongDirectory,
-                ArtistID = oldSongRecord.ArtistID,
-                AlbumID = oldSongRecord.AlbumID,
-                GenreID = oldSongRecord.GenreID
-
-            };
-            var artistOrAlbumChanged = false;
+            var updatedSongRecord = oldSongRecord;
 
             var songContext = new SongContext(_connectionString);
 
@@ -619,12 +381,10 @@ namespace Icarus.Controllers.Managers
             if (!string.IsNullOrEmpty(newSongRecord.AlbumTitle))
             {
                 updatedSongRecord.AlbumTitle = newSongRecord.AlbumTitle;
-                artistOrAlbumChanged = true;
             }
             if (!string.IsNullOrEmpty(newSongRecord.Artist))
             {
                 updatedSongRecord.Artist = newSongRecord.Artist;
-                artistOrAlbumChanged = true;
             }
             if (!string.IsNullOrEmpty(newSongRecord.Genre))
             {
@@ -637,51 +397,11 @@ namespace Icarus.Controllers.Managers
 
             _logger.Info("Applied changes to song record");
 
-            if (artistOrAlbumChanged)
-            {
-                _logger.Info("Change to song's album or artist");
-
-                DirectoryManager dirMgr = new DirectoryManager(_config);
-                var oldSongPath = updatedSongRecord.SongPath();
-                var newSongPath = dirMgr.GenerateSongPath(updatedSongRecord);
-                var filename = updatedSongRecord.Filename;
-
-                Console.WriteLine($"Old song path {oldSongPath}");
-                Console.WriteLine($"New song path {newSongPath}");
-
-                _logger.Info("Copying song to the new path");
-
-                System.IO.File.Copy(oldSongPath, newSongPath + filename, true);
-
-                _logger.Info("Checking to see if song successfully copied");
-
-                if (!System.IO.File.Exists(newSongPath + filename))
-                {
-                    _logger.Info("Song did not successfully copy");
-
-                    Console.WriteLine("New path does not exist when it should");
-                }
-
-                updatedSongRecord.SongDirectory = newSongPath;
-                updatedSongRecord.Filename = filename;
-                
-                _logger.Info("Deleting old song path");
-
-                System.IO.File.Delete(oldSongPath);
-
-                if (System.IO.File.Exists(oldSongPath))
-                    Console.WriteLine("Old path exists when it should not");
-            }
 
             _logger.Info("Saving song metadata to the database");
 
-            if (songContext.Songs.FirstOrDefault(sng => sng.Title.Equals(updatedSongRecord.Title)) != null)
-            {
-                songContext.Update(updatedSongRecord);
-                songContext.SaveChanges();
-            }
-            else
-                songContext.Add(updatedSongRecord);
+            songContext.Update(updatedSongRecord);
+            songContext.SaveChanges();
 
             newSongRecord = updatedSongRecord;
 
@@ -693,70 +413,17 @@ namespace Icarus.Controllers.Managers
         {
             _logger.Info("Starting process to delete records related to the song from the database");
 
-            DeleteAlbumFromDatabase(song);
-            DeleteArtistFromDatabase(song);
-            DeleteGenreFromDatabase(song);
+            var albumMgr = new AlbumManager(_config);
+            var artistMgr = new ArtistManager(_config);
+            var genreMgr = new GenreManager(_config);
+            albumMgr.DeleteAlbumFromDatabase(song);
+            artistMgr.DeleteArtistFromDatabase(song);
+            genreMgr.DeleteGenreFromDatabase(song);
 
             var sngContext = new SongContext(_connectionString);
             sngContext.Songs.Remove(song);
             sngContext.SaveChanges();
         }
-        private void DeleteAlbumFromDatabase(Song song)
-        {
-            var albumContext = new AlbumContext(_connectionString);
-
-            if (!(albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(song.AlbumTitle)) != null))
-            {
-                _logger.Info("Cannot delete the album record because it does not exist");
-                return;
-            }
-
-            var album = albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(song.AlbumTitle));
-
-            if (album.SongCount <= 1)
-            {
-                albumContext.Remove(album);
-                albumContext.SaveChanges();
-            }
-        }
-        private void DeleteArtistFromDatabase(Song song)
-        {
-            var artistContext = new ArtistContext(_connectionString);
-
-            if (!(artistContext.Artists.FirstOrDefault(art => art.Name.Equals(song.Artist)) != null))
-            {
-                _logger.Info("Cannot delete the artist record because it does not exist");
-                return;
-            }
-
-            var artist = artistContext.Artists.FirstOrDefault(art => art.Name.Equals(song.Artist));
-
-            if (artist.SongCount <= 1)
-            {
-                artistContext.Remove(artist);
-                artistContext.SaveChanges();
-            }
-        }
-        private void DeleteGenreFromDatabase(Song song)
-        {
-            var genreContext = new GenreContext(_connectionString);
-
-            if (!(genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(song.Genre)) != null))
-            {
-                _logger.Info("Cannot delete the genre record because it does not exist");
-                return;
-            }
-
-            var genre = genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(song.Genre));
-
-            if (genre.SongCount <= 1)
-            {
-                genreContext.Remove(genre);
-                genreContext.SaveChanges();
-            }
-        }
-        
-
         #endregion    
     }
 }

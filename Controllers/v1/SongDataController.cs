@@ -47,7 +47,7 @@ namespace Icarus.Controllers.V1
 
 
 
-        [HttpGet("{id}")]
+        [HttpGet("download/{id}")]
         [Route("private-scoped")]
         [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
@@ -93,7 +93,7 @@ namespace Icarus.Controllers.V1
             return NotFound();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {

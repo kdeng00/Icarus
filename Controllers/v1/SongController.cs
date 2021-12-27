@@ -88,11 +88,13 @@ namespace Icarus.Controllers.V1
             Console.WriteLine("Retrieving filepath of song");
             _logger.LogInformation("Retrieving filepath of song");
 
-            if (!context.DoesRecordExist(song))
+            if (!_songMgr.DoesSongExist(song))
+            {
                 return NotFound(new SongResult
                 {
-                        Message = "Song does not exist"
+                    Message = "Song does not exist"
                 });
+            }
 
             var songRes = _songMgr.UpdateSong(song);
 
