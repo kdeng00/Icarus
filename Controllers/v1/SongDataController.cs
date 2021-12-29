@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 using Icarus.Controllers.Managers;
 using Icarus.Models;
@@ -60,6 +61,18 @@ namespace Icarus.Controllers.V1
             return File(song.Data, "application/x-msdownload", songMetaData.Filename);
         }
 
+        // Assumes that the song already has metadata such as
+        // Title
+        // Artist
+        // Album
+        // Genre
+        // Year
+        // Track
+        // Track count
+        // Disc
+        // Disc count
+        // Cover art
+        //
         [HttpPost("upload"), DisableRequestSizeLimit]
         [Route("private-scoped")]
         [Authorize("upload:songs")]
@@ -93,6 +106,33 @@ namespace Icarus.Controllers.V1
             return NotFound();
         }
 
+        // The client is expected to send the file, metadata, and cover art separately.
+        // Any metadata already on the file will be overwritten with values from the metadata
+        // as well as the cover art
+        //
+        [HttpPost("upload/with/data")]
+        [Route("private-scoped")]
+        [Authorize("upload:songs")]
+        public async Task<IActionResult> Post ([FromForm] UploadSongWithDataForm up)
+        {
+            try
+            {
+                if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
+                {
+                    var song = Newtonsoft.Json.JsonConvert.DeserializeObject<Song>(up.SongFile);
+                    _logger.LogInformation($"Song title: {song.Title}");
+
+                    await _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, "An error occurred");
+            }
+
+            return Ok();
+        }
+
         [HttpDelete("delete/{id}")]
         [Authorize("delete:songs")]
         public IActionResult Delete(int id)
@@ -117,6 +157,17 @@ namespace Icarus.Controllers.V1
 
                 return Ok();
             }
+
         }
+
+            public class UploadSongWithDataForm
+            {
+                [FromForm(Name = "file")]
+                public IFormFile SongData { get; set; }
+                [FromForm(Name = "cover")]
+                public IFormFile CoverArtData { get; set; }
+                [FromForm(Name = "metadata")]
+                public string SongFile { get; set; }
+            }
     }
 }

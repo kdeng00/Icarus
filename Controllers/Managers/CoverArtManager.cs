@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using System.IO;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 using Icarus.Constants;
 using Icarus.Controllers.Utilities;
@@ -116,6 +118,34 @@ namespace Icarus.Controllers.Managers
             }
             
             return null;
+        }
+
+        public CoverArt SaveCoverArt(IFormFile data, Song song)
+        {
+            var cover = new CoverArt { SongTitle = song.Title };
+
+            try
+            {
+                var dirMgr = new DirectoryManager(_rootCoverArtPath);
+                var defaultExtension = ".png";
+                dirMgr.CreateDirectory(song);
+
+                var segment = cover.GenerateFilename(0);
+                var imagePath = dirMgr.SongDirectory + segment + defaultExtension;
+
+                cover.ImagePath = imagePath;
+
+                using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    data.CopyTo(fileStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.Message, "An error occurred");
+            }
+
+            return cover;
         }
 
         public CoverArt GetCoverArt(Song song)

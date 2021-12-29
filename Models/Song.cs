@@ -18,6 +18,8 @@ namespace Icarus.Models
         public string AlbumTitle { get; set; }
         [JsonProperty("artist")]
         public string Artist { get; set; }
+        [JsonProperty("album_artist")]
+        public string AlbumArtist { get; set; }
         [JsonProperty("year")]
         public int? Year { get; set; }
         [JsonProperty("genre")]
@@ -30,8 +32,12 @@ namespace Icarus.Models
         public string SongDirectory { get; set; }
         [JsonProperty("track")]
         public int Track { get; set; } = 0;
+        [JsonProperty("track_count")]
+        public int TrackCount { get; set; } = 0;
         [JsonProperty("disc")]
         public int Disc { get; set; } = 0;
+        [JsonProperty("disc_count")]
+        public int DiscCount { get; set; } = 0;
         [JsonIgnore]
         public int? AlbumID { get; set; }
         [JsonIgnore]

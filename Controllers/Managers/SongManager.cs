@@ -176,27 +176,24 @@ namespace Icarus.Controllers.Managers
                 _logger.Info("Starting the process of saving the song to the filesystem");
 
                 var song = await SaveSongTemp(songFile);
-                System.IO.File.Delete(song.SongPath());
 
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
 
-                var fileDir = dirMgr.SongDirectory;
-                var filePath = fileDir;
-                var songFilename = song.Filename;
-
-                if (!songFilename.EndsWith(".mp3"))
-                    filePath += $"{songFilename}.mp3";
-                else
-                    filePath += $"{songFilename}";
+                var filePath = dirMgr.SongDirectory;
+                filePath += $"{song.Filename}";
 
                 _logger.Info($"Absolute song path: {filePath}");
 
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    await (songFile.CopyToAsync(fileStream));
-                    song.SongDirectory = fileDir;
+                    var songBytes = await System.IO.File.ReadAllBytesAsync(song.SongPath());
+
+                    System.IO.File.WriteAllBytesAsync(filePath, songBytes);
+                    System.IO.File.Delete(song.SongPath());
+
+                    song.SongDirectory = dirMgr.SongDirectory;
 
                     _logger.Info("Song successfully saved to filesystem");
                 }
@@ -212,6 +209,55 @@ namespace Icarus.Controllers.Managers
                 var msg = ex.Message;
                 _logger.Error(msg, "An error occurred");
             }
+        }
+
+        public async Task SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
+        {
+            if (string.IsNullOrEmpty(song.Filename))
+            {
+                song.Filename = song.GenerateFilename(1);
+            }
+
+            song.SongDirectory = _tempDirectoryRoot;
+            song.DateCreated = DateTime.Now;
+
+            using (var filestream = new FileStream(song.SongPath(), FileMode.Create))
+            {
+                _logger.Info("Saving song to temporary directory");
+                await songFile.CopyToAsync(filestream);
+            }
+
+            var coverMgr = new CoverArtManager(_config);
+            var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
+
+            var meta = new MetadataRetriever();
+            song.Duration = meta.RetrieveSongDuration(song.SongPath());
+            // const int trackCount = meta.RetrieveTrackCount(song.)
+            meta.UpdateMetadata(song, song);
+            meta.UpdateCoverArt(song, coverArt);
+
+            DirectoryManager dirMgr = new DirectoryManager(_config, song);
+            dirMgr.CreateDirectory();
+
+            var filePath = dirMgr.SongDirectory + song.Filename;
+
+            _logger.Info($"Absolute song path: {filePath}");
+
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                var songBytes = await System.IO.File.ReadAllBytesAsync(song.SongPath());
+
+                await System.IO.File.WriteAllBytesAsync(filePath, songBytes);
+                System.IO.File.Delete(song.SongPath());
+                song.SongDirectory = dirMgr.SongDirectory;
+
+                _logger.Info("Song successfully saved to filesystem");
+            }
+
+
+            coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);
+            SaveSongToDatabase(song);
         }
 
         
@@ -248,22 +294,21 @@ namespace Icarus.Controllers.Managers
         private async Task<Song> SaveSongTemp(IFormFile songFile)
         {
             var song = new Song();
-            var filename = song.GenerateFilename();
-            var filePath = Path.Combine(_tempDirectoryRoot, filename);
+            _logger.Info("Assigning song filename");
+            song.SongDirectory = _tempDirectoryRoot;
+            song.Filename = song.GenerateFilename(1);
 
-
-            using (var filestream = new FileStream(filePath, FileMode.Create))
+            using (var filestream = new FileStream(song.SongPath(), FileMode.Create))
             {
                 _logger.Info("Saving song to temporary directory");
                 await songFile.CopyToAsync(filestream);
             }
 
             MetadataRetriever meta = new MetadataRetriever();
-            song =  meta.RetrieveMetaData(filePath);
+            song =  meta.RetrieveMetaData(song.SongPath());
 
-            _logger.Info("Assigning song filename");
-            song.Filename = filename;
             song.SongDirectory = _tempDirectoryRoot;
+            song.Filename = song.GenerateFilename(1);
             song.DateCreated = DateTime.Now;
 
             return song;

@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Web;
 using NLog.Web.AspNetCore;
@@ -112,6 +113,9 @@ namespace Icarus
             services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
+
+            services.AddControllers()
+                .AddNewtonsoftJson();
         }
 
         // Called by the runtime. Use this method to configure the HTTP request pipeline.

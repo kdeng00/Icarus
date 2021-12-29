@@ -81,13 +81,21 @@ namespace Icarus.Controllers.Utilities
                 _genre = string.Join("", fileTag.Tag.Genres);
                 _year = (int)fileTag.Tag.Year;
                 _duration = (int)fileTag.Properties.Duration.TotalSeconds;
+                var albumArtist = string.Join("", fileTag.Tag.AlbumArtists);
+                var track = (int)fileTag.Tag.Track;
+                var disc = (int)fileTag.Tag.Disc;
 
                 song.Title = _title;
                 song.Artist = _artist;
                 song.AlbumTitle = _album;
+                song.AlbumArtist = albumArtist;
                 song.Genre = _genre;
                 song.Year = _year;
                 song.Duration = _duration;
+                song.Track = track;
+                song.Disc = disc;
+                song.TrackCount = (int)fileTag.Tag.TrackCount;
+                song.DiscCount = (int)fileTag.Tag.DiscCount;
             }
             catch (Exception ex)
             {
@@ -98,6 +106,15 @@ namespace Icarus.Controllers.Utilities
             }
 
             return song;
+        }
+
+        public int RetrieveSongDuration(string filepath)
+        {
+            var duration = 0;
+            var fileTag = TagLib.File.Create(filepath);
+            duration = (int)fileTag.Properties.Duration.TotalSeconds;
+
+            return duration;
         }
 
         public byte[] RetrieveCoverArtBytes(Song song)
@@ -162,6 +179,11 @@ namespace Icarus.Controllers.Utilities
             var album = updatedSong.AlbumTitle;
             var genre = updatedSong.Genre;
             var year = updatedSong.Year;
+            var albumArtist = updatedSong.AlbumArtist;
+            var track = updatedSong.Track;
+            var trackCount = updatedSong.TrackCount;
+            var disc = updatedSong.Disc;
+            var discCount = updatedSong.DiscCount;
             TagLib.File fileTag = TagLib.File.Create(filePath);
 
             try
@@ -195,6 +217,26 @@ namespace Icarus.Controllers.Utilities
                             case "year":
                                 _updatedSong.Year = year;
                                 fileTag.Tag.Year = (uint)year;
+                                break;
+                            case "albumartist":
+                                _updatedSong.AlbumArtist = albumArtist;
+                                fileTag.Tag.AlbumArtists = new []{albumArtist};
+                                break;
+                            case "track":
+                                _updatedSong.Track = track;
+                                fileTag.Tag.Track = (uint)(track);
+                                break;
+                            case "trackcount":
+                                _updatedSong.TrackCount = trackCount;
+                                fileTag.Tag.TrackCount = (uint)(trackCount);
+                                break;
+                            case "disc":
+                                _updatedSong.Disc = disc;
+                                fileTag.Tag.Disc = (uint)(disc);
+                                break;
+                            case "disccount":
+                                _updatedSong.DiscCount = discCount;
+                                fileTag.Tag.DiscCount = (uint)(discCount);
                                 break;
                         }
                 }
@@ -264,13 +306,13 @@ namespace Icarus.Controllers.Utilities
                 songValues["Artists"] = String.IsNullOrEmpty(song.Artist);
                 songValues["Album"] = String.IsNullOrEmpty(song.AlbumTitle);
                 songValues["Genre"] = String.IsNullOrEmpty(song.Genre);
+                songValues["AlbumArtist"] = String.IsNullOrEmpty(song.AlbumArtist);
 
-                if (song.Year == null)
-                    songValues["Year"] = true;
-                else if (song.Year == 0)
-                    songValues["Year"] = true;
-                else
-                    songValues["Year"] = false;
+                songValues["Year"] = CheckIntField(song.Year);
+                songValues["Track"] = CheckIntField(song.Track);
+                songValues["TrackCount"] = CheckIntField(song.TrackCount);
+                songValues["Disc"] = CheckIntField(song.Disc);
+                songValues["DiscCount"] = CheckIntField(song.Disc);
 
                 Console.WriteLine("Checking for null data completed");
                 _logger.Info("Checking for null data completed");
@@ -284,6 +326,20 @@ namespace Icarus.Controllers.Utilities
 
             return songValues;
         }    
+
+        private bool CheckIntField(int? value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+            else if (value == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
         #endregion
     }
 }
