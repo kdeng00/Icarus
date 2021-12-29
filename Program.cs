@@ -37,7 +37,6 @@ namespace Icarus
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
-            // TODO: Need to add Logging support and maybe adding CLI port support
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

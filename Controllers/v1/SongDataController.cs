@@ -164,6 +164,7 @@ namespace Icarus.Controllers.V1
             {
                 [FromForm(Name = "file")]
                 public IFormFile SongData { get; set; }
+                // TODO: Think about making this optional and if it is not provided, use the stock cover art
                 [FromForm(Name = "cover")]
                 public IFormFile CoverArtData { get; set; }
                 [FromForm(Name = "metadata")]

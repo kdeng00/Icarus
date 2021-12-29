@@ -141,7 +141,7 @@ namespace Icarus.Controllers.Managers
 
             return artistPath;
         }
-        //TODO: Change this so the song's metadata is not being used
+
         public string GenerateSongPath(Song song)
         {
             _logger.Info("Generating song path");

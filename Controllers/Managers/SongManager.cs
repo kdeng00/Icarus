@@ -232,7 +232,7 @@ namespace Icarus.Controllers.Managers
 
             var meta = new MetadataRetriever();
             song.Duration = meta.RetrieveSongDuration(song.SongPath());
-            // const int trackCount = meta.RetrieveTrackCount(song.)
+
             meta.UpdateMetadata(song, song);
             meta.UpdateCoverArt(song, coverArt);
 
