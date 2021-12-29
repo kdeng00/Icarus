@@ -366,8 +366,8 @@ namespace Icarus.Controllers.Managers
             genreMgr.SaveGenreToDatabase(ref song);
 
             var info = "Saving Song to DB";
-            Console.WriteLine(info);
             _logger.Info(info);
+
             _songContext.Add(song);
             _songContext.SaveChanges();
         }
