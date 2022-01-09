@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <Version>0.1.9</Version>
   </PropertyGroup>
 
   <ItemGroup>
