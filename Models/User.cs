@@ -22,9 +22,9 @@ namespace Icarus.Models
         [JsonProperty("phone")]
         [Column("Phone")]
         public string Phone { get; set; }
-        [JsonProperty("first_name")]
+        [JsonProperty("firstname")]
         public string Firstname { get; set; }
-        [JsonProperty("last_name")]
+        [JsonProperty("lastname")]
         public string Lastname { get; set; }
         [JsonProperty("email_verified")]
         [NotMapped]
