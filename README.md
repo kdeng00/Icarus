@@ -16,7 +16,22 @@ One can interface with Icarus the music server either by:
 
 * C# [.NET](https://dotnet.microsoft.com/) 6
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
+* OpenSSL
+* BCrypt.Net-Next
+* DotNetZip
+* ID3
+* JWT
+* Microsoft.AspNetCore.Authentication.JwtBearer
+* Microsoft.AspNetCore.Mvc.NewtonsoftJson
+* Microsoft.EntityFrameworkCore
+* Microsoft.EntityFrameworkCore.Tools
+* MySql.EntityFrameworkCore
 * [Newtonsoft.Json](https://www.newtonsoft.com/json)
+* NLog.Web.AspNetCpre
+* Portable.BouncyCastle
+* RestSharp
+* SevenZip
+* System.IdentityModel.Tokens.Jwt
 * [TagLib#](https://github.com/mono/taglib-sharp)
 
 ![image](https://user-images.githubusercontent.com/14333136/56252069-28532d00-6084-11e9-896d-1a3c378014ef.png)
@@ -24,9 +39,10 @@ One can interface with Icarus the music server either by:
 ## Getting started
 There are several things that need to be completed to properly setup and secure the API.
 1. Auth0 API configuration
-2. API filesystem paths
-3. Database connection string
-4. Migrations
+2. Creating RSA keys
+3. API filesystem paths
+4. Database connection string
+5. Migrations
 
 ### Auth0 API configuration
 
@@ -78,6 +94,25 @@ Enter the information in the corresponding appsettings json file
 	  "ClientId":"",
 	  "ClientSecret":""
   },
+```
+
+### Creating RSA keys
+1. Create private key
+```
+openssl genrsa -out private.pem 2048
+```
+2. Create public key
+```
+openssl rsa -in private -pubout -out public.pem
+```
+
+Configure the key paths in the config files
+
+```Json
+"RSAKeys": {
+  "PrivateKeyPath": "",
+  "PublicKeyPath": ""
+}
 ```
 
 ### API filesystem paths
