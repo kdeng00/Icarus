@@ -151,6 +151,7 @@ namespace Icarus
             var domain = $"https://{auth_id}/";
             var audience = Configuration["Auth0:ApiIdentifier"];
 
+            /**
             services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => 
@@ -159,7 +160,6 @@ namespace Icarus
                     options.Audience = audience;
                 });
 
-            /**
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("download:songs", policy => 

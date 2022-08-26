@@ -43,10 +43,40 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
+        #region Methods
+        private string ParseBearerTokenFromHeader()
+        {
+            var token = string.Empty;
+            const string tokenType = "Bearer";
+
+            var req = Request;
+            var auth = req.Headers.Authorization; 
+            var val = auth.ToString();
+
+            if (val.Contains(tokenType) && val.Split(" ").Count() > 1)
+            {
+                var split = val.Split(" ");
+                token = split[1];
+            }
+
+
+            return token;
+        }
+        #region HTTP Endpoints
+
+
         [HttpGet]
-        [Authorize("read:song_details")]
+        // [Authorize("read:song_details")]
         public IActionResult Get()
         {
+            var token = ParseBearerTokenFromHeader();
+            var tokMgr = new TokenManager(_config);
+
+            if (!tokMgr.IsTokenValid("read:song_details", token))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             List<Song> songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
             _logger.LogInformation("Attempting to retrieve songs");
@@ -100,5 +130,7 @@ namespace Icarus.Controllers.V1
 
             return Ok(songRes);
         }
+        #endregion
+        #endregion
     }
 }

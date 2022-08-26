@@ -220,8 +220,9 @@ namespace Icarus.Controllers.Managers
 
             song.SongDirectory = _tempDirectoryRoot;
             song.DateCreated = DateTime.Now;
+            var tempPath = song.SongPath();
 
-            using (var filestream = new FileStream(song.SongPath(), FileMode.Create))
+            using (var filestream = new FileStream(tempPath, FileMode.Create))
             {
                 _logger.Info("Saving song to temporary directory");
                 await songFile.CopyToAsync(filestream);
@@ -246,11 +247,22 @@ namespace Icarus.Controllers.Managers
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                var songBytes = await System.IO.File.ReadAllBytesAsync(song.SongPath());
+                var songBytes = await System.IO.File.ReadAllBytesAsync(tempPath);
 
-                await System.IO.File.WriteAllBytesAsync(filePath, songBytes);
-                System.IO.File.Delete(song.SongPath());
-                song.SongDirectory = dirMgr.SongDirectory;
+                try
+                {
+                    if (!System.IO.File.Exists(filePath))
+                    {
+                        await System.IO.File.WriteAllBytesAsync(filePath, songBytes);
+                        System.IO.File.Delete(tempPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var msg = ex.Message;
+                    _logger.Error($"An error occurred: {msg}");
+                }
+                // song.SongDirectory = dirMgr.SongDirectory;
 
                 _logger.Info("Song successfully saved to filesystem");
             }

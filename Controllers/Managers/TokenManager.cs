@@ -20,13 +20,26 @@ using Icarus.Models;
 
 namespace Icarus.Controllers.Managers
 {
+    #region Classes
+    /**
+    {
+  "scope":"download:songs read:song_details upload:songs delete:songs read:albums read:artists update:songs stream:songs read:genre read:year download:cover_art",
+  "exp":1661616071,
+  "aud":"http://localhost:5002",
+  "iss":"http://localhost:5002",
+  "iat":1661529671
+}
+    */
+
     public class TokenManager : BaseManager
     {
         #region Fields
         private string _clientId;
         private string _clientSecret;
         private string _privateKeyPath;
+        private string _privateKey;
         private string _publicKeyPath;
+        private string _publicKey;
         private string _audience;
         private string _grantType;
         private string _url;
@@ -70,7 +83,7 @@ namespace Icarus.Controllers.Managers
 
             _logger.Info("Deserializing response");
             var tokenResult = JsonConvert
-                .DeserializeObject<Token>(response.Content);
+                .DeserializeObject<TokenTierOne>(response.Content);
             _logger.Info("Response deserialized");
 
             return new LoginResult
@@ -84,7 +97,7 @@ namespace Icarus.Controllers.Managers
 
         public LoginResult LogIn(User user)
         {
-            var tokenResult = new Token();
+            var tokenResult = new TokenTierOne();
             tokenResult.TokenType = "Jwt";
 
             var privateKey = ReadKeyContent(_privateKeyPath).Result;
@@ -108,6 +121,50 @@ namespace Icarus.Controllers.Managers
                 TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
                 Message = "Successfully retrieved token"
             };
+        }
+
+        public bool IsTokenValid(string scope, string accessToken)
+        {
+            var result = false;
+            var token = DecodeToken(accessToken);
+
+            if (token == null)
+            {
+                return result;
+            }
+
+            result = (!token.TokenExpired() && token.ContainsScope(scope)) ? true : false;
+
+            // What would make a token valid?
+            // 1. The expiration date must be before the current date
+            // 2. The desired scope must be part of the scopes within the access token
+            // 3. Must be able to be decoded
+
+            return result;
+        }
+
+        public Token? DecodeToken(string accessToken)
+        {
+            var rsaParams = GetRSAPublic(_publicKey);
+            Token tok = null;
+
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.ImportParameters(rsaParams);
+
+                IJsonSerializer serializer = new JsonNetSerializer();
+                IDateTimeProvider provider = new UtcDateTimeProvider();
+                IJwtValidator validator = new JwtValidator(serializer, provider);
+                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                var algorithm = new JWT.Algorithms.RS256Algorithm(rsa);
+                IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
+                
+                var json = decoder.Decode(accessToken);
+                tok = JsonConvert.DeserializeObject<Token>(json);
+            }
+
+
+            return tok;
         }
 
 
@@ -269,6 +326,8 @@ namespace Icarus.Controllers.Managers
             _url = $"https://{_config["Auth0:Domain"]}";
             _privateKeyPath = _config["RSAKeys:PrivateKeyPath"];
             _publicKeyPath = _config["RSAKeys:PublicKeyPath"];
+            _privateKey = System.IO.File.ReadAllText(_privateKeyPath);
+            _publicKey = System.IO.File.ReadAllText(_publicKeyPath);
 
             PrintCredentials();
         }
@@ -299,7 +358,7 @@ namespace Icarus.Controllers.Managers
             [JsonProperty("grant_type")]
             public string GrantType { get; set; }
         }
-        private class Token
+        private class TokenTierOne
         {
             [JsonProperty("access_token")]
             public string AccessToken { get; set; }
@@ -310,4 +369,5 @@ namespace Icarus.Controllers.Managers
         }
         #endregion
     }
+    #endregion
 }

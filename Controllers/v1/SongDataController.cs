@@ -47,6 +47,27 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
+        private string ParseBearerTokenFromHeader()
+        {
+            var token = string.Empty;
+            const string tokenType = "Bearer";
+            const string otherTokenType = "Jwt";
+
+            var req = Request;
+            var auth = req.Headers.Authorization; 
+            var val = auth.ToString();
+
+            if (val.Contains(tokenType) && val.Split(" ").Count() > 1 ||
+                val.Contains(otherTokenType) && val.Split(" ").Count() > 1)
+            {
+                var split = val.Split(" ");
+                token = split[1];
+            }
+
+
+            return token;
+        }
+
 
         [HttpGet("download/{id}")]
         [Route("private-scoped")]
@@ -112,9 +133,17 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload/with/data")]
         [Route("private-scoped")]
-        [Authorize("upload:songs")]
+        // [Authorize("upload:songs")]
         public async Task<IActionResult> Post ([FromForm] UploadSongWithDataForm up)
         {
+            var token = ParseBearerTokenFromHeader();
+            var tokMgr = new TokenManager(_config);
+
+            if (!tokMgr.IsTokenValid("upload:songs", token))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             try
             {
                 if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))

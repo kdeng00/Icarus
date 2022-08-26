@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
+using Icarus.Controllers.Managers;
 using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
@@ -42,11 +43,40 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
+        private string ParseBearerTokenFromHeader()
+        {
+            var token = string.Empty;
+            const string tokenType = "Bearer";
+
+            var req = Request;
+            var auth = req.Headers.Authorization; 
+            var val = auth.ToString();
+
+            if (val.Contains(tokenType) && val.Split(" ").Count() > 1)
+            {
+                var split = val.Split(" ");
+                token = split[1];
+            }
+
+
+            return token;
+        }
+
         #region HTTP endpoints
         [HttpGet("{id}")]
-        [Authorize("stream:songs")]
+        // [Authorize("stream:songs")]
         public async Task<IActionResult> Get(int id)
         {
+            var token = ParseBearerTokenFromHeader();
+            var tokMgr = new TokenManager(_config);
+
+            /**
+            if (!tokMgr.IsTokenValid("stream:songs", token))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+            */
+
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
             var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
