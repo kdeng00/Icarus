@@ -37,6 +37,7 @@ using Icarus.Database.Contexts;
 namespace Icarus
 {
     #region Classes
+    /**
     public class SigningIssuerCertificate
     {
         public SigningIssuerCertificate()
@@ -63,7 +64,9 @@ namespace Icarus
             return new RsaSecurityKey(rsa);
         }
     }
+    */
 
+    /**
     public class SigningAudienceCertificate
     {
         // public or private key?
@@ -91,6 +94,7 @@ namespace Icarus
                 algorithm: SecurityAlgorithms.RsaSha256);
         }
     }
+    */
     #endregion
 
     public static class MyClass
@@ -98,7 +102,7 @@ namespace Icarus
         public static IServiceCollection AddAsymmetricAuthentication(this IServiceCollection services, IConfiguration configuration)
         // public static IServiceCollection AddAsymmetricAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var issuerSigningCertificate = new SigningIssuerCertificate();
+            var issuerSigningCertificate = new Icarus.Certs.SigningIssuerCertificate();
             RsaSecurityKey issuerSigningKey = issuerSigningCertificate.GetIssuerSigningKey(configuration["RSAKeys:PublicKeyPath"]);
 
             services.AddAuthentication(authOptions =>
@@ -113,6 +117,14 @@ namespace Icarus
                 });
 
             return services;
+        }
+
+        private static bool LifetimeValidator(DateTime? notBefore,
+            DateTime? expires,
+            SecurityToken securityToken,
+            TokenValidationParameters validationParameters)
+        {
+            return expires != null && expires > DateTime.UtcNow;
         }
     }
     public class Startup
@@ -138,7 +150,6 @@ namespace Icarus
             var auth_id = Configuration["Auth0:Domain"];
             var domain = $"https://{auth_id}/";
             var audience = Configuration["Auth0:ApiIdentifier"];
-            /**
 
             services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -148,6 +159,7 @@ namespace Icarus
                     options.Audience = audience;
                 });
 
+            /**
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("download:songs", policy => 
@@ -211,9 +223,12 @@ namespace Icarus
 
             services.AddAsymmetricAuthentication(Configuration);
 
-            services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(new UserRepository(), Configuration), new TokenService(new UserRepository(), Configuration), Configuration));
-            services.AddTransient<UserService>(us => new UserService(new UserRepository(), Configuration));
-            services.AddTransient<TokenService>(tk => new TokenService(new UserRepository(), Configuration));
+            // services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(new UserRepository(), Configuration), new TokenService(new UserRepository(), Configuration), Configuration));
+            services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(Configuration), new TokenService(Configuration), Configuration));
+            // services.AddTransient<UserService>(us => new UserService(new UserRepository(), Configuration));
+            services.AddTransient<UserService>(us => new UserService(Configuration));
+            // services.AddTransient<TokenService>(tk => new TokenService(new UserRepository(), Configuration));
+            services.AddTransient<TokenService>(tk => new TokenService(Configuration));
             services.AddTransient<UserRepository>();
             services.AddTransient<UserContext>(uc => new UserContext(connString));
             /**

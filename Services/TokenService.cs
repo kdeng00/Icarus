@@ -1,13 +1,19 @@
 // using JwtAuthentication.AsymmetricEncryption.Certificates;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Linq;
+
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+
 using Icarus;
+using Icarus.Certs;
+using Icarus.Database.Contexts;
 using Icarus.Repositories;
 using Icarus.Models.Shared;
 // using JwtAuthentication.Shared;
 // using JwtAuthentication.Shared.Models;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace Icarus.Services
 {
@@ -15,7 +21,8 @@ namespace Icarus.Services
     {
         private Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly UserRepository userRepository;
-        private readonly SigningAudienceCertificate signingAudienceCertificate;
+        private readonly UserContext _userContext;
+        private readonly Icarus.Certs.SigningAudienceCertificate signingAudienceCertificate;
         private string _publickKeyPath = string.Empty;
 
         /**
@@ -26,17 +33,29 @@ namespace Icarus.Services
         }
         */
 
+        /**
         public TokenService(UserRepository userRepository, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             this._configuration = configuration;
             this.userRepository = userRepository;
-            signingAudienceCertificate = new SigningAudienceCertificate();
+            signingAudienceCertificate = new Icarus.Certs.SigningAudienceCertificate();
+            _publickKeyPath = configuration["RSAKeys:PublicKeyPath"];
+        }
+        */
+
+        public TokenService(Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            this._configuration = configuration;
+            // this.userRepository = userRepository;
+            this._userContext = new UserContext(configuration.GetConnectionString("DefaultConnection"));
+            signingAudienceCertificate = new Icarus.Certs.SigningAudienceCertificate();
             _publickKeyPath = configuration["RSAKeys:PublicKeyPath"];
         }
 
         public string GetToken(string username)
         {
-            var user = userRepository.GetUser(username);
+            // var user = userRepository.GetUser(username);
+            var user = _userContext.Users.FirstOrDefault(usr => usr.Username.Equals(username));
             SecurityTokenDescriptor tokenDescriptor = GetTokenDescriptor(user);
 
             var tokenHandler = new JwtSecurityTokenHandler();

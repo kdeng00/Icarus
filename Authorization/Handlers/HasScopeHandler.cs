@@ -12,7 +12,18 @@ namespace Icarus.Authorization.Handlers
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, HasScopeRequirement requirement)
         {
-            if (!context.User.HasClaim(c => c.Type == "scope" && c.Issuer == requirement.Issuer))
+            var issuer = requirement.Issuer;
+            var scope = requirement.Scope;
+            var claim = string.Empty;
+            // if (!context.User.HasClaim(c => c.Type == "scope" && c.Issuer == requirement.Issuer))
+            if (!context.User.HasClaim(c => 
+            {
+                var i = 0;
+                var b = 99;
+                claim = c.Type;
+                return c.Type == "scope";
+        })
+        )
             {
                 return Task.CompletedTask;
             }
