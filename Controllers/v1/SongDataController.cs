@@ -96,24 +96,33 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
         [Route("private-scoped")]
-        [Authorize("upload:songs")]
-        public async Task<IActionResult> Post([FromForm(Name = "file")] List<IFormFile> songData)
+        // [Authorize("upload:songs")]
+        public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
+            var token = ParseBearerTokenFromHeader();
+            var tokMgr = new TokenManager(_config);
+
+            if (!tokMgr.IsTokenValid("upload:songs", token))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             try
             {
-                Console.WriteLine("Uploading song...");
+                // Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
                 var uploads = _songTempDir;
-                Console.WriteLine($"Song Root Path {uploads}");
+                // Console.WriteLine($"Song Root Path {uploads}");
                 _logger.LogInformation($"Song root path {uploads}");
 
                 foreach (var sng in songData)
-                    if (sng.Length > 0) {
-                        Console.WriteLine($"Song filename {sng.FileName}");
+                    if (sng.Length > 0)
+                    {
+                        // Console.WriteLine($"Song filename {sng.FileName}");
                         _logger.LogInformation($"Song filename {sng.FileName}");
 
-                        await _songMgr.SaveSongToFileSystem(sng);
+                        _songMgr.SaveSongToFileSystem(sng).Wait();
                     }
 
                 return Ok();
@@ -134,7 +143,7 @@ namespace Icarus.Controllers.V1
         [HttpPost("upload/with/data")]
         [Route("private-scoped")]
         // [Authorize("upload:songs")]
-        public async Task<IActionResult> Post ([FromForm] UploadSongWithDataForm up)
+        public IActionResult Post ([FromForm] UploadSongWithDataForm up)
         {
             var token = ParseBearerTokenFromHeader();
             var tokMgr = new TokenManager(_config);
@@ -151,7 +160,7 @@ namespace Icarus.Controllers.V1
                     var song = Newtonsoft.Json.JsonConvert.DeserializeObject<Song>(up.SongFile);
                     _logger.LogInformation($"Song title: {song.Title}");
 
-                    await _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
+                    _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
                 }
             }
             catch (Exception ex)

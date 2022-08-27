@@ -180,23 +180,40 @@ namespace Icarus.Controllers.Managers
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
 
-                var filePath = dirMgr.SongDirectory;
-                filePath += $"{song.Filename}";
+                /**
+                await Task.Run(() =>
+                {
+                    System.IO.File.Delete(song.SongPath());
+                });
+                */
+
+                var tempPath = song.SongPath();
+                song.Filename = song.GenerateFilename(1);
+                var filePath = $"{dirMgr.SongDirectory}{song.Filename}";
+                // $"{dirMgr.SongDirectory}";
+                // filePath += $"{song.Filename}";
 
                 _logger.Info($"Absolute song path: {filePath}");
 
 
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                await Task.Run(() =>
                 {
-                    var songBytes = await System.IO.File.ReadAllBytesAsync(song.SongPath());
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        var songBytes = System.IO.File.ReadAllBytes(tempPath);
 
-                    System.IO.File.WriteAllBytesAsync(filePath, songBytes);
-                    System.IO.File.Delete(song.SongPath());
+                        // System.IO.File.WriteAllBytes(filePath, songBytes);
+                        _logger.Info("Saving song to the filesystem");
+                        fileStream.Write(songBytes, 0, songBytes.Count());
 
-                    song.SongDirectory = dirMgr.SongDirectory;
+                        System.IO.File.Delete(tempPath);
+                        _logger.Info("Deleting temp file");
 
-                    _logger.Info("Song successfully saved to filesystem");
-                }
+                        _logger.Info("Song successfully saved to filesystem");
+                    }
+                });
+
+                song.SongDirectory = dirMgr.SongDirectory;
 
                 var coverMgr = new CoverArtManager(_config);
                 var coverArt = coverMgr.SaveCoverArt(song);
@@ -211,50 +228,83 @@ namespace Icarus.Controllers.Managers
             }
         }
 
-        public async Task SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
+        public void SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
         {
+            song.SongDirectory = _tempDirectoryRoot;
+            song.DateCreated = DateTime.Now;
+
             if (string.IsNullOrEmpty(song.Filename))
             {
                 song.Filename = song.GenerateFilename(1);
             }
 
-            song.SongDirectory = _tempDirectoryRoot;
-            song.DateCreated = DateTime.Now;
+            _logger.Info($"Temporary directory: {_tempDirectoryRoot}");
+
             var tempPath = song.SongPath();
+
+            _logger.Info("Temporary song path: {0}", tempPath);
 
             using (var filestream = new FileStream(tempPath, FileMode.Create))
             {
                 _logger.Info("Saving song to temporary directory");
-                await songFile.CopyToAsync(filestream);
+                songFile.CopyTo(filestream);
             }
 
             var coverMgr = new CoverArtManager(_config);
-            var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
-
             var meta = new MetadataRetriever();
+            var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
+            meta.UpdateCoverArt(song, coverArt);
             song.Duration = meta.RetrieveSongDuration(song.SongPath());
 
             meta.UpdateMetadata(song, song);
-            meta.UpdateCoverArt(song, coverArt);
+
 
             DirectoryManager dirMgr = new DirectoryManager(_config, song);
             dirMgr.CreateDirectory();
 
-            var filePath = dirMgr.SongDirectory + song.Filename;
+            song.SongDirectory = dirMgr.SongDirectory;
 
+            var filePath = song.SongPath();
             _logger.Info($"Absolute song path: {filePath}");
 
+            if (System.IO.File.Exists(filePath))
+            {
+                _logger.Info("Why does the file exist?");
+            }
+
+            if (System.IO.File.Exists(tempPath))
+            {
+                // System.IO.File.Move(tempPath, filePath);
+                // _logger.Info("Moved song from temporary location to final location");
+            }
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                var songBytes = await System.IO.File.ReadAllBytesAsync(tempPath);
+                var songBytes = System.IO.File.ReadAllBytes(tempPath);
+                // fileStream.ReadAsync(songBytes)
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    _logger.Info("Why does the file exist?");
+                }
 
                 try
                 {
-                    if (!System.IO.File.Exists(filePath))
+                    if (System.IO.File.Exists(filePath) && System.IO.File.Exists(tempPath) && fileStream.Length > 0)
                     {
-                        await System.IO.File.WriteAllBytesAsync(filePath, songBytes);
                         System.IO.File.Delete(tempPath);
+                        _logger.Info("Deleted temp song from filesystem: {0}", tempPath);
+                    }
+                    else
+                    {
+                        // System.IO.File.WriteAllBytes(filePath, songBytes);
+                        // 
+
+                        fileStream.Write(songBytes, 0, songBytes.Count());
+                        _logger.Info("Saved song to filesystem: {0}", filePath);
+
+                        System.IO.File.Delete(tempPath);
+                        _logger.Info("Deleted temp song from filesystem: {0}", tempPath);
                     }
                 }
                 catch (Exception ex)
@@ -262,11 +312,9 @@ namespace Icarus.Controllers.Managers
                     var msg = ex.Message;
                     _logger.Error($"An error occurred: {msg}");
                 }
-                // song.SongDirectory = dirMgr.SongDirectory;
 
                 _logger.Info("Song successfully saved to filesystem");
             }
-
 
             coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);
             SaveSongToDatabase(song);
@@ -308,20 +356,23 @@ namespace Icarus.Controllers.Managers
             var song = new Song();
             _logger.Info("Assigning song filename");
             song.SongDirectory = _tempDirectoryRoot;
-            song.Filename = song.GenerateFilename(1);
+            var filename = song.GenerateFilename(1);
+            song.Filename = filename;
 
             using (var filestream = new FileStream(song.SongPath(), FileMode.Create))
             {
-                _logger.Info("Saving song to temporary directory");
+                _logger.Info("Saving temp song: {0}", song.SongPath());
                 await songFile.CopyToAsync(filestream);
             }
-
-            MetadataRetriever meta = new MetadataRetriever();
-            song =  meta.RetrieveMetaData(song.SongPath());
+            await Task.Run(() =>
+            {
+                MetadataRetriever meta = new MetadataRetriever();
+                song =  meta.RetrieveMetaData(song.SongPath());
+            });
 
             song.SongDirectory = _tempDirectoryRoot;
-            song.Filename = song.GenerateFilename(1);
             song.DateCreated = DateTime.Now;
+            song.Filename = filename;
 
             return song;
         }
