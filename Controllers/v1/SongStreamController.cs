@@ -20,12 +20,11 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/stream")]
     [ApiController]
-    public class SongStreamController : ControllerBase
+    public class SongStreamController : BaseController
     {
         #region Fields
         private ILogger<SongStreamController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         #endregion
 
 
@@ -43,39 +42,14 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
-        private string ParseBearerTokenFromHeader()
-        {
-            var token = string.Empty;
-            const string tokenType = "Bearer";
-
-            var req = Request;
-            var auth = req.Headers.Authorization; 
-            var val = auth.ToString();
-
-            if (val.Contains(tokenType) && val.Split(" ").Count() > 1)
-            {
-                var split = val.Split(" ");
-                token = split[1];
-            }
-
-
-            return token;
-        }
-
         #region HTTP endpoints
         [HttpGet("{id}")]
-        // [Authorize("stream:songs")]
         public async Task<IActionResult> Get(int id)
         {
-            var token = ParseBearerTokenFromHeader();
-            var tokMgr = new TokenManager(_config);
-
-            /**
-            if (!tokMgr.IsTokenValid("stream:songs", token))
+            if (!IsTokenValid("stream:songs"))
             {
                 return StatusCode(401, "Not allowed");
             }
-            */
 
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 

@@ -20,11 +20,10 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/data")]
     [ApiController]
-    public class SongDataController : ControllerBase
+    public class SongDataController : BaseController
     {
         #region Fields
         private string _connectionString;
-        private IConfiguration _config;
         private ILogger<SongDataController> _logger;
         private SongManager _songMgr;
         private string _songTempDir;
@@ -47,33 +46,15 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
-        private string ParseBearerTokenFromHeader()
-        {
-            var token = string.Empty;
-            const string tokenType = "Bearer";
-            const string otherTokenType = "Jwt";
-
-            var req = Request;
-            var auth = req.Headers.Authorization; 
-            var val = auth.ToString();
-
-            if (val.Contains(tokenType) && val.Split(" ").Count() > 1 ||
-                val.Contains(otherTokenType) && val.Split(" ").Count() > 1)
-            {
-                var split = val.Split(" ");
-                token = split[1];
-            }
-
-
-            return token;
-        }
-
-
         [HttpGet("download/{id}")]
         [Route("private-scoped")]
-        [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
+            if (!IsTokenValid("download:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
@@ -96,13 +77,9 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
         [Route("private-scoped")]
-        // [Authorize("upload:songs")]
         public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
-            var token = ParseBearerTokenFromHeader();
-            var tokMgr = new TokenManager(_config);
-
-            if (!tokMgr.IsTokenValid("upload:songs", token))
+            if (!IsTokenValid("upload:songs"))
             {
                 return StatusCode(401, "Not allowed");
             }
@@ -142,13 +119,9 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload/with/data")]
         [Route("private-scoped")]
-        // [Authorize("upload:songs")]
         public IActionResult Post ([FromForm] UploadSongWithDataForm up)
         {
-            var token = ParseBearerTokenFromHeader();
-            var tokMgr = new TokenManager(_config);
-
-            if (!tokMgr.IsTokenValid("upload:songs", token))
+            if (!IsTokenValid("upload:songs"))
             {
                 return StatusCode(401, "Not allowed");
             }
@@ -172,9 +145,13 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpDelete("delete/{id}")]
-        [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {
+            if (!IsTokenValid("delete:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var songContext = new SongContext(_connectionString);
 
             var songMetaData = new Song{ SongID = id };

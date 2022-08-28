@@ -18,12 +18,11 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song")]
     [ApiController]
-    public class SongController : ControllerBase
+    public class SongController : BaseController
     {
         #region Fields
         private readonly ILogger<SongController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         private SongManager _songMgr;
         #endregion
 
@@ -44,35 +43,13 @@ namespace Icarus.Controllers.V1
 
 
         #region Methods
-        private string ParseBearerTokenFromHeader()
-        {
-            var token = string.Empty;
-            const string tokenType = "Bearer";
-
-            var req = Request;
-            var auth = req.Headers.Authorization; 
-            var val = auth.ToString();
-
-            if (val.Contains(tokenType) && val.Split(" ").Count() > 1)
-            {
-                var split = val.Split(" ");
-                token = split[1];
-            }
-
-
-            return token;
-        }
         #region HTTP Endpoints
 
 
         [HttpGet]
-        // [Authorize("read:song_details")]
         public IActionResult Get()
         {
-            var token = ParseBearerTokenFromHeader();
-            var tokMgr = new TokenManager(_config);
-
-            if (!tokMgr.IsTokenValid("read:song_details", token))
+            if (!IsTokenValid("read:song_details"))
             {
                 return StatusCode(401, "Not allowed");
             }
@@ -92,9 +69,13 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:song_details")]
         public IActionResult Get(int id)
         {
+            if (!IsTokenValid("read:song_details"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var context = new SongContext(_connectionString);
             
             Song song = new Song { SongID = id };
@@ -108,10 +89,14 @@ namespace Icarus.Controllers.V1
                 return NotFound();
         }
 
-        [Authorize("update:songs")]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Song song)
         {
+            if (!IsTokenValid("update:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var context = new SongContext(_connectionString);
 
             song.SongID = id;
