@@ -21,16 +21,6 @@ using Icarus.Models;
 namespace Icarus.Controllers.Managers
 {
     #region Classes
-    /**
-    {
-  "scope":"download:songs read:song_details upload:songs delete:songs read:albums read:artists update:songs stream:songs read:genre read:year download:cover_art",
-  "exp":1661616071,
-  "aud":"http://localhost:5002",
-  "iss":"http://localhost:5002",
-  "iat":1661529671
-}
-    */
-
     public class TokenManager : BaseManager
     {
         #region Fields

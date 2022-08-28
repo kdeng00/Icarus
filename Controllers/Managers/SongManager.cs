@@ -180,18 +180,9 @@ namespace Icarus.Controllers.Managers
                 DirectoryManager dirMgr = new DirectoryManager(_config, song);
                 dirMgr.CreateDirectory();
 
-                /**
-                await Task.Run(() =>
-                {
-                    System.IO.File.Delete(song.SongPath());
-                });
-                */
-
                 var tempPath = song.SongPath();
                 song.Filename = song.GenerateFilename(1);
                 var filePath = $"{dirMgr.SongDirectory}{song.Filename}";
-                // $"{dirMgr.SongDirectory}";
-                // filePath += $"{song.Filename}";
 
                 _logger.Info($"Absolute song path: {filePath}");
 
@@ -202,7 +193,6 @@ namespace Icarus.Controllers.Managers
                     {
                         var songBytes = System.IO.File.ReadAllBytes(tempPath);
 
-                        // System.IO.File.WriteAllBytes(filePath, songBytes);
                         _logger.Info("Saving song to the filesystem");
                         fileStream.Write(songBytes, 0, songBytes.Count());
 
@@ -267,26 +257,9 @@ namespace Icarus.Controllers.Managers
             var filePath = song.SongPath();
             _logger.Info($"Absolute song path: {filePath}");
 
-            if (System.IO.File.Exists(filePath))
-            {
-                _logger.Info("Why does the file exist?");
-            }
-
-            if (System.IO.File.Exists(tempPath))
-            {
-                // System.IO.File.Move(tempPath, filePath);
-                // _logger.Info("Moved song from temporary location to final location");
-            }
-
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 var songBytes = System.IO.File.ReadAllBytes(tempPath);
-                // fileStream.ReadAsync(songBytes)
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    _logger.Info("Why does the file exist?");
-                }
 
                 try
                 {
@@ -297,9 +270,6 @@ namespace Icarus.Controllers.Managers
                     }
                     else
                     {
-                        // System.IO.File.WriteAllBytes(filePath, songBytes);
-                        // 
-
                         fileStream.Write(songBytes, 0, songBytes.Count());
                         _logger.Info("Saved song to filesystem: {0}", filePath);
 

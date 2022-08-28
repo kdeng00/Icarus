@@ -8,7 +8,6 @@ using Org.BouncyCastle.OpenSsl;
 
 namespace Icarus.Certs
 {
-
     public class SigningIssuerCertificate : IDisposable
     {
         private readonly RSACryptoServiceProvider _rsa;
@@ -18,7 +17,6 @@ namespace Icarus.Certs
             _rsa = new RSACryptoServiceProvider();
         }
 
-        // public or private key?
         public RsaSecurityKey GetIssuerSigningKey(string publicKeyPath)
         {
             var file = publicKeyPath;
@@ -47,22 +45,17 @@ namespace Icarus.Certs
 
     public class SigningAudienceCertificate : IDisposable
     {
-        // private readonly RSA _rsa;
         private readonly RSACryptoServiceProvider _rsa;
 
         public SigningAudienceCertificate()
         {
             _rsa = new RSACryptoServiceProvider();
         }
-        // public or private key?
+
         public SigningCredentials GetAudienceSigningKey(string keyPath)
         {
-            // string privateXmlKey = System.IO.File.ReadAllText("./private_key.xml");
-            // rsa.FromXmlString(privateXmlKey);
-
             var file = keyPath;
             var publicKey = System.IO.File.ReadAllText(file);
-            // var rsa = new RSACryptoServiceProvider();
 
             using (var reader = System.IO.File.OpenText(file))
             {
