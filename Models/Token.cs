@@ -41,6 +41,16 @@ namespace Icarus.Models
 
             return result;
         }
+
+        public bool Erroneous()
+        {
+            var result = true;
+            Func<string, bool> isEmpty = a => string.IsNullOrEmpty(a);
+            result = (!isEmpty(Scope) && !isEmpty(Audience) && !isEmpty(Issuer) &&
+                Expiration > 0 && Issued > 0) ? false : true;
+
+            return result;
+        }
         #endregion
     }
 }

@@ -128,7 +128,7 @@ namespace Icarus.Controllers.Managers
             var result = false;
             var token = DecodeToken(accessToken);
 
-            if (token == null)
+            if (token == null || token.Erroneous())
             {
                 return result;
             }
@@ -148,19 +148,26 @@ namespace Icarus.Controllers.Managers
             var rsaParams = GetRSAPublic(_publicKey);
             Token tok = null;
 
-            using (var rsa = new RSACryptoServiceProvider())
+            try
             {
-                rsa.ImportParameters(rsaParams);
+                using (var rsa = new RSACryptoServiceProvider())
+                {
+                    rsa.ImportParameters(rsaParams);
 
-                IJsonSerializer serializer = new JsonNetSerializer();
-                IDateTimeProvider provider = new UtcDateTimeProvider();
-                IJwtValidator validator = new JwtValidator(serializer, provider);
-                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                var algorithm = new JWT.Algorithms.RS256Algorithm(rsa);
-                IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
-                
-                var json = decoder.Decode(accessToken);
-                tok = JsonConvert.DeserializeObject<Token>(json);
+                    IJsonSerializer serializer = new JsonNetSerializer();
+                    IDateTimeProvider provider = new UtcDateTimeProvider();
+                    IJwtValidator validator = new JwtValidator(serializer, provider);
+                    IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                    var algorithm = new JWT.Algorithms.RS256Algorithm(rsa);
+                    IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
+                    
+                    var json = decoder.Decode(accessToken);
+                    tok = JsonConvert.DeserializeObject<Token>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("An error occurred: {0}", ex.Message);
             }
 
 
