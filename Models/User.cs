@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 using Newtonsoft.Json;
 
@@ -9,6 +10,7 @@ namespace Icarus.Models
     [Table("User")]
     public class User
     {
+        #region Properties
         [JsonProperty("user_id")]
         [Column("UserID")]
         [Key]
@@ -35,5 +37,21 @@ namespace Icarus.Models
         public string Status { get; set; }
         [JsonProperty("last_login")]
         public DateTime? LastLogin { get; set; }
+
+        [JsonIgnore]
+        [NotMapped]
+        public System.Collections.Generic.IEnumerable<string> Roles { get; set; }
+        #endregion
+
+
+        #region Methods
+        public System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> Claims()
+        {
+            var claims = new System.Collections.Generic.List<System.Security.Claims.Claim> { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, Username) };
+            claims.AddRange(Roles.Select(role => new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role)));
+
+            return claims;
+        }
+        #endregion
     }
 }

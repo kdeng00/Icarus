@@ -20,11 +20,10 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/data")]
     [ApiController]
-    public class SongDataController : ControllerBase
+    public class SongDataController : BaseController
     {
         #region Fields
         private string _connectionString;
-        private IConfiguration _config;
         private ILogger<SongDataController> _logger;
         private SongManager _songMgr;
         private string _songTempDir;
@@ -47,12 +46,15 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
-
         [HttpGet("download/{id}")]
         [Route("private-scoped")]
-        [Authorize("download:songs")]
         public async Task<IActionResult> Get(int id)
         {
+            if (!IsTokenValid("download:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
@@ -75,24 +77,29 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
         [Route("private-scoped")]
-        [Authorize("upload:songs")]
-        public async Task<IActionResult> Post([FromForm(Name = "file")] List<IFormFile> songData)
+        public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
+            if (!IsTokenValid("upload:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             try
             {
-                Console.WriteLine("Uploading song...");
+                // Console.WriteLine("Uploading song...");
                 _logger.LogInformation("Uploading song...");
 
                 var uploads = _songTempDir;
-                Console.WriteLine($"Song Root Path {uploads}");
+                // Console.WriteLine($"Song Root Path {uploads}");
                 _logger.LogInformation($"Song root path {uploads}");
 
                 foreach (var sng in songData)
-                    if (sng.Length > 0) {
-                        Console.WriteLine($"Song filename {sng.FileName}");
+                    if (sng.Length > 0)
+                    {
+                        // Console.WriteLine($"Song filename {sng.FileName}");
                         _logger.LogInformation($"Song filename {sng.FileName}");
 
-                        await _songMgr.SaveSongToFileSystem(sng);
+                        _songMgr.SaveSongToFileSystem(sng).Wait();
                     }
 
                 return Ok();
@@ -112,9 +119,13 @@ namespace Icarus.Controllers.V1
         //
         [HttpPost("upload/with/data")]
         [Route("private-scoped")]
-        [Authorize("upload:songs")]
-        public async Task<IActionResult> Post ([FromForm] UploadSongWithDataForm up)
+        public IActionResult Post ([FromForm] UploadSongWithDataForm up)
         {
+            if (!IsTokenValid("upload:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             try
             {
                 if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
@@ -122,7 +133,7 @@ namespace Icarus.Controllers.V1
                     var song = Newtonsoft.Json.JsonConvert.DeserializeObject<Song>(up.SongFile);
                     _logger.LogInformation($"Song title: {song.Title}");
 
-                    await _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
+                    _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
                 }
             }
             catch (Exception ex)
@@ -134,9 +145,13 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpDelete("delete/{id}")]
-        [Authorize("delete:songs")]
         public IActionResult Delete(int id)
         {
+            if (!IsTokenValid("delete:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var songContext = new SongContext(_connectionString);
 
             var songMetaData = new Song{ SongID = id };

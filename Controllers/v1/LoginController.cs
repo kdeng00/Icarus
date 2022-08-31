@@ -73,7 +73,7 @@ namespace Icarus.Controllers.V1
 
                 TokenManager tk = new TokenManager(_config);
 
-                loginRes = tk.RetrieveLoginResult(user);
+                loginRes = tk.LogIn(user);
 
                 return Ok(loginRes);
             }

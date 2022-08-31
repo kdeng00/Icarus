@@ -3,6 +3,9 @@
 ################################################################################
 
 /.vs/Icarus
+/bin/*
 /bin/Debug/netcoreapp2.2
 /Migrations
 /obj
+/obj/*
+/Icarus.txt

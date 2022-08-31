@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -78,6 +79,21 @@ namespace Icarus.Models
             var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
                 s[random.Next(s.Length)]).ToArray());
             var extension = ".mp3";
+
+            return flag == 0 ? filename : $"{filename}{extension}";
+        }
+        public async Task<string> GenerateFilenameAsync(int flag = 0)
+        {
+            const int length = 25;
+            const string chars = "ABCDEF0123456789";
+            var extension = ".mp3";
+            var random = new Random();
+            var filename = await Task.Run(() =>
+            {
+                return new string(Enumerable.Repeat(chars, length).Select(s =>
+                    s[random.Next(s.Length)]).ToArray());
+            });
+            
 
             return flag == 0 ? filename : $"{filename}{extension}";
         }

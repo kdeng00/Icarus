@@ -13,18 +13,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
+using Icarus.Controllers.Managers;
 using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/stream")]
     [ApiController]
-    public class SongStreamController : ControllerBase
+    public class SongStreamController : BaseController
     {
         #region Fields
         private ILogger<SongStreamController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         #endregion
 
 
@@ -44,9 +44,13 @@ namespace Icarus.Controllers.V1
 
         #region HTTP endpoints
         [HttpGet("{id}")]
-        [Authorize("stream:songs")]
         public async Task<IActionResult> Get(int id)
         {
+            if (!IsTokenValid("stream:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
             var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);

@@ -18,12 +18,11 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song")]
     [ApiController]
-    public class SongController : ControllerBase
+    public class SongController : BaseController
     {
         #region Fields
         private readonly ILogger<SongController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         private SongManager _songMgr;
         #endregion
 
@@ -43,10 +42,18 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
+        #region Methods
+        #region HTTP Endpoints
+
+
         [HttpGet]
-        [Authorize("read:song_details")]
         public IActionResult Get()
         {
+            if (!IsTokenValid("read:song_details"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             List<Song> songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
             _logger.LogInformation("Attempting to retrieve songs");
@@ -62,9 +69,13 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:song_details")]
         public IActionResult Get(int id)
         {
+            if (!IsTokenValid("read:song_details"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var context = new SongContext(_connectionString);
             
             Song song = new Song { SongID = id };
@@ -78,10 +89,14 @@ namespace Icarus.Controllers.V1
                 return NotFound();
         }
 
-        [Authorize("update:songs")]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Song song)
         {
+            if (!IsTokenValid("update:songs"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             var context = new SongContext(_connectionString);
 
             song.SongID = id;
@@ -100,5 +115,7 @@ namespace Icarus.Controllers.V1
 
             return Ok(songRes);
         }
+        #endregion
+        #endregion
     }
 }
