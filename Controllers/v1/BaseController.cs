@@ -17,6 +17,7 @@ namespace Icarus.Controllers.V1
 
 
         #region Methods
+        [ApiExplorerSettings(IgnoreApi = true)]
         protected string ParseBearerTokenFromHeader()
         {
             var token = string.Empty;
@@ -37,6 +38,7 @@ namespace Icarus.Controllers.V1
             return token;
         } 
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         protected bool IsTokenValid(string scope)
         {
             var token = ParseBearerTokenFromHeader();

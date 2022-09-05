@@ -38,7 +38,7 @@ namespace Icarus.Controllers.V1
 
         #region HTTP Routes
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetArtists()
         {
             var artistContext = new ArtistContext(_connectionString);
 
@@ -51,7 +51,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult GetArtist(int id)
         {
             if (!IsTokenValid("read:artists"))
             {
