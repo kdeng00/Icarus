@@ -44,8 +44,9 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP endpoints
+        // [HttpGet]
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> StreamSong(int id)
         {
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 

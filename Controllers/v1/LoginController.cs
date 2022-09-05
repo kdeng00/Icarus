@@ -38,7 +38,8 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP endpoints
-        public IActionResult Post([FromBody] User user)
+        [HttpPost]
+        public IActionResult Login([FromBody] User user)
         {
             var context = new UserContext(_connectionString);
 

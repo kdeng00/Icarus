@@ -48,13 +48,13 @@ namespace Icarus.Controllers.V1
 
 
         [HttpGet("download/{id}")]
-        [Route("private-scoped")]
-        public async Task<IActionResult> Get(int id)
+        // [Route("private-scoped")]
+        public IActionResult Download(int id)
         {
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
-            var song = await _songMgr.RetrieveSong(songMetaData);
+            var song = _songMgr.RetrieveSong(songMetaData).Result;
             
             return File(song.Data, "application/x-msdownload", songMetaData.Filename);
         }
@@ -72,8 +72,9 @@ namespace Icarus.Controllers.V1
         // Cover art
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
-        [Route("private-scoped")]
-        public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
+        // [ConflictingActionsResolver]
+        // [Route("private-scoped")]
+        public IActionResult Upload([FromForm(Name = "file")] List<IFormFile> songData)
         {
             try
             {
@@ -109,8 +110,9 @@ namespace Icarus.Controllers.V1
         // as well as the cover art
         //
         [HttpPost("upload/with/data")]
-        [Route("private-scoped")]
-        public IActionResult Post ([FromForm] UploadSongWithDataForm up)
+        // [ConflictingActionsResolver]
+        // [Route("private-scoped")]
+        public IActionResult UploadWithData([FromForm] UploadSongWithDataForm up)
         {
             try
             {
@@ -131,7 +133,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpDelete("delete/{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult DeleteSong(int id)
         {
             var songContext = new SongContext(_connectionString);
 
@@ -156,15 +158,15 @@ namespace Icarus.Controllers.V1
 
         }
 
-            public class UploadSongWithDataForm
-            {
-                [FromForm(Name = "file")]
-                public IFormFile SongData { get; set; }
-                // TODO: Think about making this optional and if it is not provided, use the stock cover art
-                [FromForm(Name = "cover")]
-                public IFormFile CoverArtData { get; set; }
-                [FromForm(Name = "metadata")]
-                public string SongFile { get; set; }
-            }
+        public class UploadSongWithDataForm
+        {
+            [FromForm(Name = "file")]
+            public IFormFile SongData { get; set; }
+            // TODO: Think about making this optional and if it is not provided, use the stock cover art
+            [FromForm(Name = "cover")]
+            public IFormFile CoverArtData { get; set; }
+            [FromForm(Name = "metadata")]
+            public string SongFile { get; set; }
+        }
     }
 }
