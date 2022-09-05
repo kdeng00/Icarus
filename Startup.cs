@@ -95,7 +95,7 @@ namespace Icarus
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
 
-            services.AddAsymmetricAuthentication(Configuration);
+            // services.AddAsymmetricAuthentication(Configuration);
 
             /**
             services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(Configuration), new TokenService(Configuration), Configuration));

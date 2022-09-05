@@ -20,6 +20,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/stream")]
     [ApiController]
+    [Authorize]
     public class SongStreamController : BaseController
     {
         #region Fields
@@ -46,10 +47,12 @@ namespace Icarus.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
+            /**
             if (!IsTokenValid("stream:songs"))
             {
                 return StatusCode(401, "Not allowed");
             }
+            */
 
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
