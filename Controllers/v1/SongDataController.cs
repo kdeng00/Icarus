@@ -20,6 +20,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/data")]
     [ApiController]
+    [Authorize]
     public class SongDataController : BaseController
     {
         #region Fields
@@ -50,11 +51,6 @@ namespace Icarus.Controllers.V1
         [Route("private-scoped")]
         public async Task<IActionResult> Get(int id)
         {
-            if (!IsTokenValid("download:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
@@ -79,11 +75,6 @@ namespace Icarus.Controllers.V1
         [Route("private-scoped")]
         public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
         {
-            if (!IsTokenValid("upload:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             try
             {
                 // Console.WriteLine("Uploading song...");
@@ -121,11 +112,6 @@ namespace Icarus.Controllers.V1
         [Route("private-scoped")]
         public IActionResult Post ([FromForm] UploadSongWithDataForm up)
         {
-            if (!IsTokenValid("upload:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             try
             {
                 if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
@@ -147,11 +133,6 @@ namespace Icarus.Controllers.V1
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
-            if (!IsTokenValid("delete:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var songContext = new SongContext(_connectionString);
 
             var songMetaData = new Song{ SongID = id };

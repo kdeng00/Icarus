@@ -253,11 +253,8 @@ namespace Icarus.Controllers.Managers
             var claim = new List<System.Security.Claims.Claim>()
             {
                 new System.Security.Claims.Claim("scope", AllScopes(), "string"),
-                // new System.Security.Claims.Claim("exp", $"{expires}", "integer"),
                 new System.Security.Claims.Claim(JwtRegisteredClaimNames.Exp, expiredDate.ToString()),
-                // new System.Security.Claims.Claim("aud", $"{audience}", "string"),
                 new System.Security.Claims.Claim(JwtRegisteredClaimNames.Aud, audience),
-                // new System.Security.Claims.Claim("iss", $"{issuer}", "string"),
                 new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iss, issuer),
                 new Claim(JwtRegisteredClaimNames.Sub, subject),
                 new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iat, currentDate.ToString())

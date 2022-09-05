@@ -13,6 +13,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/artist")]
     [ApiController]
+    [Authorize]
     public class ArtistController : BaseController
     {
         #region Fields
@@ -39,11 +40,6 @@ namespace Icarus.Controllers.V1
         [HttpGet]
         public IActionResult Get()
         {
-            if (!IsTokenValid("read:artists"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var artistContext = new ArtistContext(_connectionString);
 
             var artists = artistContext.Artists.ToList();

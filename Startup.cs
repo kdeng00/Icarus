@@ -19,35 +19,6 @@ using Icarus.Database.Contexts;
 
 namespace Icarus
 {
-    public static class ServiceStartup
-    {
-        public static IServiceCollection AddAsymmetricAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            var issuerSigningCertificate = new Icarus.Certs.SigningIssuerCertificate();
-            RsaSecurityKey issuerSigningKey = issuerSigningCertificate.GetIssuerSigningKey(configuration["RSAKeys:PublicKeyPath"]);
-
-            services.AddAuthentication(authOptions =>
-                {
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        IssuerSigningKey = issuerSigningKey,
-                    };
-                });
-
-            return services;
-        }
-
-        private static bool LifetimeValidator(DateTime? notBefore,
-            DateTime? expires,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return expires != null && expires > DateTime.UtcNow;
-        }
-    }
     public class Startup
     {
         #region Constructors
@@ -94,16 +65,6 @@ namespace Icarus
             services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
-
-            // services.AddAsymmetricAuthentication(Configuration);
-
-            /**
-            services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(Configuration), new TokenService(Configuration), Configuration));
-            services.AddTransient<UserService>(us => new UserService(Configuration));
-            services.AddTransient<TokenService>(tk => new TokenService(Configuration));
-            services.AddTransient<UserRepository>();
-            services.AddTransient<UserContext>(uc => new UserContext(connString));
-            */
 
             services.AddControllers()
                 .AddNewtonsoftJson();

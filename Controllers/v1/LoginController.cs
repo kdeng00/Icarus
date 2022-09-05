@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -75,7 +72,6 @@ namespace Icarus.Controllers.V1
 
                     TokenManager tk = new TokenManager(_config);
 
-                    // loginRes = tk.LogIn(user);
                     loginRes = tk.LoginSymmetric(user);
 
                     return Ok(loginRes);

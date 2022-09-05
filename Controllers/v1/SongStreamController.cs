@@ -47,13 +47,6 @@ namespace Icarus.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            /**
-            if (!IsTokenValid("stream:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-            */
-
             var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
             var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
