@@ -18,12 +18,12 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song")]
     [ApiController]
-    public class SongController : ControllerBase
+    [Authorize]
+    public class SongController : BaseController
     {
         #region Fields
         private readonly ILogger<SongController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         private SongManager _songMgr;
         #endregion
 
@@ -43,9 +43,12 @@ namespace Icarus.Controllers.V1
         #endregion
 
 
+        #region Methods
+        #region HTTP Endpoints
+
+
         [HttpGet]
-        [Authorize("read:song_details")]
-        public IActionResult Get()
+        public IActionResult GetSongs()
         {
             List<Song> songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
@@ -62,8 +65,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:song_details")]
-        public IActionResult Get(int id)
+        public IActionResult GetSong(int id)
         {
             var context = new SongContext(_connectionString);
             
@@ -78,9 +80,8 @@ namespace Icarus.Controllers.V1
                 return NotFound();
         }
 
-        [Authorize("update:songs")]
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Song song)
+        public IActionResult UpdateSong(int id, [FromBody] Song song)
         {
             var context = new SongContext(_connectionString);
 
@@ -100,5 +101,7 @@ namespace Icarus.Controllers.V1
 
             return Ok(songRes);
         }
+        #endregion
+        #endregion
     }
 }

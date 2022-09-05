@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +13,12 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/artist")]
     [ApiController]
-    public class ArtistController : ControllerBase
+    [Authorize]
+    public class ArtistController : BaseController
     {
         #region Fields
         private readonly ILogger<ArtistController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         #endregion
 
 
@@ -40,8 +38,7 @@ namespace Icarus.Controllers.V1
 
         #region HTTP Routes
         [HttpGet]
-        [Authorize("read:artists")]
-        public IActionResult Get()
+        public IActionResult GetArtists()
         {
             var artistContext = new ArtistContext(_connectionString);
 
@@ -54,9 +51,13 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:artists")]
-        public IActionResult Get(int id)
+        public IActionResult GetArtist(int id)
         {
+            if (!IsTokenValid("read:artists"))
+            {
+                return StatusCode(401, "Not allowed");
+            }
+
             Artist artist = new Artist
             {
                 ArtistID = id

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <Version>0.1.9</Version>
+    <Version>0.1.10</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +11,7 @@
     <PackageReference Include="DotNetZip" Version="1.15.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="ID3" Version="0.6.0" />
+    <PackageReference Include="JWT" Version="9.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.8" />
@@ -21,8 +22,10 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.14.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="RestSharp" Version="106.15.0" />
     <PackageReference Include="SevenZip" Version="19.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.0" />
     <PackageReference Include="taglib" Version="2.1.0" />
   </ItemGroup>

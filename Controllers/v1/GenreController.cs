@@ -14,12 +14,12 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/genre")]
     [ApiController]
-    public class GenreController : ControllerBase
+    [Authorize]
+    public class GenreController : BaseController
     {
         #region Fields
         private readonly ILogger<GenreController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         #endregion
 
 
@@ -39,8 +39,7 @@ namespace Icarus.Controllers.V1
 
         #region HTTP Routes
         [HttpGet]
-        [Authorize("read:genre")]
-        public IActionResult Get()
+        public IActionResult GetGenres()
         {
             var genres = new List<Genre>();
 
@@ -55,8 +54,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:genre")]
-        public IActionResult Get(int id)
+        public IActionResult GetGenre(int id)
         {
             var genre = new Genre
             {

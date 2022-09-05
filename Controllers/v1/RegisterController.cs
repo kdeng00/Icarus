@@ -37,7 +37,7 @@ namespace Icarus.Controllers.V1
         #endregion
 
         [HttpPost]
-        public IActionResult Post([FromBody] User user)
+        public IActionResult RegisterUser([FromBody] User user)
         {
             PasswordEncryption pe = new PasswordEncryption();
             user.Password = pe.HashPassword(user);

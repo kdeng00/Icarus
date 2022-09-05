@@ -8,6 +8,7 @@ using System.Linq;
 // using MySql.Data.Entity;
 // using MySql.Data.MySqlClient;    
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 using Icarus.Models;
         
@@ -18,11 +19,15 @@ namespace Icarus.Database.Contexts
         public DbSet<User> Users { get; set; }
 
 
+        #region Constructors
         public UserContext(DbContextOptions<UserContext> options) : base(options) { }
+        [ActivatorUtilitiesConstructor]
         public UserContext(string connString) : base(new DbContextOptionsBuilder<UserContext>()
                             .UseMySQL(connString).Options)
         {
         }                        
+        #endregion
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

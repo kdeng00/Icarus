@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
@@ -10,18 +9,17 @@ using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
 using Icarus.Database.Contexts;
-// using Icarus.Database.Repositories;
 
 namespace Icarus.Controllers.V1
 {
     [Route("api/v1/album")]
     [ApiController]
-    public class AlbumController : ControllerBase
+    [Authorize]
+    public class AlbumController : BaseController
     {
         #region Fields
         private readonly ILogger<AlbumController> _logger;
         private string _connectionString;
-        private IConfiguration _config;
         #endregion
 
 
@@ -41,8 +39,7 @@ namespace Icarus.Controllers.V1
 
         #region HTTP Routes
         [HttpGet]
-        [Authorize("read:albums")]
-        public IActionResult Get()
+        public IActionResult GetAlbums()
         {
             List<Album> albums = new List<Album>();
 
@@ -57,8 +54,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        [Authorize("read:albums")]
-        public IActionResult Get(int id)
+        public IActionResult GetAlbum(int id)
         {
             Album album = new Album
             {

@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +38,8 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP endpoints
-        public IActionResult Post([FromBody] User user)
+        [HttpPost]
+        public IActionResult Login([FromBody] User user)
         {
             var context = new UserContext(_connectionString);
 
@@ -55,34 +53,44 @@ namespace Icarus.Controllers.V1
                 Username = user.Username
             };
 
-            if (context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username)) != null)
+            try
             {
-                user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username));
-
-                var validatePass = new PasswordEncryption();
-                var validated = validatePass.VerifyPassword(user, password);
-                if (!validated)
+                if (context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username)) != null)
                 {
-                    loginRes.Message = message;
-                    _logger.LogInformation(message);
+                    user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username));
+
+                    var validatePass = new PasswordEncryption();
+                    var validated = validatePass.VerifyPassword(user, password);
+                    if (!validated)
+                    {
+                        loginRes.Message = message;
+                        _logger.LogInformation(message);
+
+                        return Ok(loginRes);
+                    }
+
+                    _logger.LogInformation("Successfully validated user credentials");
+
+                    TokenManager tk = new TokenManager(_config);
+
+                    loginRes = tk.LoginSymmetric(user);
 
                     return Ok(loginRes);
                 }
+                else
+                {
+                    loginRes.Message = message;
 
-                _logger.LogInformation("Successfully validated user credentials");
-
-                TokenManager tk = new TokenManager(_config);
-
-                loginRes = tk.RetrieveLoginResult(user);
-
-                return Ok(loginRes);
+                    return NotFound(loginRes);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                loginRes.Message = message;
-
-                return NotFound(loginRes);
+                _logger.LogError("An error occurred: {0}", ex.Message);
+                _logger.LogError("Inner Exception: {0}", ex.InnerException.Message);
             }
+
+            return NotFound(loginRes);
         }
         #endregion
     }

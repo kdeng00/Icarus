@@ -19,11 +19,11 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/compressed/data")]
     [ApiController]
-    public class SongCompressedDataController : ControllerBase
+    [Authorize]
+    public class SongCompressedDataController : BaseController
     {
         #region Fields
         private string _connectionString;
-        private IConfiguration _config;
         private string _songTempDir;
         private string _archiveDir;
         #endregion
@@ -46,8 +46,7 @@ namespace Icarus.Controllers.V1
 
         #region API Routes
         [HttpGet("{id}")]
-        [Authorize("download:songs")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> DownloadCompressedSong(int id)
         {
             var context = new SongContext(_connectionString);
 
