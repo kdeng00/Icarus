@@ -37,7 +37,9 @@ One can interface with Icarus the music server either by:
 ## Getting started
 
 There are several things that need to be completed to properly setup and secure the API.
-#### 1. Creating RSA keys
+This API uses OpenAPI Specification 3.0. After configuring the API, launch the software
+and navigate your browser to https://localhost:5001/swagger to view the endpoints.
+
 1. JWT Information
 2. API filesystem paths
 3. Database connection string
@@ -138,11 +140,6 @@ From this point the database has been successfully configured. Metadata and song
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the code of conduct, and the process for submitting pull requests to the project.
 
-## Authors
-
-* [kdeng00](https://github.com/kdeng00)
-
-See also the list of [contributors](https://github.com/amazing-username/Icarus/graphs/contributors) who participated in this project.
 
 ## License
 
