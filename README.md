@@ -52,7 +52,7 @@ Configure JWT information. Notably the Secret
   "JWT": {
     "Issuer": "IcarusAPI",
     "Audience": "IcarusAPIClient",
-    "Secret": "X1I9TbwaBG3RiwLiCJ69lHGxLFoNODDE",
+    "Secret": "Manaiswhatyouthinkitis",
     "Subject": "Authorization"
   },
 ```
