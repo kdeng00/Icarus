@@ -48,7 +48,7 @@ namespace Icarus.Controllers.V1
 
 
         [HttpGet]
-        public IActionResult RetrieveSongs()
+        public IActionResult GetSongs()
         {
             List<Song> songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
@@ -65,7 +65,7 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        public IActionResult RetrieveSong(int id)
+        public IActionResult GetSong(int id)
         {
             var context = new SongContext(_connectionString);
             

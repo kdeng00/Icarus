@@ -44,7 +44,6 @@ namespace Icarus.Controllers.V1
 
 
         #region HTTP endpoints
-        // [HttpGet]
         [HttpGet("{id}")]
         public async Task<IActionResult> StreamSong(int id)
         {

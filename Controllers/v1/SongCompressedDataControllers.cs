@@ -46,7 +46,7 @@ namespace Icarus.Controllers.V1
 
         #region API Routes
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> DownloadCompressedSong(int id)
         {
             var context = new SongContext(_connectionString);
 

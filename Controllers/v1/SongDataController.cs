@@ -48,7 +48,6 @@ namespace Icarus.Controllers.V1
 
 
         [HttpGet("download/{id}")]
-        // [Route("private-scoped")]
         public IActionResult Download(int id)
         {
             var songContext = new SongContext(_connectionString);
@@ -72,8 +71,6 @@ namespace Icarus.Controllers.V1
         // Cover art
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
-        // [ConflictingActionsResolver]
-        // [Route("private-scoped")]
         public IActionResult Upload([FromForm(Name = "file")] List<IFormFile> songData)
         {
             try
@@ -110,8 +107,6 @@ namespace Icarus.Controllers.V1
         // as well as the cover art
         //
         [HttpPost("upload/with/data")]
-        // [ConflictingActionsResolver]
-        // [Route("private-scoped")]
         public IActionResult UploadWithData([FromForm] UploadSongWithDataForm up)
         {
             try
@@ -162,7 +157,7 @@ namespace Icarus.Controllers.V1
         {
             [FromForm(Name = "file")]
             public IFormFile SongData { get; set; }
-            // TODO: Think about making this optional and if it is not provided, use the stock cover art
+            // NOTE: Think about making this optional and if it is not provided, use the stock cover art
             [FromForm(Name = "cover")]
             public IFormFile CoverArtData { get; set; }
             [FromForm(Name = "metadata")]
