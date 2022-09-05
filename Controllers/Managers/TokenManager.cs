@@ -4,10 +4,14 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 using JWT;
 using JWT.Serializers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -113,6 +117,40 @@ namespace Icarus.Controllers.Managers
             };
         }
 
+        public LoginResult LoginSymmetric(User user)
+        {
+            var tokenResult = new TokenTierOne();
+            tokenResult.TokenType = "Jwt";
+
+            var payload = Payload();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]));
+            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                _config["JWT:Issuer"],
+                _config["JWT:Audience"],
+                payload,
+                expires: DateTime.UtcNow.AddMinutes(30),
+                signingCredentials: signIn);
+            
+            tokenResult.AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var expClaim = payload.FirstOrDefault(cl =>
+            {
+                return cl.Type.Equals("exp");
+            });
+
+            var expiredDate = DateTime.Parse(expClaim.Value);
+            var exp = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
+            tokenResult.Expiration = Convert.ToInt32(exp);
+
+            return new LoginResult
+            {
+                UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
+                TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
+                Message = "Successfully retrieved token"
+            };
+        }
+
         public bool IsTokenValid(string scope, string accessToken)
         {
             var result = false;
@@ -201,23 +239,25 @@ namespace Icarus.Controllers.Managers
 
         private List<Claim> Payload()
         {
-            const int expLimit = 24;
+            var expLimit = 30;
             var currentDate = DateTime.Now;
-            var expiredDate = currentDate.AddHours(expLimit);
+            var expiredDate = currentDate.AddMinutes(expLimit);
             var issued = Math.Floor((currentDate - DateTime.UnixEpoch).TotalSeconds);
             var expires = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
             var issuer = "https://soaricarus.auth0.com";
             issuer = "http://localhost:5002";
             var audience = "https://icarus/api";
             audience = "http://localhost:5002";
+            var subject = _config["JWT:Subject"];
 
             var claim = new List<System.Security.Claims.Claim>()
             {
                 new System.Security.Claims.Claim("scope", AllScopes(), "string"),
-                new System.Security.Claims.Claim("exp", $"{expires}", "integer"),
-                new System.Security.Claims.Claim("aud", $"{audience}", "string"),
-                new System.Security.Claims.Claim("iss", $"{issuer}", "string"),
-                new System.Security.Claims.Claim("iat", $"{issued}", "integer")
+                new System.Security.Claims.Claim(JwtRegisteredClaimNames.Exp, expiredDate.ToString()),
+                new System.Security.Claims.Claim(JwtRegisteredClaimNames.Aud, audience),
+                new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iss, issuer),
+                new Claim(JwtRegisteredClaimNames.Sub, subject),
+                new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iat, currentDate.ToString())
             };
 
             return claim;

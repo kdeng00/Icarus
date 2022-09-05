@@ -37,31 +37,26 @@ One can interface with Icarus the music server either by:
 ## Getting started
 
 There are several things that need to be completed to properly setup and secure the API.
-1. Creating RSA keys
+#### 1. Creating RSA keys
+1. JWT Information
 2. API filesystem paths
 3. Database connection string
 4. Migrations
 
 
-### Creating RSA keys
+### JWT Information
 
-1. Create private key
-```
-openssl genrsa -out private.pem 2048
-```
-2. Create public key
-```
-openssl rsa -in private -pubout -out public.pem
-```
-
-Configure the key paths in the config files
+Configure JWT information. Notably the Secret
 
 ```Json
-"RSAKeys": {
-  "PrivateKeyPath": "",
-  "PublicKeyPath": ""
-}
+  "JWT": {
+    "Issuer": "IcarusAPI",
+    "Audience": "IcarusAPIClient",
+    "Secret": "Manaiswhatyouthinkitis",
+    "Subject": "Authorization"
+  },
 ```
+
 
 Replace [domain] with the domain name that represent's your domain. Replace [identifier] with the identifer root name in the appsettings environment file. Not the friendly name but the root name of the identifier, omitting the http protocol and the *api* path.
 
@@ -71,6 +66,9 @@ Replace [domain] with the domain name that represent's your domain. Replace [ide
   "ApiIdentifier": "https://[identifier]/api"
 },
 ```
+
+**Note**: The Auth0 section is likely to be changed or removed in future releases.
+
 
 ### API filesystem paths
 

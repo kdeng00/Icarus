@@ -14,6 +14,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/genre")]
     [ApiController]
+    [Authorize]
     public class GenreController : BaseController
     {
         #region Fields
@@ -40,11 +41,6 @@ namespace Icarus.Controllers.V1
         [HttpGet]
         public IActionResult Get()
         {
-            if (!IsTokenValid("read:genre"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var genres = new List<Genre>();
 
             var genreStore = new GenreContext(_connectionString);
@@ -60,11 +56,6 @@ namespace Icarus.Controllers.V1
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            if (!IsTokenValid("read:genre"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var genre = new Genre
             {
                 GenreID = id

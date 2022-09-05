@@ -15,6 +15,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/coverart")]
     [ApiController]
+    [Authorize]
     public class CoverArtController : BaseController
     {
         #region Fields
@@ -36,11 +37,6 @@ namespace Icarus.Controllers.V1
         #region HTTP Routes
         public IActionResult Get()
         {
-            if (!IsTokenValid("read:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var coverArtContext = new CoverArtContext(_connectionString);
 
             var coverArtRecords = coverArtContext.CoverArtImages.ToList();
@@ -60,11 +56,6 @@ namespace Icarus.Controllers.V1
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            if (!IsTokenValid("download:cover_art"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var coverArt = new CoverArt { CoverArtID = id };
 
             var coverArtContext = new CoverArtContext(_connectionString);
