@@ -19,6 +19,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/compressed/data")]
     [ApiController]
+    [Authorize]
     public class SongCompressedDataController : BaseController
     {
         #region Fields
@@ -45,13 +46,8 @@ namespace Icarus.Controllers.V1
 
         #region API Routes
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> DownloadCompressedSong(int id)
         {
-            if (!IsTokenValid("download:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var context = new SongContext(_connectionString);
 
             SongCompression cmp = new SongCompression(_archiveDir);

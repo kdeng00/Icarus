@@ -20,6 +20,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song/data")]
     [ApiController]
+    [Authorize]
     public class SongDataController : BaseController
     {
         #region Fields
@@ -47,18 +48,12 @@ namespace Icarus.Controllers.V1
 
 
         [HttpGet("download/{id}")]
-        [Route("private-scoped")]
-        public async Task<IActionResult> Get(int id)
+        public IActionResult Download(int id)
         {
-            if (!IsTokenValid("download:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var songContext = new SongContext(_connectionString);
             var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
             
-            var song = await _songMgr.RetrieveSong(songMetaData);
+            var song = _songMgr.RetrieveSong(songMetaData).Result;
             
             return File(song.Data, "application/x-msdownload", songMetaData.Filename);
         }
@@ -76,14 +71,8 @@ namespace Icarus.Controllers.V1
         // Cover art
         //
         [HttpPost("upload"), DisableRequestSizeLimit]
-        [Route("private-scoped")]
-        public IActionResult Post([FromForm(Name = "file")] List<IFormFile> songData)
+        public IActionResult Upload([FromForm(Name = "file")] List<IFormFile> songData)
         {
-            if (!IsTokenValid("upload:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             try
             {
                 // Console.WriteLine("Uploading song...");
@@ -118,14 +107,8 @@ namespace Icarus.Controllers.V1
         // as well as the cover art
         //
         [HttpPost("upload/with/data")]
-        [Route("private-scoped")]
-        public IActionResult Post ([FromForm] UploadSongWithDataForm up)
+        public IActionResult UploadWithData([FromForm] UploadSongWithDataForm up)
         {
-            if (!IsTokenValid("upload:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             try
             {
                 if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
@@ -145,13 +128,8 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpDelete("delete/{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult DeleteSong(int id)
         {
-            if (!IsTokenValid("delete:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var songContext = new SongContext(_connectionString);
 
             var songMetaData = new Song{ SongID = id };
@@ -175,15 +153,15 @@ namespace Icarus.Controllers.V1
 
         }
 
-            public class UploadSongWithDataForm
-            {
-                [FromForm(Name = "file")]
-                public IFormFile SongData { get; set; }
-                // TODO: Think about making this optional and if it is not provided, use the stock cover art
-                [FromForm(Name = "cover")]
-                public IFormFile CoverArtData { get; set; }
-                [FromForm(Name = "metadata")]
-                public string SongFile { get; set; }
-            }
+        public class UploadSongWithDataForm
+        {
+            [FromForm(Name = "file")]
+            public IFormFile SongData { get; set; }
+            // NOTE: Think about making this optional and if it is not provided, use the stock cover art
+            [FromForm(Name = "cover")]
+            public IFormFile CoverArtData { get; set; }
+            [FromForm(Name = "metadata")]
+            public string SongFile { get; set; }
+        }
     }
 }

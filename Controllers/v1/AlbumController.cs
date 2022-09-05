@@ -14,6 +14,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/album")]
     [ApiController]
+    [Authorize]
     public class AlbumController : BaseController
     {
         #region Fields
@@ -38,13 +39,8 @@ namespace Icarus.Controllers.V1
 
         #region HTTP Routes
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetAlbums()
         {
-            if (!IsTokenValid("read:albums"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             List<Album> albums = new List<Album>();
 
             var albumContext = new AlbumContext(_connectionString);
@@ -58,13 +54,8 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult GetAlbum(int id)
         {
-            if (!IsTokenValid("read:albums"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             Album album = new Album
             {
                 AlbumID = id

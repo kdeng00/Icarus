@@ -18,6 +18,7 @@ namespace Icarus.Controllers.V1
 {
     [Route("api/v1/song")]
     [ApiController]
+    [Authorize]
     public class SongController : BaseController
     {
         #region Fields
@@ -47,13 +48,8 @@ namespace Icarus.Controllers.V1
 
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetSongs()
         {
-            if (!IsTokenValid("read:song_details"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             List<Song> songs = new List<Song>();
             Console.WriteLine("Attemtping to retrieve songs");
             _logger.LogInformation("Attempting to retrieve songs");
@@ -69,13 +65,8 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult GetSong(int id)
         {
-            if (!IsTokenValid("read:song_details"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var context = new SongContext(_connectionString);
             
             Song song = new Song { SongID = id };
@@ -90,13 +81,8 @@ namespace Icarus.Controllers.V1
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Song song)
+        public IActionResult UpdateSong(int id, [FromBody] Song song)
         {
-            if (!IsTokenValid("update:songs"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             var context = new SongContext(_connectionString);
 
             song.SongID = id;

@@ -1,13 +1,18 @@
 ﻿using System;
+using System.Text;
+using System.Linq;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Web;
@@ -17,35 +22,6 @@ using Icarus.Database.Contexts;
 
 namespace Icarus
 {
-    public static class ServiceStartup
-    {
-        public static IServiceCollection AddAsymmetricAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            var issuerSigningCertificate = new Icarus.Certs.SigningIssuerCertificate();
-            RsaSecurityKey issuerSigningKey = issuerSigningCertificate.GetIssuerSigningKey(configuration["RSAKeys:PublicKeyPath"]);
-
-            services.AddAuthentication(authOptions =>
-                {
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        IssuerSigningKey = issuerSigningKey,
-                    };
-                });
-
-            return services;
-        }
-
-        private static bool LifetimeValidator(DateTime? notBefore,
-            DateTime? expires,
-            SecurityToken securityToken,
-            TokenValidationParameters validationParameters)
-        {
-            return expires != null && expires > DateTime.UtcNow;
-        }
-    }
     public class Startup
     {
         #region Constructors
@@ -72,6 +48,20 @@ namespace Icarus
 
             var connString = Configuration.GetConnectionString("DefaultConnection");
 
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = Configuration["JWT:Audience"],
+                    ValidIssuer = Configuration["JWT:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                };
+            });
+
             services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
             services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
             services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
@@ -79,24 +69,50 @@ namespace Icarus
             services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
             services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
 
-            services.AddAsymmetricAuthentication(Configuration);
-
-            /**
-            services.AddTransient<AuthenticationService>(au => new AuthenticationService(new UserService(Configuration), new TokenService(Configuration), Configuration));
-            services.AddTransient<UserService>(us => new UserService(Configuration));
-            services.AddTransient<TokenService>(tk => new TokenService(Configuration));
-            services.AddTransient<UserRepository>();
-            services.AddTransient<UserContext>(uc => new UserContext(connString));
-            */
-
             services.AddControllers()
                 .AddNewtonsoftJson();
+            
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(c =>
+            {
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Icarus", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Description = "Bearer *Auth Token*",
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
         }
 
         // Called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // NOTE: Dev-related configuration can be done when env.IsDevelopment() evaluated to true
+            if (env.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.UseRouting();
             app.UseAuthentication();
