@@ -29,10 +29,10 @@ namespace Icarus.Controllers.Managers
         #region Fields
         private string _clientId;
         private string _clientSecret;
-        private string _privateKeyPath;
-        private string _privateKey;
-        private string _publicKeyPath;
-        private string _publicKey;
+        private string _privateKeyPath = string.Empty;
+        private string _privateKey = string.Empty;
+        private string _publicKeyPath = string.Empty;
+        private string _publicKey = string.Empty;
         private string _audience;
         private string _grantType;
         private string _url;
@@ -88,6 +88,7 @@ namespace Icarus.Controllers.Managers
         }
 
 
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         public LoginResult LogIn(User user)
         {
             var tokenResult = new TokenTierOne();
@@ -152,6 +153,7 @@ namespace Icarus.Controllers.Managers
             };
         }
 
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         public bool IsTokenValid(string scope, string accessToken)
         {
             var result = false;
@@ -172,6 +174,7 @@ namespace Icarus.Controllers.Managers
             return result;
         }
 
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         public Token DecodeToken(string accessToken)
         {
             var rsaParams = GetRSAPublic(_publicKey);
@@ -264,6 +267,7 @@ namespace Icarus.Controllers.Managers
             return claim;
         }
 
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         private string CreateToken(List<Claim> claims, string privateKey)
         {
             var token = string.Empty;
@@ -323,6 +327,7 @@ namespace Icarus.Controllers.Managers
             return token;
         }
 
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         private RSAParameters GetRSAPublic(string publicKey)
         {
             using (var tr = new System.IO.StringReader(publicKey))
@@ -362,12 +367,6 @@ namespace Icarus.Controllers.Managers
             _audience = _config["Auth0:ApiIdentifier"];
             _grantType = "client_credentials";
             _url = $"https://{_config["Auth0:Domain"]}";
-            _privateKeyPath = _config["RSAKeys:PrivateKeyPath"];
-            _publicKeyPath = _config["RSAKeys:PublicKeyPath"];
-            _privateKey = System.IO.File.ReadAllText(_privateKeyPath);
-            _publicKey = System.IO.File.ReadAllText(_publicKeyPath);
-
-            PrintCredentials();
         }
 
         #region Testing Methods
