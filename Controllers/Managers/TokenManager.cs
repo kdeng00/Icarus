@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 
 using JWT;
@@ -123,6 +122,8 @@ namespace Icarus.Controllers.Managers
             tokenResult.TokenType = "Jwt";
 
             var payload = Payload();
+            payload.Add(new System.Security.Claims.Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]));
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
@@ -171,7 +172,7 @@ namespace Icarus.Controllers.Managers
             return result;
         }
 
-        public Token? DecodeToken(string accessToken)
+        public Token DecodeToken(string accessToken)
         {
             var rsaParams = GetRSAPublic(_publicKey);
             Token tok = null;
