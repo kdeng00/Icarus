@@ -53,11 +53,6 @@ namespace Icarus.Controllers.V1
         [HttpGet("{id}")]
         public IActionResult GetArtist(int id)
         {
-            if (!IsTokenValid("read:artists"))
-            {
-                return StatusCode(401, "Not allowed");
-            }
-
             Artist artist = new Artist
             {
                 ArtistID = id
