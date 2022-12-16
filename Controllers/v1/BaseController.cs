@@ -18,6 +18,7 @@ namespace Icarus.Controllers.V1
 
         #region Methods
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         protected string ParseBearerTokenFromHeader()
         {
             var token = string.Empty;
@@ -39,6 +40,7 @@ namespace Icarus.Controllers.V1
         } 
 
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Obsolete("Asymmetric key signing for tokens have been deprecated")]
         protected bool IsTokenValid(string scope)
         {
             var token = ParseBearerTokenFromHeader();
