@@ -1,12 +1,11 @@
 using System;
 using System.Text;
 
-namespace Icarus.Models
+namespace Icarus.Models;
+
+public class SongData
 {
-    public class SongData
-    {
-        public int ID { get; set; }
-        public byte[] Data { get; set; }
-        public int SongID { get; set; }
-    }
+    public int ID { get; set; }
+    public byte[] Data { get; set; }
+    public int SongID { get; set; }
 }
