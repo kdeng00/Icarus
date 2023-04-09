@@ -6,34 +6,33 @@ using Microsoft.EntityFrameworkCore;
 
 using Icarus.Models;
 
-namespace Icarus.Database.Contexts
+namespace Icarus.Database.Contexts;
+
+public class ArtistContext : DbContext
 {
-    public class ArtistContext : DbContext
+    public DbSet<Artist> Artists { get; set; }
+
+    public ArtistContext(DbContextOptions<ArtistContext> options) : base (options) { }
+    public ArtistContext(string connString) : base(new DbContextOptionsBuilder<ArtistContext>()
+                        .UseMySQL(connString).Options)
     {
-        public DbSet<Artist> Artists { get; set; }
+    }                        
 
-		public ArtistContext(DbContextOptions<ArtistContext> options) : base (options) { }
-		public ArtistContext(string connString) : base(new DbContextOptionsBuilder<ArtistContext>()
-							.UseMySQL(connString).Options)
-		{
-		}                        
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Artist>()
+            .ToTable("Artist");
+    }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			modelBuilder.Entity<Artist>()
-				.ToTable("Artist");
-		}
+    public Artist RetrieveRecord(Artist artist)
+    {
 
-		public Artist RetrieveRecord(Artist artist)
-		{
-
-            return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID);
-		}
+        return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID);
+    }
 
 
-        public bool DoesRecordExist(Artist artist)
-        {
-            return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID) != null ? true : false;
-        }
+    public bool DoesRecordExist(Artist artist)
+    {
+        return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID) != null ? true : false;
     }
 }

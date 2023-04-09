@@ -1,10 +1,9 @@
 using System;
 
-namespace Icarus.Types
+namespace Icarus.Types;
+
+public enum CoverArtField
 {
-    public enum CoverArtField
-    {
-        SongTitle = 0,
-        ImagePath
-    };
-}
+    SongTitle = 0,
+    ImagePath
+};

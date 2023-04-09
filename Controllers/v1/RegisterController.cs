@@ -12,74 +12,73 @@ using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
 
-namespace Icarus.Controllers.V1
+namespace Icarus.Controllers.V1;
+
+[Route("api/v1/register")]
+[ApiController]
+public class RegisterController : ControllerBase
 {
-    [Route("api/v1/register")]
-    [ApiController]
-    public class RegisterController : ControllerBase
+    #region Fields
+    private string _connectionString;
+    private IConfiguration _config;
+    #endregion
+
+
+    #region Properties
+    #endregion
+
+
+    #region Constructor
+    public RegisterController(IConfiguration config)
     {
-        #region Fields
-        private string _connectionString;
-        private IConfiguration _config;
-        #endregion
+        _config = config;
+        _connectionString = _config.GetConnectionString("DefaultConnection");
+    }
+    #endregion
 
+    [HttpPost]
+    public IActionResult RegisterUser([FromBody] User user)
+    {
+        PasswordEncryption pe = new PasswordEncryption();
+        user.Password = pe.HashPassword(user);
+        user.EmailVerified = false;
+        user.Status = "Registered";
+        user.DateCreated = DateTime.Now;
 
-        #region Properties
-        #endregion
+        UserContext context = null;
 
-
-        #region Constructor
-        public RegisterController(IConfiguration config)
+        try
         {
-            _config = config;
-            _connectionString = _config.GetConnectionString("DefaultConnection");
+            context = new UserContext(_config.GetConnectionString("DefaultConnection"));
+            context.Add(user);
+            context.SaveChanges();
         }
-        #endregion
-
-        [HttpPost]
-        public IActionResult RegisterUser([FromBody] User user)
+        catch (Exception ex)
         {
-            PasswordEncryption pe = new PasswordEncryption();
-            user.Password = pe.HashPassword(user);
-            user.EmailVerified = false;
-            user.Status = "Registered";
-            user.DateCreated = DateTime.Now;
+            var msg = ex.Message;
+            var stackTrace = ex.StackTrace;
 
-            UserContext context = null;
+            Console.WriteLine($"An error occurred: {msg}");
+        }
 
-            try
-            {
-                context = new UserContext(_config.GetConnectionString("DefaultConnection"));
-                context.Add(user);
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                var msg = ex.Message;
-                var stackTrace = ex.StackTrace;
+        var registerResult = new RegisterResult
+        {
+            Username = user.Username
+        };
 
-                Console.WriteLine($"An error occurred: {msg}");
-            }
+        if (context.Users.FirstOrDefault(sng => sng.Username.Equals(user.Username)) != null)
+        {
+            registerResult.Message = "Successful registration";
+            registerResult.SuccessfullyRegistered = true;
 
-            var registerResult = new RegisterResult
-            {
-                Username = user.Username
-            };
+            return Ok(registerResult);
+        }
+        else
+        {
+            registerResult.Message = "Registration failed";
+            registerResult.SuccessfullyRegistered = false;
 
-            if (context.Users.FirstOrDefault(sng => sng.Username.Equals(user.Username)) != null)
-            {
-                registerResult.Message = "Successful registration";
-                registerResult.SuccessfullyRegistered = true;
-
-                return Ok(registerResult);
-            }
-            else
-            {
-                registerResult.Message = "Registration failed";
-                registerResult.SuccessfullyRegistered = false;
-
-                return Ok(registerResult);
-            }
+            return Ok(registerResult);
         }
     }
 }

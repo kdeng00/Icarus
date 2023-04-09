@@ -1,10 +1,9 @@
 using System;
 
-namespace Icarus.Types
+namespace Icarus.Types;
+
+public enum DirectoryType
 {
-    public enum DirectoryType
-    {
-        Music = 0,
-        CoverArt
-    };
-}
+    Music = 0,
+    CoverArt
+};

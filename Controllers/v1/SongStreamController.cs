@@ -16,54 +16,53 @@ using Icarus.Models;
 using Icarus.Controllers.Managers;
 using Icarus.Database.Contexts;
 
-namespace Icarus.Controllers.V1
+namespace Icarus.Controllers.V1;
+
+[Route("api/v1/song/stream")]
+[ApiController]
+[Authorize]
+public class SongStreamController : BaseController
 {
-    [Route("api/v1/song/stream")]
-    [ApiController]
-    [Authorize]
-    public class SongStreamController : BaseController
+    #region Fields
+    private ILogger<SongStreamController> _logger;
+    private string _connectionString;
+    #endregion
+
+
+    #region Properties
+    #endregion
+
+
+    #region Constructor
+    public SongStreamController(ILogger<SongStreamController> logger, IConfiguration config)
     {
-        #region Fields
-        private ILogger<SongStreamController> _logger;
-        private string _connectionString;
-        #endregion
-
-
-        #region Properties
-        #endregion
-
-
-        #region Constructor
-        public SongStreamController(ILogger<SongStreamController> logger, IConfiguration config)
-        {
-            _logger = logger;
-            _config = config;
-            _connectionString = _config.GetConnectionString("DefaultConnection");
-        }
-        #endregion
-
-
-        #region HTTP endpoints
-        [HttpGet("{id}")]
-        public async Task<IActionResult> StreamSong(int id)
-        {
-            var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
-
-            var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
-
-            var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
-            stream.Position = 0;
-            var filename = $"{song.Title}.mp3";
-
-            _logger.LogInformation("Starting to stream song...>");
-            Console.WriteLine("Starting to streamsong...");
-
-            var file = await Task.Run(() => {
-                return File(stream, "application/octet-stream", filename);
-            });
-
-            return file;
-        }
-        #endregion
+        _logger = logger;
+        _config = config;
+        _connectionString = _config.GetConnectionString("DefaultConnection");
     }
+    #endregion
+
+
+    #region HTTP endpoints
+    [HttpGet("{id}")]
+    public async Task<IActionResult> StreamSong(int id)
+    {
+        var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
+
+        var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
+
+        var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
+        stream.Position = 0;
+        var filename = $"{song.Title}.mp3";
+
+        _logger.LogInformation("Starting to stream song...>");
+        Console.WriteLine("Starting to streamsong...");
+
+        var file = await Task.Run(() => {
+            return File(stream, "application/octet-stream", filename);
+        });
+
+        return file;
+    }
+    #endregion
 }
