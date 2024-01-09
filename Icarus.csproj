@@ -26,7 +26,7 @@
     <PackageReference Include="RestSharp" Version="106.15.0" />
     <PackageReference Include="SevenZip" Version="19.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.34.0" />
     <PackageReference Include="taglib" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
