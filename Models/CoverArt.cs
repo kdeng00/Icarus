@@ -34,7 +34,7 @@ public class CoverArt
         var random = new Random();
         var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
             s[random.Next(s.Length)]).ToArray());
-        var extension = ".mp3";
+        var extension = Icarus.Constants.FileExtensions.JPG_EXTENSION;
 
         return (flag == 0) ? filename : $"{filename}{extension}";
     }

@@ -16,7 +16,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Web;
-using NLog.Web.AspNetCore;
+// using NLog.Web.AspNetCore;
 
 using Icarus.Database.Contexts;
 
@@ -55,6 +55,8 @@ public class Startup
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
                 ValidAudience = Configuration["JWT:Audience"],
                 ValidIssuer = Configuration["JWT:Issuer"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))

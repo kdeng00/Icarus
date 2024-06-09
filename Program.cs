@@ -41,5 +41,9 @@ public class Program
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
+                webBuilder.UseKestrel(options =>
+                {
+                    options.Limits.MaxRequestBodySize = 262144000;
+                });
             });
 }

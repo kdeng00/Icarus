@@ -243,10 +243,10 @@ public class SongManager : BaseManager
         var coverMgr = new CoverArtManager(_config);
         var meta = new MetadataRetriever();
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
-        meta.UpdateCoverArt(song, coverArt);
-        song.Duration = meta.RetrieveSongDuration(song.SongPath());
+        // meta.UpdateCoverArt(song, coverArt);
+        // song.Duration = meta.RetrieveSongDuration(song.SongPath());
 
-        meta.UpdateMetadata(song, song);
+        // meta.UpdateMetadata(song, song);
 
 
         DirectoryManager dirMgr = new DirectoryManager(_config, song);

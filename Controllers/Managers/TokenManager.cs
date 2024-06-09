@@ -87,6 +87,7 @@ public class TokenManager : BaseManager
     }
 
 
+    /*
     [Obsolete("Asymmetric key signing for tokens have been deprecated")]
     public LoginResult LogIn(User user)
     {
@@ -115,6 +116,7 @@ public class TokenManager : BaseManager
             Message = "Successfully retrieved token"
         };
     }
+    */
 
     public LoginResult LoginSymmetric(User user)
     {
@@ -124,6 +126,7 @@ public class TokenManager : BaseManager
         var payload = Payload();
         payload.Add(new System.Security.Claims.Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
 
+        /*
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]));
         var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
@@ -132,8 +135,28 @@ public class TokenManager : BaseManager
             payload,
             expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: signIn);
+        */
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_config["JWT:Secret"]);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer)
+                // Add more claims as needed
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _config["Jwt:Issuer"], // Add this line
+            Audience = _config["Jwt:Audience"] 
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
         
-        tokenResult.AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        
+        // tokenResult.AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        tokenResult.AccessToken = tokenHandler.WriteToken(token);
 
         var expClaim = payload.FirstOrDefault(cl =>
         {
@@ -152,6 +175,7 @@ public class TokenManager : BaseManager
         };
     }
 
+    /*
     [Obsolete("Asymmetric key signing for tokens have been deprecated")]
     public bool IsTokenValid(string scope, string accessToken)
     {
@@ -204,6 +228,7 @@ public class TokenManager : BaseManager
 
         return tok;
     }
+    */
 
 
     private string AllScopes()
@@ -266,6 +291,7 @@ public class TokenManager : BaseManager
         return claim;
     }
 
+    /*
     [Obsolete("Asymmetric key signing for tokens have been deprecated")]
     private string CreateToken(List<Claim> claims, string privateKey)
     {
@@ -331,7 +357,7 @@ public class TokenManager : BaseManager
     {
         using (var tr = new System.IO.StringReader(publicKey))
         {
-            var pemReader = new PemReader(tr);
+            var pemReader = new Org.BouncyCastle.Crypto.PemReader(tr);
             var publicKeyParams = pemReader.ReadObject() as RsaKeyParameters;
             if (publicKeyParams == null)
             {
@@ -340,6 +366,7 @@ public class TokenManager : BaseManager
             return DotNetUtilities.ToRSAParameters(publicKeyParams);
         }
     }
+    */
 
     private async Task<string> ReadKeyContent(string filepath)
     {

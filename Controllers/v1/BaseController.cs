@@ -39,6 +39,7 @@ public class BaseController : ControllerBase
         return token;
     } 
 
+    /**
     [ApiExplorerSettings(IgnoreApi = true)]
     [Obsolete("Asymmetric key signing for tokens have been deprecated")]
     protected bool IsTokenValid(string scope)
@@ -48,5 +49,6 @@ public class BaseController : ControllerBase
 
         return tokMgr.IsTokenValid(scope, token);
     }
+    */
     #endregion
 }
