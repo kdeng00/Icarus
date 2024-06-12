@@ -17,12 +17,6 @@ public class CoverArt
     public string SongTitle { get; set; }
     [JsonIgnore]
     public string ImagePath { get; set; }
-    [JsonIgnore]
-    [NotMapped]
-    public int SongID { get; set; }
-    [JsonIgnore]
-    [NotMapped]
-    public List<Song> Songs { get; set; }
     #endregion
 
 

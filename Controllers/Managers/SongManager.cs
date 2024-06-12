@@ -158,8 +158,8 @@ public class SongManager : BaseManager
             var coverArt = coverMgr.GetCoverArt(song);
             coverMgr.DeleteCoverArt(coverArt);
 
-            coverMgr.DeleteCoverArtFromDatabase(coverArt);
             DeleteSongFromDatabase(song);
+            coverMgr.DeleteCoverArtFromDatabase(coverArt);
         }
         catch (Exception ex)
         {

@@ -47,6 +47,7 @@ public class CoverArtManager : BaseManager
     {
         _logger.Info("Attempting to delete cover art from the database");
 
+        _coverArtContext.Attach(coverArt);
         _coverArtContext.Remove(coverArt);
         _coverArtContext.SaveChanges();
     }

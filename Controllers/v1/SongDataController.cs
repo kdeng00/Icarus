@@ -148,7 +148,7 @@ public class SongDataController : BaseController
 
             _songMgr.DeleteSong(songMetaData);
 
-            return Ok();
+            return Ok(songMetaData);
         }
 
     }
