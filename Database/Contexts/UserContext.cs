@@ -2,11 +2,6 @@ using System;
 using System.Collections.Generic;    
 using System.Linq;
 
-// using MySql.Data.EntityFrameworkCore;
-// using MySql.Data;
-// using MySql.Data.EntityFrameworkCore.Extensions;
-// using MySql.Data.Entity;
-// using MySql.Data.MySqlClient;    
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
