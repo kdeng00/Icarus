@@ -1,49 +1,121 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using NLog.Web;
+using Icarus.Database.Contexts;
 
-namespace Icarus;
 
-public class Program
+var builder = WebApplication.CreateBuilder(args);
+
+var MAX_REQUEST_BODY_SIZE = 51200000000;
+
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    public static void Main(string[] args)
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Icarus", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
-        var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-
-        try
+        Name = "Authorization",
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Bearer *Auth Token*",
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
-            logger.Debug("init main");
-
-            CreateHostBuilder(args).Build().Run();
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex, "An error occurred");
-            throw;
-        }
-        finally
-        {
-            NLog.LogManager.Shutdown();
-        }
-    }
-
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
+            new OpenApiSecurityScheme
             {
-                webBuilder.UseStartup<Startup>();
-                webBuilder.UseKestrel(options =>
+                Reference = new OpenApiReference
                 {
-                    options.Limits.MaxRequestBodySize = 262144000;
-                });
-            });
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+builder.Services.AddControllers();
+builder.WebHost.UseKestrel(option =>
+{
+    option.Limits.MaxRequestBodySize = MAX_REQUEST_BODY_SIZE;
+});
+
+var Configuration = builder.Configuration;
+
+var connString = Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ValidAudience = Configuration["JWT:Audience"],
+        ValidIssuer = Configuration["JWT:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+    };
+});
+
+builder.Services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
+
+builder.Services.AddControllers()
+    .AddNewtonsoftJson();
+
+builder.Services.AddEndpointsApiExplorer();
+
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+// NOTE: This should be enabled at some point
+// app.UseHttpsRedirection();
+
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
+
+/**
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (   
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))  
+        .ToArray();
+    return forecast;
+})
+.WithName("GetWeatherForecast")
+.WithOpenApi();
+*/
+
+app.Run();

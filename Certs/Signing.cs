@@ -1,10 +1,8 @@
 using System;
-// using System.Security.Cryptography;
 
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
-// using BouncyCastle.Crypto;
 
 
 namespace Icarus.Certs;
@@ -61,8 +59,6 @@ public class SigningAudienceCertificate : IDisposable
         using (var reader = System.IO.File.OpenText(file))
         {
             var pem = new PemReader(reader);
-            // var pem = new Org.BouncyCastle.Utilities.IO.Pem.PemReader(reader);
-            // var pem = new BouncyCastle.OpenSsl.PemReader(reader);
             var o = (RsaKeyParameters)pem.ReadObject();
             var parameters = new System.Security.Cryptography.RSAParameters();
             parameters.Modulus = o.Modulus.ToByteArray();
