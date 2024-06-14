@@ -145,7 +145,7 @@ public class SongManager : BaseManager
     {
         try
         {
-            if (DeleteSongFromFilesystem(song))
+            if (DeleteSongFromFilesystem(song, true))
             {
                 _logger.Error("Failed to delete the song");
 
@@ -400,7 +400,7 @@ public class SongManager : BaseManager
     }
     
 
-    private bool DeleteSongFromFilesystem(Song song)
+    private bool DeleteSongFromFilesystem(Song song, bool deleteDirectory = false)
     {
         var songPath = song.SongPath();
 
@@ -409,6 +409,8 @@ public class SongManager : BaseManager
         try
         {
             System.IO.File.Delete(songPath);
+
+            DeleteEmptyDirectories(ref song, ref song);
         }
         catch(Exception ex)
         {
@@ -419,6 +421,7 @@ public class SongManager : BaseManager
 
         return DoesSongExistOnFilesystem(song);
     }
+
     private bool DoesSongExistOnFilesystem(Song song)
     {
         if (!System.IO.File.Exists(song.SongPath()))
