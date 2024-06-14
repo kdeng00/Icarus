@@ -488,13 +488,12 @@ public class SongManager : BaseManager
         var albumMgr = new AlbumManager(_config);
         var artistMgr = new ArtistManager(_config);
         var genreMgr = new GenreManager(_config);
-        albumMgr.DeleteAlbumFromDatabase(song);
-        artistMgr.DeleteArtistFromDatabase(song);
-        genreMgr.DeleteGenreFromDatabase(song);
-
         var sngContext = new SongContext(_connectionString);
         sngContext.Songs.Remove(song);
         sngContext.SaveChanges();
+        artistMgr.DeleteArtistFromDatabase(song);
+        albumMgr.DeleteAlbumFromDatabase(song);
+        genreMgr.DeleteGenreFromDatabase(song);
     }
     #endregion    
 }
