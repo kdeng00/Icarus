@@ -1,5 +1,4 @@
 using System;
-using System.Security.Cryptography;
 
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -10,11 +9,11 @@ namespace Icarus.Certs;
 
 public class SigningIssuerCertificate : IDisposable
 {
-    private readonly RSACryptoServiceProvider _rsa;
+    private readonly System.Security.Cryptography.RSACryptoServiceProvider _rsa;
 
     public SigningIssuerCertificate()
     {
-        _rsa = new RSACryptoServiceProvider();
+        _rsa = new System.Security.Cryptography.RSACryptoServiceProvider();
     }
 
     public RsaSecurityKey GetIssuerSigningKey(string publicKeyPath)
@@ -26,7 +25,7 @@ public class SigningIssuerCertificate : IDisposable
         {
             var pem = new PemReader(reader);
             var o = (RsaKeyParameters)pem.ReadObject();
-            var parameters = new RSAParameters();
+            var parameters = new System.Security.Cryptography.RSAParameters();
             parameters.Modulus = o.Modulus.ToByteArray();
             parameters.Exponent = o.Exponent.ToByteArray();
             _rsa.ImportParameters(parameters);
@@ -45,11 +44,11 @@ public class SigningIssuerCertificate : IDisposable
 
 public class SigningAudienceCertificate : IDisposable
 {
-    private readonly RSACryptoServiceProvider _rsa;
+    private readonly System.Security.Cryptography.RSACryptoServiceProvider _rsa;
 
     public SigningAudienceCertificate()
     {
-        _rsa = new RSACryptoServiceProvider();
+        _rsa = new System.Security.Cryptography.RSACryptoServiceProvider();
     }
 
     public SigningCredentials GetAudienceSigningKey(string keyPath)
@@ -61,7 +60,7 @@ public class SigningAudienceCertificate : IDisposable
         {
             var pem = new PemReader(reader);
             var o = (RsaKeyParameters)pem.ReadObject();
-            var parameters = new RSAParameters();
+            var parameters = new System.Security.Cryptography.RSAParameters();
             parameters.Modulus = o.Modulus.ToByteArray();
             parameters.Exponent = o.Exponent.ToByteArray();
             _rsa.ImportParameters(parameters);

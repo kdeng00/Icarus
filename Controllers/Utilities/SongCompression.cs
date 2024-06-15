@@ -83,7 +83,7 @@ public class SongCompression
             Console.WriteLine(exMsg);
         }
 
-        if (songDetails.Filename.Contains(".mp3"))
+        if (songDetails.Filename.Contains(Constants.FileExtensions.WAV_EXTENSION))
         {
             _compressedSongFilename = StripMP3Extension(songDetails.Filename);
         }

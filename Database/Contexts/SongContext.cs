@@ -25,38 +25,6 @@ public class SongContext : DbContext
         modelBuilder.Entity<Song>()
             .ToTable("Song");
 
-        /**
-        modelBuilder.Entity<Song>()
-            .HasOne(s => s.Album)
-        .WithMany(al => al.Songs)
-        .HasForeignKey(s => s.AlbumID)
-        .OnDelete(DeleteBehavior.SetNull);
-
-        modelBuilder.Entity<Song>()
-            .HasOne(sa => sa.SongArtist)
-        .WithMany(ar => ar.Songs)
-        .HasForeignKey(s => s.ArtistID)
-        .OnDelete(DeleteBehavior.SetNull);
-
-        modelBuilder.Entity<Song>()
-            .HasOne(s => s.SongGenre)
-        .WithMany(gnr => gnr.Songs)
-        .HasForeignKey(s => s.GenreID)
-        .OnDelete(DeleteBehavior.SetNull);
-
-        modelBuilder.Entity<Song>()
-            .HasOne(s => s.SongYear)
-        .WithMany(yr => yr.Songs)
-        .HasForeignKey(s => s.YearID)
-        .OnDelete(DeleteBehavior.SetNull);
-
-        modelBuilder.Entity<Song>()
-            .HasOne(s => s.SongCoverArt)
-            .WithMany(ca => ca.Songs)
-            .HasForeignKey(s => s.CoverArtID)
-            .OnDelete(DeleteBehavior.SetNull);
-        */
-
         modelBuilder.Entity<Song>()
             .Property(s => s.Year)
         .IsRequired(false);

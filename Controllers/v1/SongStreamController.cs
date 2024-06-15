@@ -53,7 +53,12 @@ public class SongStreamController : BaseController
 
         var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
         stream.Position = 0;
-        var filename = $"{song.Title}.mp3";
+        var filename = song.Filename;
+        
+        if (string.IsNullOrEmpty(song.Filename))
+        {
+            filename = song.GenerateFilename();
+        }
 
         _logger.LogInformation("Starting to stream song...>");
         Console.WriteLine("Starting to streamsong...");

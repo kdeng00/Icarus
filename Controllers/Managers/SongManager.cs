@@ -145,7 +145,7 @@ public class SongManager : BaseManager
     {
         try
         {
-            if (DeleteSongFromFilesystem(song))
+            if (DeleteSongFromFilesystem(song, true))
             {
                 _logger.Error("Failed to delete the song");
 
@@ -158,8 +158,8 @@ public class SongManager : BaseManager
             var coverArt = coverMgr.GetCoverArt(song);
             coverMgr.DeleteCoverArt(coverArt);
 
-            coverMgr.DeleteCoverArtFromDatabase(coverArt);
             DeleteSongFromDatabase(song);
+            coverMgr.DeleteCoverArtFromDatabase(coverArt);
         }
         catch (Exception ex)
         {
@@ -241,13 +241,7 @@ public class SongManager : BaseManager
         }
 
         var coverMgr = new CoverArtManager(_config);
-        var meta = new MetadataRetriever();
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
-        meta.UpdateCoverArt(song, coverArt);
-        song.Duration = meta.RetrieveSongDuration(song.SongPath());
-
-        meta.UpdateMetadata(song, song);
-
 
         DirectoryManager dirMgr = new DirectoryManager(_config, song);
         dirMgr.CreateDirectory();
@@ -406,7 +400,7 @@ public class SongManager : BaseManager
     }
     
 
-    private bool DeleteSongFromFilesystem(Song song)
+    private bool DeleteSongFromFilesystem(Song song, bool deleteDirectory = false)
     {
         var songPath = song.SongPath();
 
@@ -415,6 +409,8 @@ public class SongManager : BaseManager
         try
         {
             System.IO.File.Delete(songPath);
+
+            DeleteEmptyDirectories(ref song, ref song);
         }
         catch(Exception ex)
         {
@@ -425,6 +421,7 @@ public class SongManager : BaseManager
 
         return DoesSongExistOnFilesystem(song);
     }
+
     private bool DoesSongExistOnFilesystem(Song song)
     {
         if (!System.IO.File.Exists(song.SongPath()))
@@ -494,13 +491,12 @@ public class SongManager : BaseManager
         var albumMgr = new AlbumManager(_config);
         var artistMgr = new ArtistManager(_config);
         var genreMgr = new GenreManager(_config);
-        albumMgr.DeleteAlbumFromDatabase(song);
-        artistMgr.DeleteArtistFromDatabase(song);
-        genreMgr.DeleteGenreFromDatabase(song);
-
         var sngContext = new SongContext(_connectionString);
         sngContext.Songs.Remove(song);
         sngContext.SaveChanges();
+        artistMgr.DeleteArtistFromDatabase(song);
+        albumMgr.DeleteAlbumFromDatabase(song);
+        genreMgr.DeleteGenreFromDatabase(song);
     }
     #endregion    
 }

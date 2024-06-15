@@ -73,20 +73,20 @@ public class Song
 
     public string GenerateFilename(int flag = 0)
     {
-        const int length = 25;
-        const string chars = "ABCDEF0123456789";
+        int length = Constants.DirectoryPaths.FILENAME_LENGTH;
+        string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var random = new Random();
         var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
             s[random.Next(s.Length)]).ToArray());
-        var extension = ".mp3";
+        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
 
         return flag == 0 ? filename : $"{filename}{extension}";
     }
     public async Task<string> GenerateFilenameAsync(int flag = 0)
     {
-        const int length = 25;
-        const string chars = "ABCDEF0123456789";
-        var extension = ".mp3";
+        int length = Constants.DirectoryPaths.FILENAME_LENGTH;
+        string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
+        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
         var random = new Random();
         var filename = await Task.Run(() =>
         {

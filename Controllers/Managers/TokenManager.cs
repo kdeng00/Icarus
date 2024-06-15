@@ -2,20 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
-using JWT;
-using JWT.Serializers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 using RestSharp;
 
 using Icarus.Models;
@@ -87,35 +80,6 @@ public class TokenManager : BaseManager
     }
 
 
-    [Obsolete("Asymmetric key signing for tokens have been deprecated")]
-    public LoginResult LogIn(User user)
-    {
-        var tokenResult = new TokenTierOne();
-        tokenResult.TokenType = "Jwt";
-
-        var privateKey = ReadKeyContent(_privateKeyPath).Result;
-        var publicKey = ReadKeyContent(_publicKeyPath).Result;
-
-        var payload = Payload();
-
-        var token = CreateToken(payload, privateKey);
-        tokenResult.AccessToken = token;
-
-        var expClaim = payload.FirstOrDefault(cl =>
-        {
-            return cl.Type.Equals("exp");
-        });
-
-        tokenResult.Expiration = System.Convert.ToInt32(expClaim.Value);
-
-        return new LoginResult
-        {
-            UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
-            TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
-            Message = "Successfully retrieved token"
-        };
-    }
-
     public LoginResult LoginSymmetric(User user)
     {
         var tokenResult = new TokenTierOne();
@@ -124,16 +88,25 @@ public class TokenManager : BaseManager
         var payload = Payload();
         payload.Add(new System.Security.Claims.Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]));
-        var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            _config["JWT:Issuer"],
-            _config["JWT:Audience"],
-            payload,
-            expires: DateTime.UtcNow.AddMinutes(30),
-            signingCredentials: signIn);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_config["JWT:Secret"]);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer)
+                // Add more claims as needed
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _config["Jwt:Issuer"], // Add this line
+            Audience = _config["Jwt:Audience"] 
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
         
-        tokenResult.AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+        
+        tokenResult.AccessToken = tokenHandler.WriteToken(token);
 
         var expClaim = payload.FirstOrDefault(cl =>
         {
@@ -150,59 +123,6 @@ public class TokenManager : BaseManager
             TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
             Message = "Successfully retrieved token"
         };
-    }
-
-    [Obsolete("Asymmetric key signing for tokens have been deprecated")]
-    public bool IsTokenValid(string scope, string accessToken)
-    {
-        var result = false;
-        var token = DecodeToken(accessToken);
-
-        if (token == null || token.Erroneous())
-        {
-            return result;
-        }
-
-        result = (!token.TokenExpired() && token.ContainsScope(scope)) ? true : false;
-
-        // What would make a token valid?
-        // 1. The expiration date must be before the current date
-        // 2. The desired scope must be part of the scopes within the access token
-        // 3. Must be able to be decoded
-
-        return result;
-    }
-
-    [Obsolete("Asymmetric key signing for tokens have been deprecated")]
-    public Token DecodeToken(string accessToken)
-    {
-        var rsaParams = GetRSAPublic(_publicKey);
-        Token tok = null;
-
-        try
-        {
-            using (var rsa = new RSACryptoServiceProvider())
-            {
-                rsa.ImportParameters(rsaParams);
-
-                IJsonSerializer serializer = new JsonNetSerializer();
-                IDateTimeProvider provider = new UtcDateTimeProvider();
-                IJwtValidator validator = new JwtValidator(serializer, provider);
-                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                var algorithm = new JWT.Algorithms.RS256Algorithm(rsa);
-                IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
-                
-                var json = decoder.Decode(accessToken);
-                tok = JsonConvert.DeserializeObject<Token>(json);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Error("An error occurred: {0}", ex.Message);
-        }
-
-
-        return tok;
     }
 
 
@@ -264,81 +184,6 @@ public class TokenManager : BaseManager
         };
 
         return claim;
-    }
-
-    [Obsolete("Asymmetric key signing for tokens have been deprecated")]
-    private string CreateToken(List<Claim> claims, string privateKey)
-    {
-        var token = string.Empty;
-
-        if (string.IsNullOrEmpty(privateKey))
-        {
-            privateKey = ReadKeyContent(_privateKeyPath).Result;
-        }
-
-        RSAParameters rsaParams;
-        using (var tr = new System.IO.StringReader(privateKey))
-        {
-            var pemReader = new PemReader(tr);
-            var keyPair = pemReader.ReadObject() as AsymmetricCipherKeyPair;
-            if (keyPair == null)
-            {
-                throw new Exception("Could not read RSA private key");
-            } 
-            var privateRsaParams = keyPair.Private as RsaPrivateCrtKeyParameters;
-            rsaParams = DotNetUtilities.ToRSAParameters(privateRsaParams);
-        }
-
-        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-        {
-            var rsaParamsPublic = GetRSAPublic(ReadKeyContent(_publicKeyPath).Result);
-            var rsaPublic = new RSACryptoServiceProvider();
-
-            rsa.ImportParameters(rsaParams);
-            rsaPublic.ImportParameters(rsaParamsPublic);
-
-            Dictionary<string, object> payload = new Dictionary<string, object>();
-
-            foreach (var claim in claims)
-            {
-                var type = claim.Type;
-                var val = Int32.TryParse(claim.Value, out _);
-
-                if (val)
-                {
-                    payload.Add(type, Convert.ToInt32(claim.Value));
-                }
-                else
-                {
-                    payload.Add(type, claim.Value);
-                }
-
-            }
-
-            var algorithm = new JWT.Algorithms.RS256Algorithm(rsaPublic, rsa);
-            IJsonSerializer serializer = new JsonNetSerializer();
-            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-
-            token = encoder.Encode(payload, privateKey);
-        }
-
-        return token;
-    }
-
-    [Obsolete("Asymmetric key signing for tokens have been deprecated")]
-    private RSAParameters GetRSAPublic(string publicKey)
-    {
-        using (var tr = new System.IO.StringReader(publicKey))
-        {
-            var pemReader = new PemReader(tr);
-            var publicKeyParams = pemReader.ReadObject() as RsaKeyParameters;
-            if (publicKeyParams == null)
-            {
-                throw new Exception("Could not read RSA public key");
-            }
-            return DotNetUtilities.ToRSAParameters(publicKeyParams);
-        }
     }
 
     private async Task<string> ReadKeyContent(string filepath)

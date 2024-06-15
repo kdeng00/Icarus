@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 
 using Newtonsoft.Json;
@@ -17,24 +18,18 @@ public class CoverArt
     public string SongTitle { get; set; }
     [JsonIgnore]
     public string ImagePath { get; set; }
-    [JsonIgnore]
-    [NotMapped]
-    public int SongID { get; set; }
-    [JsonIgnore]
-    [NotMapped]
-    public List<Song> Songs { get; set; }
     #endregion
 
 
     #region Methods
     public string GenerateFilename(int flag)
     {
-        const int length = 25;
-        const string chars = "ABCDEF0123456789";
+        int length = Constants.DirectoryPaths.FILENAME_LENGTH;
+        string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var random = new Random();
         var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
             s[random.Next(s.Length)]).ToArray());
-        var extension = ".mp3";
+        var extension = Constants.FileExtensions.JPG_EXTENSION;
 
         return (flag == 0) ? filename : $"{filename}{extension}";
     }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
@@ -20,8 +18,4 @@ public class Album
     public int SongCount { get; set; }
     [JsonProperty("year")]
     public int Year { get; set; }
-
-    [JsonIgnore]
-    [NotMapped]
-    public List<Song> Songs { get; set; }
 }

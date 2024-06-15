@@ -1,18 +1,18 @@
 # Icarus
 
-Icarus is a music streaming API Server that interacts with [Mear](https://github.com/amazing-username/mear).
+Icarus is a music streaming API Server that interacts with [Mear](https://github.com/kdeng00/mear).
 
 ### Interfacing With Icarus
 
 One can interface with Icarus the music server either by:
 
-* [Mear](https://github.com/amazing-username/mear) - Partially implemented (under development)
-* [IcarusDownloadManager](https://github.com/amazing-username/IcarusDownloadManager)
+* [Mear](https://github.com/kdeng00/mear) - Partially implemented (under development)
+* [IcarusDownloadManager](https://github.com/kdeng00/IcarusDownloadManager)
 
 
 ## Built With
 
-* C# [.NET](https://dotnet.microsoft.com/) 6
+* C# [.NET](https://dotnet.microsoft.com/) 8
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
 * OpenSSL
 * BCrypt.Net-Next
@@ -120,7 +120,7 @@ Prior to starting the API, the Migrations must be applied. There are 6 tables wi
 * Year
 * Genre
 
-There is a script for Linux systems to apply these migrations, it can be found in the [Scripts/Migrations/Linux](https://github.com/amazing-username/Icarus/blob/master/Scripts/Migrations/Linux/AddUpdate.sh) directory. Just merely execute:
+There is a script for Linux systems to apply these migrations, it can be found in the [Scripts/Migrations/Linux](https://github.com/kdeng00/Icarus/blob/master/Scripts/Migrations/Linux/AddUpdate.sh) directory. Just merely execute:
 ```shell
 scripts/Migrations/Linux/AddUpdate.sh
 ```
