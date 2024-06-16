@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-
 using Newtonsoft.Json;
 
 namespace Icarus.Models;
@@ -32,6 +25,11 @@ public class CoverArt
         var extension = Constants.FileExtensions.JPG_EXTENSION;
 
         return (flag == 0) ? filename : $"{filename}{extension}";
+    }
+
+    public async Task<byte[]> GetData()
+    {
+        return await File.ReadAllBytesAsync(this.ImagePath);
     }
     #endregion
 }

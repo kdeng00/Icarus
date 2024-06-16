@@ -1,11 +1,5 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
 using Icarus.Database.Contexts;
@@ -77,6 +71,21 @@ public class CoverArtController : BaseController
             _logger.LogInformation("Cover art not found");
             return NotFound();
         }
+    }
+
+    [HttpGet("data/download/{id}")]
+    public async Task<IActionResult> Download(int id)
+    {
+        var songContext = new SongContext(_connectionString);
+        var covMgr = new CoverArtManager(this._config);
+        
+        var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
+        var filename = songMetaData.Title + Constants.FileExtensions.JPG_EXTENSION;
+        var c = covMgr.GetCoverArt(songMetaData);
+
+        var data = await c.GetData();
+        
+        return File(data, "application/x-msdownload", filename);
     }
     #endregion
 }
