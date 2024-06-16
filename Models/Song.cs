@@ -46,6 +46,8 @@ public class Song
     public int? CoverArtID { get; set; }
     [JsonProperty("date_created")]
     public DateTime DateCreated { get; set; }
+    [JsonProperty("user_id")]
+    public int UserID { get; set; }
     #endregion
 
 
