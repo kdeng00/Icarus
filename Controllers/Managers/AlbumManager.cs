@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-
-using Microsoft.Extensions.Configuration;
-
-using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
 
