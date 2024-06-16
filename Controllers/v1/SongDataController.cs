@@ -37,14 +37,15 @@ public class SongDataController : BaseController
 
 
     [HttpGet("download/{id}")]
-    public IActionResult Download(int id)
+    public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString);
         var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
         
         var song = _songMgr.RetrieveSong(songMetaData).Result;
-        
-        return File(song.Data, "application/x-msdownload", songMetaData.Filename);
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, songMetaData.Title, randomizeFilename);
+
+        return File(song.Data, "application/x-msdownload", filename);
     }
 
     // Assumes that the song already has metadata such as

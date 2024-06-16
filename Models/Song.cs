@@ -72,9 +72,7 @@ public class Song
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
-        var random = new Random();
-        var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
-            s[random.Next(s.Length)]).ToArray());
+        var filename = this.Generate(length, chars);
         var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
 
         return flag == 0 ? filename : $"{filename}{extension}";
@@ -84,15 +82,20 @@ public class Song
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
-        var random = new Random();
         var filename = await Task.Run(() =>
         {
-            return new string(Enumerable.Repeat(chars, length).Select(s =>
-                s[random.Next(s.Length)]).ToArray());
+            return this.Generate(length, chars);
         });
-        
 
         return flag == 0 ? filename : $"{filename}{extension}";
+    }
+
+    private string Generate(int length, string chars)
+    {
+        var random = new Random();
+        var filename = new string(Enumerable.Repeat(chars, length).Select(s =>
+            s[random.Next(s.Length)]).ToArray());
+        return filename;
     }
     #endregion
 }

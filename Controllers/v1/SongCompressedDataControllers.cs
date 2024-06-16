@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
+using Icarus.Controllers.Managers;
 
 namespace Icarus.Controllers.V1;
 
@@ -26,9 +27,9 @@ public class SongCompressedDataController : BaseController
     #region Constructor
     public SongCompressedDataController(IConfiguration config)
     {
+        _config = config;
         _songTempDir = _config.GetValue<string>("TemporaryMusicPath");
         _archiveDir = _config.GetValue<string>("ArchivePath");
-        _config = config;
         _connectionString = _config.GetConnectionString("DefaultConnection");
     }
     #endregion
@@ -36,18 +37,22 @@ public class SongCompressedDataController : BaseController
 
     #region API Routes
     [HttpGet("{id}")]
-    public async Task<IActionResult> DownloadCompressedSong(int id)
+    public async Task<IActionResult> DownloadCompressedSong(int id, [FromQuery] bool? randomizeFilename)
     {
         var context = new SongContext(_connectionString);
 
         SongCompression cmp = new SongCompression(_archiveDir);
+
     
         Console.WriteLine($"Archive directory root: {_archiveDir}");
 
         Console.WriteLine("Starting process of retrieving comrpessed song");
-        SongData song = await cmp.RetrieveCompressedSong(context.RetrieveRecord(new Song{ SongID = id }));
+        var sng = context.RetrieveRecord(new Song{ SongID = id });
+        SongData song = await cmp.RetrieveCompressedSong(sng);
 
-        return File(song.Data, "application/x-msdownload", cmp.CompressedSongFilename);
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title, randomizeFilename);
+
+        return File(song.Data, "application/x-msdownload", filename);
     }
     #endregion
 }
