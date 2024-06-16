@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-
 using Icarus.Constants;
 using Icarus.Controllers.Utilities;
 using Icarus.Database.Contexts;
