@@ -10,4 +10,7 @@ public class FileExtensions
 
     // Contains file extension with period at the beginning
     public static string JPG_EXTENSION = ".jpg";
+
+    // Contains file extension with period at the beginning
+    public static string ZIP_EXTENSION = ".zip";
 }

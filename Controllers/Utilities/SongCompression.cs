@@ -85,7 +85,7 @@ public class SongCompression
 
         if (songDetails.Filename.Contains(Constants.FileExtensions.WAV_EXTENSION))
         {
-            _compressedSongFilename = StripMP3Extension(songDetails.Filename);
+            _compressedSongFilename = StripExtension(songDetails.Filename);
         }
 
         return tmpZipFilePath;
@@ -110,7 +110,7 @@ public class SongCompression
     }
 
 
-    string StripMP3Extension(string filename)
+    string StripExtension(string filename)
     {
         Console.WriteLine($"Before: {filename}");
         int filenameLength = filename.Length;
@@ -119,7 +119,7 @@ public class SongCompression
         var startIndex = endIndex - 3;
         Console.WriteLine($"Starting index {startIndex} and ending index {endIndex}");
         var stripped = filename.Remove(startIndex, 4);
-        stripped += ".zip";
+        stripped += Constants.FileExtensions.ZIP_EXTENSION;
         Console.WriteLine($"After {stripped}");
 
         return stripped;
