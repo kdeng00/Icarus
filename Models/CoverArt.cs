@@ -27,9 +27,6 @@ public class CoverArt
         return (flag == 0) ? filename : $"{filename}{extension}";
     }
 
-    public async Task<byte[]> GetData()
-    {
-        return await File.ReadAllBytesAsync(this.ImagePath);
-    }
+    public async Task<byte[]> GetData() => await File.ReadAllBytesAsync(this.ImagePath);
     #endregion
 }
