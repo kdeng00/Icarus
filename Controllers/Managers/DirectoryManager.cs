@@ -48,6 +48,14 @@ public class DirectoryManager : BaseManager
 
 
     #region Methods
+    // Does not include extension
+    public static string GenerateFilename(int length)
+    {
+        string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
+        var random = new Random();
+        return new string(Enumerable.Repeat(chars, length).Select(s =>
+            s[random.Next(s.Length)]).ToArray());
+    }
     public void CreateDirectory()
     {
         CreateDirectory(_song);
