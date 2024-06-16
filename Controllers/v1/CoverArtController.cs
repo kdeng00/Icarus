@@ -74,14 +74,15 @@ public class CoverArtController : BaseController
     }
 
     [HttpGet("data/download/{id}")]
-    public async Task<IActionResult> Download(int id)
+    public async Task<IActionResult> Download(int id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString);
         var covMgr = new CoverArtManager(this._config);
         
         var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
-        var filename = songMetaData.Title + Constants.FileExtensions.JPG_EXTENSION;
         var c = covMgr.GetCoverArt(songMetaData);
+
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title, randomizeFilename);
 
         var data = await c.GetData();
         

@@ -1,3 +1,4 @@
+using System.Reflection.PortableExecutable;
 using Icarus.Models;
 using Icarus.Types;
 
@@ -50,13 +51,27 @@ public class DirectoryManager : BaseManager
         return new string(Enumerable.Repeat(chars, length).Select(s =>
             s[random.Next(s.Length)]).ToArray());
     }
+
+    public static string GenerateDownloadFilename(int length, string extension, string title, bool? randomize)
+    {
+        if (randomize.HasValue && randomize.Value) 
+        {
+            return GenerateFilename(length) + extension;
+        }
+        else
+        {
+            return title + extension;
+        }
+    }
+
     public void CreateDirectory()
     {
-        CreateDirectory(_song);
+        this.CreateDirectory(_song);
     }
+
     public void CreateDirectory(Song song)
     {
-        _song = song;
+        this._song = song;
 
         try
         {
@@ -77,6 +92,7 @@ public class DirectoryManager : BaseManager
             _logger.Error(msg, "An error occurred");
         }
     }
+
     public void DeleteEmptyDirectories()
     {
         try
@@ -100,6 +116,7 @@ public class DirectoryManager : BaseManager
             Console.WriteLine($"An error occurred {exMsg}");
         }
     }
+
     public void DeleteEmptyDirectories(Song song)
     {
         try
@@ -148,30 +165,42 @@ public class DirectoryManager : BaseManager
     {
         _logger.Info("Generating song path");
 
-        var songPath = string.Empty;
         var artistPath = ArtistDirectory(song);
         var albumPath = AlbumDirectory(song);
 
-        if (!Directory.Exists(artistPath))
+        GenerateDirectories(new List<DirEnt>{
+            new DirEnt
+            {
+                Pre = "Artist path does not exist",
+                Path = artistPath,
+                Post = "Creating artist path"
+            },
+            new DirEnt
+            {
+                Pre = "Album path does not exist",
+                Path = albumPath,
+                Post = "Created album path"
+            }
+        });
+
+        return albumPath;
+    }
+
+    private class DirEnt
+    {
+        public string Pre { get; set;}
+        public string Path { get; set; }
+        public string Post { get; set; }
+    }
+
+    private void GenerateDirectories(List<DirEnt> dirs)
+    {
+        foreach (var di in dirs)
         {
-            _logger.Info("Artist path does not exist");
-
-            Directory.CreateDirectory(artistPath);
-
-            _logger.Info("Creating artist path");
+            _logger.Info(di.Pre);
+            Directory.CreateDirectory(di.Path);
+            _logger.Info(di.Post);
         }
-        if (!Directory.Exists(albumPath))
-        {
-            _logger.Info("Album path does not exist");
-
-            Directory.CreateDirectory(albumPath);
-
-            _logger.Info("Created album path");
-        }
-
-        songPath = albumPath;
-
-        return songPath;
     }
 
     private void Initialize(DirectoryType dirTypes = DirectoryType.Music)

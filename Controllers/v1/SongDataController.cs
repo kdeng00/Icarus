@@ -43,17 +43,8 @@ public class SongDataController : BaseController
         var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
         
         var song = _songMgr.RetrieveSong(songMetaData).Result;
-        var filename = "";
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, songMetaData.Title, randomizeFilename);
 
-        if (randomizeFilename.HasValue && randomizeFilename.Value) 
-        {
-            filename = Managers.DirectoryManager.GenerateFilename(10) + Constants.FileExtensions.WAV_EXTENSION;
-        }
-        else
-        {
-            filename = songMetaData.Title + Constants.FileExtensions.WAV_EXTENSION;
-        }
-        
         return File(song.Data, "application/x-msdownload", filename);
     }
 

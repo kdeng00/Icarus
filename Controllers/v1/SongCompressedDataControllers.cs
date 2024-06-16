@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
+using Icarus.Controllers.Managers;
 
 namespace Icarus.Controllers.V1;
 
@@ -49,16 +50,7 @@ public class SongCompressedDataController : BaseController
         var sng = context.RetrieveRecord(new Song{ SongID = id });
         SongData song = await cmp.RetrieveCompressedSong(sng);
 
-        var filename = string.Empty;
-
-        if (randomizeFilename.HasValue && randomizeFilename.Value) 
-        {
-            filename = Managers.DirectoryManager.GenerateFilename(10) + Constants.FileExtensions.ZIP_EXTENSION;
-        }
-        else
-        {
-            filename = sng.Title + Constants.FileExtensions.ZIP_EXTENSION;
-        }
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title, randomizeFilename);
 
         return File(song.Data, "application/x-msdownload", filename);
     }
