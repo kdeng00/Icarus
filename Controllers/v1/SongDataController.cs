@@ -104,6 +104,15 @@ public class SongDataController : BaseController
             if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
             {
                 var song = Newtonsoft.Json.JsonConvert.DeserializeObject<Song>(up.SongFile);
+                var tokMgr = new TokenManager(this._config);
+                var accessToken = Request.Headers["Authorization"];
+                var userId = tokMgr.RetrieveUserIdFromToken(accessToken);
+
+                if (userId != -1)
+                {
+                    song.UserID = userId;
+                }
+
                 _logger.LogInformation($"Song title: {song.Title}");
 
                 _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);

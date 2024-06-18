@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using RestSharp;
 
 using Icarus.Models;
+using Microsoft.VisualBasic;
 
 namespace Icarus.Controllers.Managers;
 
@@ -77,10 +78,7 @@ public class TokenManager : BaseManager
 
     public LoginResult LoginSymmetric(User user)
     {
-        var tokenResult = new TokenTierOne
-        {
-            TokenType = "JWT"
-        };
+        var tokenResult = new TokenTierOne{ TokenType = "JWT" };
 
         var payload = Payload();
         payload.Add(new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
@@ -100,7 +98,6 @@ public class TokenManager : BaseManager
             Audience = _config["Jwt:Audience"] 
         };
 
-        // var token = 
         tokenResult.AccessToken = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
 
         var expClaim = payload.FirstOrDefault(cl =>
@@ -112,8 +109,6 @@ public class TokenManager : BaseManager
         var exp = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
         tokenResult.Expiration = Convert.ToInt32(exp);
 
-        var userId = this.RetrieveUserIdFromToken(tokenResult.AccessToken);
-
         return new LoginResult
         {
             UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
@@ -124,6 +119,11 @@ public class TokenManager : BaseManager
 
     public int RetrieveUserIdFromToken(string token)
     {
+        if (this.ContainsBearer(token))
+        {
+            token = this.StripBearer(token);
+        }
+
         var tokenHandler = new JwtSecurityTokenHandler();
         var readTok = tokenHandler.ReadJwtToken(token);
         var userId = -1;
@@ -133,10 +133,24 @@ public class TokenManager : BaseManager
             if (item.Key == "user_id")
             {
                 userId = Convert.ToInt32(item.Value);
+                break;
             }
         }
 
         return userId;
+    }
+
+    private string StripBearer(string token)
+    {
+        var start = 6;
+        var strippedToken = token.Substring(start);
+
+        return Strings.Trim(strippedToken);
+    }
+
+    private bool ContainsBearer(string token)
+    {
+        return token.Contains("Bearer");
     }
 
 
