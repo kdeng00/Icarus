@@ -77,11 +77,13 @@ public class TokenManager : BaseManager
 
     public LoginResult LoginSymmetric(User user)
     {
-        var tokenResult = new TokenTierOne();
-        tokenResult.TokenType = "Jwt";
+        var tokenResult = new TokenTierOne
+        {
+            TokenType = "JWT"
+        };
 
         var payload = Payload();
-        payload.Add(new System.Security.Claims.Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
+        payload.Add(new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_config["JWT:Secret"]);
@@ -98,10 +100,8 @@ public class TokenManager : BaseManager
             Audience = _config["Jwt:Audience"] 
         };
 
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        
-        
-        tokenResult.AccessToken = tokenHandler.WriteToken(token);
+        // var token = 
+        tokenResult.AccessToken = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
 
         var expClaim = payload.FirstOrDefault(cl =>
         {
@@ -112,12 +112,31 @@ public class TokenManager : BaseManager
         var exp = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
         tokenResult.Expiration = Convert.ToInt32(exp);
 
+        var userId = this.RetrieveUserIdFromToken(tokenResult.AccessToken);
+
         return new LoginResult
         {
             UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
             TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
             Message = "Successfully retrieved token"
         };
+    }
+
+    public int RetrieveUserIdFromToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var readTok = tokenHandler.ReadJwtToken(token);
+        var userId = -1;
+
+        foreach (var item in readTok.Payload)
+        {
+            if (item.Key == "user_id")
+            {
+                userId = Convert.ToInt32(item.Value);
+            }
+        }
+
+        return userId;
     }
 
 
@@ -157,30 +176,30 @@ public class TokenManager : BaseManager
 
     private List<Claim> Payload()
     {
+        // TODO: Remove this hard coding
         var expLimit = 30;
         var currentDate = DateTime.Now;
         var expiredDate = currentDate.AddMinutes(expLimit);
-        var issued = Math.Floor((currentDate - DateTime.UnixEpoch).TotalSeconds);
-        var expires = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
-        var issuer = "https://soaricarus.auth0.com";
-        issuer = "http://localhost:5002";
-        var audience = "https://icarus/api";
-        audience = "http://localhost:5002";
+        // var issuer = "https://soaricarus.auth0.com";
+        var issuer = "http://localhost:5002";
+        // var audience = "https://icarus/api";
+        var audience = "http://localhost:5002";
         var subject = _config["JWT:Subject"];
 
         var claim = new List<System.Security.Claims.Claim>()
         {
-            new System.Security.Claims.Claim("scope", AllScopes(), "string"),
-            new System.Security.Claims.Claim(JwtRegisteredClaimNames.Exp, expiredDate.ToString()),
-            new System.Security.Claims.Claim(JwtRegisteredClaimNames.Aud, audience),
-            new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iss, issuer),
+            new Claim("scope", AllScopes(), "string"),
+            new Claim(JwtRegisteredClaimNames.Exp, expiredDate.ToString()),
+            new Claim(JwtRegisteredClaimNames.Aud, audience),
+            new Claim(JwtRegisteredClaimNames.Iss, issuer),
             new Claim(JwtRegisteredClaimNames.Sub, subject),
-            new System.Security.Claims.Claim(JwtRegisteredClaimNames.Iat, currentDate.ToString())
+            new Claim(JwtRegisteredClaimNames.Iat, currentDate.ToString())
         };
 
         return claim;
     }
 
+    [Obsolete("Deprecated function")]
     private async Task<string> ReadKeyContent(string filepath)
     {
         return await System.IO.File.ReadAllTextAsync(filepath);
@@ -234,6 +253,7 @@ public class TokenManager : BaseManager
         [JsonProperty("grant_type")]
         public string GrantType { get; set; }
     }
+
     private class TokenTierOne
     {
         [JsonProperty("access_token")]
