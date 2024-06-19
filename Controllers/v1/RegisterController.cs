@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
-using Icarus.Controllers.Managers;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
@@ -19,7 +11,6 @@ namespace Icarus.Controllers.V1;
 public class RegisterController : ControllerBase
 {
     #region Fields
-    private string _connectionString;
     private IConfiguration _config;
     #endregion
 
@@ -32,7 +23,6 @@ public class RegisterController : ControllerBase
     public RegisterController(IConfiguration config)
     {
         _config = config;
-        _connectionString = _config.GetConnectionString("DefaultConnection");
     }
     #endregion
 

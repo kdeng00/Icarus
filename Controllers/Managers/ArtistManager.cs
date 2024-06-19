@@ -29,13 +29,13 @@ public class ArtistManager : BaseManager
     {
         _logger.Info("Starting process to save the artist record of the song to the database");
 
-        var artist = new Artist();
+        var artist = new Artist
+        {
+            Name = song.Artist,
+            SongCount = 1
+        };
 
-        artist.Name = song.Artist;
-        artist.SongCount = 1;
-        var artistTitle = artist.Name;
-
-        var artistRetrieved = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artistTitle));
+        var artistRetrieved = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artist.Name));
 
         if (artistRetrieved == null)
         {

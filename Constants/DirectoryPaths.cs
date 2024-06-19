@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Icarus.Constants;
 
 public class DirectoryPaths

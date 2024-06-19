@@ -97,7 +97,7 @@ public class CoverArtManager : BaseManager
             else
             {
                 _logger.Info("Song has no cover art, applying stock cover art");
-                // coverArt.ImagePath = _rootCoverArtPath + $"{segment}{defaultExtension}";
+
                 var coverArtFilePath = _rootCoverArtPath + $"{segment}{defaultExtension}";
                 coverArt.ImagePath = DirectoryPaths.CoverArtPath;
                 metaData.UpdateCoverArt(song, coverArt);

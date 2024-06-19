@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
 using Icarus.Database.Contexts;
@@ -41,25 +35,24 @@ public class GenreController : BaseController
     [HttpGet]
     public IActionResult GetGenres()
     {
-        var genres = new List<Genre>();
-
         var genreStore = new GenreContext(_connectionString);
 
-        genres = genreStore.Genres.ToList();
+        var genres = genreStore.Genres.ToList();
 
         if (genres.Count > 0)
+        {
             return Ok(genres);
+        }
         else
+        {
             return NotFound(new List<Genre>());
+        }
     }
 
     [HttpGet("{id}")]
     public IActionResult GetGenre(int id)
     {
-        var genre = new Genre
-        {
-            GenreID = id
-        };
+        var genre = new Genre{ GenreID = id };
 
         var genreStore = new GenreContext(_connectionString);
 
@@ -70,7 +63,9 @@ public class GenreController : BaseController
             return Ok(genre);
         }
         else
+        {
             return NotFound(new Genre());
+        }
     }
     #endregion
 }

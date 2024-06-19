@@ -42,7 +42,6 @@ public class SongCompressedDataController : BaseController
         var context = new SongContext(_connectionString);
 
         SongCompression cmp = new SongCompression(_archiveDir);
-
     
         Console.WriteLine($"Archive directory root: {_archiveDir}");
 

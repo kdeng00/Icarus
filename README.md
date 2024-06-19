@@ -117,7 +117,7 @@ Prior to starting the API, the Migrations must be applied. There are 6 tables wi
 * Song
 * Album
 * Artist
-* Year
+* CoverArt
 * Genre
 
 There is a script for Linux systems to apply these migrations, it can be found in the [Scripts/Migrations/Linux](https://github.com/kdeng00/Icarus/blob/master/Scripts/Migrations/Linux/AddUpdate.sh) directory. Just merely execute:
@@ -126,12 +126,15 @@ scripts/Migrations/Linux/AddUpdate.sh
 ```
 Or you can manually add the migrations like so for each migration:
 ```shell
-dotnet ef migrations Add [Migration] --context [Migration]Context
+dotnet-ef migrations Add InitialCreate --context UserContext
 ```
 Then update the migrations to the database like so<sup>*</sup>:
 ```shell
-dotnet ef database update --context [Migration]Context
+dotnet-ef database update --context UserContext
 ```
+
+All of the contexts can be found in Database/Contexts folder.
+
 From this point the database has been successfully configured. Metadata and song filesystem locations can be saved.
 
 <sup>*</sup> Will only need to execute this for UserContext and SongContext because the Song table has relational constraints with Album, Artist, Year, and Genre.

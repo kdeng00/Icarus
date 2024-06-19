@@ -107,7 +107,7 @@ public class SongManager : BaseManager
         try
         {
             var songPath = songMetaData.SongPath();
-            System.IO.File.Delete(songPath);
+            File.Delete(songPath);
             successful = true;
             DirectoryManager dirMgr = new DirectoryManager(_config, songMetaData);
             dirMgr.DeleteEmptyDirectories();

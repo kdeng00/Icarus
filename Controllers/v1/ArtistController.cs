@@ -1,10 +1,5 @@
-using System;
-using System.Linq;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
 using Icarus.Database.Contexts;
@@ -67,7 +62,9 @@ public class ArtistController : BaseController
             return Ok(artist);
         }
         else
+        {
             return NotFound();
+        }
     }
     #endregion
 }
