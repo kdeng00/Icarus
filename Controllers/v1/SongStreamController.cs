@@ -1,19 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Web;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
-using Icarus.Models;
-using Icarus.Controllers.Managers;
 using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1;
@@ -25,7 +12,6 @@ public class SongStreamController : BaseController
 {
     #region Fields
     private ILogger<SongStreamController> _logger;
-    private string _connectionString;
     #endregion
 
 
@@ -38,7 +24,6 @@ public class SongStreamController : BaseController
     {
         _logger = logger;
         _config = config;
-        _connectionString = _config.GetConnectionString("DefaultConnection");
     }
     #endregion
 
@@ -63,11 +48,9 @@ public class SongStreamController : BaseController
         _logger.LogInformation("Starting to stream song...>");
         Console.WriteLine("Starting to streamsong...");
 
-        var file = await Task.Run(() => {
+        return await Task.Run(() => {
             return File(stream, "application/octet-stream", filename);
         });
-
-        return file;
     }
     #endregion
 }

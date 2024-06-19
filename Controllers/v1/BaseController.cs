@@ -1,8 +1,4 @@
-using System;
-using System.Linq;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 
 namespace Icarus.Controllers.V1;

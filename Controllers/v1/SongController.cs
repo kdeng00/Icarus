@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using Icarus.Controllers.Managers;
-using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
 
@@ -36,8 +27,8 @@ public class SongController : BaseController
     public SongController(IConfiguration config, ILogger<SongController> logger)
     {
         _config = config;
-        _connectionString = _config.GetConnectionString("DefaultConnection");
         _logger = logger;
+        _connectionString = _config.GetConnectionString("DefaultConnection");
         _songMgr = new SongManager(config);
     }
     #endregion
@@ -45,23 +36,24 @@ public class SongController : BaseController
 
     #region Methods
     #region HTTP Endpoints
-
-
     [HttpGet]
     public IActionResult GetSongs()
     {
-        List<Song> songs = new List<Song>();
         Console.WriteLine("Attemtping to retrieve songs");
         _logger.LogInformation("Attempting to retrieve songs");
         
         var context = new SongContext(_connectionString);
 
-        songs = context.Songs.ToList();
+        var songs = context.Songs.ToList();
 
         if (songs.Count > 0)
+        {
             return Ok(songs);
+        }
         else
+        {
             return NotFound();
+        }
     }
 
     [HttpGet("{id}")]
@@ -69,8 +61,7 @@ public class SongController : BaseController
     {
         var context = new SongContext(_connectionString);
         
-        Song song = new Song { SongID = id };
-        song = context.RetrieveRecord(song);
+        var song = context.RetrieveRecord(new Song{ SongID = id });
 
         Console.WriteLine("Here");
 
@@ -83,8 +74,6 @@ public class SongController : BaseController
     [HttpPut("{id}")]
     public IActionResult UpdateSong(int id, [FromBody] Song song)
     {
-        var context = new SongContext(_connectionString);
-
         song.SongID = id;
         Console.WriteLine("Retrieving filepath of song");
         _logger.LogInformation("Retrieving filepath of song");

@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 using Icarus.Models;
 using Icarus.Database.Contexts;
@@ -41,11 +35,9 @@ public class AlbumController : BaseController
     [HttpGet]
     public IActionResult GetAlbums()
     {
-        List<Album> albums = new List<Album>();
-
         var albumContext = new AlbumContext(_connectionString);
 
-        albums = albumContext.Albums.ToList();
+        var albums = albumContext.Albums.ToList();
 
         if (albums.Count > 0)
             return Ok(albums);
@@ -56,10 +48,7 @@ public class AlbumController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetAlbum(int id)
     {
-        Album album = new Album
-        {
-            AlbumID = id
-        };
+        Album album = new Album{ AlbumID = id };
 
         var albumContext = new AlbumContext(_connectionString);
 

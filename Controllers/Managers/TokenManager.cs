@@ -194,9 +194,7 @@ public class TokenManager : BaseManager
         var expLimit = 30;
         var currentDate = DateTime.Now;
         var expiredDate = currentDate.AddMinutes(expLimit);
-        // var issuer = "https://soaricarus.auth0.com";
         var issuer = "http://localhost:5002";
-        // var audience = "https://icarus/api";
         var audience = "http://localhost:5002";
         var subject = _config["JWT:Subject"];
 
