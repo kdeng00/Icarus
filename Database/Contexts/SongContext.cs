@@ -34,7 +34,7 @@ public class SongContext : DbContext
             .Property(s => s.AlbumID)
             .IsRequired(false);
         modelBuilder.Entity<Song>()
-            .Property(s => s.CoverArtID)
+            .Property(s => s.CoverArtId)
             .IsRequired(false);
     }
 

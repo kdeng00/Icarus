@@ -51,7 +51,7 @@ public class CoverArtController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetCoverArt(int id)
     {
-        var coverArt = new CoverArt { CoverArtID = id };
+        var coverArt = new CoverArt { Id = id };
 
         var coverArtContext = new CoverArtContext(_connectionString);
 

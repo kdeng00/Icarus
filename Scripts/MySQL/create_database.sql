@@ -3,11 +3,11 @@ CREATE DATABASE Icarus;
 USE Icarus;
 
 CREATE TABLE CoverArt (
-    CoverArtID INT NOT NULL AUTO_INCREMENT,
+    Id INT NOT NULL AUTO_INCREMENT,
     SongTitle TEXT NOT NULL,
     ImagePath TEXT NOT NULL,
 
-    PRIMARY KEY (CoverArtID)
+    PRIMARY KEY (Id)
 );
 
 CREATE TABLE Album (
@@ -49,14 +49,14 @@ CREATE TABLE Song (
     DiscCount INT NOT NULL,
     SongDirectory TEXT NOT NULL,
     Filename TEXT NOT NULL,
-    CoverArtID INT NOT NULL,
+    CoverArtId INT NOT NULL,
     ArtistID INT NOT NULL,
     AlbumID INT NOT NULL,
     GenreID INT NOT NULL,
     DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (SongID),
-    CONSTRAINT FK_Song_CoverArtID FOREIGN KEY (CoverArtID) REFERENCES CoverArt (CoverArtID),
+    CONSTRAINT FK_Song_CoverArtId FOREIGN KEY (CoverArtId) REFERENCES CoverArt (Id),
     CONSTRAINT FK_Song_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist (ArtistID),
     CONSTRAINT FK_Song_AlbumID FOREIGN KEY (AlbumID) REFERENCES Album (AlbumID),
     CONSTRAINT FK_Song_GenreID FOREIGN KEY (GenreID) REFERENCES Genre (GenreID)

@@ -33,7 +33,7 @@ public class CoverArtManager : BaseManager
         _coverArtContext.Add(coverArt);
         _coverArtContext.SaveChanges();
 
-        song.CoverArtID = coverArt.CoverArtID;
+        song.CoverArtId = coverArt.Id;
     }
     public void DeleteCoverArtFromDatabase(CoverArt coverArt)
     {

@@ -43,7 +43,7 @@ public class Song
     [JsonIgnore]
     public int? GenreID { get; set; }
     [JsonIgnore]
-    public int? CoverArtID { get; set; }
+    public int? CoverArtId { get; set; }
     [JsonProperty("date_created")]
     public DateTime DateCreated { get; set; }
     [JsonProperty("user_id")]
