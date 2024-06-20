@@ -6,8 +6,8 @@ namespace Icarus.Models;
 
 public class Genre
 {
-    [JsonProperty("genre_id")]
-    public int GenreID { get; set; }
+    [JsonProperty("id")]
+    public int Id { get; set; }
     [JsonProperty("genre")]
     [Column("Category")]
     public string GenreName { get; set; }

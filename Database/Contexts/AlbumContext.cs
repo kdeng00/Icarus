@@ -22,11 +22,11 @@ public class AlbumContext : DbContext
 
     public Album RetrieveRecord(Album album)
     {
-        return Albums.FirstOrDefault(alb => alb.AlbumID == album.AlbumID);
+        return Albums.FirstOrDefault(alb => alb.Id == album.Id);
     }
 
     public bool DoesRecordExist(Album album)
     {
-        return Albums.FirstOrDefault(alb => alb.AlbumID == album.AlbumID) != null ? true : false;
+        return Albums.FirstOrDefault(alb => alb.Id == album.Id) != null ? true : false;
     }
 }

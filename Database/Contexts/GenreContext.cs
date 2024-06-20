@@ -22,11 +22,11 @@ public class GenreContext : DbContext
 
     public Genre RetrieveRecord(Genre genre)
     {
-        return Genres.FirstOrDefault(gnr => gnr.GenreID == genre.GenreID);
+        return Genres.FirstOrDefault(gnr => gnr.Id == genre.Id);
     }
 
     public bool DoesRecordExist(Genre genre)
     {
-        return Genres.FirstOrDefault(gnr => gnr.GenreID == genre.GenreID) != null ? true : false;
+        return Genres.FirstOrDefault(gnr => gnr.Id == genre.Id) != null ? true : false;
     }
 }

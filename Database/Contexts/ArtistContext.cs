@@ -23,12 +23,12 @@ public class ArtistContext : DbContext
     public Artist RetrieveRecord(Artist artist)
     {
 
-        return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID);
+        return Artists.FirstOrDefault(arst => arst.Id == artist.Id);
     }
 
 
     public bool DoesRecordExist(Artist artist)
     {
-        return Artists.FirstOrDefault(arst => arst.ArtistID == artist.ArtistID) != null ? true : false;
+        return Artists.FirstOrDefault(arst => arst.Id == artist.Id) != null ? true : false;
     }
 }

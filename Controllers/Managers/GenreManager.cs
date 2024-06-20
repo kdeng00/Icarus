@@ -45,10 +45,10 @@ public class GenreManager : BaseManager
         }
         else
         {
-            genre.GenreID = genreRetrieved.GenreID;
+            genre.Id = genreRetrieved.Id;
         }
 
-        song.GenreID = genre.GenreID;
+        song.GenreId = genre.Id;
     }
 
     public Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord)
@@ -120,7 +120,7 @@ public class GenreManager : BaseManager
     private int SongsInGenre(Genre genre)
     {
         var sngContext = new SongContext(_connectionString);
-        var songs = sngContext.Songs.Where(sng => sng.GenreID == genre.GenreID).ToList();
+        var songs = sngContext.Songs.Where(sng => sng.GenreId == genre.Id).ToList();
 
         return songs.Count;
     }

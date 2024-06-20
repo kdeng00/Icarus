@@ -48,10 +48,7 @@ public class ArtistController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetArtist(int id)
     {
-        Artist artist = new Artist
-        {
-            ArtistID = id
-        };
+        Artist artist = new Artist { Id = id };
         
         var artistContext = new ArtistContext(_connectionString);
 

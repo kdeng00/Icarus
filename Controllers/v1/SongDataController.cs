@@ -40,7 +40,7 @@ public class SongDataController : BaseController
     public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString);
-        var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
         
         var song = _songMgr.RetrieveSong(songMetaData).Result;
         var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, songMetaData.Title, randomizeFilename);
@@ -110,7 +110,7 @@ public class SongDataController : BaseController
 
                 if (userId != -1)
                 {
-                    song.UserID = userId;
+                    song.UserId = userId;
                 }
 
                 _logger.LogInformation($"Song title: {song.Title}");
@@ -131,8 +131,8 @@ public class SongDataController : BaseController
     {
         var songContext = new SongContext(_connectionString);
 
-        var songMetaData = new Song{ SongID = id };
-        Console.WriteLine($"Id {songMetaData.SongID}");
+        var songMetaData = new Song{ Id = id };
+        Console.WriteLine($"Id {songMetaData.Id}");
 
         songMetaData = songContext.RetrieveRecord(songMetaData);
 

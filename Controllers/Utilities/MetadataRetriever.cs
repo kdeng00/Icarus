@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-
-using Microsoft.Extensions.Logging;
 using NLog;
 using TagLib;
 
@@ -46,16 +42,16 @@ public class MetadataRetriever
     public static void PrintMetadata(Song song)
     {
         Console.WriteLine("\n\nMetadata of the song:");
-        Console.WriteLine($"ID: {song.SongID}");
+        Console.WriteLine($"ID: {song.Id}");
         Console.WriteLine($"Title: {song.Title}");
         Console.WriteLine($"Artist: {song.Artist}");
         Console.WriteLine($"Album: {song.AlbumTitle}");
         Console.WriteLine($"Genre: {song.Genre}");
         Console.WriteLine($"Year: {song.Year}");
         Console.WriteLine($"Duration: {song.Duration}");
-        Console.WriteLine($"AlbumID: {song.AlbumID}");
-        Console.WriteLine($"ArtistID: {song.ArtistID}");
-        Console.WriteLine($"GenreID: {song.GenreID}");
+        Console.WriteLine($"AlbumID: {song.AlbumId}");
+        Console.WriteLine($"ArtistID: {song.ArtistId}");
+        Console.WriteLine($"GenreID: {song.GenreId}");
         Console.WriteLine($"Song Path: {song.SongPath()}");
         Console.WriteLine($"Filename: {song.Filename}");
         Console.WriteLine("\n");

@@ -52,7 +52,7 @@ public class GenreController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetGenre(int id)
     {
-        var genre = new Genre{ GenreID = id };
+        var genre = new Genre { Id = id };
 
         var genreStore = new GenreContext(_connectionString);
 

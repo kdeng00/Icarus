@@ -1,4 +1,3 @@
-using System.Reflection.PortableExecutable;
 using Icarus.Models;
 using Icarus.Types;
 

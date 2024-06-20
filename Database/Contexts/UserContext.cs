@@ -32,11 +32,11 @@ public class UserContext : DbContext
     
     public User RetrieveRecord(User user)
     {
-        return Users.FirstOrDefault(usr => usr.UserID == user.UserID);
+        return Users.FirstOrDefault(usr => usr.Id == user.Id);
     }
 
     public bool DoesRecordExist(User user)
     {
-        return Users.FirstOrDefault(usr => usr.UserID == user.UserID) != null ? true : false;
+        return Users.FirstOrDefault(usr => usr.Id == user.Id) != null ? true : false;
     }
 }

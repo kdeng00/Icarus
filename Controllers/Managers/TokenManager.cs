@@ -24,6 +24,7 @@ public class TokenManager : BaseManager
     private string _audience;
     private string _grantType;
     private string _url;
+    private string SUCCESSFUL_TOKEN_MESSAGE = "Successfully retrieved token";
     #endregion
 
 
@@ -67,12 +68,7 @@ public class TokenManager : BaseManager
             .DeserializeObject<TokenTierOne>(response.Content);
         _logger.Info("Response deserialized");
 
-        return new LoginResult
-        {
-            UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
-            TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
-            Message = "Successfully retrieved token"
-        };
+        return this.InitializeLoginResult(user, tokenResult);
     }
 
 
@@ -81,7 +77,7 @@ public class TokenManager : BaseManager
         var tokenResult = new TokenTierOne{ TokenType = "JWT" };
 
         var payload = Payload();
-        payload.Add(new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer));
+        payload.Add(new Claim("user_id", user.Id.ToString(), ClaimValueTypes.Integer));
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_config["JWT:Secret"]);
@@ -89,7 +85,7 @@ public class TokenManager : BaseManager
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim("user_id", user.UserID.ToString(), ClaimValueTypes.Integer)
+                new Claim("user_id", user.Id.ToString(), ClaimValueTypes.Integer)
                 // Add more claims as needed
             }),
             Expires = DateTime.UtcNow.AddHours(1),
@@ -109,11 +105,16 @@ public class TokenManager : BaseManager
         var exp = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
         tokenResult.Expiration = Convert.ToInt32(exp);
 
+        return this.InitializeLoginResult(user, tokenResult);
+    }
+
+    private LoginResult InitializeLoginResult(User user, TokenTierOne token)
+    {
         return new LoginResult
         {
-            UserID = user.UserID, Username = user.Username, Token = tokenResult.AccessToken,
-            TokenType = tokenResult.TokenType, Expiration = tokenResult.Expiration,
-            Message = "Successfully retrieved token"
+            UserId = user.Id, Username = user.Username, Token = token.AccessToken,
+            TokenType = token.TokenType, Expiration = token.Expiration,
+            Message = SUCCESSFUL_TOKEN_MESSAGE
         };
     }
 

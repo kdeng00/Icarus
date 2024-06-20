@@ -25,13 +25,13 @@ public class SongContext : DbContext
             .Property(s => s.Year)
             .IsRequired(false);
         modelBuilder.Entity<Song>()
-            .Property(s => s.GenreID)
+            .Property(s => s.GenreId)
             .IsRequired(false);
         modelBuilder.Entity<Song>()
-            .Property(s => s.ArtistID)
+            .Property(s => s.ArtistId)
             .IsRequired(false);
         modelBuilder.Entity<Song>()
-            .Property(s => s.AlbumID)
+            .Property(s => s.AlbumId)
             .IsRequired(false);
         modelBuilder.Entity<Song>()
             .Property(s => s.CoverArtId)
@@ -41,12 +41,12 @@ public class SongContext : DbContext
 
     public Song RetrieveRecord(Song song)
     {
-        return Songs.FirstOrDefault(sng => sng.SongID == song.SongID);
+        return Songs.FirstOrDefault(sng => sng.Id == song.Id);
     }
 
 
     public bool DoesRecordExist(Song song)
     {
-        return Songs.FirstOrDefault(sng => sng.SongID == song.SongID) != null ? true : false;
+        return Songs.FirstOrDefault(sng => sng.Id == song.Id) != null ? true : false;
     }
 }
