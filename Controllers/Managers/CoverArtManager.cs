@@ -130,6 +130,8 @@ public class CoverArtManager : BaseManager
         return null;
     }
 
+    // TODO: Create emthods to save the cover art to a temporary location
+    // to get the type of the cover art.
     public CoverArt SaveCoverArt(IFormFile data, Song song)
     {
         var cover = new CoverArt { SongTitle = song.Title };
