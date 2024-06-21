@@ -68,6 +68,33 @@ public class MetadataRetriever
         _logger.Info($"Year: {song.Year}");
         _logger.Info($"Duration: {song.Duration}");
     }
+
+    public string CoverArtFileExtensionType(CoverArt cover)
+    {
+        Console.WriteLine("Retrieving CoverArt file extension type");
+
+        using (var fileStream = System.IO.File.OpenRead(cover.ImagePath()))
+        {
+            var isRecognizableType = FileTypeChecker.FileTypeValidator.IsTypeRecognizable(fileStream);
+
+            if (!isRecognizableType)
+            {
+                return string.Empty;
+            }
+
+
+            var fileType = FileTypeChecker.FileTypeValidator.GetFileType(fileStream);
+            // Console.WriteLine("Type Name: {0}", fileType.Name);
+            // Console.WriteLine("Type Extension: {0}", fileType.Extension);
+            // Console.WriteLine("Is Image?: {0}", fileStream.IsImage());
+            // Console.WriteLine("Is Bitmap?: {0}", fileStream.Is<Bitmap>());
+            //
+            Console.WriteLine($"Filetype: {fileType}");
+
+            return fileType.Extension;
+        }
+    }
+
     public Song RetrieveMetaData(string filePath)
     {
         Song song = new Song();
@@ -162,7 +189,7 @@ public class MetadataRetriever
         var pics = tag.Tag.Pictures;
         Array.Resize(ref pics, 1);
 
-        pics[0] = new Picture(coverArt.ImagePath)
+        pics[0] = new Picture(coverArt.ImagePath())
         {
             Description = "Cover Art"
         };
