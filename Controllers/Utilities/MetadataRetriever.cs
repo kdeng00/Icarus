@@ -82,13 +82,8 @@ public class MetadataRetriever
                 return string.Empty;
             }
 
-
             var fileType = FileTypeChecker.FileTypeValidator.GetFileType(fileStream);
-            // Console.WriteLine("Type Name: {0}", fileType.Name);
-            // Console.WriteLine("Type Extension: {0}", fileType.Extension);
-            // Console.WriteLine("Is Image?: {0}", fileStream.IsImage());
-            // Console.WriteLine("Is Bitmap?: {0}", fileStream.Is<Bitmap>());
-            //
+
             Console.WriteLine($"Filetype: {fileType}");
 
             return fileType.Extension;

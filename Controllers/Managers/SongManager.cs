@@ -232,15 +232,6 @@ public class SongManager : BaseManager
         var coverMgr = new CoverArtManager(_config);
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
 
-        MetadataRetriever metaData = new MetadataRetriever();
-        coverArt.Type = metaData.CoverArtFileExtensionType(coverArt);
-        if (string.IsNullOrEmpty(coverArt.Type))
-        {
-            Console.WriteLine("File type is empty");
-            Console.WriteLine($"Directory: {coverArt.Directory}");
-            Console.WriteLine($"Filename: {coverArt.Filename}");
-        }
-
         DirectoryManager dirMgr = new DirectoryManager(_config, song);
         dirMgr.CreateDirectory();
 

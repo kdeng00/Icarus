@@ -82,9 +82,6 @@ public class CoverArtManager : BaseManager
             };
 
             var segment = coverArt.GenerateFilename(0);
-            // var imagePath = dirMgr.SongDirectory + segment + defaultExtension;
-
-            // coverArt.ImagePath = imagePath;
             coverArt.Directory = dirMgr.SongDirectory;
             coverArt.Filename = segment + defaultExtension;
 
@@ -101,13 +98,11 @@ public class CoverArtManager : BaseManager
                 _logger.Info("Song has no cover art, applying stock cover art");
 
                 var coverArtFilePath = _rootCoverArtPath + $"{segment}{defaultExtension}";
-                // coverArt.ImagePath = DirectoryPaths.CoverArtPath;
                 coverArt.Directory = DirectoryPaths.CoverArtDirectory;
                 coverArt.Filename = DirectoryPaths.CoverArtFilename;
                 metaData.UpdateCoverArt(song, coverArt);
                 coverArt.Directory = this._rootCoverArtPath;
                 coverArt.Filename = $"{segment}{defaultExtension}";
-                // coverArt.ImagePath = coverArtFilePath;
                 File.WriteAllBytes(coverArt.ImagePath(), _stockCoverArt);
             }
 
@@ -130,8 +125,6 @@ public class CoverArtManager : BaseManager
         return null;
     }
 
-    // TODO: Create emthods to save the cover art to a temporary location
-    // to get the type of the cover art.
     public CoverArt SaveCoverArt(IFormFile data, Song song)
     {
         var cover = new CoverArt { SongTitle = song.Title };
@@ -140,7 +133,8 @@ public class CoverArtManager : BaseManager
         {
             MetadataRetriever metaData = new MetadataRetriever();
             var dirMgr = new DirectoryManager(_rootCoverArtPath);
-            var defaultExtension = "." + metaData.FileExtensionType(data);
+            cover.Type = metaData.FileExtensionType(data);
+            var defaultExtension = "." + cover.Type;
             dirMgr.CreateDirectory(song);
 
             var segment = cover.GenerateFilename(0);
@@ -148,7 +142,6 @@ public class CoverArtManager : BaseManager
 
             cover.Directory = dirMgr.SongDirectory;
             cover.Filename = segment + defaultExtension;
-            // cover.ImagePath = imagePath;
 
             using (var fileStream = new FileStream(cover.ImagePath(), FileMode.Create))
             {
@@ -171,9 +164,10 @@ public class CoverArtManager : BaseManager
     private void Initialize()
     {
         _coverArtContext = new CoverArtContext(_connectionString);
+        var path = DirectoryPaths.CoverArtDirectory + DirectoryPaths.CoverArtFilename;
 
-        if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
-            _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
+        if (System.IO.File.Exists(path))
+            _stockCoverArt = File.ReadAllBytes(path);
 
         if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
         {
