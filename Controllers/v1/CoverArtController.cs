@@ -61,7 +61,7 @@ public class CoverArtController : BaseController
         {
             _logger.LogInformation("Found cover art record");
             var coverArtBytes = System.IO.File.ReadAllBytes(
-                    coverArt.ImagePath);
+                    coverArt.ImagePath());
 
             return File(coverArtBytes, "application/x-msdownload", 
                     coverArt.SongTitle);

@@ -12,6 +12,7 @@
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="DotNetZip" Version="1.15.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="File.TypeChecker" Version="4.1.1" />
     <PackageReference Include="ID3" Version="0.6.0" />
     <PackageReference Include="JWT" Version="10.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
