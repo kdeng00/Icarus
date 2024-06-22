@@ -95,6 +95,26 @@ public class MetadataRetriever
         }
     }
 
+    public string FileExtensionType(IFormFile file)
+    {
+        using (var fileStream = file.OpenReadStream())
+        {
+            var isRecognizableType = FileTypeChecker.FileTypeValidator.IsTypeRecognizable(fileStream);
+
+            if (!isRecognizableType)
+            {
+                return string.Empty;
+            }
+
+
+            var fileType = FileTypeChecker.FileTypeValidator.GetFileType(fileStream);
+            Console.WriteLine($"Filetype: {fileType}");
+            Console.WriteLine($"Extension: {fileType.Extension}");
+
+            return fileType.Extension;
+        }
+    }
+
     public Song RetrieveMetaData(string filePath)
     {
         Song song = new Song();

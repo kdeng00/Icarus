@@ -138,8 +138,9 @@ public class CoverArtManager : BaseManager
 
         try
         {
+            MetadataRetriever metaData = new MetadataRetriever();
             var dirMgr = new DirectoryManager(_rootCoverArtPath);
-            var defaultExtension = ".png";
+            var defaultExtension = "." + metaData.FileExtensionType(data);
             dirMgr.CreateDirectory(song);
 
             var segment = cover.GenerateFilename(0);
