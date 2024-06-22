@@ -47,11 +47,11 @@ public class CoverArtManager : BaseManager
         try
         {
             var stockCoverArtPath = _rootCoverArtPath + "CoverArt.png";
-            if (!string.Equals(stockCoverArtPath, coverArt.ImagePath, 
+            if (!string.Equals(stockCoverArtPath, coverArt.ImagePath(), 
                         StringComparison.CurrentCultureIgnoreCase))
             {
                 _logger.Info("Song does not contain the stock cover art");
-                File.Delete(coverArt.ImagePath);
+                File.Delete(coverArt.ImagePath());
                 _logger.Info("Cover art deleted from the filesystem");
             }
             else
@@ -81,9 +81,8 @@ public class CoverArtManager : BaseManager
             };
 
             var segment = coverArt.GenerateFilename(0);
-            var imagePath = dirMgr.SongDirectory + segment + defaultExtension;
-
-            coverArt.ImagePath = imagePath;
+            coverArt.Directory = dirMgr.SongDirectory;
+            coverArt.Filename = segment + defaultExtension;
 
             var metaData = new MetadataRetriever();
             var imgBytes = metaData.RetrieveCoverArtBytes(song);
@@ -91,17 +90,27 @@ public class CoverArtManager : BaseManager
             if (imgBytes != null)
             {
                 _logger.Info("Saving cover art to the filesystem");
-                File.WriteAllBytes(coverArt.ImagePath, imgBytes);
+                File.WriteAllBytes(coverArt.ImagePath(), imgBytes);
             }
             else
             {
                 _logger.Info("Song has no cover art, applying stock cover art");
 
                 var coverArtFilePath = _rootCoverArtPath + $"{segment}{defaultExtension}";
-                coverArt.ImagePath = DirectoryPaths.CoverArtPath;
+                coverArt.Directory = DirectoryPaths.CoverArtDirectory;
+                coverArt.Filename = DirectoryPaths.CoverArtFilename;
                 metaData.UpdateCoverArt(song, coverArt);
-                coverArt.ImagePath = coverArtFilePath;
-                File.WriteAllBytes(coverArt.ImagePath, _stockCoverArt);
+                coverArt.Directory = this._rootCoverArtPath;
+                coverArt.Filename = $"{segment}{defaultExtension}";
+                File.WriteAllBytes(coverArt.ImagePath(), _stockCoverArt);
+            }
+
+            coverArt.Type = metaData.CoverArtFileExtensionType(coverArt);
+            if (string.IsNullOrEmpty(coverArt.Type))
+            {
+                Console.WriteLine("File type is empty");
+                Console.WriteLine($"Directory: {coverArt.Directory}");
+                Console.WriteLine($"Filename: {coverArt.Filename}");
             }
 
             return coverArt;
@@ -121,16 +130,19 @@ public class CoverArtManager : BaseManager
 
         try
         {
+            MetadataRetriever metaData = new MetadataRetriever();
             var dirMgr = new DirectoryManager(_rootCoverArtPath);
-            var defaultExtension = ".png";
+            cover.Type = metaData.FileExtensionType(data);
+            var defaultExtension = "." + cover.Type;
             dirMgr.CreateDirectory(song);
 
             var segment = cover.GenerateFilename(0);
             var imagePath = dirMgr.SongDirectory + segment + defaultExtension;
 
-            cover.ImagePath = imagePath;
+            cover.Directory = dirMgr.SongDirectory;
+            cover.Filename = segment + defaultExtension;
 
-            using (var fileStream = new FileStream(imagePath, FileMode.Create))
+            using (var fileStream = new FileStream(cover.ImagePath(), FileMode.Create))
             {
                 data.CopyTo(fileStream);
             }
@@ -151,9 +163,10 @@ public class CoverArtManager : BaseManager
     private void Initialize()
     {
         _coverArtContext = new CoverArtContext(_connectionString);
+        var path = DirectoryPaths.CoverArtDirectory + DirectoryPaths.CoverArtFilename;
 
-        if (System.IO.File.Exists(DirectoryPaths.CoverArtPath))
-            _stockCoverArt = File.ReadAllBytes(DirectoryPaths.CoverArtPath);
+        if (System.IO.File.Exists(path))
+            _stockCoverArt = File.ReadAllBytes(path);
 
         if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
         {

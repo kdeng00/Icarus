@@ -10,11 +10,29 @@ public class CoverArt
     [JsonProperty("title")]
     public string SongTitle { get; set; }
     [JsonIgnore]
-    public string ImagePath { get; set; }
+    public string Directory { get; set; }
+    [JsonProperty("filename")]
+    public string Filename { get; set; }
+    [JsonProperty("type")]
+    public string Type { get; set; }
     #endregion
 
 
     #region Methods
+    public string ImagePath()
+    {
+        var fullPath = this.Directory;
+
+        if (fullPath[fullPath.Length -1] != '/')
+        {
+            fullPath += "/";
+        }
+
+        fullPath += Filename;
+
+        return fullPath;
+    }
+
     public string GenerateFilename(int flag)
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
@@ -27,6 +45,6 @@ public class CoverArt
         return (flag == 0) ? filename : $"{filename}{extension}";
     }
 
-    public async Task<byte[]> GetData() => await File.ReadAllBytesAsync(this.ImagePath);
+    public async Task<byte[]> GetData() => await File.ReadAllBytesAsync(this.ImagePath());
     #endregion
 }
