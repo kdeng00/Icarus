@@ -22,11 +22,11 @@ public class CoverArtContext : DbContext
 
     public CoverArt RetrieveRecord(CoverArt cover)
     {
-        return CoverArtImages.FirstOrDefault(cov => cov.CoverArtID == cover.CoverArtID);
+        return CoverArtImages.FirstOrDefault(cov => cov.Id == cover.Id);
     }
 
     public bool DoesRecordExist(CoverArt cover)
     {
-        return CoverArtImages.FirstOrDefault(cov => cov.CoverArtID == cover.CoverArtID) != null ? true : false;
+        return CoverArtImages.FirstOrDefault(cov => cov.Id == cover.Id) != null ? true : false;
     }
 }

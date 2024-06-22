@@ -45,10 +45,10 @@ public class ArtistManager : BaseManager
         }
         else
         {
-            artist.ArtistID = artistRetrieved.ArtistID;
+            artist.Id = artistRetrieved.Id;
         }
 
-        song.ArtistID = artist.ArtistID;
+        song.ArtistId = artist.Id;
     }
 
     public Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord)
@@ -120,7 +120,7 @@ public class ArtistManager : BaseManager
     private int SongsOfArtist(Artist artist)
     {
         var sngContext = new SongContext(_connectionString);
-        var songs = sngContext.Songs.Where(sng => sng.ArtistID == artist.ArtistID).ToList();
+        var songs = sngContext.Songs.Where(sng => sng.ArtistId == artist.Id).ToList();
 
         return songs.Count;
     }

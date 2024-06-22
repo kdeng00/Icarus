@@ -9,10 +9,10 @@ namespace Icarus.Models;
 public class User
 {
     #region Properties
-    [JsonProperty("user_id")]
-    [Column("UserID")]
+    [JsonProperty("id")]
+    [Column("Id")]
     [Key]
-    public int UserID { get; set; }
+    public int Id { get; set; }
     [JsonProperty("username")]
     public string Username { get; set; }
     [JsonProperty("password")]

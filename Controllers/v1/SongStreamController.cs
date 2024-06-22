@@ -34,7 +34,7 @@ public class SongStreamController : BaseController
     {
         var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
 
-        var song = context.Songs.FirstOrDefault(sng => sng.SongID == id);
+        var song = context.Songs.FirstOrDefault(sng => sng.Id == id);
 
         var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
         stream.Position = 0;

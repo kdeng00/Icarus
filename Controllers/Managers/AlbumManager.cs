@@ -45,14 +45,14 @@ public class AlbumManager : BaseManager
             _albumContext.Add(album);
             _albumContext.SaveChanges();
 
-            Console.WriteLine($"Album Id {album.AlbumID}");
+            Console.WriteLine($"Album Id {album.Id}");
         }
         else
         {
-            album.AlbumID = albumRetrieved.AlbumID;
+            album.Id = albumRetrieved.Id;
         }
 
-        song.AlbumID = album.AlbumID;
+        song.AlbumId = album.Id;
     }
 
 
@@ -138,7 +138,7 @@ public class AlbumManager : BaseManager
     private int SongsInAlbum(Album album)
     {
         var sngContext = new SongContext(_connectionString);
-        var songs = sngContext.Songs.Where(sng => sng.AlbumID == album.AlbumID).ToList();
+        var songs = sngContext.Songs.Where(sng => sng.AlbumId == album.Id).ToList();
 
         return songs.Count;
     }

@@ -7,8 +7,8 @@ namespace Icarus.Models;
 public class Song
 {
     #region Properties
-    [JsonProperty("song_id")]
-    public int SongID { get; set; }
+    [JsonProperty("id")]
+    public int Id { get; set; }
     [JsonProperty("title")]
     public string Title { get; set; }
     [JsonProperty("album")]
@@ -37,17 +37,17 @@ public class Song
     [JsonProperty("disc_count")]
     public int DiscCount { get; set; } = 0;
     [JsonIgnore]
-    public int? AlbumID { get; set; }
+    public int? AlbumId { get; set; }
     [JsonIgnore]
-    public int? ArtistID { get; set; }
+    public int? ArtistId { get; set; }
     [JsonIgnore]
-    public int? GenreID { get; set; }
+    public int? GenreId { get; set; }
     [JsonIgnore]
-    public int? CoverArtID { get; set; }
+    public int? CoverArtId { get; set; }
     [JsonProperty("date_created")]
     public DateTime DateCreated { get; set; }
     [JsonProperty("user_id")]
-    public int UserID { get; set; }
+    public int UserId { get; set; }
     #endregion
 
 

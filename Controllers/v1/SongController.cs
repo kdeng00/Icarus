@@ -61,11 +61,11 @@ public class SongController : BaseController
     {
         var context = new SongContext(_connectionString);
         
-        var song = context.RetrieveRecord(new Song{ SongID = id });
+        var song = context.RetrieveRecord(new Song{ Id = id });
 
         Console.WriteLine("Here");
 
-        if (song.SongID != 0)
+        if (song.Id != 0)
             return Ok(song);
         else
             return NotFound();
@@ -74,7 +74,7 @@ public class SongController : BaseController
     [HttpPut("{id}")]
     public IActionResult UpdateSong(int id, [FromBody] Song song)
     {
-        song.SongID = id;
+        song.Id = id;
         Console.WriteLine("Retrieving filepath of song");
         _logger.LogInformation("Retrieving filepath of song");
 

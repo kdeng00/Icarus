@@ -51,7 +51,7 @@ public class CoverArtController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetCoverArt(int id)
     {
-        var coverArt = new CoverArt { CoverArtID = id };
+        var coverArt = new CoverArt { Id = id };
 
         var coverArtContext = new CoverArtContext(_connectionString);
 
@@ -79,7 +79,7 @@ public class CoverArtController : BaseController
         var songContext = new SongContext(_connectionString);
         var covMgr = new CoverArtManager(this._config);
         
-        var songMetaData = songContext.RetrieveRecord(new Song { SongID = id});
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
         var c = covMgr.GetCoverArt(songMetaData);
 
         var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title, randomizeFilename);

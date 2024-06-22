@@ -6,8 +6,8 @@ namespace Icarus.Models;
 
 public class Album
 {
-    [JsonProperty("album_id")]
-    public int AlbumID { get; set; }
+    [JsonProperty("id")]
+    public int Id { get; set; }
     [JsonProperty("title")]
     public string Title { get; set; }
     [JsonProperty("album_artist")]

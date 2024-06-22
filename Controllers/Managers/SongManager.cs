@@ -77,13 +77,13 @@ public class SongManager : BaseManager
             var gnrMgr = new GenreManager(_config);
             var artMgr = new ArtistManager(_config);
             var updatedAlbum = albMgr.UpdateAlbumInDatabase(oldSongRecord, updatedSong);
-            oldSongRecord.AlbumID = updatedAlbum.AlbumID;
+            oldSongRecord.AlbumId = updatedAlbum.Id;
 
             var updatedArtist = artMgr.UpdateArtistInDatabase(oldSongRecord, updatedSong);
-            oldSongRecord.ArtistID = updatedArtist.ArtistID;
+            oldSongRecord.ArtistId = updatedArtist.Id;
 
             var updatedGenre = gnrMgr.UpdateGenreInDatabase(oldSongRecord, updatedSong);
-            oldSongRecord.GenreID = updatedGenre.GenreID;
+            oldSongRecord.GenreId = updatedGenre.Id;
 
             UpdateSongInDatabase(ref oldSongRecord, ref updatedSong, ref result);
 

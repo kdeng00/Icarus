@@ -2,7 +2,6 @@ using Icarus.Constants;
 using Icarus.Controllers.Utilities;
 using Icarus.Database.Contexts;
 using Icarus.Models;
-using Icarus.Types;
 
 namespace Icarus.Controllers.Managers;
 
@@ -33,7 +32,7 @@ public class CoverArtManager : BaseManager
         _coverArtContext.Add(coverArt);
         _coverArtContext.SaveChanges();
 
-        song.CoverArtID = coverArt.CoverArtID;
+        song.CoverArtId = coverArt.Id;
     }
     public void DeleteCoverArtFromDatabase(CoverArt coverArt)
     {

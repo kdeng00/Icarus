@@ -5,8 +5,8 @@ namespace Icarus.Models;
 public class CoverArt
 {
     #region Properties
-    [JsonProperty("cover_art_id")]
-    public int CoverArtID { get; set; }
+    [JsonProperty("id")]
+    public int Id { get; set; }
     [JsonProperty("title")]
     public string SongTitle { get; set; }
     [JsonIgnore]

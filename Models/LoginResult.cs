@@ -5,7 +5,7 @@ namespace Icarus.Models;
 public class LoginResult : BaseResult
 {
     [JsonProperty("user_id")]
-    public int UserID { get; set; }
+    public int UserId { get; set; }
     [JsonProperty("username")]
     public string Username { get; set; }
     [JsonProperty("token")]
