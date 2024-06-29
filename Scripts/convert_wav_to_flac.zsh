@@ -5,8 +5,6 @@
 # Folder name creation
 # Sub-folder name creation
 
-echo "tt"
-
 if [[ $# -eq 0 ]]; then
 
     my_text="No arguments provided. Provide four arguments:\n"
@@ -16,21 +14,114 @@ if [[ $# -eq 0 ]]; then
     exit
 fi
 
+if [[ ! -n "$2" ]]; then
+    echo "The \"output_dir\" has not been provided"
+    exit
+fi
+
+if [[ ! -n "$3" ]]; then
+    echo "The \"folder_name\" has not been provided"
+    exit
+fi
+
+if [[ ! -n "$4" ]]; then
+    echo "The \"sub_folder_name\" has not been provided"
+    exit
+fi
+
 WORK_DIR=$1
 OUTPUT_DIR=$2
 FOLDER=$3
 SUB_FOLDER=$4
+
+# Validation
+
+if [[ ! -d $WORK_DIR ]]; then
+    echo "$WORK_DIR is not a directory"
+    exit
+fi
+
+if [[ ! -d $OUTPUT_DIR ]]; then
+    echo "$OUTPUT_DIR does not exist"
+    exit
+fi
+
+FOLDER_DIR="$OUTPUT_DIR/$FOLDER"
+
+if [[ ! -d $FOLDER_DIR ]]; then
+    echo "$FOLDER_DIR directory does not exist. Creating directory"
+    mkdir $FOLDER_DIR
+    echo "Created $FOLDER_DIR directory"
+fi
+
+FOLDER_DIR="$FOLDER_DIR/$SUB_FOLDER"
+
+if [[ ! -d $FOLDER_DIR ]]; then
+    echo "$FOLDER_DIR directory does not exist. Creating directory"
+    mkdir $FOLDER_DIR
+    echo "Created $FOLDER_DIR directory"
+fi
+
+# WAV_FILES="$WORK_DIR/*.wav"
+
+# if [[ ! -f $WAV_FILES ]]; then
+#     echo "No wav files found in the working directory"
+#     exit
+# fi
+
+# Find all files matching the pattern in the directory
+# file_pattern="*.wav"
+# matched_files=( "$WORK_DIR/$file_pattern" )
+matched_files=( "$WORK_DIR"/*.wav )
+
+# Check if any files were found
+if [[ ${#matched_files[@]} -gt 0 ]]; then
+  echo "Files matching the pattern exist in the directory:"
+  # echo "${matched_files[@]}"
+else
+  echo "No files matching the pattern were found."
+  exit
+fi
 
 echo "Working directory: $WORK_DIR"
 echo "Output directory: $OUTPUT_DIR"
 echo "Folder name: $FOLDER"
 echo "Sub folder name: $SUB_FOLDER"
 
+# Conversion
+# ${ff[@]}
+i=1
+for file in "${matched_files[@]}"; do
+    file_output="track"
+
+    if [[ $i -lt 10 ]]; then
+        file_output="track0$i.flac"
+    else
+        file_output="track$i.flac"
+    fi
+
+    # echo "Output filenmae: $file_output"
+
+    echo "$i file: $file"
+
+    output_file_path="$FOLDER_DIR/$file_output"
+    echo "Output file path: $output_file_path"
+
+    # flac --best $file -o $output_file_path
+
+
+    i=$((i + 1))
+done
+
+
+
+# Final
+
 
 # Validation
-# Check if the Folder and Sub folder has been created
-# Check of WORK_DIR is an actual directory
+# Check if WORK_DIR is an actual directory
 # Check if OUTPUT_DIR exists
+# Check if the Folder and Sub folder has been created
 # Check if WORK_DIR contains .wav files
 
 
