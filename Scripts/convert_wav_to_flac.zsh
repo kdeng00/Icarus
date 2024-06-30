@@ -107,12 +107,36 @@ for file in "${matched_files[@]}"; do
     output_file_path="$FOLDER_DIR/$file_output"
     echo "Output file path: $output_file_path"
 
-    # flac --best $file -o $output_file_path
+    echo "Converting wav file to flac"
+    flac --best $file -o $output_file_path
 
+    ALBUM_FILE="$WORK_DIR/new-album.json"
+    TARGET_ALBUM_FILE="$FOLDER_DIR/album.json"
+
+    if [[ -f $ALBUM_FILE ]]; then
+        echo "Copying album file"
+        cp -a $ALBUM_FILE $TARGET_ALBUM_FILE
+    fi
+
+    # COVER_ART_IMG="$WORK_DIR/*.[j,J,p,N]*"
+
+
+    matched_img_files=( "$WORK_DIR"/*.[j,J,p,P][p,P,n,N]* )
+
+    # Check if any files were found
+    if [[ ${#matched_img_files[@]} -gt 0 ]]; then
+        echo "Files matching the pattern exist in the directory:"
+        echo "Copying cover art file(s)"
+
+        for img_file in "${matched_img_files[@]}"; do
+            cp -a $img_file $FOLDER_DIR
+        done
+    fi
 
     i=$((i + 1))
 done
 
+# TODO: Copy over album json file (new-album) and cover art as well
 
 
 # Final
