@@ -4,9 +4,23 @@
 # Output directory
 # Folder name creation
 # Sub-folder name creation
+#
+# Validation
+# Check if WORK_DIR is an actual directory
+# Check if OUTPUT_DIR exists
+# Check if the Folder and Sub folder has been created
+# Check if WORK_DIR contains .wav files
+#
+# Conversion
+# Convert wav files to flac files
+# Create folder and sub folder if it does not exist
+# Move the converted flac files to the sub folder
+#
+# Final
+# Check if OUTPUT_DIR has the folder structure. Delete if so
+# Move the folder and sub folder to OUTPUT_DIR
 
 if [[ $# -eq 0 ]]; then
-
     my_text="No arguments provided. Provide four arguments:\n"
     my_text+="script.zsh \"working_dir\" \"output_dir\" \"folder_name\" \"sub_folder_name\""
 
@@ -62,16 +76,7 @@ if [[ ! -d $FOLDER_DIR ]]; then
     echo "Created $FOLDER_DIR directory"
 fi
 
-# WAV_FILES="$WORK_DIR/*.wav"
-
-# if [[ ! -f $WAV_FILES ]]; then
-#     echo "No wav files found in the working directory"
-#     exit
-# fi
-
 # Find all files matching the pattern in the directory
-# file_pattern="*.wav"
-# matched_files=( "$WORK_DIR/$file_pattern" )
 matched_files=( "$WORK_DIR"/*.wav )
 
 # Check if any files were found
@@ -89,8 +94,8 @@ echo "Folder name: $FOLDER"
 echo "Sub folder name: $SUB_FOLDER"
 
 # Conversion
-# ${ff[@]}
 i=1
+
 for file in "${matched_files[@]}"; do
     file_output="track"
 
@@ -99,8 +104,6 @@ for file in "${matched_files[@]}"; do
     else
         file_output="track$i.flac"
     fi
-
-    # echo "Output filenmae: $file_output"
 
     echo "$i file: $file"
 
@@ -118,9 +121,6 @@ for file in "${matched_files[@]}"; do
         cp -a $ALBUM_FILE $TARGET_ALBUM_FILE
     fi
 
-    # COVER_ART_IMG="$WORK_DIR/*.[j,J,p,N]*"
-
-
     matched_img_files=( "$WORK_DIR"/*.[j,J,p,P][p,P,n,N]* )
 
     # Check if any files were found
@@ -135,26 +135,4 @@ for file in "${matched_files[@]}"; do
 
     i=$((i + 1))
 done
-
-# TODO: Copy over album json file (new-album) and cover art as well
-
-
-# Final
-
-
-# Validation
-# Check if WORK_DIR is an actual directory
-# Check if OUTPUT_DIR exists
-# Check if the Folder and Sub folder has been created
-# Check if WORK_DIR contains .wav files
-
-
-# Conversion
-# Convert wav files to flac files
-# Create folder and sub folder if it does not exist
-# Move the converted flac files to the sub folder
-
-# Final
-# Check if OUTPUT_DIR has the folder structure. Delete if so
-# Move the folder and sub folder to OUTPUT_DIR
 
