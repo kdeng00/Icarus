@@ -82,7 +82,6 @@ matched_files=( "$WORK_DIR"/*.wav )
 # Check if any files were found
 if [[ ${#matched_files[@]} -gt 0 ]]; then
   echo "Files matching the pattern exist in the directory:"
-  # echo "${matched_files[@]}"
 else
   echo "No files matching the pattern were found."
   exit
