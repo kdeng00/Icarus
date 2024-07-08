@@ -12,5 +12,8 @@ public class FileExtensions
     public static string JPG_EXTENSION = ".jpg";
 
     // Contains file extension with period at the beginning
+    public static string FLAC_EXTENSION = ".flac";
+
+    // Contains file extension with period at the beginning
     public static string ZIP_EXTENSION = ".zip";
 }

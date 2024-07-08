@@ -207,6 +207,7 @@ public class SongManager : BaseManager
         }
     }
 
+    // Change the name of this method to only focus on wav files
     public void SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         song.SongDirectory = _tempDirectoryRoot;

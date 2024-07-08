@@ -103,6 +103,20 @@ public class SongDataController : BaseController
         {
             if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
             {
+                var meta = new Utilities.MetadataRetriever();
+                if (!meta.IsSupportedFile(up.SongData) && !meta.IsSupportedFile(up.CoverArtData))
+                {
+                    return BadRequest("Media is not supported");
+                }
+                else if (!meta.IsSupportedFile(up.SongData))
+                {
+                    return BadRequest("Song is not supported");
+                }
+                else if (!meta.IsSupportedFile(up.CoverArtData))
+                {
+                    return BadRequest("Cover art is not supported");
+                }
+
                 var song = Newtonsoft.Json.JsonConvert.DeserializeObject<Song>(up.SongFile);
                 var tokMgr = new TokenManager(this._config);
                 var accessToken = Request.Headers["Authorization"];
@@ -115,6 +129,9 @@ public class SongDataController : BaseController
 
                 _logger.LogInformation($"Song title: {song.Title}");
 
+
+                // TODO: Identify the song file type. Then save the media.
+                // Create a new method to save song flac files
                 _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
             }
         }
