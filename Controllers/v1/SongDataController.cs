@@ -104,11 +104,12 @@ public class SongDataController : BaseController
             if (up.SongData.Length > 0 && up.CoverArtData.Length > 0 && !string.IsNullOrEmpty(up.SongFile))
             {
                 var meta = new Utilities.MetadataRetriever();
-                if (!meta.IsSupportedFile(up.SongData) && !meta.IsSupportedFile(up.CoverArtData))
+                var tmpSong = this._songMgr.SaveSongTemp(up.SongData).Result;
+                if (!meta.IsSupportedFile(tmpSong.SongPath()) && !meta.IsSupportedFile(up.CoverArtData))
                 {
                     return BadRequest("Media is not supported");
                 }
-                else if (!meta.IsSupportedFile(up.SongData))
+                else if (!meta.IsSupportedFile(tmpSong.SongPath()))
                 {
                     return BadRequest("Song is not supported");
                 }
@@ -129,7 +130,7 @@ public class SongDataController : BaseController
 
                 _logger.LogInformation($"Song title: {song.Title}");
 
-                var fileType = meta.FileExtensionType(up.SongData);
+                var fileType = meta.FileExtensionType(tmpSong.SongPath());
 
                 switch (fileType)
                 {

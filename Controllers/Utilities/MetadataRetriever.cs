@@ -100,11 +100,26 @@ public class MetadataRetriever
             }
 
 
+
             var fileType = FileTypeChecker.FileTypeValidator.GetFileType(fileStream);
             Console.WriteLine($"Filetype: {fileType}");
             Console.WriteLine($"Extension: {fileType.Extension}");
 
             return fileType.Extension;
+        }
+    }
+
+    public string FileExtensionType(string path)
+    {
+        var extensionRaw = System.IO.Path.GetExtension(path);
+
+        if (extensionRaw[0] == '.')
+        {
+            return extensionRaw.Substring(1);
+        }
+        else
+        {
+            return extensionRaw;
         }
     }
 
@@ -120,6 +135,22 @@ public class MetadataRetriever
         });
 
         var extensionType = this.FileExtensionType(file).ToLower();
+
+        return supportedTypes.Contains(extensionType);
+    }
+
+    public bool IsSupportedFile(string path)
+    {
+        var supportedTypes = this._supportedAudioFileTypes;
+        this._supportedImageFileTypes.ForEach(t => 
+        {
+            if (!supportedTypes.Contains(t))
+            {
+                supportedTypes.Add(t);
+            }
+        });
+
+        var extensionType = this.FileExtensionType(path).ToLower();
 
         return supportedTypes.Contains(extensionType);
     }

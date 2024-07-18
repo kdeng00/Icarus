@@ -308,28 +308,31 @@ public class SongManager : BaseManager
             Data = uncompressedSong
         };
     }
-    private async Task<Song> SaveSongTemp(IFormFile songFile)
+    public async Task<Song> SaveSongTemp(IFormFile songFile)
     {
-        var song = new Song();
         _logger.Info("Assigning song filename");
-        song.SongDirectory = _tempDirectoryRoot;
-        var filename = song.GenerateFilename(1);
+        var song = new Song { SongDirectory = this._tempDirectoryRoot };
+        var filename = await song.GenerateFilenameAsync(0) + "-" + songFile.FileName;
         song.Filename = filename;
+        var songPath = song.SongPath();
 
-        using (var filestream = new FileStream(song.SongPath(), FileMode.Create))
+        using (var filestream = new FileStream(songPath, FileMode.Create))
         {
-            _logger.Info("Saving temp song: {0}", song.SongPath());
+            _logger.Info("Saving temp song: {0}", songPath);
             await songFile.CopyToAsync(filestream);
         }
+        // For audio files that already contain embedded metadata
+        /*
         await Task.Run(() =>
         {
             MetadataRetriever meta = new MetadataRetriever();
             song =  meta.RetrieveMetaData(song.SongPath());
         });
+        */
 
-        song.SongDirectory = _tempDirectoryRoot;
+        // song.SongDirectory = _tempDirectoryRoot;
         song.DateCreated = DateTime.Now;
-        song.Filename = filename;
+        // song.Filename = filename;
 
         return song;
     }

@@ -75,7 +75,7 @@ public class Song
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var filename = this.Generate(length, chars);
-        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
+        var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
 
         return flag == 0 ? filename : $"{filename}{extension}";
     }
@@ -83,7 +83,7 @@ public class Song
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
-        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
+        var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
         var filename = await Task.Run(() =>
         {
             return this.Generate(length, chars);
