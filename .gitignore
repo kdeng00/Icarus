@@ -9,4 +9,5 @@
 /obj
 /obj/*
 /Icarus.txt
-/appsettings*.json
+/appsettings.json
+/appsettings.Development.json
