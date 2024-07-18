@@ -224,10 +224,13 @@ public class SongManager : BaseManager
 
         _logger.Info("Temporary song path: {0}", tempPath);
 
-        using (var filestream = new FileStream(tempPath, FileMode.Create))
+        if (!System.IO.File.Exists(tempPath))
         {
-            _logger.Info("Saving song to temporary directory");
-            songFile.CopyTo(filestream);
+            using (var filestream = new FileStream(tempPath, FileMode.Create))
+            {
+                _logger.Info("Saving song to temporary directory");
+                songFile.CopyTo(filestream);
+            }
         }
 
         var coverMgr = new CoverArtManager(_config);
