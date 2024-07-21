@@ -133,6 +133,7 @@ public class SongDataController : BaseController
                 var fileType = meta.FileExtensionType(tmpSong.SongPath());
                 song.Filename = tmpSong.Filename;
                 song.SongDirectory = tmpSong.SongDirectory;
+                song.DateCreated = tmpSong.DateCreated;
 
                 switch (fileType)
                 {
