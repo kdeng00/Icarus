@@ -131,6 +131,8 @@ public class SongDataController : BaseController
                 _logger.LogInformation($"Song title: {song.Title}");
 
                 var fileType = meta.FileExtensionType(tmpSong.SongPath());
+                song.Filename = tmpSong.Filename;
+                song.SongDirectory = tmpSong.SongDirectory;
 
                 switch (fileType)
                 {
