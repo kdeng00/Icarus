@@ -11,6 +11,7 @@ public class CoverArtManager : BaseManager
     private string _rootCoverArtPath;
     private CoverArtContext _coverArtContext;
     private byte[] _stockCoverArt = null;
+    private const string _filename = "CoverArt.png";
     #endregion
 
 
@@ -46,7 +47,7 @@ public class CoverArtManager : BaseManager
     {
         try
         {
-            var stockCoverArtPath = _rootCoverArtPath + "CoverArt.png";
+            var stockCoverArtPath = _rootCoverArtPath + _filename;
             if (!string.Equals(stockCoverArtPath, coverArt.ImagePath(), 
                         StringComparison.CurrentCultureIgnoreCase))
             {
@@ -168,9 +169,9 @@ public class CoverArtManager : BaseManager
         if (System.IO.File.Exists(path))
             _stockCoverArt = File.ReadAllBytes(path);
 
-        if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
+        if (!File.Exists(_rootCoverArtPath + _filename))
         {
-            File.WriteAllBytes(_rootCoverArtPath + "CoverArt.png", 
+            File.WriteAllBytes(_rootCoverArtPath + _filename, 
                     _stockCoverArt);
             Console.WriteLine("Copied Stock Cover Art");
         }

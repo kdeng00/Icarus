@@ -178,18 +178,7 @@ public class SongManager : BaseManager
 
             await Task.Run(() =>
             {
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    var songBytes = System.IO.File.ReadAllBytes(tempPath);
-
-                    _logger.Info("Saving song to the filesystem");
-                    fileStream.Write(songBytes, 0, songBytes.Count());
-
-                    System.IO.File.Delete(tempPath);
-                    _logger.Info("Deleting temp file");
-
-                    _logger.Info("Song successfully saved to filesystem");
-                }
+                this.MoveSongToFinalDestination(tempPath, filePath);
             });
 
             song.SongDirectory = dirMgr.SongDirectory;
@@ -197,8 +186,7 @@ public class SongManager : BaseManager
             var coverMgr = new CoverArtManager(_config);
             var coverArt = coverMgr.SaveCoverArt(song);
 
-            coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);
-            SaveSongToDatabase(song);
+            SaveSongToDatabase(song, coverArt);
         }
         catch (Exception ex)
         {
@@ -208,7 +196,7 @@ public class SongManager : BaseManager
     }
 
     // Change the name of this method to only focus on wav files
-    public void SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
+    public Song SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         if (string.IsNullOrEmpty(song.SongDirectory))
         {
@@ -246,24 +234,45 @@ public class SongManager : BaseManager
         var filePath = song.SongPath();
         _logger.Info($"Absolute song path: {filePath}");
 
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        this.MoveSongToFinalDestination(tempPath, filePath);
+
+        SaveSongToDatabase(song, coverArt);
+
+        return song;
+    }
+
+   // TODO: Needs to be implemented
+   public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song) 
+   {
+        // Save temp song (Should already be saved to the filesystem by the time it gets to this method)
+        // Save cover art
+        // Update the song's metadata with the song object
+        // Save song to its final directory
+        // Save cover art to the database
+        // Save song to the database
+        return song;
+   }
+
+   private void MoveSongToFinalDestination(string sourcePath, string targetPath)
+   {
+        using (var fileStream = new FileStream(targetPath, FileMode.Create))
         {
-            var songBytes = System.IO.File.ReadAllBytes(tempPath);
+            var songBytes = System.IO.File.ReadAllBytes(sourcePath);
 
             try
             {
-                if (System.IO.File.Exists(filePath) && System.IO.File.Exists(tempPath) && fileStream.Length > 0)
+                if (System.IO.File.Exists(sourcePath) && System.IO.File.Exists(sourcePath) && fileStream.Length > 0)
                 {
-                    System.IO.File.Delete(tempPath);
-                    _logger.Info("Deleted temp song from filesystem: {0}", tempPath);
+                    System.IO.File.Delete(sourcePath);
+                    _logger.Info("Deleted temp song from filesystem: {0}", sourcePath);
                 }
                 else
                 {
                     fileStream.Write(songBytes, 0, songBytes.Count());
-                    _logger.Info("Saved song to filesystem: {0}", filePath);
+                    _logger.Info("Saved song to filesystem: {0}", targetPath);
 
-                    System.IO.File.Delete(tempPath);
-                    _logger.Info("Deleted temp song from filesystem: {0}", tempPath);
+                    System.IO.File.Delete(sourcePath);
+                    _logger.Info("Deleted temp song from filesystem: {0}", sourcePath);
                 }
             }
             catch (Exception ex)
@@ -274,14 +283,6 @@ public class SongManager : BaseManager
 
             _logger.Info("Song successfully saved to filesystem");
         }
-
-        coverMgr.SaveCoverArtToDatabase(ref song, ref coverArt);
-        SaveSongToDatabase(song);
-    }
-
-   // TODO: Needs to be implemented
-   public void SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song) 
-   {
    }
     
     public async Task<SongData> RetrieveSong(Song songMetaData)
@@ -382,13 +383,14 @@ public class SongManager : BaseManager
     
 
     
-    private void SaveSongToDatabase(Song song)
+    private void SaveSongToDatabase(Song song, CoverArt? cover)
     {
         _logger.Info("Starting process to save the song to the database");
 
         var albumMgr = new AlbumManager(_config);
         var artistMgr = new ArtistManager(_config);
         var genreMgr = new GenreManager(_config);
+        var coverMgr = new CoverArtManager(_config);
         albumMgr.SaveAlbumToDatabase(ref song);
         artistMgr.SaveArtistToDatabase(ref song);
         genreMgr.SaveGenreToDatabase(ref song);
@@ -398,6 +400,8 @@ public class SongManager : BaseManager
 
         _songContext.Add(song);
         _songContext.SaveChanges();
+
+        coverMgr.SaveCoverArtToDatabase(ref song, ref cover);
     }
     
 

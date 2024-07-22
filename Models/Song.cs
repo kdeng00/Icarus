@@ -56,6 +56,24 @@ public class Song
 
 
     #region Methods
+    public void PrintMetadata()
+    {
+        Console.WriteLine("\n\nMetadata of the song:");
+        Console.WriteLine($"ID: {this.Id}");
+        Console.WriteLine($"Title: {this.Title}");
+        Console.WriteLine($"Artist: {this.Artist}");
+        Console.WriteLine($"Album: {this.AlbumTitle}");
+        Console.WriteLine($"Genre: {this.Genre}");
+        Console.WriteLine($"Year: {this.Year}");
+        Console.WriteLine($"Duration: {this.Duration}");
+        Console.WriteLine($"AlbumID: {this.AlbumId}");
+        Console.WriteLine($"ArtistID: {this.ArtistId}");
+        Console.WriteLine($"GenreID: {this.GenreId}");
+        Console.WriteLine($"Song Path: {this.SongPath()}");
+        Console.WriteLine($"Filename: {this.Filename}");
+        Console.WriteLine("\n");
+    }
+
     public string SongPath()
     {
         var fullPath = SongDirectory;

@@ -140,15 +140,17 @@ public class SongDataController : BaseController
                     case "wav":
                         // TODO: Identify the song file type. Then save the media.
                         // Create a new method to save song flac files
-                        _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
+                        song = _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
                     case "flac":
                         // TODO: Skeleton method
-                        _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
+                        song = _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
                     default:
-                        break;
+                        return BadRequest();
                 }
+
+                return Ok(song);
             }
         }
         catch (Exception ex)
@@ -156,7 +158,7 @@ public class SongDataController : BaseController
             _logger.LogError(ex.Message, "An error occurred");
         }
 
-        return Ok();
+        return BadRequest();
     }
 
     [HttpDelete("delete/{id}")]

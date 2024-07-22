@@ -41,32 +41,6 @@ public class MetadataRetriever
 
 
     #region Methods
-    public static void PrintMetadata(Song song)
-    {
-        Console.WriteLine("\n\nMetadata of the song:");
-        Console.WriteLine($"ID: {song.Id}");
-        Console.WriteLine($"Title: {song.Title}");
-        Console.WriteLine($"Artist: {song.Artist}");
-        Console.WriteLine($"Album: {song.AlbumTitle}");
-        Console.WriteLine($"Genre: {song.Genre}");
-        Console.WriteLine($"Year: {song.Year}");
-        Console.WriteLine($"Duration: {song.Duration}");
-        Console.WriteLine($"AlbumID: {song.AlbumId}");
-        Console.WriteLine($"ArtistID: {song.ArtistId}");
-        Console.WriteLine($"GenreID: {song.GenreId}");
-        Console.WriteLine($"Song Path: {song.SongPath()}");
-        Console.WriteLine($"Filename: {song.Filename}");
-        Console.WriteLine("\n");
-
-        _logger.Info("Metadata of the song");
-        _logger.Info($"Title: {song.Title}");
-        _logger.Info($"Artist: {song.Artist}");
-        _logger.Info($"Album: {song.AlbumTitle}");
-        _logger.Info($"Genre: {song.Genre}");
-        _logger.Info($"Year: {song.Year}");
-        _logger.Info($"Duration: {song.Duration}");
-    }
-
     public string CoverArtFileExtensionType(CoverArt cover)
     {
         Console.WriteLine("Retrieving CoverArt file extension type");
@@ -98,7 +72,6 @@ public class MetadataRetriever
             {
                 return string.Empty;
             }
-
 
 
             var fileType = FileTypeChecker.FileTypeValidator.GetFileType(fileStream);
@@ -343,42 +316,6 @@ public class MetadataRetriever
     private void InitializeUpdatedSong(Song song)
     {
         _updatedSong = song;
-    }
-    private void PrintMetadata()
-    {
-        Console.WriteLine("\n\nMetadata of the song:");
-        Console.WriteLine($"Title: {_title}");
-        Console.WriteLine($"Artist: {_artist}");
-        Console.WriteLine($"Album: {_album}");
-        Console.WriteLine($"Genre: {_genre}");
-        Console.WriteLine($"Year: {_year}");
-        Console.WriteLine($"Duration: {_duration}\n\n");
-
-        _logger.Info("Metadata of the song");
-        _logger.Info($"Title: {_title}");
-        _logger.Info($"Artist: {_artist}");
-        _logger.Info($"Album: {_album}");
-        _logger.Info($"Genre: {_genre}");
-        _logger.Info($"Year: {_year}");
-        _logger.Info($"Duration: {_duration}");
-    }
-    private void PrintMetadata(Song song, string message)
-    {
-        Console.WriteLine($"\n\n{message}");
-        Console.WriteLine($"Title: {song.Title}");
-        Console.WriteLine($"Artist: {song.Artist}");
-        Console.WriteLine($"Album: {song.AlbumTitle}");
-        Console.WriteLine($"Genre: {song.Genre}");
-        Console.WriteLine($"Year: {song.Year}");
-        Console.WriteLine($"Duration: {song.Duration}\n\n");
-
-        _logger.Info(message);
-        _logger.Info($"Title: {_title}");
-        _logger.Info($"Artist: {_artist}");
-        _logger.Info($"Album: {_album}");
-        _logger.Info($"Genre: {_genre}");
-        _logger.Info($"Year: {_year}");
-        _logger.Info($"Duration: {_duration}");
     }
 
     private SortedDictionary<string, bool> CheckSongValues(Song song)
