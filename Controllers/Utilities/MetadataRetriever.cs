@@ -183,9 +183,13 @@ public class MetadataRetriever
         {
             Console.WriteLine("Fetching image");
             var tag = TagLib.File.Create(song.SongPath());
-            byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
-        
-            return imgBytes;
+
+            if (tag.Tag.Pictures.Count() == 0)
+            {
+                return [];
+            }
+
+            return tag.Tag.Pictures[0].Data.Data;
         }
         catch (Exception ex)
         {

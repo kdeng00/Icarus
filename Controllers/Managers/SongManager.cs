@@ -250,6 +250,28 @@ public class SongManager : BaseManager
         // Save song to its final directory
         // Save cover art to the database
         // Save song to the database
+
+        var coverMgr = new CoverArtManager(_config);
+        var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
+
+
+        var meta = new Utilities.MetadataRetriever();
+        meta.UpdateMetadata(song, song);
+
+        DirectoryManager dirMgr = new DirectoryManager(_config, song);
+        dirMgr.CreateDirectory();
+
+        var tempPath = song.SongPath();
+
+        song.SongDirectory = dirMgr.SongDirectory;
+
+        var filePath = song.SongPath();
+        _logger.Info($"Absolute song path: {filePath}");
+
+        this.MoveSongToFinalDestination(tempPath, filePath);
+
+        SaveSongToDatabase(song, coverArt);
+
         return song;
    }
 
