@@ -88,26 +88,43 @@ public class Song
         return fullPath;
     }
 
-    public string GenerateFilename(int flag = 0)
+    public string GenerateFilename(bool includeExtension = false, AudioFileExtensionsType flag = AudioFileExtensionsType.Default)
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var filename = this.Generate(length, chars);
-        var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+        // var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+        var extension = this.DetermineFileExtension(flag);
 
-        return flag == 0 ? filename : $"{filename}{extension}";
+        return includeExtension ? $"{filename}{extension}" : filename;
     }
-    public async Task<string> GenerateFilenameAsync(int flag = 0)
+    public async Task<string> GenerateFilenameAsync(bool includeExtension = false, AudioFileExtensionsType flag = AudioFileExtensionsType.Default)
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
-        var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+        // var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+        var extension = this.DetermineFileExtension(flag);
         var filename = await Task.Run(() =>
         {
             return this.Generate(length, chars);
         });
 
-        return flag == 0 ? filename : $"{filename}{extension}";
+        return includeExtension ? $"{filename}{extension}" : filename;
+    }
+
+    private string DetermineFileExtension(AudioFileExtensionsType flag)
+    {
+        switch (flag)
+        {
+            case AudioFileExtensionsType.Default:
+                return Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+            case AudioFileExtensionsType.WAV:
+                return Constants.FileExtensions.WAV_EXTENSION;
+            case AudioFileExtensionsType.FLAC:
+                return Constants.FileExtensions.FLAC_EXTENSION;
+            default:
+                return "";
+        }
     }
 
     private string Generate(int length, string chars)
@@ -118,4 +135,11 @@ public class Song
         return filename;
     }
     #endregion
+}
+
+public enum AudioFileExtensionsType
+{
+    Default = 0,
+    WAV = 1,
+    FLAC = 2
 }

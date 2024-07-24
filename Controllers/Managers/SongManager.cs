@@ -170,7 +170,7 @@ public class SongManager : BaseManager
             dirMgr.CreateDirectory();
 
             var tempPath = song.SongPath();
-            song.Filename = song.GenerateFilename(1);
+            song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.WAV);
             var filePath = $"{dirMgr.SongDirectory}{song.Filename}";
 
             _logger.Info($"Absolute song path: {filePath}");
@@ -205,7 +205,7 @@ public class SongManager : BaseManager
 
         if (string.IsNullOrEmpty(song.Filename))
         {
-            song.Filename = song.GenerateFilename(1);
+            song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.WAV);
         }
 
         _logger.Info($"Temporary directory: {_tempDirectoryRoot}");
@@ -254,7 +254,6 @@ public class SongManager : BaseManager
         var coverMgr = new CoverArtManager(_config);
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
 
-
         var meta = new Utilities.MetadataRetriever();
         meta.UpdateMetadata(song, song);
 
@@ -264,6 +263,7 @@ public class SongManager : BaseManager
         var tempPath = song.SongPath();
 
         song.SongDirectory = dirMgr.SongDirectory;
+        song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.FLAC);
 
         var filePath = song.SongPath();
         _logger.Info($"Absolute song path: {filePath}");
@@ -340,7 +340,7 @@ public class SongManager : BaseManager
     {
         _logger.Info("Assigning song filename");
         var song = new Song { SongDirectory = this._tempDirectoryRoot };
-        var filename = await song.GenerateFilenameAsync(0) + "-" + songFile.FileName;
+        var filename = await song.GenerateFilenameAsync(false) + "-" + songFile.FileName;
         song.Filename = filename;
         var songPath = song.SongPath();
 
