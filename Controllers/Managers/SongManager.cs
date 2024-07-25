@@ -205,7 +205,18 @@ public class SongManager : BaseManager
 
         if (string.IsNullOrEmpty(song.Filename))
         {
-            song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.WAV);
+            switch (song.AudioType)
+            {
+                case "wav":
+                    song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.WAV);
+                    break;
+                case "flac":
+                    song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.FLAC);
+                    break;
+                default:
+                    song.Filename = song.GenerateFilename(true, AudioFileExtensionsType.Default);
+                    break;
+            }
         }
 
         _logger.Info($"Temporary directory: {_tempDirectoryRoot}");

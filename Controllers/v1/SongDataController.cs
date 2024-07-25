@@ -43,7 +43,23 @@ public class SongDataController : BaseController
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
         
         var song = _songMgr.RetrieveSong(songMetaData).Result;
-        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, songMetaData.Title, randomizeFilename);
+        string filename;
+
+        switch (songMetaData.AudioType)
+        {
+            case "wav":
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, 
+                    songMetaData.Title, randomizeFilename);
+                break;
+            case "flac":
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.FLAC_EXTENSION, 
+                    songMetaData.Title, randomizeFilename);
+                break;
+            default:
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION, 
+                    songMetaData.Title, randomizeFilename);
+                break;
+        }
 
         return File(song.Data, "application/x-msdownload", filename);
     }
@@ -130,12 +146,13 @@ public class SongDataController : BaseController
 
                 _logger.LogInformation($"Song title: {song.Title}");
 
-                var fileType = meta.FileExtensionType(tmpSong.SongPath());
+                // var fileType = 
                 song.Filename = tmpSong.Filename;
                 song.SongDirectory = tmpSong.SongDirectory;
                 song.DateCreated = tmpSong.DateCreated;
+                song.AudioType = meta.FileExtensionType(tmpSong.SongPath());
 
-                switch (fileType)
+                switch (song.AudioType)
                 {
                     case "wav":
                         // TODO: Identify the song file type. Then save the media.

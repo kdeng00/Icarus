@@ -28,6 +28,8 @@ public class Song
     public string Filename { get; set; }
     [JsonIgnore]
     public string SongDirectory { get; set; }
+    [JsonProperty("audio_type")]
+    public string? AudioType { get; set; }
     [JsonProperty("track")]
     public int Track { get; set; } = 0;
     [JsonProperty("track_count")]
