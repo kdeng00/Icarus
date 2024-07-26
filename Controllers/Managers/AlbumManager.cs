@@ -19,7 +19,7 @@ public class AlbumManager : BaseManager
     {
         _config = config;
         _connectionString = _config.GetConnectionString("DefaultConnection");
-        _albumContext = new AlbumContext(_connectionString);
+        _albumContext = new AlbumContext(_connectionString!);
     }
     #endregion
 
@@ -89,7 +89,7 @@ public class AlbumManager : BaseManager
                     oldAlbumTitle.Equals(newAlbumTitle) && oldAlbumArtist.Equals(newAlbumArtist)))
         {
             _logger.Info("No change to the song's album");
-            return albumRecord;
+            return albumRecord!;
         }
 
         info = "Change to the song's album";
@@ -137,7 +137,7 @@ public class AlbumManager : BaseManager
 
     private int SongsInAlbum(Album album)
     {
-        var sngContext = new SongContext(_connectionString);
+        var sngContext = new SongContext(_connectionString!);
         var songs = sngContext.Songs.Where(sng => sng.AlbumId == album.Id).ToList();
 
         return songs.Count;

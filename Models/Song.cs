@@ -10,24 +10,24 @@ public class Song
     [JsonProperty("id")]
     public int Id { get; set; }
     [JsonProperty("title")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
     [JsonProperty("album")]
     [Column("Album")]
-    public string AlbumTitle { get; set; }
+    public string? AlbumTitle { get; set; }
     [JsonProperty("artist")]
-    public string Artist { get; set; }
+    public string? Artist { get; set; }
     [JsonProperty("album_artist")]
-    public string AlbumArtist { get; set; }
+    public string? AlbumArtist { get; set; }
     [JsonProperty("year")]
     public int? Year { get; set; }
     [JsonProperty("genre")]
-    public string Genre { get; set; }
+    public string? Genre { get; set; }
     [JsonProperty("duration")]
     public int Duration { get; set; }
     [JsonProperty("filename")]
-    public string Filename { get; set; }
+    public string? Filename { get; set; }
     [JsonIgnore]
-    public string SongDirectory { get; set; }
+    public string? SongDirectory { get; set; }
     [JsonProperty("audio_type")]
     public string? AudioType { get; set; }
     [JsonProperty("track")]

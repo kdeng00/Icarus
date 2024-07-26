@@ -17,8 +17,8 @@ namespace Icarus.Controllers.V1;
 public class LoginController : ControllerBase
 {
     #region Fields
-    private string _connectionString;
-    private IConfiguration _config;
+    private string? _connectionString;
+    private IConfiguration? _config;
     private ILogger<LoginController> _logger;
     #endregion
 
@@ -41,7 +41,7 @@ public class LoginController : ControllerBase
     [HttpPost]
     public IActionResult Login([FromBody] User user)
     {
-        var context = new UserContext(_connectionString);
+        var context = new UserContext(_connectionString!);
 
         _logger.LogInformation("Starting process of validating credentials");
         
@@ -57,10 +57,10 @@ public class LoginController : ControllerBase
         {
             if (context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username)) != null)
             {
-                user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username));
+                user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username))!;
 
                 var validatePass = new PasswordEncryption();
-                var validated = validatePass.VerifyPassword(user, password);
+                var validated = validatePass.VerifyPassword(user!, password);
                 if (!validated)
                 {
                     loginRes.Message = message;
@@ -71,9 +71,9 @@ public class LoginController : ControllerBase
 
                 _logger.LogInformation("Successfully validated user credentials");
 
-                TokenManager tk = new TokenManager(_config);
+                TokenManager tk = new TokenManager(_config!);
 
-                loginRes = tk.LoginSymmetric(user);
+                loginRes = tk.LoginSymmetric(user!);
 
                 return Ok(loginRes);
             }
@@ -87,7 +87,7 @@ public class LoginController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError("An error occurred: {0}", ex.Message);
-            _logger.LogError("Inner Exception: {0}", ex.InnerException.Message);
+            _logger.LogError("Inner Exception: {0}", ex.InnerException!.Message);
         }
 
         return NotFound(loginRes);

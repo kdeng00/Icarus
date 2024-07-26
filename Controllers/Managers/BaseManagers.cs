@@ -7,7 +7,7 @@ public class BaseManager
 {
     #region Fields
     protected static Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-    protected IConfiguration _config;
-    protected string _connectionString;
+    protected IConfiguration? _config;
+    protected string? _connectionString;
     #endregion
 }

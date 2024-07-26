@@ -78,7 +78,7 @@ public class CoverArtManager : BaseManager
 
             var coverArt = new CoverArt
             {
-                SongTitle = song.Title
+                SongTitle = song.Title!
             };
 
             var segment = coverArt.GenerateFilename(0);

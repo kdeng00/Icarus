@@ -12,8 +12,8 @@ namespace Icarus.Controllers.V1;
 public class ArtistController : BaseController
 {
     #region Fields
-    private readonly ILogger<ArtistController> _logger;
-    private string _connectionString;
+    private readonly ILogger<ArtistController>? _logger;
+    private string? _connectionString;
     #endregion
 
 
@@ -35,7 +35,7 @@ public class ArtistController : BaseController
     [HttpGet]
     public IActionResult GetArtists()
     {
-        var artistContext = new ArtistContext(_connectionString);
+        var artistContext = new ArtistContext(_connectionString!);
 
         var artists = artistContext.Artists.ToList();
 
@@ -50,7 +50,7 @@ public class ArtistController : BaseController
     {
         Artist artist = new Artist { Id = id };
         
-        var artistContext = new ArtistContext(_connectionString);
+        var artistContext = new ArtistContext(_connectionString!);
 
         if (artistContext.DoesRecordExist(artist))
         {

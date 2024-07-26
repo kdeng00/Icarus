@@ -19,7 +19,7 @@ public class GenreManager : BaseManager
     {
         _config = config;
         _connectionString = _config.GetConnectionString("DefaultConnection");
-        _genreContext = new GenreContext(_connectionString);
+        _genreContext = new GenreContext(_connectionString!);
     }
     #endregion
 
@@ -93,10 +93,10 @@ public class GenreManager : BaseManager
 
             var existingGenreRecord = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldGenreRecord.GenreName));
 
-            _genreContext.Update(existingGenreRecord);
+            _genreContext.Update(existingGenreRecord!);
             _genreContext.SaveChanges();
 
-            return existingGenreRecord;
+            return existingGenreRecord!;
         }
     }
 
@@ -110,16 +110,16 @@ public class GenreManager : BaseManager
 
         var genre = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(song.Genre));
 
-        if (SongsInGenre(genre) <= 1)
+        if (SongsInGenre(genre!) <= 1)
         {
-            _genreContext.Remove(genre);
+            _genreContext.Remove(genre!);
             _genreContext.SaveChanges();
         }
     }
 
     private int SongsInGenre(Genre genre)
     {
-        var sngContext = new SongContext(_connectionString);
+        var sngContext = new SongContext(_connectionString!);
         var songs = sngContext.Songs.Where(sng => sng.GenreId == genre.Id).ToList();
 
         return songs.Count;

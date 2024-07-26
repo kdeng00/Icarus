@@ -9,11 +9,11 @@ namespace Icarus.Controllers.Managers;
 public class SongManager : BaseManager
 {
     #region Fields
-    private string _tempDirectoryRoot;
-    private string _archiveDirectoryRoot;
-    private string _compressedSongFilename;
-    private string _message;
-    private SongContext _songContext;
+    private string? _tempDirectoryRoot;
+    private string? _archiveDirectoryRoot;
+    private string? _compressedSongFilename;
+    private string? _message;
+    private SongContext? _songContext;
     #endregion
 
 
@@ -234,10 +234,10 @@ public class SongManager : BaseManager
             }
         }
 
-        var coverMgr = new CoverArtManager(_config);
+        var coverMgr = new CoverArtManager(_config!);
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
 
-        DirectoryManager dirMgr = new DirectoryManager(_config, song);
+        DirectoryManager dirMgr = new DirectoryManager(_config!, song);
         dirMgr.CreateDirectory();
 
         song.SongDirectory = dirMgr.SongDirectory;
@@ -262,13 +262,13 @@ public class SongManager : BaseManager
         // Save cover art to the database
         // Save song to the database
 
-        var coverMgr = new CoverArtManager(_config);
+        var coverMgr = new CoverArtManager(_config!);
         var coverArt = coverMgr.SaveCoverArt(coverArtData, song);
 
         var meta = new Utilities.MetadataRetriever();
         meta.UpdateMetadata(song, song);
 
-        DirectoryManager dirMgr = new DirectoryManager(_config, song);
+        DirectoryManager dirMgr = new DirectoryManager(_config!, song);
         dirMgr.CreateDirectory();
 
         var tempPath = song.SongPath();
@@ -350,7 +350,7 @@ public class SongManager : BaseManager
     public async Task<Song> SaveSongTemp(IFormFile songFile)
     {
         _logger.Info("Assigning song filename");
-        var song = new Song { SongDirectory = this._tempDirectoryRoot };
+        var song = new Song { SongDirectory = this._tempDirectoryRoot! };
         var filename = await song.GenerateFilenameAsync(false) + "-" + songFile.FileName;
         song.Filename = filename;
         var songPath = song.SongPath();
@@ -371,7 +371,6 @@ public class SongManager : BaseManager
 
         // song.SongDirectory = _tempDirectoryRoot;
         song.DateCreated = DateTime.Now;
-        // song.Filename = filename;
 
         return song;
     }
@@ -385,9 +384,9 @@ public class SongManager : BaseManager
         var currentGenre = currentSong.Genre;
         var currentYear = currentSong.Year;
 
-        if (!currentTitle.Equals(songUpdates.Title) || !currentArtist.Equals(songUpdates.Artist) ||
-                !currentAlbum.Equals(songUpdates.AlbumTitle) ||
-                !currentGenre.Equals(songUpdates.Genre) || currentYear != songUpdates.Year)
+        if (!currentTitle!.Equals(songUpdates.Title) || !currentArtist!.Equals(songUpdates.Artist) ||
+                !currentAlbum!.Equals(songUpdates.AlbumTitle) ||
+                !currentGenre!.Equals(songUpdates.Genre) || currentYear != songUpdates.Year)
             return true;
 
         return false;
@@ -395,7 +394,7 @@ public class SongManager : BaseManager
 
     private void DeleteEmptyDirectories(ref Song oldSong, ref Song updatedSong)
     {
-        DirectoryManager mgr = new DirectoryManager(_config);
+        DirectoryManager mgr = new DirectoryManager(_config!);
 
         _logger.Info("Checking to see if there are any directories to delete");
         mgr.DeleteEmptyDirectories(oldSong);
@@ -405,8 +404,8 @@ public class SongManager : BaseManager
     {
         try
         {
-            _connectionString = _config.GetConnectionString("DefaultConnection");
-            _songContext = new SongContext(_connectionString);
+            _connectionString = _config!.GetConnectionString("DefaultConnection");
+            _songContext = new SongContext(_connectionString!);
         }
         catch (Exception ex)
         {
@@ -420,10 +419,10 @@ public class SongManager : BaseManager
     {
         _logger.Info("Starting process to save the song to the database");
 
-        var albumMgr = new AlbumManager(_config);
-        var artistMgr = new ArtistManager(_config);
-        var genreMgr = new GenreManager(_config);
-        var coverMgr = new CoverArtManager(_config);
+        var albumMgr = new AlbumManager(_config!);
+        var artistMgr = new ArtistManager(_config!);
+        var genreMgr = new GenreManager(_config!);
+        var coverMgr = new CoverArtManager(_config!);
         albumMgr.SaveAlbumToDatabase(ref song);
         artistMgr.SaveArtistToDatabase(ref song);
         genreMgr.SaveGenreToDatabase(ref song);
@@ -431,10 +430,10 @@ public class SongManager : BaseManager
         var info = "Saving Song to DB";
         _logger.Info(info);
 
-        _songContext.Add(song);
-        _songContext.SaveChanges();
+        _songContext!.Add(song);
+        _songContext!.SaveChanges();
 
-        coverMgr.SaveCoverArtToDatabase(ref song, ref cover);
+        coverMgr.SaveCoverArtToDatabase(ref song, ref cover!);
     }
     
 
@@ -479,7 +478,7 @@ public class SongManager : BaseManager
     {
         var updatedSongRecord = oldSongRecord;
 
-        var songContext = new SongContext(_connectionString);
+        var songContext = new SongContext(_connectionString!);
 
         if (!SongRecordChanged(oldSongRecord, newSongRecord))
         {
@@ -519,17 +518,17 @@ public class SongManager : BaseManager
         newSongRecord = updatedSongRecord;
 
         result.Message = "Successfully updated song";
-        result.SongTitle = updatedSongRecord.Title;
+        result.SongTitle = updatedSongRecord.Title!;
     }
 
     private void DeleteSongFromDatabase(Song song)
     {
         _logger.Info("Starting process to delete records related to the song from the database");
 
-        var albumMgr = new AlbumManager(_config);
-        var artistMgr = new ArtistManager(_config);
-        var genreMgr = new GenreManager(_config);
-        var sngContext = new SongContext(_connectionString);
+        var albumMgr = new AlbumManager(_config!);
+        var artistMgr = new ArtistManager(_config!);
+        var genreMgr = new GenreManager(_config!);
+        var sngContext = new SongContext(_connectionString!);
         sngContext.Songs.Remove(song);
         sngContext.SaveChanges();
         artistMgr.DeleteArtistFromDatabase(song);

@@ -82,7 +82,7 @@ public class CoverArtController : BaseController
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
         var c = covMgr.GetCoverArt(songMetaData);
 
-        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title, randomizeFilename);
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title!, randomizeFilename);
 
         var data = await c.GetData();
         

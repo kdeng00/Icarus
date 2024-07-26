@@ -11,12 +11,12 @@ public class MetadataRetriever
     private static NLog.Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
     private List<string> _supportedAudioFileTypes = new List<string> {"wav", "flac"};
     private List<string> _supportedImageFileTypes = new List<string> {"jpeg", "jpg", "png"};
-    private Song _updatedSong;
-    private string _message;
-    private string _title;
-    private string _artist;
-    private string _album;
-    private string _genre;
+    private Song? _updatedSong;
+    private string? _message;
+    private string? _title;
+    private string? _artist;
+    private string? _album;
+    private string? _genre;
     private int _year;
     private int _duration;
     #endregion
@@ -197,7 +197,7 @@ public class MetadataRetriever
             _logger.Error(msg, "An error occurred in MetadataRetriever");
         }
 
-        return null;
+        return [];
     }
 
     
@@ -263,43 +263,43 @@ public class MetadataRetriever
                     switch (key.ToLower())
                     {
                         case "title":
-                            _updatedSong.Title = title;
+                            _updatedSong!.Title = title;
                             fileTag.Tag.Title = title;
                             break;
                         case "artists":
-                            _updatedSong.Artist = artist;
+                            _updatedSong!.Artist = artist;
                             fileTag.Tag.Performers = new []{artist};
                             break;
                         case "album":
-                            _updatedSong.AlbumTitle = album;
+                            _updatedSong!.AlbumTitle = album;
                             fileTag.Tag.Album = album;
                             break;
                         case "genre":
-                            _updatedSong.Genre = genre;
+                            _updatedSong!.Genre = genre;
                             fileTag.Tag.Genres = new []{genre};
                             break;
                         case "year":
-                            _updatedSong.Year = year;
-                            fileTag.Tag.Year = (uint)year;
+                            _updatedSong!.Year = year;
+                            fileTag.Tag.Year = (uint)year!;
                             break;
                         case "albumartist":
-                            _updatedSong.AlbumArtist = albumArtist;
+                            _updatedSong!.AlbumArtist = albumArtist;
                             fileTag.Tag.AlbumArtists = new []{albumArtist};
                             break;
                         case "track":
-                            _updatedSong.Track = track;
+                            _updatedSong!.Track = track;
                             fileTag.Tag.Track = (uint)(track);
                             break;
                         case "trackcount":
-                            _updatedSong.TrackCount = trackCount;
+                            _updatedSong!.TrackCount = trackCount;
                             fileTag.Tag.TrackCount = (uint)(trackCount);
                             break;
                         case "disc":
-                            _updatedSong.Disc = disc;
+                            _updatedSong!.Disc = disc;
                             fileTag.Tag.Disc = (uint)(disc);
                             break;
                         case "disccount":
-                            _updatedSong.DiscCount = discCount;
+                            _updatedSong!.DiscCount = discCount;
                             fileTag.Tag.DiscCount = (uint)(discCount);
                             break;
                     }
