@@ -6,12 +6,14 @@ namespace Icarus.Models;
 
 public class Genre
 {
+    #region Properties
     [JsonProperty("id")]
     public int Id { get; set; }
     [JsonProperty("genre")]
     [Column("Category")]
-    public string GenreName { get; set; }
+    public string? GenreName { get; set; }
     [JsonProperty("song_count")]
     [NotMapped]
     public int SongCount { get; set; }
+    #endregion
 }

@@ -10,24 +10,26 @@ public class Song
     [JsonProperty("id")]
     public int Id { get; set; }
     [JsonProperty("title")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
     [JsonProperty("album")]
     [Column("Album")]
-    public string AlbumTitle { get; set; }
+    public string? AlbumTitle { get; set; }
     [JsonProperty("artist")]
-    public string Artist { get; set; }
+    public string? Artist { get; set; }
     [JsonProperty("album_artist")]
-    public string AlbumArtist { get; set; }
+    public string? AlbumArtist { get; set; }
     [JsonProperty("year")]
     public int? Year { get; set; }
     [JsonProperty("genre")]
-    public string Genre { get; set; }
+    public string? Genre { get; set; }
     [JsonProperty("duration")]
     public int Duration { get; set; }
     [JsonProperty("filename")]
-    public string Filename { get; set; }
+    public string? Filename { get; set; }
     [JsonIgnore]
-    public string SongDirectory { get; set; }
+    public string? SongDirectory { get; set; }
+    [JsonProperty("audio_type")]
+    public string? AudioType { get; set; }
     [JsonProperty("track")]
     public int Track { get; set; } = 0;
     [JsonProperty("track_count")]
@@ -56,11 +58,29 @@ public class Song
 
 
     #region Methods
+    public void PrintMetadata()
+    {
+        Console.WriteLine("\n\nMetadata of the song:");
+        Console.WriteLine($"ID: {this.Id}");
+        Console.WriteLine($"Title: {this.Title}");
+        Console.WriteLine($"Artist: {this.Artist}");
+        Console.WriteLine($"Album: {this.AlbumTitle}");
+        Console.WriteLine($"Genre: {this.Genre}");
+        Console.WriteLine($"Year: {this.Year}");
+        Console.WriteLine($"Duration: {this.Duration}");
+        Console.WriteLine($"AlbumID: {this.AlbumId}");
+        Console.WriteLine($"ArtistID: {this.ArtistId}");
+        Console.WriteLine($"GenreID: {this.GenreId}");
+        Console.WriteLine($"Song Path: {this.SongPath()}");
+        Console.WriteLine($"Filename: {this.Filename}");
+        Console.WriteLine("\n");
+    }
+
     public string SongPath()
     {
         var fullPath = SongDirectory;
 
-        if (fullPath[fullPath.Length -1] != '/')
+        if (fullPath![fullPath.Length -1] != '/')
         {
             fullPath += "/";
         }
@@ -70,26 +90,41 @@ public class Song
         return fullPath;
     }
 
-    public string GenerateFilename(int flag = 0)
+    public string GenerateFilename(bool includeExtension = false, AudioFileExtensionsType flag = AudioFileExtensionsType.Default)
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var filename = this.Generate(length, chars);
-        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
+        var extension = this.DetermineFileExtension(flag);
 
-        return flag == 0 ? filename : $"{filename}{extension}";
+        return includeExtension ? $"{filename}{extension}" : filename;
     }
-    public async Task<string> GenerateFilenameAsync(int flag = 0)
+    public async Task<string> GenerateFilenameAsync(bool includeExtension = false, AudioFileExtensionsType flag = AudioFileExtensionsType.Default)
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
-        var extension = Icarus.Constants.FileExtensions.WAV_EXTENSION;
+        var extension = this.DetermineFileExtension(flag);
         var filename = await Task.Run(() =>
         {
             return this.Generate(length, chars);
         });
 
-        return flag == 0 ? filename : $"{filename}{extension}";
+        return includeExtension ? $"{filename}{extension}" : filename;
+    }
+
+    private string DetermineFileExtension(AudioFileExtensionsType flag)
+    {
+        switch (flag)
+        {
+            case AudioFileExtensionsType.Default:
+                return Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
+            case AudioFileExtensionsType.WAV:
+                return Constants.FileExtensions.WAV_EXTENSION;
+            case AudioFileExtensionsType.FLAC:
+                return Constants.FileExtensions.FLAC_EXTENSION;
+            default:
+                return "";
+        }
     }
 
     private string Generate(int length, string chars)
@@ -100,4 +135,11 @@ public class Song
         return filename;
     }
     #endregion
+}
+
+public enum AudioFileExtensionsType
+{
+    Default = 0,
+    WAV = 1,
+    FLAC = 2
 }

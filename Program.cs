@@ -64,16 +64,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateLifetime = true,
         ValidAudience = Configuration["JWT:Audience"],
         ValidIssuer = Configuration["JWT:Issuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]!))
     };
 });
 
-builder.Services.AddDbContext<SongContext>(options => options.UseMySQL(connString));
-builder.Services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString));
-builder.Services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString));
-builder.Services.AddDbContext<UserContext>(options => options.UseMySQL(connString));
-builder.Services.AddDbContext<GenreContext>(options => options.UseMySQL(connString));
-builder.Services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString));
+builder.Services.AddDbContext<SongContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<AlbumContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<ArtistContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<UserContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<GenreContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString!));
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson();

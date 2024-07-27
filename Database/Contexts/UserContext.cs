@@ -32,7 +32,7 @@ public class UserContext : DbContext
     
     public User RetrieveRecord(User user)
     {
-        return Users.FirstOrDefault(usr => usr.Id == user.Id);
+        return Users.FirstOrDefault(usr => usr.Id == user.Id)!;
     }
 
     public bool DoesRecordExist(User user)

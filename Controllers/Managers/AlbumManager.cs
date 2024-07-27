@@ -6,7 +6,7 @@ namespace Icarus.Controllers.Managers;
 public class AlbumManager : BaseManager
 {
     #region Fields
-    private AlbumContext _albumContext;
+    private AlbumContext? _albumContext;
     #endregion
 
 
@@ -19,7 +19,7 @@ public class AlbumManager : BaseManager
     {
         _config = config;
         _connectionString = _config.GetConnectionString("DefaultConnection");
-        _albumContext = new AlbumContext(_connectionString);
+        _albumContext = new AlbumContext(_connectionString!);
     }
     #endregion
 
@@ -33,11 +33,11 @@ public class AlbumManager : BaseManager
 
         album.Title = song.AlbumTitle;
         album.AlbumArtist = song.Artist;
-        album.Year = song.Year.Value;
+        album.Year = song.Year!.Value;
         var albumTitle = song.AlbumTitle;
         var albumArtist = song.Artist;
 
-        var albumRetrieved = _albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(albumTitle) && alb.AlbumArtist.Equals(albumArtist));
+        var albumRetrieved = _albumContext!.Albums!.FirstOrDefault(alb => alb.Title!.Equals(albumTitle) && alb.AlbumArtist!.Equals(albumArtist));
 
         if (albumRetrieved == null)
         {
@@ -58,7 +58,7 @@ public class AlbumManager : BaseManager
 
     public void DeleteAlbumFromDatabase(Song song)
     {
-        var album = _albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(song.AlbumTitle));
+        var album = _albumContext!.Albums!.FirstOrDefault(alb => alb.Title!.Equals(song.AlbumTitle));
 
         if (album == null)
         {
@@ -72,7 +72,7 @@ public class AlbumManager : BaseManager
 
     public Album UpdateAlbumInDatabase(Song oldSong, Song newSong)
     {
-        var albumRecord = _albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(oldSong.AlbumTitle));
+        var albumRecord = _albumContext!.Albums!.FirstOrDefault(alb => alb.Title!.Equals(oldSong.AlbumTitle));
         var oldAlbumTitle = oldSong.AlbumTitle;
         var oldAlbumArtist = oldSong.Artist;
         var newAlbumTitle = newSong.AlbumTitle;
@@ -86,16 +86,16 @@ public class AlbumManager : BaseManager
             newAlbumTitle = oldAlbumTitle;
 
         if ((string.IsNullOrEmpty(newAlbumTitle) && string.IsNullOrEmpty(newAlbumArtist) || 
-                    oldAlbumTitle.Equals(newAlbumTitle) && oldAlbumArtist.Equals(newAlbumArtist)))
+                    oldAlbumTitle!.Equals(newAlbumTitle) && oldAlbumArtist!.Equals(newAlbumArtist)))
         {
             _logger.Info("No change to the song's album");
-            return albumRecord;
+            return albumRecord!;
         }
 
         info = "Change to the song's album";
         _logger.Info(info);
 
-        var existingAlbumRecord = _albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(oldSong.AlbumTitle));
+        var existingAlbumRecord = _albumContext.Albums!.FirstOrDefault(alb => alb.Title!.Equals(oldSong.AlbumTitle));
         if (existingAlbumRecord == null)
         {
             _logger.Info("Creating new album record");
@@ -104,7 +104,7 @@ public class AlbumManager : BaseManager
             {
                 Title = newAlbumTitle,
                 AlbumArtist = newAlbumArtist,
-                Year = newSong.Year.Value
+                Year = newSong.Year!.Value
             };
 
             _albumContext.Add(newAlbumRecord);
@@ -116,8 +116,8 @@ public class AlbumManager : BaseManager
         {
             _logger.Info("Updating existing album record");
 
-            existingAlbumRecord = _albumContext.Albums.FirstOrDefault(alb => alb.Title.Equals(newSong.AlbumTitle));
-            existingAlbumRecord.AlbumArtist = newAlbumArtist;
+            existingAlbumRecord = _albumContext.Albums!.FirstOrDefault(alb => alb.Title!.Equals(newSong.AlbumTitle));
+            existingAlbumRecord!.AlbumArtist = newAlbumArtist;
 
             _albumContext.Update(existingAlbumRecord);
             _albumContext.SaveChanges();
@@ -130,15 +130,15 @@ public class AlbumManager : BaseManager
     {
         if (SongsInAlbum(album) <= 1)
         {
-            _albumContext.Remove(album);
+            _albumContext!.Remove(album);
             _albumContext.SaveChanges();
         }
     }
 
     private int SongsInAlbum(Album album)
     {
-        var sngContext = new SongContext(_connectionString);
-        var songs = sngContext.Songs.Where(sng => sng.AlbumId == album.Id).ToList();
+        var sngContext = new SongContext(_connectionString!);
+        var songs = sngContext!.Songs!.Where(sng => sng.AlbumId == album.Id).ToList();
 
         return songs.Count;
     }

@@ -13,8 +13,8 @@ namespace Icarus.Controllers.V1;
 public class CoverArtController : BaseController
 {
     #region Fields
-    private readonly ILogger<CoverArtController> _logger;
-    private string _connectionString;
+    private readonly ILogger<CoverArtController>? _logger;
+    private string? _connectionString;
     #endregion
 
 
@@ -32,18 +32,18 @@ public class CoverArtController : BaseController
     [HttpGet]
     public IActionResult GetCoverArts()
     {
-        var coverArtContext = new CoverArtContext(_connectionString);
+        var coverArtContext = new CoverArtContext(_connectionString!);
 
-        var coverArtRecords = coverArtContext.CoverArtImages.ToList();
+        var coverArtRecords = coverArtContext.CoverArtImages!.ToList();
 
         if (coverArtRecords == null)
         {
-            _logger.LogInformation("No cover art records");
+            _logger!.LogInformation("No cover art records");
             return NotFound();
         }
         else
         {
-            _logger.LogInformation("Found cover art records");
+            _logger!.LogInformation("Found cover art records");
             return Ok(coverArtRecords);
         }
     }
@@ -53,13 +53,13 @@ public class CoverArtController : BaseController
     {
         var coverArt = new CoverArt { Id = id };
 
-        var coverArtContext = new CoverArtContext(_connectionString);
+        var coverArtContext = new CoverArtContext(_connectionString!);
 
         coverArt = coverArtContext.RetrieveRecord(coverArt);
 
         if (coverArt != null)
         {
-            _logger.LogInformation("Found cover art record");
+            _logger!.LogInformation("Found cover art record");
             var coverArtBytes = System.IO.File.ReadAllBytes(
                     coverArt.ImagePath());
 
@@ -68,7 +68,7 @@ public class CoverArtController : BaseController
         }
         else
         {
-            _logger.LogInformation("Cover art not found");
+            _logger!.LogInformation("Cover art not found");
             return NotFound();
         }
     }
@@ -76,13 +76,13 @@ public class CoverArtController : BaseController
     [HttpGet("data/download/{id}")]
     public async Task<IActionResult> Download(int id, [FromQuery] bool? randomizeFilename)
     {
-        var songContext = new SongContext(_connectionString);
-        var covMgr = new CoverArtManager(this._config);
+        var songContext = new SongContext(_connectionString!);
+        var covMgr = new CoverArtManager(this._config!);
         
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
         var c = covMgr.GetCoverArt(songMetaData);
 
-        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title, randomizeFilename);
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title!, randomizeFilename);
 
         var data = await c.GetData();
         

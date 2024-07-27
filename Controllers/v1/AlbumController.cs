@@ -12,8 +12,8 @@ namespace Icarus.Controllers.V1;
 public class AlbumController : BaseController
 {
     #region Fields
-    private readonly ILogger<AlbumController> _logger;
-    private string _connectionString;
+    private readonly ILogger<AlbumController>? _logger;
+    private string? _connectionString;
     #endregion
 
 
@@ -35,9 +35,9 @@ public class AlbumController : BaseController
     [HttpGet]
     public IActionResult GetAlbums()
     {
-        var albumContext = new AlbumContext(_connectionString);
+        var albumContext = new AlbumContext(_connectionString!);
 
-        var albums = albumContext.Albums.ToList();
+        var albums = albumContext.Albums!.ToList();
 
         if (albums.Count > 0)
             return Ok(albums);
@@ -50,7 +50,7 @@ public class AlbumController : BaseController
     {
         Album album = new Album{ Id = id };
 
-        var albumContext = new AlbumContext(_connectionString);
+        var albumContext = new AlbumContext(_connectionString!);
 
         if (albumContext.DoesRecordExist(album))
         {

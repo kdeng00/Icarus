@@ -5,5 +5,5 @@ namespace Icarus.Models;
 public class BaseResult
 {
     [JsonProperty("message")]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 }

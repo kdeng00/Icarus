@@ -8,9 +8,10 @@ namespace Icarus.Controllers.Managers;
 public class CoverArtManager : BaseManager
 {
     #region Fields
-    private string _rootCoverArtPath;
-    private CoverArtContext _coverArtContext;
-    private byte[] _stockCoverArt = null;
+    private string? _rootCoverArtPath;
+    private CoverArtContext? _coverArtContext;
+    private byte[]? _stockCoverArt = null;
+    private const string? _filename = "CoverArt.png";
     #endregion
 
 
@@ -29,7 +30,7 @@ public class CoverArtManager : BaseManager
     public void SaveCoverArtToDatabase(ref Song song, ref CoverArt coverArt)
     {
         _logger.Info("Saving cover art record to the database");
-        _coverArtContext.Add(coverArt);
+        _coverArtContext!.Add(coverArt);
         _coverArtContext.SaveChanges();
 
         song.CoverArtId = coverArt.Id;
@@ -38,7 +39,7 @@ public class CoverArtManager : BaseManager
     {
         _logger.Info("Attempting to delete cover art from the database");
 
-        _coverArtContext.Attach(coverArt);
+        _coverArtContext!.Attach(coverArt);
         _coverArtContext.Remove(coverArt);
         _coverArtContext.SaveChanges();
     }
@@ -46,7 +47,7 @@ public class CoverArtManager : BaseManager
     {
         try
         {
-            var stockCoverArtPath = _rootCoverArtPath + "CoverArt.png";
+            var stockCoverArtPath = _rootCoverArtPath + _filename;
             if (!string.Equals(stockCoverArtPath, coverArt.ImagePath(), 
                         StringComparison.CurrentCultureIgnoreCase))
             {
@@ -67,17 +68,17 @@ public class CoverArtManager : BaseManager
         }
     }
 
-    public CoverArt SaveCoverArt(Song song)
+    public CoverArt? SaveCoverArt(Song song)
     {
         try
         {
-            var dirMgr = new DirectoryManager(_rootCoverArtPath);
+            var dirMgr = new DirectoryManager(_rootCoverArtPath!);
             var defaultExtension = ".png";
             dirMgr.CreateDirectory(song);
 
             var coverArt = new CoverArt
             {
-                SongTitle = song.Title
+                SongTitle = song.Title!
             };
 
             var segment = coverArt.GenerateFilename(0);
@@ -102,7 +103,7 @@ public class CoverArtManager : BaseManager
                 metaData.UpdateCoverArt(song, coverArt);
                 coverArt.Directory = this._rootCoverArtPath;
                 coverArt.Filename = $"{segment}{defaultExtension}";
-                File.WriteAllBytes(coverArt.ImagePath(), _stockCoverArt);
+                File.WriteAllBytes(coverArt.ImagePath(), _stockCoverArt!);
             }
 
             coverArt.Type = metaData.CoverArtFileExtensionType(coverArt);
@@ -131,7 +132,7 @@ public class CoverArtManager : BaseManager
         try
         {
             MetadataRetriever metaData = new MetadataRetriever();
-            var dirMgr = new DirectoryManager(_rootCoverArtPath);
+            var dirMgr = new DirectoryManager(_rootCoverArtPath!);
             cover.Type = metaData.FileExtensionType(data);
             var defaultExtension = "." + cover.Type;
             dirMgr.CreateDirectory(song);
@@ -157,21 +158,23 @@ public class CoverArtManager : BaseManager
 
     public CoverArt GetCoverArt(Song song)
     {
-        return _coverArtContext.CoverArtImages.FirstOrDefault(cov => cov.SongTitle.Equals(song.Title));
+        var title = song.Title;
+        var cov = _coverArtContext!.CoverArtImages!.FirstOrDefault(cov => cov.SongTitle!.Equals(title));
+        return cov!;
     }
 
     private void Initialize()
     {
-        _coverArtContext = new CoverArtContext(_connectionString);
+        _coverArtContext = new CoverArtContext(_connectionString!);
         var path = DirectoryPaths.CoverArtDirectory + DirectoryPaths.CoverArtFilename;
 
         if (System.IO.File.Exists(path))
             _stockCoverArt = File.ReadAllBytes(path);
 
-        if (!File.Exists(_rootCoverArtPath + "CoverArt.png"))
+        if (!File.Exists(_rootCoverArtPath + _filename))
         {
-            File.WriteAllBytes(_rootCoverArtPath + "CoverArt.png", 
-                    _stockCoverArt);
+            File.WriteAllBytes(_rootCoverArtPath + _filename, 
+                    _stockCoverArt!);
             Console.WriteLine("Copied Stock Cover Art");
         }
     }

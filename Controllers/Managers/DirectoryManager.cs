@@ -7,14 +7,14 @@ namespace Icarus.Controllers.Managers;
 public class DirectoryManager : BaseManager
 {
     #region Fields
-    private Song _song;
-    private string _rootSongDirectory;
-    private string _songDirectory;
+    private Song? _song;
+    private string? _rootSongDirectory;
+    private string? _songDirectory;
     #endregion
 
 
     #region Properties
-    public string SongDirectory
+    public string? SongDirectory
     {
         get => _songDirectory;
         set => _songDirectory = value;
@@ -65,7 +65,7 @@ public class DirectoryManager : BaseManager
 
     public void CreateDirectory()
     {
-        this.CreateDirectory(_song);
+        this.CreateDirectory(_song!);
     }
 
     public void CreateDirectory(Song song)
@@ -187,9 +187,9 @@ public class DirectoryManager : BaseManager
 
     private class DirEnt
     {
-        public string Pre { get; set;}
-        public string Path { get; set; }
-        public string Post { get; set; }
+        public string? Pre { get; set;}
+        public string? Path { get; set; }
+        public string? Post { get; set; }
     }
 
     private void GenerateDirectories(List<DirEnt> dirs)
@@ -197,7 +197,7 @@ public class DirectoryManager : BaseManager
         foreach (var di in dirs)
         {
             _logger.Info(di.Pre);
-            Directory.CreateDirectory(di.Path);
+            Directory.CreateDirectory(di.Path!);
             _logger.Info(di.Post);
         }
     }
@@ -207,10 +207,10 @@ public class DirectoryManager : BaseManager
         switch (dirTypes)
         {
             case DirectoryType.Music:
-                _rootSongDirectory = _config.GetValue<string>("RootMusicPath");
+                _rootSongDirectory = _config!.GetValue<string>("RootMusicPath")!;
                 break;
             case DirectoryType.CoverArt:
-                _rootSongDirectory = _config.GetValue<string>("CoverArtPath");
+                _rootSongDirectory = _config!.GetValue<string>("CoverArtPath")!;
                 break;
         }
     }
@@ -222,12 +222,12 @@ public class DirectoryManager : BaseManager
 
     private string AlbumDirectory()
     {
-        return AlbumDirectory(_song);
+        return AlbumDirectory(_song!);
     }
     private string AlbumDirectory(Song song)
     {
         var directory = ArtistDirectory(song);
-        var segment = SerializeValue(song.AlbumTitle);
+        var segment = SerializeValue(song.AlbumTitle!);
         directory += $@"{segment}/";
         Console.WriteLine($"Album directory {directory}");
 
@@ -235,12 +235,12 @@ public class DirectoryManager : BaseManager
     }
     private string ArtistDirectory()
     {
-        return ArtistDirectory(_song);
+        return ArtistDirectory(_song!);
     }
     private string ArtistDirectory(Song song)
     {
         var directory = _rootSongDirectory;
-        var segment = SerializeValue(song.Artist);
+        var segment = SerializeValue(song.Artist!);
         directory += $@"{segment}/";
         Console.WriteLine($"Artist directory {directory}");
 

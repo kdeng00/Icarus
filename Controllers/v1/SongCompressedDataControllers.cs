@@ -14,9 +14,9 @@ namespace Icarus.Controllers.V1;
 public class SongCompressedDataController : BaseController
 {
     #region Fields
-    private string _connectionString;
-    private string _songTempDir;
-    private string _archiveDir;
+    private string? _connectionString;
+    private string? _songTempDir;
+    private string? _archiveDir;
     #endregion
 
 
@@ -39,9 +39,9 @@ public class SongCompressedDataController : BaseController
     [HttpGet("{id}")]
     public async Task<IActionResult> DownloadCompressedSong(int id, [FromQuery] bool? randomizeFilename)
     {
-        var context = new SongContext(_connectionString);
+        var context = new SongContext(_connectionString!);
 
-        SongCompression cmp = new SongCompression(_archiveDir);
+        SongCompression cmp = new SongCompression(_archiveDir!);
     
         Console.WriteLine($"Archive directory root: {_archiveDir}");
 
@@ -49,9 +49,9 @@ public class SongCompressedDataController : BaseController
         var sng = context.RetrieveRecord(new Song{ Id = id });
         SongData song = await cmp.RetrieveCompressedSong(sng);
 
-        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title, randomizeFilename);
+        var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title!, randomizeFilename);
 
-        return File(song.Data, "application/x-msdownload", filename);
+        return File(song.Data!, "application/x-msdownload", filename);
     }
     #endregion
 }

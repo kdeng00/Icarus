@@ -16,8 +16,7 @@ One can interface with Icarus the music server either by:
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
 * OpenSSL
 * BCrypt.Net-Next
-* DotNetZip
-* ID3
+* Iconic.Zlib.Netstandard
 * JWT
 * Microsoft.AspNetCore.Authentication.JwtBearer
 * Microsoft.AspNetCore.Mvc.NewtonsoftJson
@@ -126,11 +125,11 @@ scripts/Migrations/Linux/AddUpdate.sh
 ```
 Or you can manually add the migrations like so for each migration:
 ```shell
-dotnet-ef migrations Add InitialCreate --context UserContext
+dotnet dotnet-ef migrations Add InitialCreate --context UserContext
 ```
 Then update the migrations to the database like so<sup>*</sup>:
 ```shell
-dotnet-ef database update --context UserContext
+dotnet dotnet-ef database update --context UserContext
 ```
 
 All of the contexts can be found in Database/Contexts folder.

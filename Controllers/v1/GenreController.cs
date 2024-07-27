@@ -12,8 +12,8 @@ namespace Icarus.Controllers.V1;
 public class GenreController : BaseController
 {
     #region Fields
-    private readonly ILogger<GenreController> _logger;
-    private string _connectionString;
+    private readonly ILogger<GenreController>? _logger;
+    private string? _connectionString;
     #endregion
 
 
@@ -35,9 +35,9 @@ public class GenreController : BaseController
     [HttpGet]
     public IActionResult GetGenres()
     {
-        var genreStore = new GenreContext(_connectionString);
+        var genreStore = new GenreContext(_connectionString!);
 
-        var genres = genreStore.Genres.ToList();
+        var genres = genreStore!.Genres!.ToList();
 
         if (genres.Count > 0)
         {
@@ -54,7 +54,7 @@ public class GenreController : BaseController
     {
         var genre = new Genre { Id = id };
 
-        var genreStore = new GenreContext(_connectionString);
+        var genreStore = new GenreContext(_connectionString!);
 
         if (genreStore.DoesRecordExist(genre))
         {

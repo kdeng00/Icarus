@@ -8,25 +8,27 @@ namespace Icarus.Controllers.Utilities;
 public class MetadataRetriever
 {
     #region Fields
-    private static NLog.Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-    private Song _updatedSong;
-    private string _message;
-    private string _title;
-    private string _artist;
-    private string _album;
-    private string _genre;
+    private static NLog.Logger? _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+    private List<string>? _supportedAudioFileTypes = new List<string> {"wav", "flac"};
+    private List<string>? _supportedImageFileTypes = new List<string> {"jpeg", "jpg", "png"};
+    private Song? _updatedSong;
+    private string? _message;
+    private string? _title;
+    private string? _artist;
+    private string? _album;
+    private string? _genre;
     private int _year;
     private int _duration;
     #endregion
 
 
     #region Properties
-    public Song UpdatedSongRecord
+    public Song? UpdatedSongRecord
     {
         get => _updatedSong;
         set => _updatedSong = value;
     }
-    public string Message
+    public string? Message
     {
         get => _message;
         set => _message = value;
@@ -39,32 +41,6 @@ public class MetadataRetriever
 
 
     #region Methods
-    public static void PrintMetadata(Song song)
-    {
-        Console.WriteLine("\n\nMetadata of the song:");
-        Console.WriteLine($"ID: {song.Id}");
-        Console.WriteLine($"Title: {song.Title}");
-        Console.WriteLine($"Artist: {song.Artist}");
-        Console.WriteLine($"Album: {song.AlbumTitle}");
-        Console.WriteLine($"Genre: {song.Genre}");
-        Console.WriteLine($"Year: {song.Year}");
-        Console.WriteLine($"Duration: {song.Duration}");
-        Console.WriteLine($"AlbumID: {song.AlbumId}");
-        Console.WriteLine($"ArtistID: {song.ArtistId}");
-        Console.WriteLine($"GenreID: {song.GenreId}");
-        Console.WriteLine($"Song Path: {song.SongPath()}");
-        Console.WriteLine($"Filename: {song.Filename}");
-        Console.WriteLine("\n");
-
-        _logger.Info("Metadata of the song");
-        _logger.Info($"Title: {song.Title}");
-        _logger.Info($"Artist: {song.Artist}");
-        _logger.Info($"Album: {song.AlbumTitle}");
-        _logger.Info($"Genre: {song.Genre}");
-        _logger.Info($"Year: {song.Year}");
-        _logger.Info($"Duration: {song.Duration}");
-    }
-
     public string CoverArtFileExtensionType(CoverArt cover)
     {
         Console.WriteLine("Retrieving CoverArt file extension type");
@@ -106,6 +82,52 @@ public class MetadataRetriever
         }
     }
 
+    public string FileExtensionType(string path)
+    {
+        var extensionRaw = System.IO.Path.GetExtension(path);
+
+        if (extensionRaw[0] == '.')
+        {
+            return extensionRaw.Substring(1);
+        }
+        else
+        {
+            return extensionRaw;
+        }
+    }
+
+    public bool IsSupportedFile(IFormFile file)
+    {
+        var supportedTypes = this._supportedAudioFileTypes;
+        this._supportedImageFileTypes!.ForEach(t => 
+        {
+            if (!supportedTypes!.Contains(t))
+            {
+                supportedTypes.Add(t);
+            }
+        });
+
+        var extensionType = this.FileExtensionType(file).ToLower();
+
+        return supportedTypes!.Contains(extensionType);
+    }
+
+    public bool IsSupportedFile(string path)
+    {
+        var supportedTypes = this._supportedAudioFileTypes;
+        this._supportedImageFileTypes!.ForEach(t => 
+        {
+            if (!supportedTypes!.Contains(t))
+            {
+                supportedTypes.Add(t);
+            }
+        });
+
+        var extensionType = this.FileExtensionType(path).ToLower();
+
+        return supportedTypes!.Contains(extensionType);
+    }
+
     public Song RetrieveMetaData(string filePath)
     {
         Song song = new Song();
@@ -140,7 +162,7 @@ public class MetadataRetriever
             var msg = ex.Message;
             Console.WriteLine("An error occurred in MetadataRetriever");
             Console.WriteLine(msg);
-            _logger.Error(msg, "An error occurred in MetadataRetriever");
+            _logger!.Error(msg, "An error occurred in MetadataRetriever");
         }
 
         return song;
@@ -148,9 +170,8 @@ public class MetadataRetriever
 
     public int RetrieveSongDuration(string filepath)
     {
-        var duration = 0;
         var fileTag = TagLib.File.Create(filepath);
-        duration = (int)fileTag.Properties.Duration.TotalSeconds;
+        var duration = (int)fileTag.Properties.Duration.TotalSeconds;
 
         return duration;
     }
@@ -161,17 +182,21 @@ public class MetadataRetriever
         {
             Console.WriteLine("Fetching image");
             var tag = TagLib.File.Create(song.SongPath());
-            byte[] imgBytes = tag.Tag.Pictures[0].Data.Data;
-        
-            return imgBytes;
+
+            if (tag.Tag.Pictures.Count() == 0)
+            {
+                return [];
+            }
+
+            return tag.Tag.Pictures[0].Data.Data;
         }
         catch (Exception ex)
         {
             var msg = ex.Message;
-            _logger.Error(msg, "An error occurred in MetadataRetriever");
+            _logger!.Error(msg, "An error occurred in MetadataRetriever");
         }
 
-        return null;
+        return [];
     }
 
     
@@ -188,7 +213,7 @@ public class MetadataRetriever
         {
             var msg = ex.Message;
             Console.WriteLine($"An error occurred: {msg}");
-            _logger.Error(msg, "An error occurred");
+            _logger!.Error(msg, "An error occurred");
             Message = "Failed to update metadata";
         }
     }
@@ -227,7 +252,7 @@ public class MetadataRetriever
         try
         {
             Console.WriteLine($"Updating metadata of {title}");
-            _logger.Info($"Updating metadata of {title}");
+            _logger!.Info($"Updating metadata of {title}");
 
             foreach (var key in checkedValues.Keys)
             {
@@ -237,43 +262,43 @@ public class MetadataRetriever
                     switch (key.ToLower())
                     {
                         case "title":
-                            _updatedSong.Title = title;
+                            _updatedSong!.Title = title;
                             fileTag.Tag.Title = title;
                             break;
                         case "artists":
-                            _updatedSong.Artist = artist;
+                            _updatedSong!.Artist = artist;
                             fileTag.Tag.Performers = new []{artist};
                             break;
                         case "album":
-                            _updatedSong.AlbumTitle = album;
+                            _updatedSong!.AlbumTitle = album;
                             fileTag.Tag.Album = album;
                             break;
                         case "genre":
-                            _updatedSong.Genre = genre;
+                            _updatedSong!.Genre = genre;
                             fileTag.Tag.Genres = new []{genre};
                             break;
                         case "year":
-                            _updatedSong.Year = year;
-                            fileTag.Tag.Year = (uint)year;
+                            _updatedSong!.Year = year;
+                            fileTag.Tag.Year = (uint)year!;
                             break;
                         case "albumartist":
-                            _updatedSong.AlbumArtist = albumArtist;
+                            _updatedSong!.AlbumArtist = albumArtist;
                             fileTag.Tag.AlbumArtists = new []{albumArtist};
                             break;
                         case "track":
-                            _updatedSong.Track = track;
+                            _updatedSong!.Track = track;
                             fileTag.Tag.Track = (uint)(track);
                             break;
                         case "trackcount":
-                            _updatedSong.TrackCount = trackCount;
+                            _updatedSong!.TrackCount = trackCount;
                             fileTag.Tag.TrackCount = (uint)(trackCount);
                             break;
                         case "disc":
-                            _updatedSong.Disc = disc;
+                            _updatedSong!.Disc = disc;
                             fileTag.Tag.Disc = (uint)(disc);
                             break;
                         case "disccount":
-                            _updatedSong.DiscCount = discCount;
+                            _updatedSong!.DiscCount = discCount;
                             fileTag.Tag.DiscCount = (uint)(discCount);
                             break;
                     }
@@ -288,55 +313,19 @@ public class MetadataRetriever
         {
             var msg = ex.Message;
             Console.WriteLine($"An error occurred:\n{msg}");
-            _logger.Error(msg, "An error occurred");
+            _logger!.Error(msg, "An error occurred");
         }
     }
     private void InitializeUpdatedSong(Song song)
     {
         _updatedSong = song;
     }
-    private void PrintMetadata()
-    {
-        Console.WriteLine("\n\nMetadata of the song:");
-        Console.WriteLine($"Title: {_title}");
-        Console.WriteLine($"Artist: {_artist}");
-        Console.WriteLine($"Album: {_album}");
-        Console.WriteLine($"Genre: {_genre}");
-        Console.WriteLine($"Year: {_year}");
-        Console.WriteLine($"Duration: {_duration}\n\n");
-
-        _logger.Info("Metadata of the song");
-        _logger.Info($"Title: {_title}");
-        _logger.Info($"Artist: {_artist}");
-        _logger.Info($"Album: {_album}");
-        _logger.Info($"Genre: {_genre}");
-        _logger.Info($"Year: {_year}");
-        _logger.Info($"Duration: {_duration}");
-    }
-    private void PrintMetadata(Song song, string message)
-    {
-        Console.WriteLine($"\n\n{message}");
-        Console.WriteLine($"Title: {song.Title}");
-        Console.WriteLine($"Artist: {song.Artist}");
-        Console.WriteLine($"Album: {song.AlbumTitle}");
-        Console.WriteLine($"Genre: {song.Genre}");
-        Console.WriteLine($"Year: {song.Year}");
-        Console.WriteLine($"Duration: {song.Duration}\n\n");
-
-        _logger.Info(message);
-        _logger.Info($"Title: {_title}");
-        _logger.Info($"Artist: {_artist}");
-        _logger.Info($"Album: {_album}");
-        _logger.Info($"Genre: {_genre}");
-        _logger.Info($"Year: {_year}");
-        _logger.Info($"Duration: {_duration}");
-    }
 
     private SortedDictionary<string, bool> CheckSongValues(Song song)
     {
         var songValues = new SortedDictionary<string, bool>();
         Console.WriteLine("Checking for null data");
-        _logger.Info("Checking for null data");
+        _logger!.Info("Checking for null data");
 
         try
         {

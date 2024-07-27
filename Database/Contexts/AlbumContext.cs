@@ -6,7 +6,7 @@ namespace Icarus.Database.Contexts;
 
 public class AlbumContext : DbContext
 {
-    public DbSet<Album> Albums { get; set; }
+    public DbSet<Album>? Albums { get; set; }
 
     public AlbumContext(DbContextOptions<AlbumContext> options) : base(options) { }
     public AlbumContext(string connString) : base(new DbContextOptionsBuilder<AlbumContext>()
@@ -22,11 +22,12 @@ public class AlbumContext : DbContext
 
     public Album RetrieveRecord(Album album)
     {
-        return Albums.FirstOrDefault(alb => alb.Id == album.Id);
+        var albm = Albums!.FirstOrDefault(alb => alb.Id == album.Id);
+        return albm!;
     }
 
     public bool DoesRecordExist(Album album)
     {
-        return Albums.FirstOrDefault(alb => alb.Id == album.Id) != null ? true : false;
+        return Albums!.FirstOrDefault(alb => alb.Id == album.Id) != null ? true : false;
     }
 }

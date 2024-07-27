@@ -6,7 +6,7 @@ namespace Icarus.Controllers.Managers;
 public class ArtistManager : BaseManager
 {
     #region Fields
-    private ArtistContext _artistContext;
+    private ArtistContext? _artistContext;
     #endregion
 
 
@@ -19,7 +19,7 @@ public class ArtistManager : BaseManager
     {
         _config = config;
         _connectionString = _config.GetConnectionString("DefaultConnection");
-        _artistContext = new ArtistContext(_connectionString);
+        _artistContext = new ArtistContext(_connectionString!);
     }
     #endregion
 
@@ -35,7 +35,7 @@ public class ArtistManager : BaseManager
             SongCount = 1
         };
 
-        var artistRetrieved = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(artist.Name));
+        var artistRetrieved = _artistContext!.Artists.FirstOrDefault(art => art.Name!.Equals(artist.Name));
 
         if (artistRetrieved == null)
         {
@@ -53,11 +53,11 @@ public class ArtistManager : BaseManager
 
     public Artist UpdateArtistInDatabase(Song oldSongRecord, Song newSongRecord)
     {
-        var oldArtistRecord = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(oldSongRecord.AlbumTitle));
-        var oldArtistName = oldArtistRecord.Name;
+        var oldArtistRecord = _artistContext!.Artists.FirstOrDefault(art => art.Name!.Equals(oldSongRecord.AlbumTitle));
+        var oldArtistName = oldArtistRecord!.Name;
         var newArtistName = newSongRecord.Artist;
 
-        if (string.IsNullOrEmpty(newArtistName) || oldArtistName.Equals(newArtistName))
+        if (string.IsNullOrEmpty(newArtistName) || oldArtistName!.Equals(newArtistName))
         {
             _logger.Info("No change to the song's Artist");
             return oldArtistRecord;
@@ -73,7 +73,7 @@ public class ArtistManager : BaseManager
             _artistContext.SaveChanges();
         }
 
-        if (!(_artistContext.Artists.FirstOrDefault(art => art.Name.Equals(oldSongRecord.AlbumTitle)) != null))
+        if (!(_artistContext.Artists.FirstOrDefault(art => art.Name!.Equals(oldSongRecord.AlbumTitle)) != null))
         {
             _logger.Info("Creating new artist record");
 
@@ -91,36 +91,36 @@ public class ArtistManager : BaseManager
         {
             _logger.Info("Updating existing artist record");
 
-            var existingArtistRecord = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(newSongRecord.AlbumTitle));
+            var existingArtistRecord = _artistContext.Artists.FirstOrDefault(art => art.Name!.Equals(newSongRecord.AlbumTitle));
 
-            _artistContext.Update(existingArtistRecord);
+            _artistContext.Update(existingArtistRecord!);
             _artistContext.SaveChanges();
 
-            return existingArtistRecord;
+            return existingArtistRecord!;
         }
     }
 
     public void DeleteArtistFromDatabase(Song song)
     {
-        if (!(_artistContext.Artists.FirstOrDefault(art => art.Name.Equals(song.Artist)) != null))
+        if (!(_artistContext!.Artists.FirstOrDefault(art => art.Name!.Equals(song.Artist)) != null))
         {
             _logger.Info("Cannot delete the artist record because it does not exist");
             return;
         }
 
-        var artist = _artistContext.Artists.FirstOrDefault(art => art.Name.Equals(song.Artist));
+        var artist = _artistContext.Artists.FirstOrDefault(art => art.Name!.Equals(song.Artist));
 
-        if (SongsOfArtist(artist) <= 1)
+        if (SongsOfArtist(artist!) <= 1)
         {
-            _artistContext.Remove(artist);
+            _artistContext!.Remove(artist!);
             _artistContext.SaveChanges();
         }
     }
 
     private int SongsOfArtist(Artist artist)
     {
-        var sngContext = new SongContext(_connectionString);
-        var songs = sngContext.Songs.Where(sng => sng.ArtistId == artist.Id).ToList();
+        var sngContext = new SongContext(_connectionString!);
+        var songs = sngContext.Songs!.Where(sng => sng.ArtistId == artist.Id).ToList();
 
         return songs.Count;
     }

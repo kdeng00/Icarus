@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authorization;
 
 using Icarus.Authorization;
@@ -18,7 +14,7 @@ public class HasScopeHandler : AuthorizationHandler<HasScopeRequirement>
         }
 
         var scopes = context.User.FindFirst(c =>
-            c.Type == "scope" && c.Issuer == requirement.Issuer).Value.Split(' ');
+            c.Type == "scope" && c.Issuer == requirement.Issuer)!.Value.Split(' ');
 
         if (scopes.Any(s => s == requirement.Scope))
         {

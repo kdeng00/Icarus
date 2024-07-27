@@ -6,7 +6,7 @@ namespace Icarus.Controllers.V1;
 public class BaseController : ControllerBase
 {
     #region Fiends
-    protected IConfiguration _config;
+    protected IConfiguration? _config;
     #endregion
 
 
