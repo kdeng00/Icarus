@@ -16,7 +16,6 @@ One can interface with Icarus the music server either by:
 * [MySql](https://www.nuget.org/packages/MySql.Data/)
 * OpenSSL
 * BCrypt.Net-Next
-* ID3
 * Iconic.Zlib.Netstandard
 * JWT
 * Microsoft.AspNetCore.Authentication.JwtBearer

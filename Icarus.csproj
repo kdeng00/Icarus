@@ -14,7 +14,6 @@
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="File.TypeChecker" Version="4.1.1" />
     <PackageReference Include="Iconic.Zlib.Netstandard" Version="1.0.0" />
-    <PackageReference Include="ID3" Version="0.6.0" />
     <PackageReference Include="JWT" Version="10.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
