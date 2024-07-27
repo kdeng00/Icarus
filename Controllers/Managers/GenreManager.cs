@@ -6,7 +6,7 @@ namespace Icarus.Controllers.Managers;
 public class GenreManager : BaseManager
 {
     #region Fields
-    private GenreContext _genreContext;
+    private GenreContext? _genreContext;
     #endregion
 
 
@@ -36,7 +36,7 @@ public class GenreManager : BaseManager
         };
 
         var genreName = song.Genre;
-        var genreRetrieved = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(genreName));
+        var genreRetrieved = _genreContext!.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(genreName));
 
         if (genreRetrieved == null)
         {
@@ -53,11 +53,11 @@ public class GenreManager : BaseManager
 
     public Genre UpdateGenreInDatabase(Song oldSongRecord, Song newSongRecord)
     {
-        var oldGenreRecord = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldSongRecord.Genre));
-        var oldGenreName = oldGenreRecord.GenreName;
+        var oldGenreRecord = _genreContext!.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(oldSongRecord.Genre));
+        var oldGenreName = oldGenreRecord!.GenreName;
         var newGenreName = newSongRecord.Genre;
 
-        if (string.IsNullOrEmpty(newGenreName) || oldGenreName.Equals(newGenreName))
+        if (string.IsNullOrEmpty(newGenreName) || oldGenreName!.Equals(newGenreName))
         {
             _logger.Info("No change to the song's Genre");
             return oldGenreRecord;
@@ -73,7 +73,7 @@ public class GenreManager : BaseManager
             _genreContext.SaveChanges();
         }
 
-        if (!(_genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldSongRecord.Genre)) != null))
+        if (!(_genreContext.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(oldSongRecord.Genre)) != null))
         {
             _logger.Info("Creating new genre record");
 
@@ -91,7 +91,7 @@ public class GenreManager : BaseManager
         {
             _logger.Info("Updating existing genre record");
 
-            var existingGenreRecord = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(oldGenreRecord.GenreName));
+            var existingGenreRecord = _genreContext.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(oldGenreRecord.GenreName));
 
             _genreContext.Update(existingGenreRecord!);
             _genreContext.SaveChanges();
@@ -102,13 +102,13 @@ public class GenreManager : BaseManager
 
     public void DeleteGenreFromDatabase(Song song)
     {
-        if (!(_genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(song.Genre)) != null))
+        if (!(_genreContext!.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(song.Genre)) != null))
         {
             _logger.Info("Cannot delete the genre record because it does not exist");
             return;
         }
 
-        var genre = _genreContext.Genres.FirstOrDefault(gnr => gnr.GenreName.Equals(song.Genre));
+        var genre = _genreContext.Genres!.FirstOrDefault(gnr => gnr.GenreName!.Equals(song.Genre));
 
         if (SongsInGenre(genre!) <= 1)
         {
@@ -120,7 +120,7 @@ public class GenreManager : BaseManager
     private int SongsInGenre(Genre genre)
     {
         var sngContext = new SongContext(_connectionString!);
-        var songs = sngContext.Songs.Where(sng => sng.GenreId == genre.Id).ToList();
+        var songs = sngContext.Songs!.Where(sng => sng.GenreId == genre.Id).ToList();
 
         return songs.Count;
     }

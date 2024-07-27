@@ -80,7 +80,7 @@ public class Song
     {
         var fullPath = SongDirectory;
 
-        if (fullPath[fullPath.Length -1] != '/')
+        if (fullPath![fullPath.Length -1] != '/')
         {
             fullPath += "/";
         }
@@ -95,7 +95,6 @@ public class Song
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
         var filename = this.Generate(length, chars);
-        // var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
         var extension = this.DetermineFileExtension(flag);
 
         return includeExtension ? $"{filename}{extension}" : filename;
@@ -104,7 +103,6 @@ public class Song
     {
         int length = Constants.DirectoryPaths.FILENAME_LENGTH;
         string chars = Constants.DirectoryPaths.FILENAME_CHARACTERS;
-        // var extension = Icarus.Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION;
         var extension = this.DetermineFileExtension(flag);
         var filename = await Task.Run(() =>
         {

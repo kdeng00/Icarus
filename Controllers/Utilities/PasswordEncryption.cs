@@ -60,7 +60,7 @@ public class PasswordEncryption
             _logger.Error(exMsg, "An error occurred");
         }
 
-        return null;
+        return string.Empty;
     }
 
     string GenerateHash(string password, byte[] salt)

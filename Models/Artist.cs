@@ -6,12 +6,14 @@ namespace Icarus.Models;
 
 public class Artist
 {
+    #region Properties
     [JsonProperty("id")]
     public int Id { get; set; }
     [JsonProperty("name")]
     [Column("Artist")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     [JsonProperty("song_count")]
     [NotMapped]
     public int SongCount { get; set; }
+    #endregion
 }

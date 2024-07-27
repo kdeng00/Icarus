@@ -8,13 +8,13 @@ public class CoverArt
     [JsonProperty("id")]
     public int Id { get; set; }
     [JsonProperty("title")]
-    public string SongTitle { get; set; }
+    public string? SongTitle { get; set; }
     [JsonIgnore]
-    public string Directory { get; set; }
+    public string? Directory { get; set; }
     [JsonProperty("filename")]
-    public string Filename { get; set; }
+    public string? Filename { get; set; }
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
     #endregion
 
 
@@ -23,7 +23,7 @@ public class CoverArt
     {
         var fullPath = this.Directory;
 
-        if (fullPath[fullPath.Length -1] != '/')
+        if (fullPath![fullPath.Length -1] != '/')
         {
             fullPath += "/";
         }

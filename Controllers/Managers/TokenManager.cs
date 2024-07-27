@@ -15,16 +15,16 @@ namespace Icarus.Controllers.Managers;
 public class TokenManager : BaseManager
 {
     #region Fields
-    private string _clientId;
-    private string _clientSecret;
-    private string _privateKeyPath = string.Empty;
-    private string _privateKey = string.Empty;
-    private string _publicKeyPath = string.Empty;
-    private string _publicKey = string.Empty;
-    private string _audience;
-    private string _grantType;
-    private string _url;
-    private string SUCCESSFUL_TOKEN_MESSAGE = "Successfully retrieved token";
+    private string? _clientId;
+    private string? _clientSecret;
+    private string? _privateKeyPath = string.Empty;
+    private string? _privateKey = string.Empty;
+    private string? _publicKeyPath = string.Empty;
+    private string? _publicKey = string.Empty;
+    private string? _audience;
+    private string? _grantType;
+    private string? _url;
+    private string? SUCCESSFUL_TOKEN_MESSAGE = "Successfully retrieved token";
     #endregion
 
 
@@ -46,7 +46,7 @@ public class TokenManager : BaseManager
     {
         _logger.Info("Preparing Auth0 API request");
 
-        var client = new RestClient(_url);
+        var client = new RestClient(_url!);
         var request = new RestRequest("oauth/token", Method.POST);
         var tokenRequest = RetrieveTokenRequest();
 
@@ -68,7 +68,7 @@ public class TokenManager : BaseManager
             .DeserializeObject<TokenTierOne>(response.Content);
         _logger.Info("Response deserialized");
 
-        return this.InitializeLoginResult(user, tokenResult);
+        return this.InitializeLoginResult(user, tokenResult!);
     }
 
 
@@ -80,7 +80,7 @@ public class TokenManager : BaseManager
         payload.Add(new Claim("user_id", user.Id.ToString(), ClaimValueTypes.Integer));
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_config["JWT:Secret"]);
+        var key = Encoding.ASCII.GetBytes(_config!["JWT:Secret"]!);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
@@ -101,7 +101,7 @@ public class TokenManager : BaseManager
             return cl.Type.Equals("exp");
         });
 
-        var expiredDate = DateTime.Parse(expClaim.Value);
+        var expiredDate = DateTime.Parse(expClaim!.Value);
         var exp = Math.Floor((expiredDate - DateTime.UnixEpoch).TotalSeconds);
         tokenResult.Expiration = Convert.ToInt32(exp);
 
@@ -197,7 +197,7 @@ public class TokenManager : BaseManager
         var expiredDate = currentDate.AddMinutes(expLimit);
         var issuer = "http://localhost:5002";
         var audience = "http://localhost:5002";
-        var subject = _config["JWT:Subject"];
+        var subject = _config!["JWT:Subject"];
 
         var claim = new List<System.Security.Claims.Claim>()
         {
@@ -205,7 +205,7 @@ public class TokenManager : BaseManager
             new Claim(JwtRegisteredClaimNames.Exp, expiredDate.ToString()),
             new Claim(JwtRegisteredClaimNames.Aud, audience),
             new Claim(JwtRegisteredClaimNames.Iss, issuer),
-            new Claim(JwtRegisteredClaimNames.Sub, subject),
+            new Claim(JwtRegisteredClaimNames.Sub, subject!),
             new Claim(JwtRegisteredClaimNames.Iat, currentDate.ToString())
         };
 
@@ -233,7 +233,7 @@ public class TokenManager : BaseManager
     {
         _logger.Info("Analyzing Auth0 information");
 
-        _clientId = _config["Auth0:ClientId"];
+        _clientId = _config!["Auth0:ClientId"];
         _clientSecret = _config["Auth0:ClientSecret"];
         _audience = _config["Auth0:ApiIdentifier"];
         _grantType = "client_credentials";
@@ -258,23 +258,23 @@ public class TokenManager : BaseManager
     private class TokenRequest
     {
         [JsonProperty("client_id")]
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
         [JsonProperty("client_secret")]
-        public string ClientSecret { get; set; }
+        public string? ClientSecret { get; set; }
         [JsonProperty("audience")]
-        public string Audience { get; set; }
+        public string? Audience { get; set; }
         [JsonProperty("grant_type")]
-        public string GrantType { get; set; }
+        public string? GrantType { get; set; }
     }
 
     private class TokenTierOne
     {
         [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
         [JsonProperty("expires_in")]
         public int Expiration { get; set; }
         [JsonProperty("token_type")]
-        public string TokenType { get; set; }
+        public string? TokenType { get; set; }
     }
     #endregion
 }

@@ -4,14 +4,16 @@ namespace Icarus.Models;
 
 public class LoginResult : BaseResult
 {
+    #region Properties
     [JsonProperty("user_id")]
     public int UserId { get; set; }
     [JsonProperty("username")]
-    public string Username { get; set; }
+    public string? Username { get; set; }
     [JsonProperty("token")]
-    public string Token { get; set; }
+    public string? Token { get; set; }
     [JsonProperty("token_type")]
-    public string TokenType { get; set; }
+    public string? TokenType { get; set; }
     [JsonProperty("expiration")]
     public int Expiration { get; set; }
+    #endregion
 }

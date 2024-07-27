@@ -55,12 +55,12 @@ public class LoginController : ControllerBase
 
         try
         {
-            if (context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username)) != null)
+            if (context.Users.FirstOrDefault(usr => usr.Username!.Equals(user.Username)) != null)
             {
-                user = context.Users.FirstOrDefault(usr => usr.Username.Equals(user.Username))!;
+                user = context.Users.FirstOrDefault(usr => usr.Username!.Equals(user.Username))!;
 
                 var validatePass = new PasswordEncryption();
-                var validated = validatePass.VerifyPassword(user!, password);
+                var validated = validatePass.VerifyPassword(user!, password!);
                 if (!validated)
                 {
                     loginRes.Message = message;

@@ -8,9 +8,9 @@ namespace Icarus.Controllers.Utilities;
 public class MetadataRetriever
 {
     #region Fields
-    private static NLog.Logger _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-    private List<string> _supportedAudioFileTypes = new List<string> {"wav", "flac"};
-    private List<string> _supportedImageFileTypes = new List<string> {"jpeg", "jpg", "png"};
+    private static NLog.Logger? _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+    private List<string>? _supportedAudioFileTypes = new List<string> {"wav", "flac"};
+    private List<string>? _supportedImageFileTypes = new List<string> {"jpeg", "jpg", "png"};
     private Song? _updatedSong;
     private string? _message;
     private string? _title;
@@ -23,12 +23,12 @@ public class MetadataRetriever
 
 
     #region Properties
-    public Song UpdatedSongRecord
+    public Song? UpdatedSongRecord
     {
         get => _updatedSong;
         set => _updatedSong = value;
     }
-    public string Message
+    public string? Message
     {
         get => _message;
         set => _message = value;
@@ -99,9 +99,9 @@ public class MetadataRetriever
     public bool IsSupportedFile(IFormFile file)
     {
         var supportedTypes = this._supportedAudioFileTypes;
-        this._supportedImageFileTypes.ForEach(t => 
+        this._supportedImageFileTypes!.ForEach(t => 
         {
-            if (!supportedTypes.Contains(t))
+            if (!supportedTypes!.Contains(t))
             {
                 supportedTypes.Add(t);
             }
@@ -109,15 +109,15 @@ public class MetadataRetriever
 
         var extensionType = this.FileExtensionType(file).ToLower();
 
-        return supportedTypes.Contains(extensionType);
+        return supportedTypes!.Contains(extensionType);
     }
 
     public bool IsSupportedFile(string path)
     {
         var supportedTypes = this._supportedAudioFileTypes;
-        this._supportedImageFileTypes.ForEach(t => 
+        this._supportedImageFileTypes!.ForEach(t => 
         {
-            if (!supportedTypes.Contains(t))
+            if (!supportedTypes!.Contains(t))
             {
                 supportedTypes.Add(t);
             }
@@ -125,7 +125,7 @@ public class MetadataRetriever
 
         var extensionType = this.FileExtensionType(path).ToLower();
 
-        return supportedTypes.Contains(extensionType);
+        return supportedTypes!.Contains(extensionType);
     }
 
     public Song RetrieveMetaData(string filePath)
@@ -162,7 +162,7 @@ public class MetadataRetriever
             var msg = ex.Message;
             Console.WriteLine("An error occurred in MetadataRetriever");
             Console.WriteLine(msg);
-            _logger.Error(msg, "An error occurred in MetadataRetriever");
+            _logger!.Error(msg, "An error occurred in MetadataRetriever");
         }
 
         return song;
@@ -170,9 +170,8 @@ public class MetadataRetriever
 
     public int RetrieveSongDuration(string filepath)
     {
-        var duration = 0;
         var fileTag = TagLib.File.Create(filepath);
-        duration = (int)fileTag.Properties.Duration.TotalSeconds;
+        var duration = (int)fileTag.Properties.Duration.TotalSeconds;
 
         return duration;
     }
@@ -194,7 +193,7 @@ public class MetadataRetriever
         catch (Exception ex)
         {
             var msg = ex.Message;
-            _logger.Error(msg, "An error occurred in MetadataRetriever");
+            _logger!.Error(msg, "An error occurred in MetadataRetriever");
         }
 
         return [];
@@ -214,7 +213,7 @@ public class MetadataRetriever
         {
             var msg = ex.Message;
             Console.WriteLine($"An error occurred: {msg}");
-            _logger.Error(msg, "An error occurred");
+            _logger!.Error(msg, "An error occurred");
             Message = "Failed to update metadata";
         }
     }
@@ -253,7 +252,7 @@ public class MetadataRetriever
         try
         {
             Console.WriteLine($"Updating metadata of {title}");
-            _logger.Info($"Updating metadata of {title}");
+            _logger!.Info($"Updating metadata of {title}");
 
             foreach (var key in checkedValues.Keys)
             {
@@ -314,7 +313,7 @@ public class MetadataRetriever
         {
             var msg = ex.Message;
             Console.WriteLine($"An error occurred:\n{msg}");
-            _logger.Error(msg, "An error occurred");
+            _logger!.Error(msg, "An error occurred");
         }
     }
     private void InitializeUpdatedSong(Song song)
@@ -326,7 +325,7 @@ public class MetadataRetriever
     {
         var songValues = new SortedDictionary<string, bool>();
         Console.WriteLine("Checking for null data");
-        _logger.Info("Checking for null data");
+        _logger!.Info("Checking for null data");
 
         try
         {

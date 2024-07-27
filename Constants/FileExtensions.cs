@@ -3,7 +3,7 @@ namespace Icarus.Constants;
 public class FileExtensions
 {
     // Contains the default audio file extension with period at the beginning
-    public static string DEFAULT_AUDIO_EXTENSION = WAV_EXTENSION;
+    public static string DEFAULT_AUDIO_EXTENSION = WAV_EXTENSION!;
 
     // Contains file extension with period at the beginning
     public static string MP3_EXTENSION = ".mp3";

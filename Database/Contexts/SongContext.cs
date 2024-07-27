@@ -6,7 +6,7 @@ namespace Icarus.Database.Contexts;
 
 public class SongContext : DbContext
 {
-    public DbSet<Song> Songs { get; set; }
+    public DbSet<Song>? Songs { get; set; }
 
     public SongContext(string connString) : base(new DbContextOptionsBuilder<SongContext>()
                         .UseMySQL(connString).Options)
@@ -41,12 +41,13 @@ public class SongContext : DbContext
 
     public Song RetrieveRecord(Song song)
     {
-        return Songs.FirstOrDefault(sng => sng.Id == song.Id);
+        var sng = Songs!.FirstOrDefault(sng => sng.Id == song.Id);
+        return sng!;
     }
 
 
     public bool DoesRecordExist(Song song)
     {
-        return Songs.FirstOrDefault(sng => sng.Id == song.Id) != null ? true : false;
+        return Songs!.FirstOrDefault(sng => sng.Id == song.Id) != null ? true : false;
     }
 }

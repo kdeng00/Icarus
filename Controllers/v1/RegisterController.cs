@@ -11,7 +11,7 @@ namespace Icarus.Controllers.V1;
 public class RegisterController : ControllerBase
 {
     #region Fields
-    private IConfiguration _config;
+    private IConfiguration? _config;
     #endregion
 
 
@@ -35,11 +35,12 @@ public class RegisterController : ControllerBase
         user.Status = "Registered";
         user.DateCreated = DateTime.Now;
 
-        UserContext context = null;
+        UserContext? context = null;
 
         try
         {
-            context = new UserContext(_config.GetConnectionString("DefaultConnection"));
+            var connString = _config!.GetConnectionString("DefaultConnection");
+            context = new UserContext(connString!);
             context.Add(user);
             context.SaveChanges();
         }
@@ -56,7 +57,7 @@ public class RegisterController : ControllerBase
             Username = user.Username
         };
 
-        if (context.Users.FirstOrDefault(sng => sng.Username.Equals(user.Username)) != null)
+        if (context!.Users.FirstOrDefault(sng => sng.Username!.Equals(user.Username)) != null)
         {
             registerResult.Message = "Successful registration";
             registerResult.SuccessfullyRegistered = true;

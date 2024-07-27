@@ -6,7 +6,10 @@ namespace Icarus.Database.Contexts;
 
 public class GenreContext : DbContext
 {
-    public DbSet<Genre> Genres { get; set; }
+    #region Properties
+    public DbSet<Genre>? Genres { get; set; }
+    #endregion
+
     public GenreContext(DbContextOptions<GenreContext> options) : base(options) { }
     public GenreContext(string connString) : base(new DbContextOptionsBuilder<GenreContext>()
                         .UseMySQL(connString).Options)
@@ -22,11 +25,12 @@ public class GenreContext : DbContext
 
     public Genre RetrieveRecord(Genre genre)
     {
-        return Genres.FirstOrDefault(gnr => gnr.Id == genre.Id);
+        var gnre = Genres!.FirstOrDefault(gnr => gnr.Id == genre.Id);
+        return gnre!;
     }
 
     public bool DoesRecordExist(Genre genre)
     {
-        return Genres.FirstOrDefault(gnr => gnr.Id == genre.Id) != null ? true : false;
+        return Genres!.FirstOrDefault(gnr => gnr.Id == genre.Id) != null ? true : false;
     }
 }

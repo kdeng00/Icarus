@@ -11,7 +11,7 @@ namespace Icarus.Controllers.V1;
 public class SongStreamController : BaseController
 {
     #region Fields
-    private ILogger<SongStreamController> _logger;
+    private ILogger<SongStreamController>? _logger;
     #endregion
 
 
@@ -32,11 +32,11 @@ public class SongStreamController : BaseController
     [HttpGet("{id}")]
     public async Task<IActionResult> StreamSong(int id)
     {
-        var context = new SongContext(_config.GetConnectionString("DefaultConnection"));
+        var context = new SongContext(_config!.GetConnectionString("DefaultConnection")!);
 
-        var song = context.Songs.FirstOrDefault(sng => sng.Id == id);
+        var song = context.Songs!.FirstOrDefault(sng => sng.Id == id);
 
-        var stream = new FileStream(song.SongPath(), FileMode.Open, FileAccess.Read);
+        var stream = new FileStream(song!.SongPath(), FileMode.Open, FileAccess.Read);
         stream.Position = 0;
         var filename = song.Filename;
         
@@ -45,7 +45,7 @@ public class SongStreamController : BaseController
             filename = song.GenerateFilename();
         }
 
-        _logger.LogInformation("Starting to stream song...>");
+        _logger!.LogInformation("Starting to stream song...>");
         Console.WriteLine("Starting to streamsong...");
 
         return await Task.Run(() => {

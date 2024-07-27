@@ -13,9 +13,9 @@ namespace Icarus.Controllers.V1;
 public class SongController : BaseController
 {
     #region Fields
-    private readonly ILogger<SongController> _logger;
-    private string _connectionString;
-    private SongManager _songMgr;
+    private readonly ILogger<SongController>? _logger;
+    private string? _connectionString;
+    private SongManager? _songMgr;
     #endregion
 
 
@@ -40,11 +40,11 @@ public class SongController : BaseController
     public IActionResult GetSongs()
     {
         Console.WriteLine("Attemtping to retrieve songs");
-        _logger.LogInformation("Attempting to retrieve songs");
+        _logger!.LogInformation("Attempting to retrieve songs");
         
-        var context = new SongContext(_connectionString);
+        var context = new SongContext(_connectionString!);
 
-        var songs = context.Songs.ToList();
+        var songs = context.Songs!.ToList();
 
         if (songs.Count > 0)
         {
@@ -59,7 +59,7 @@ public class SongController : BaseController
     [HttpGet("{id}")]
     public IActionResult GetSong(int id)
     {
-        var context = new SongContext(_connectionString);
+        var context = new SongContext(_connectionString!);
         
         var song = context.RetrieveRecord(new Song{ Id = id });
 
@@ -76,9 +76,9 @@ public class SongController : BaseController
     {
         song.Id = id;
         Console.WriteLine("Retrieving filepath of song");
-        _logger.LogInformation("Retrieving filepath of song");
+        _logger!.LogInformation("Retrieving filepath of song");
 
-        if (!_songMgr.DoesSongExist(song))
+        if (!_songMgr!.DoesSongExist(song))
         {
             return NotFound(new SongResult
             {

@@ -7,14 +7,14 @@ namespace Icarus.Controllers.Utilities;
 public class SongCompression
 {
     #region Fields
-    string _compressedSongFilename;
-    string _tempDirectory;
-    byte[] _uncompressedSong;
+    string? _compressedSongFilename;
+    string? _tempDirectory;
+    byte[]? _uncompressedSong;
     #endregion
 
 
     #region Propterties
-    public string CompressedSongFilename
+    public string? CompressedSongFilename
     {
         get => _compressedSongFilename;
         set => _compressedSongFilename = value;
@@ -91,7 +91,7 @@ public class SongCompression
             Console.WriteLine(exMsg);
         }
 
-        if (songDetails.Filename.Contains(Constants.FileExtensions.WAV_EXTENSION))
+        if (songDetails.Filename!.Contains(Constants.FileExtensions.WAV_EXTENSION))
         {
             _compressedSongFilename = StripExtension(songDetails.Filename);
         }
@@ -102,7 +102,7 @@ public class SongCompression
     // Method not being used
     public byte[] CompressedSong(byte[] uncompressedSong)
     {
-        byte[] compressedSong = null;
+        byte[]? compressedSong = null;
         try
         {
             Console.WriteLine("Song has been successfully compressed");
@@ -114,7 +114,7 @@ public class SongCompression
             Console.WriteLine(exMsg);
         }
 
-        return compressedSong;
+        return compressedSong!;
     }
 
 

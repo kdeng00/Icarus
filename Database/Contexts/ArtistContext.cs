@@ -23,7 +23,7 @@ public class ArtistContext : DbContext
     public Artist RetrieveRecord(Artist artist)
     {
 
-        return Artists.FirstOrDefault(arst => arst.Id == artist.Id);
+        return Artists.FirstOrDefault(arst => arst.Id == artist.Id)!;
     }
 
 
