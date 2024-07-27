@@ -81,17 +81,14 @@ public class SongDataController : BaseController
     {
         try
         {
-            // Console.WriteLine("Uploading song...");
             _logger!.LogInformation("Uploading song...");
 
             var uploads = _songTempDir;
-            // Console.WriteLine($"Song Root Path {uploads}");
             _logger!.LogInformation($"Song root path {uploads}");
 
             foreach (var sng in songData)
                 if (sng.Length > 0)
                 {
-                    // Console.WriteLine($"Song filename {sng.FileName}");
                     _logger!.LogInformation($"Song filename {sng.FileName}");
 
                     _songMgr!.SaveSongToFileSystem(sng).Wait();
@@ -154,12 +151,9 @@ public class SongDataController : BaseController
                 switch (song.AudioType)
                 {
                     case "wav":
-                        // TODO: Identify the song file type. Then save the media.
-                        // Create a new method to save song flac files
                         song = _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
                     case "flac":
-                        // TODO: Skeleton method
                         song = _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
                     default:

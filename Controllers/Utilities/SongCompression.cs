@@ -1,5 +1,3 @@
-// using Ionic.Zip;
-
 using Icarus.Models;
 
 namespace Icarus.Controllers.Utilities;
@@ -73,14 +71,6 @@ public class SongCompression
                     }
                 }
             }
-            /*
-            var f = new Ionic.Zlib.ZlibStream();
-            using (ZipFile zip = new ZipFile())
-            {
-                zip.AddFile(songDetails.SongPath());
-                zip.Save(tmpZipFilePath);
-            }
-            */
 
             Console.WriteLine("Successfully compressed");
         }

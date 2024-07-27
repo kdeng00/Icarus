@@ -252,7 +252,6 @@ public class SongManager : BaseManager
         return song;
     }
 
-   // TODO: Needs to be implemented
    public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song) 
    {
         // Save temp song (Should already be saved to the filesystem by the time it gets to this method)
@@ -360,16 +359,7 @@ public class SongManager : BaseManager
             _logger.Info("Saving temp song: {0}", songPath);
             await songFile.CopyToAsync(filestream);
         }
-        // For audio files that already contain embedded metadata
-        /*
-        await Task.Run(() =>
-        {
-            MetadataRetriever meta = new MetadataRetriever();
-            song =  meta.RetrieveMetaData(song.SongPath());
-        });
-        */
 
-        // song.SongDirectory = _tempDirectoryRoot;
         song.DateCreated = DateTime.Now;
 
         return song;
