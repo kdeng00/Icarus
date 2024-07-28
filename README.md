@@ -111,6 +111,12 @@ The only requirement of the User is that the user should have full permissions t
 
 ### Migrations
 
+In order to utilize migrations the `dotnet-ef` tool needs to be installed. This can be done with the following command
+
+```BASH
+dotnet tool restore
+```
+
 Prior to starting the API, the Migrations must be applied. There are 6 tables with migrations being applied and thy are:
 * Users
 * Song
