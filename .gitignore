@@ -3,6 +3,7 @@
 ################################################################################
 
 /.vs/Icarus
+.vscode/*
 /bin/*
 /bin/Debug/netcoreapp2.2
 /Migrations
@@ -13,3 +14,7 @@
 /appsettings.Development.json
 appsettings.Development.json
 appsettings.json
+Icarus/bin
+Icarus/obj
+Models/bin
+Models/obj
