@@ -196,6 +196,7 @@ public class SongManager : BaseManager
     }
 
     // Change the name of this method to only focus on wav files
+    [Obsolete("Support for uplodaing wav files will end. Use the flac alternative instead - SaveFlacSongToFileSystem(..)")]
     public Song SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         if (string.IsNullOrEmpty(song.SongDirectory))
