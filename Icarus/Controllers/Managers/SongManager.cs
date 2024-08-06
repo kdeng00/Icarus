@@ -366,6 +366,27 @@ public class SongManager : BaseManager
         return song;
     }
 
+    public int Create(IFormFile file, string filePath, string prompt)
+    {
+        if (System.IO.File.Exists(filePath))
+        {
+            return 1;
+        }
+
+        using (var filestream = new FileStream(filePath, FileMode.Create))
+        {
+            Console.WriteLine(prompt);
+            file.CopyTo(filestream);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                return 2;
+            }
+        }
+
+        return 0;
+    }
+
 
     private bool SongRecordChanged(Song currentSong, Song songUpdates)
     {
