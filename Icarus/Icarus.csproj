@@ -32,6 +32,11 @@
     <PackageReference Include="system.text.encoding.codepages" Version="8.0.0" />
     <PackageReference Include="taglib" Version="2.1.0" />
   </ItemGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="..\Models\Models.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Update="nlog.config" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Images/Stock/*.*" CopyToOutputDirectory="PreserveNewest" />
