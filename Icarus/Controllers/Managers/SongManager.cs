@@ -196,6 +196,7 @@ public class SongManager : BaseManager
     }
 
     // Change the name of this method to only focus on wav files
+    [Obsolete("Support for uplodaing wav files will end. Use the flac alternative instead - SaveFlacSongToFileSystem(..)")]
     public Song SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         if (string.IsNullOrEmpty(song.SongDirectory))
@@ -363,6 +364,27 @@ public class SongManager : BaseManager
         song.DateCreated = DateTime.Now;
 
         return song;
+    }
+
+    public int Create(IFormFile file, string filePath, string prompt)
+    {
+        if (System.IO.File.Exists(filePath))
+        {
+            return 1;
+        }
+
+        using (var filestream = new FileStream(filePath, FileMode.Create))
+        {
+            Console.WriteLine(prompt);
+            file.CopyTo(filestream);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                return 2;
+            }
+        }
+
+        return 0;
     }
 
 
