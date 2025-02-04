@@ -40,23 +40,23 @@ public class SongDataController : BaseController
     public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString!);
-        var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
-        
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
+
         var song = _songMgr!.RetrieveSong(songMetaData).Result;
         string filename;
 
         switch (songMetaData.AudioType)
         {
             case "wav":
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
             case "flac":
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.FLAC_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.FLAC_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
             default:
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
         }
@@ -178,7 +178,7 @@ public class SongDataController : BaseController
     {
         var songContext = new SongContext(_connectionString!);
 
-        var songMetaData = new Song{ Id = id };
+        var songMetaData = new Song { Id = id };
         Console.WriteLine($"Id {songMetaData.Id}");
 
         songMetaData = songContext.RetrieveRecord(songMetaData);
