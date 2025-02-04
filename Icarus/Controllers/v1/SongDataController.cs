@@ -152,7 +152,8 @@ public class SongDataController : BaseController
                 {
                     case "wav":
                         // song = _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
-                        // TODO: Make sure the tmp file gets deleted
+                        // TODO: Make sure the tmp file gets deleted. Check
+                        var _ = _songMgr.DeleteSongFromFileSystem(tmpSong);
                         return BadRequest("No support for .wav files");
                     case "flac":
                         song = _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
