@@ -253,8 +253,8 @@ public class SongManager : BaseManager
         return song;
     }
 
-   public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song) 
-   {
+    public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
+    {
         // Save temp song (Should already be saved to the filesystem by the time it gets to this method)
         // Save cover art
         // Update the song's metadata with the song object
@@ -284,10 +284,10 @@ public class SongManager : BaseManager
         SaveSongToDatabase(song, coverArt);
 
         return song;
-   }
+    }
 
-   private void MoveSongToFinalDestination(string sourcePath, string targetPath)
-   {
+    private void MoveSongToFinalDestination(string sourcePath, string targetPath)
+    {
         using (var fileStream = new FileStream(targetPath, FileMode.Create))
         {
             var songBytes = System.IO.File.ReadAllBytes(sourcePath);
@@ -316,8 +316,8 @@ public class SongManager : BaseManager
 
             _logger.Info("Song successfully saved to filesystem");
         }
-   }
-    
+    }
+
     public async Task<SongData> RetrieveSong(Song songMetaData)
     {
         var song = new SongData();
@@ -341,7 +341,7 @@ public class SongManager : BaseManager
     private async Task<SongData> RetrieveSongFromFileSystem(Song details)
     {
         byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath());
-        
+
         return new SongData
         {
             Data = uncompressedSong
@@ -366,11 +366,12 @@ public class SongManager : BaseManager
         return song;
     }
 
-    public int Create(IFormFile file, string filePath, string prompt)
+
+    public CreateFileResult Create(IFormFile file, string filePath, string prompt)
     {
         if (System.IO.File.Exists(filePath))
         {
-            return 1;
+            return CreateFileResult.AlreadyExists;
         }
 
         using (var filestream = new FileStream(filePath, FileMode.Create))
@@ -380,7 +381,7 @@ public class SongManager : BaseManager
 
             if (System.IO.File.Exists(filePath))
             {
-                return 2;
+                return CreateFileResult.FileCreatedAndExists;
             }
         }
 
@@ -424,9 +425,9 @@ public class SongManager : BaseManager
             Console.WriteLine($"Error Occurred: {ex.Message}");
         }
     }
-    
 
-    
+
+
     private void SaveSongToDatabase(Song song, CoverArt? cover)
     {
         _logger.Info("Starting process to save the song to the database");
@@ -447,7 +448,7 @@ public class SongManager : BaseManager
 
         coverMgr.SaveCoverArtToDatabase(ref song, ref cover!);
     }
-    
+
 
     private bool DeleteSongFromFilesystem(Song song, bool deleteDirectory = false)
     {
@@ -461,7 +462,7 @@ public class SongManager : BaseManager
 
             DeleteEmptyDirectories(ref song, ref song);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             var msg = ex.Message;
             _logger.Error(msg, "An error occurred when attempting to delete the song from the filesystem");
@@ -485,7 +486,7 @@ public class SongManager : BaseManager
         return true;
     }
 
-    
+
     private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, ref SongResult result)
     {
         var updatedSongRecord = oldSongRecord;
