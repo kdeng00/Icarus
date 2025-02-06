@@ -3,8 +3,18 @@ using NLog;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
+using TagLib.Mpeg4;
 
 namespace Icarus.Controllers.Managers;
+
+
+public enum CreateFileResult
+{
+    Unknown = 0,
+    AlreadyExists = 1,
+    FileCreatedAndExists = 2
+}
+
 
 public class SongManager : BaseManager
 {
@@ -107,7 +117,7 @@ public class SongManager : BaseManager
         try
         {
             var songPath = songMetaData.SongPath();
-            File.Delete(songPath);
+            System.IO.File.Delete(songPath);
             successful = true;
             DirectoryManager dirMgr = new DirectoryManager(_config!, songMetaData);
             dirMgr.DeleteEmptyDirectories();
