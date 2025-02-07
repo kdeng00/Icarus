@@ -8,14 +8,6 @@ using TagLib.Mpeg4;
 namespace Icarus.Controllers.Managers;
 
 
-public enum CreateFileResult
-{
-    Unknown = 0,
-    AlreadyExists = 1,
-    FileCreatedAndExists = 2
-}
-
-
 public class SongManager : BaseManager
 {
     #region Fields
@@ -377,7 +369,7 @@ public class SongManager : BaseManager
     }
 
 
-    public CreateFileResult Create(IFormFile file, string filePath, string prompt)
+    public Icarus.Models.CreateFileResult Create(IFormFile file, string filePath, string prompt)
     {
         if (System.IO.File.Exists(filePath))
         {
