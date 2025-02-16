@@ -14,8 +14,8 @@ public class CoverArtContext : DbContext
     public CoverArtContext(string connString) : base(new DbContextOptionsBuilder<CoverArtContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
-    
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CoverArt>()

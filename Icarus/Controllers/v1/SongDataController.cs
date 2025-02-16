@@ -7,6 +7,8 @@ using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1;
 
+
+
 [Route("api/v1/song/data")]
 [ApiController]
 [Authorize]
@@ -40,23 +42,23 @@ public class SongDataController : BaseController
     public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString!);
-        var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
-        
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
+
         var song = _songMgr!.RetrieveSong(songMetaData).Result;
         string filename;
 
         switch (songMetaData.AudioType)
         {
             case "wav":
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.WAV_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
             case "flac":
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.FLAC_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.FLAC_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
             default:
-                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION, 
+                filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.DEFAULT_AUDIO_EXTENSION,
                     songMetaData.Title!, randomizeFilename);
                 break;
         }
@@ -151,8 +153,13 @@ public class SongDataController : BaseController
                 switch (song.AudioType)
                 {
                     case "wav":
-                        song = _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
-                        break;
+                        var _ = _songMgr.DeleteSongFromFileSystem(tmpSong);
+                        return BadRequest(new UploadSongWithDataResponse
+                        {
+                            Subject = "No longer supported",
+                            Message = "No support for .wav files",
+                            Songs = new List<Song>()
+                        });
                     case "flac":
                         song = _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
@@ -176,7 +183,7 @@ public class SongDataController : BaseController
     {
         var songContext = new SongContext(_connectionString!);
 
-        var songMetaData = new Song{ Id = id };
+        var songMetaData = new Song { Id = id };
         Console.WriteLine($"Id {songMetaData.Id}");
 
         songMetaData = songContext.RetrieveRecord(songMetaData);
@@ -206,5 +213,17 @@ public class SongDataController : BaseController
         public IFormFile? CoverArtData { get; set; }
         [FromForm(Name = "metadata")]
         public string? SongFile { get; set; }
+    }
+
+    public class UploadSongWithDataResponse
+    {
+        #region Properties
+        [Newtonsoft.Json.JsonProperty("message")]
+        public string Message { get; set; }
+        [Newtonsoft.Json.JsonProperty("subject")]
+        public string Subject { get; set; }
+        [Newtonsoft.Json.JsonProperty("data")]
+        public List<Song> Songs { get; set; }
+        #endregion
     }
 }

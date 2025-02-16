@@ -3,8 +3,10 @@ using NLog;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
+using TagLib.Mpeg4;
 
 namespace Icarus.Controllers.Managers;
+
 
 public class SongManager : BaseManager
 {
@@ -107,11 +109,18 @@ public class SongManager : BaseManager
         try
         {
             var songPath = songMetaData.SongPath();
-            File.Delete(songPath);
-            successful = true;
+            System.IO.File.Delete(songPath);
+            successful = !System.IO.File.Exists(songPath);
+            if (successful)
+            {
+                Console.WriteLine("Song successfully deleted");
+            }
             DirectoryManager dirMgr = new DirectoryManager(_config!, songMetaData);
-            dirMgr.DeleteEmptyDirectories();
-            Console.WriteLine("Song successfully deleted");
+            var deletedAmount = dirMgr.DeleteEmptyDirectories(songMetaData.SongDirectory, 1);
+            if (deletedAmount > 0)
+            {
+                Console.WriteLine($"{deletedAmount} directories deleted");
+            }
         }
         catch (Exception ex)
         {
@@ -196,6 +205,7 @@ public class SongManager : BaseManager
     }
 
     // Change the name of this method to only focus on wav files
+    [Obsolete("Support for uplodaing wav files will end. Use the flac alternative instead - SaveFlacSongToFileSystem(..)")]
     public Song SaveSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         if (string.IsNullOrEmpty(song.SongDirectory))
@@ -252,8 +262,8 @@ public class SongManager : BaseManager
         return song;
     }
 
-   public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song) 
-   {
+    public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
+    {
         // Save temp song (Should already be saved to the filesystem by the time it gets to this method)
         // Save cover art
         // Update the song's metadata with the song object
@@ -283,10 +293,10 @@ public class SongManager : BaseManager
         SaveSongToDatabase(song, coverArt);
 
         return song;
-   }
+    }
 
-   private void MoveSongToFinalDestination(string sourcePath, string targetPath)
-   {
+    private void MoveSongToFinalDestination(string sourcePath, string targetPath)
+    {
         using (var fileStream = new FileStream(targetPath, FileMode.Create))
         {
             var songBytes = System.IO.File.ReadAllBytes(sourcePath);
@@ -315,8 +325,8 @@ public class SongManager : BaseManager
 
             _logger.Info("Song successfully saved to filesystem");
         }
-   }
-    
+    }
+
     public async Task<SongData> RetrieveSong(Song songMetaData)
     {
         var song = new SongData();
@@ -340,7 +350,7 @@ public class SongManager : BaseManager
     private async Task<SongData> RetrieveSongFromFileSystem(Song details)
     {
         byte[] uncompressedSong = await System.IO.File.ReadAllBytesAsync(details.SongPath());
-        
+
         return new SongData
         {
             Data = uncompressedSong
@@ -363,6 +373,28 @@ public class SongManager : BaseManager
         song.DateCreated = DateTime.Now;
 
         return song;
+    }
+
+
+    public Icarus.Models.CreateFileResult Create(IFormFile file, string filePath, string prompt)
+    {
+        if (System.IO.File.Exists(filePath))
+        {
+            return CreateFileResult.AlreadyExists;
+        }
+
+        using (var filestream = new FileStream(filePath, FileMode.Create))
+        {
+            Console.WriteLine(prompt);
+            file.CopyTo(filestream);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                return CreateFileResult.FileCreatedAndExists;
+            }
+        }
+
+        return 0;
     }
 
 
@@ -402,9 +434,9 @@ public class SongManager : BaseManager
             Console.WriteLine($"Error Occurred: {ex.Message}");
         }
     }
-    
 
-    
+
+
     private void SaveSongToDatabase(Song song, CoverArt? cover)
     {
         _logger.Info("Starting process to save the song to the database");
@@ -425,7 +457,7 @@ public class SongManager : BaseManager
 
         coverMgr.SaveCoverArtToDatabase(ref song, ref cover!);
     }
-    
+
 
     private bool DeleteSongFromFilesystem(Song song, bool deleteDirectory = false)
     {
@@ -439,7 +471,7 @@ public class SongManager : BaseManager
 
             DeleteEmptyDirectories(ref song, ref song);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             var msg = ex.Message;
             _logger.Error(msg, "An error occurred when attempting to delete the song from the filesystem");
@@ -463,7 +495,7 @@ public class SongManager : BaseManager
         return true;
     }
 
-    
+
     private void UpdateSongInDatabase(ref Song oldSongRecord, ref Song newSongRecord, ref SongResult result)
     {
         var updatedSongRecord = oldSongRecord;

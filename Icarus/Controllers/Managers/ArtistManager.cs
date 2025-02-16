@@ -84,7 +84,7 @@ public class ArtistManager : BaseManager
 
             _artistContext.Add(newArtistRecord);
             _artistContext.SaveChanges();
-            
+
             return newArtistRecord;
         }
         else

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Icarus.Models;
-        
+
 namespace Icarus.Database.Contexts;
 
 public class SongContext : DbContext
@@ -11,7 +11,7 @@ public class SongContext : DbContext
     public SongContext(string connString) : base(new DbContextOptionsBuilder<SongContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
+    }
 
 
     public SongContext(DbContextOptions<SongContext> options) : base(options) { }

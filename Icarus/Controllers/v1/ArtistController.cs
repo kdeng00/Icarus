@@ -49,7 +49,7 @@ public class ArtistController : BaseController
     public IActionResult GetArtist(int id)
     {
         Artist artist = new Artist { Id = id };
-        
+
         var artistContext = new ArtistContext(_connectionString!);
 
         if (artistContext.DoesRecordExist(artist))

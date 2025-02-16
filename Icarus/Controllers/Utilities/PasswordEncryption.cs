@@ -70,14 +70,14 @@ public class PasswordEncryption
             password: password, salt: salt,
             prf: KeyDerivationPrf.HMACSHA1,
             iterationCount: 10000,
-            numBytesRequested: 256/8));
+            numBytesRequested: 256 / 8));
 
         return hashed;
     }
 
     byte[] GenerateSalt()
     {
-        byte[] salt = new byte[128/8];
+        byte[] salt = new byte[128 / 8];
 
         using (var rng = RandomNumberGenerator.Create())
             rng.GetBytes(salt);

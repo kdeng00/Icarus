@@ -41,7 +41,7 @@ public class SongController : BaseController
     {
         Console.WriteLine("Attemtping to retrieve songs");
         _logger!.LogInformation("Attempting to retrieve songs");
-        
+
         var context = new SongContext(_connectionString!);
 
         var songs = context.Songs!.ToList();
@@ -60,8 +60,8 @@ public class SongController : BaseController
     public IActionResult GetSong(int id)
     {
         var context = new SongContext(_connectionString!);
-        
-        var song = context.RetrieveRecord(new Song{ Id = id });
+
+        var song = context.RetrieveRecord(new Song { Id = id });
 
         Console.WriteLine("Here");
 

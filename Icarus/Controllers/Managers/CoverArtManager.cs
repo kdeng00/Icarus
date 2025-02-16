@@ -48,7 +48,7 @@ public class CoverArtManager : BaseManager
         try
         {
             var stockCoverArtPath = _rootCoverArtPath + _filename;
-            if (!string.Equals(stockCoverArtPath, coverArt.ImagePath(), 
+            if (!string.Equals(stockCoverArtPath, coverArt.ImagePath(),
                         StringComparison.CurrentCultureIgnoreCase))
             {
                 _logger.Info("Song does not contain the stock cover art");
@@ -87,7 +87,7 @@ public class CoverArtManager : BaseManager
 
             var metaData = new MetadataRetriever();
             var imgBytes = metaData.RetrieveCoverArtBytes(song);
-            
+
             if (imgBytes != null)
             {
                 _logger.Info("Saving cover art to the filesystem");
@@ -121,7 +121,7 @@ public class CoverArtManager : BaseManager
             var msg = ex.Message;
             _logger.Error(msg, "An error occurred");
         }
-        
+
         return null;
     }
 
@@ -173,7 +173,7 @@ public class CoverArtManager : BaseManager
 
         if (!File.Exists(_rootCoverArtPath + _filename))
         {
-            File.WriteAllBytes(_rootCoverArtPath + _filename, 
+            File.WriteAllBytes(_rootCoverArtPath + _filename,
                     _stockCoverArt!);
             Console.WriteLine("Copied Stock Cover Art");
         }

@@ -20,7 +20,7 @@ public class BaseController : ControllerBase
         const string otherTokenType = "Jwt";
 
         var req = Request;
-        var auth = req.Headers.Authorization; 
+        var auth = req.Headers.Authorization;
         var val = auth.ToString();
 
         if ((val.Contains(tokenType) || val.Contains(otherTokenType)) && val.Split(" ").Count() > 1)
@@ -31,7 +31,7 @@ public class BaseController : ControllerBase
 
 
         return token;
-    } 
+    }
 
     #endregion
 }

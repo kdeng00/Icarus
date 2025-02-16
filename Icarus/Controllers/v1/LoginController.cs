@@ -44,7 +44,7 @@ public class LoginController : ControllerBase
         var context = new UserContext(_connectionString!);
 
         _logger.LogInformation("Starting process of validating credentials");
-        
+
         var message = "Invalid credentials";
         var password = user.Password;
 

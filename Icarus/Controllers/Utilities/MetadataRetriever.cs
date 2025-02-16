@@ -9,8 +9,8 @@ public class MetadataRetriever
 {
     #region Fields
     private static NLog.Logger? _logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-    private List<string>? _supportedAudioFileTypes = new List<string> {"wav", "flac"};
-    private List<string>? _supportedImageFileTypes = new List<string> {"jpeg", "jpg", "png"};
+    private List<string>? _supportedAudioFileTypes = new List<string> { "wav", "flac" };
+    private List<string>? _supportedImageFileTypes = new List<string> { "jpeg", "jpg", "png" };
     private Song? _updatedSong;
     private string? _message;
     private string? _title;
@@ -99,7 +99,7 @@ public class MetadataRetriever
     public bool IsSupportedFile(IFormFile file)
     {
         var supportedTypes = this._supportedAudioFileTypes;
-        this._supportedImageFileTypes!.ForEach(t => 
+        this._supportedImageFileTypes!.ForEach(t =>
         {
             if (!supportedTypes!.Contains(t))
             {
@@ -115,7 +115,7 @@ public class MetadataRetriever
     public bool IsSupportedFile(string path)
     {
         var supportedTypes = this._supportedAudioFileTypes;
-        this._supportedImageFileTypes!.ForEach(t => 
+        this._supportedImageFileTypes!.ForEach(t =>
         {
             if (!supportedTypes!.Contains(t))
             {
@@ -199,7 +199,7 @@ public class MetadataRetriever
         return [];
     }
 
-    
+
     public void UpdateMetadata(Song updatedSong, Song oldSong)
     {
         try
@@ -267,7 +267,7 @@ public class MetadataRetriever
                             break;
                         case "artists":
                             _updatedSong!.Artist = artist;
-                            fileTag.Tag.Performers = new []{artist};
+                            fileTag.Tag.Performers = new[] { artist };
                             break;
                         case "album":
                             _updatedSong!.AlbumTitle = album;
@@ -275,7 +275,7 @@ public class MetadataRetriever
                             break;
                         case "genre":
                             _updatedSong!.Genre = genre;
-                            fileTag.Tag.Genres = new []{genre};
+                            fileTag.Tag.Genres = new[] { genre };
                             break;
                         case "year":
                             _updatedSong!.Year = year;
@@ -283,7 +283,7 @@ public class MetadataRetriever
                             break;
                         case "albumartist":
                             _updatedSong!.AlbumArtist = albumArtist;
-                            fileTag.Tag.AlbumArtists = new []{albumArtist};
+                            fileTag.Tag.AlbumArtists = new[] { albumArtist };
                             break;
                         case "track":
                             _updatedSong!.Track = track;
@@ -352,7 +352,7 @@ public class MetadataRetriever
         }
 
         return songValues;
-    }    
+    }
 
     private bool CheckIntField(int? value)
     {

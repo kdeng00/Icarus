@@ -58,7 +58,7 @@ public class GenreController : BaseController
 
         if (genreStore.DoesRecordExist(genre))
         {
-            genre =  genreStore.RetrieveRecord(genre);
+            genre = genreStore.RetrieveRecord(genre);
 
             return Ok(genre);
         }

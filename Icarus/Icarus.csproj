@@ -34,8 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-      <ProjectReference Include="..\Models\Models.csproj" />
+    <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
+
 
   <ItemGroup>
     <Content Update="nlog.config" CopyToOutputDirectory="PreserveNewest" />

@@ -63,7 +63,7 @@ public class CoverArtController : BaseController
             var coverArtBytes = System.IO.File.ReadAllBytes(
                     coverArt.ImagePath());
 
-            return File(coverArtBytes, "application/x-msdownload", 
+            return File(coverArtBytes, "application/x-msdownload",
                     coverArt.SongTitle);
         }
         else
@@ -78,14 +78,14 @@ public class CoverArtController : BaseController
     {
         var songContext = new SongContext(_connectionString!);
         var covMgr = new CoverArtManager(this._config!);
-        
-        var songMetaData = songContext.RetrieveRecord(new Song { Id = id});
+
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
         var c = covMgr.GetCoverArt(songMetaData);
 
         var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.JPG_EXTENSION, songMetaData.Title!, randomizeFilename);
 
         var data = await c.GetData();
-        
+
         return File(data, "application/x-msdownload", filename);
     }
     #endregion

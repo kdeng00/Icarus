@@ -80,7 +80,7 @@ public class Song
     {
         var fullPath = SongDirectory;
 
-        if (fullPath![fullPath.Length -1] != '/')
+        if (fullPath![fullPath.Length - 1] != '/')
         {
             fullPath += "/";
         }
@@ -112,6 +112,27 @@ public class Song
         return includeExtension ? $"{filename}{extension}" : filename;
     }
 
+    public CreateSongResult Create(Microsoft.AspNetCore.Http.IFormFile file, string filePath, string prompt)
+    {
+        if (System.IO.File.Exists(filePath))
+        {
+            return CreateSongResult.AlreadyExists;
+        }
+
+        using (var filestream = new FileStream(filePath, FileMode.Create))
+        {
+            Console.WriteLine(prompt);
+            file.CopyTo(filestream);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                return CreateSongResult.Created;
+            }
+        }
+
+        return CreateSongResult.NotCreated;
+    }
+
     private string DetermineFileExtension(AudioFileExtensionsType flag)
     {
         switch (flag)
@@ -135,11 +156,22 @@ public class Song
         return filename;
     }
     #endregion
+
 }
 
+#region Enums
 public enum AudioFileExtensionsType
 {
     Default = 0,
     WAV = 1,
     FLAC = 2
 }
+
+public enum CreateSongResult
+{
+    NotCreated = 0,
+    AlreadyExists = 1,
+    Created = 2
+}
+#endregion
+
