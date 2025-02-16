@@ -119,29 +119,25 @@ public class DirectoryManager : BaseManager
     public int DeleteEmptyDirectories(string? directory, int level)
     {
         var deleted = 0;
+
         try
         {
-
             var curDir = directory;
             for (var i = 0; i < level; i++)
             {
-
                 if (!System.IO.Directory.Exists(curDir))
                 {
-                    // return deleted;
                     continue;
                 }
 
                 if (this.IsDirectoryEmpty(curDir))
                 {
                     System.IO.Directory.Delete(curDir);
+                    deleted++;
                 }
 
                 curDir = System.IO.Directory.GetParent(curDir).ToString();
-
             }
-
-
         }
         catch (Exception ex)
         {
