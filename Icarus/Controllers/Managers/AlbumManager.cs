@@ -85,7 +85,7 @@ public class AlbumManager : BaseManager
         if (string.IsNullOrEmpty(newAlbumTitle))
             newAlbumTitle = oldAlbumTitle;
 
-        if ((string.IsNullOrEmpty(newAlbumTitle) && string.IsNullOrEmpty(newAlbumArtist) || 
+        if ((string.IsNullOrEmpty(newAlbumTitle) && string.IsNullOrEmpty(newAlbumArtist) ||
                     oldAlbumTitle!.Equals(newAlbumTitle) && oldAlbumArtist!.Equals(newAlbumArtist)))
         {
             _logger.Info("No change to the song's album");

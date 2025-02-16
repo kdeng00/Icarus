@@ -53,7 +53,7 @@ public class DirectoryManager : BaseManager
 
     public static string GenerateDownloadFilename(int length, string extension, string title, bool? randomize)
     {
-        if (randomize.HasValue && randomize.Value) 
+        if (randomize.HasValue && randomize.Value)
         {
             return GenerateFilename(length) + extension;
         }
@@ -100,13 +100,13 @@ public class DirectoryManager : BaseManager
             var artistDirectory = ArtistDirectory();
             if (IsDirectoryEmpty(albumDirectory))
             {
-                    Directory.Delete(albumDirectory);
-                    Console.WriteLine($"directory {albumDirectory} deleted");
+                Directory.Delete(albumDirectory);
+                Console.WriteLine($"directory {albumDirectory} deleted");
             }
             if (IsDirectoryEmpty(artistDirectory))
             {
-                    Directory.Delete(artistDirectory);
-                    Console.WriteLine($"directory {artistDirectory} deleted");
+                Directory.Delete(artistDirectory);
+                Console.WriteLine($"directory {artistDirectory} deleted");
             }
         }
         catch (Exception ex)
@@ -114,6 +114,42 @@ public class DirectoryManager : BaseManager
             var exMsg = ex.Message;
             Console.WriteLine($"An error occurred {exMsg}");
         }
+    }
+
+    public int DeleteEmptyDirectories(string? directory, int level)
+    {
+        var deleted = 0;
+        try
+        {
+
+            var curDir = directory;
+            for (var i = 0; i < level; i++)
+            {
+
+                if (!System.IO.Directory.Exists(curDir))
+                {
+                    // return deleted;
+                    continue;
+                }
+
+                if (this.IsDirectoryEmpty(curDir))
+                {
+                    System.IO.Directory.Delete(curDir);
+                }
+
+                curDir = System.IO.Directory.GetParent(curDir).ToString();
+
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            var exMsg = ex.Message;
+            Console.WriteLine($"An error occurred {exMsg}");
+        }
+
+        return deleted;
     }
 
     public void DeleteEmptyDirectories(Song song)
@@ -125,12 +161,12 @@ public class DirectoryManager : BaseManager
 
             if (IsDirectoryEmpty(albumDirectory))
             {
-                    Directory.Delete(albumDirectory);
+                Directory.Delete(albumDirectory);
                 _logger.Info("Album directory deleted");
             }
             if (IsDirectoryEmpty(artistDirectory))
             {
-                    Directory.Delete(artistDirectory);
+                Directory.Delete(artistDirectory);
                 _logger.Info("Artist directory deleted");
             }
         }
@@ -187,7 +223,7 @@ public class DirectoryManager : BaseManager
 
     private class DirEnt
     {
-        public string? Pre { get; set;}
+        public string? Pre { get; set; }
         public string? Path { get; set; }
         public string? Post { get; set; }
     }

@@ -7,6 +7,8 @@ using Icarus.Database.Contexts;
 
 namespace Icarus.Controllers.V1;
 
+
+
 [Route("api/v1/song/data")]
 [ApiController]
 [Authorize]
@@ -151,10 +153,13 @@ public class SongDataController : BaseController
                 switch (song.AudioType)
                 {
                     case "wav":
-                        // song = _songMgr.SaveSongToFileSystem(up.SongData, up.CoverArtData, song);
-                        // TODO: Make sure the tmp file gets deleted. Check
                         var _ = _songMgr.DeleteSongFromFileSystem(tmpSong);
-                        return BadRequest("No support for .wav files");
+                        return BadRequest(new UploadSongWithDataResponse
+                        {
+                            Subject = "No longer supported",
+                            Message = "No support for .wav files",
+                            Songs = new List<Song>()
+                        });
                     case "flac":
                         song = _songMgr.SaveFlacSongToFileSystem(up.SongData, up.CoverArtData, song);
                         break;
@@ -208,5 +213,17 @@ public class SongDataController : BaseController
         public IFormFile? CoverArtData { get; set; }
         [FromForm(Name = "metadata")]
         public string? SongFile { get; set; }
+    }
+
+    public class UploadSongWithDataResponse
+    {
+        #region Properties
+        [Newtonsoft.Json.JsonProperty("message")]
+        public string Message { get; set; }
+        [Newtonsoft.Json.JsonProperty("subject")]
+        public string Subject { get; set; }
+        [Newtonsoft.Json.JsonProperty("data")]
+        public List<Song> Songs { get; set; }
+        #endregion
     }
 }

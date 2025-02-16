@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Icarus.Models;
-        
+
 namespace Icarus.Database.Contexts;
 
 public class UserContext : DbContext
@@ -15,7 +15,7 @@ public class UserContext : DbContext
     public UserContext(string connString) : base(new DbContextOptionsBuilder<UserContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
+    }
     #endregion
 
 
@@ -29,7 +29,7 @@ public class UserContext : DbContext
             .Property(u => u.DateCreated).HasDefaultValue(DateTime.Now);
     }
 
-    
+
     public User RetrieveRecord(User user)
     {
         return Users.FirstOrDefault(usr => usr.Id == user.Id)!;

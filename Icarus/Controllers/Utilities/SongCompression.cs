@@ -43,10 +43,10 @@ public class SongCompression
         {
             var archivePath = RetrieveCompressesSongPath(song);
             Console.WriteLine($"Compressed song saved to: {archivePath}");
-            
+
             songData.Data = await System.IO.File.ReadAllBytesAsync(archivePath);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             var exMsg = ex.Message;
             Console.WriteLine($"An error ocurred: \n{exMsg}");

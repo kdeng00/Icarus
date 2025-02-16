@@ -18,3 +18,7 @@ Icarus/bin
 Icarus/obj
 Models/bin
 Models/obj
+Migrations
+Icarus.txt
+Storage
+.DS_Store

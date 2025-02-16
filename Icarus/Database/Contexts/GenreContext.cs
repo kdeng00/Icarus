@@ -14,7 +14,7 @@ public class GenreContext : DbContext
     public GenreContext(string connString) : base(new DbContextOptionsBuilder<GenreContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

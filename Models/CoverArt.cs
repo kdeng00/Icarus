@@ -23,7 +23,7 @@ public class CoverArt
     {
         var fullPath = this.Directory;
 
-        if (fullPath![fullPath.Length -1] != '/')
+        if (fullPath![fullPath.Length - 1] != '/')
         {
             fullPath += "/";
         }

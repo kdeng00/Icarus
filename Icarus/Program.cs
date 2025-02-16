@@ -62,6 +62,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
+    var audience = Configuration["JWT:Audience"];
+    var issuer = Configuration["JWT:Issuer"];
     options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidateIssuer = true,

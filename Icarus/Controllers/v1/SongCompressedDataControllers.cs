@@ -42,11 +42,11 @@ public class SongCompressedDataController : BaseController
         var context = new SongContext(_connectionString!);
 
         SongCompression cmp = new SongCompression(_archiveDir!);
-    
+
         Console.WriteLine($"Archive directory root: {_archiveDir}");
 
         Console.WriteLine("Starting process of retrieving comrpessed song");
-        var sng = context.RetrieveRecord(new Song{ Id = id });
+        var sng = context.RetrieveRecord(new Song { Id = id });
         SongData song = await cmp.RetrieveCompressedSong(sng);
 
         var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title!, randomizeFilename);

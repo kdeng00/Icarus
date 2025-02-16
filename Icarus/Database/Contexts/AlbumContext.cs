@@ -12,7 +12,7 @@ public class AlbumContext : DbContext
     public AlbumContext(string connString) : base(new DbContextOptionsBuilder<AlbumContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

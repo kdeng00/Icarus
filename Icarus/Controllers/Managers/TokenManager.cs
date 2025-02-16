@@ -53,7 +53,7 @@ public class TokenManager : BaseManager
         _logger.Info("Serializing token object into JSON");
         var tokenObject = JsonConvert.SerializeObject(tokenRequest);
 
-        request.AddParameter("application/json; charset=utf-8", 
+        request.AddParameter("application/json; charset=utf-8",
             tokenObject, ParameterType.RequestBody);
 
         request.RequestFormat = DataFormat.Json;
@@ -74,7 +74,7 @@ public class TokenManager : BaseManager
 
     public LoginResult LoginSymmetric(User user)
     {
-        var tokenResult = new TokenTierOne{ TokenType = "JWT" };
+        var tokenResult = new TokenTierOne { TokenType = "JWT" };
 
         var payload = Payload();
         payload.Add(new Claim("user_id", user.Id.ToString(), ClaimValueTypes.Integer));
@@ -91,7 +91,7 @@ public class TokenManager : BaseManager
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Issuer = _config["Jwt:Issuer"], // Add this line
-            Audience = _config["Jwt:Audience"] 
+            Audience = _config["Jwt:Audience"]
         };
 
         tokenResult.AccessToken = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
@@ -112,8 +112,11 @@ public class TokenManager : BaseManager
     {
         return new LoginResult
         {
-            UserId = user.Id, Username = user.Username, Token = token.AccessToken,
-            TokenType = token.TokenType, Expiration = token.Expiration,
+            UserId = user.Id,
+            Username = user.Username,
+            Token = token.AccessToken,
+            TokenType = token.TokenType,
+            Expiration = token.Expiration,
             Message = SUCCESSFUL_TOKEN_MESSAGE
         };
     }
@@ -162,13 +165,13 @@ public class TokenManager : BaseManager
             "download:songs",
             "read:song_details",
             "upload:songs",
-            "delete:songs", 
-            "read:albums", 
+            "delete:songs",
+            "read:albums",
             "read:artists",
-            "update:songs", 
-            "stream:songs", 
-            "read:genre", 
-            "read:year", 
+            "update:songs",
+            "stream:songs",
+            "read:genre",
+            "read:year",
             "download:cover_art"
         };
 
@@ -217,15 +220,17 @@ public class TokenManager : BaseManager
     {
         return await System.IO.File.ReadAllTextAsync(filepath);
     }
-    
+
     private TokenRequest RetrieveTokenRequest()
     {
         _logger.Info("Retrieving token object");
 
         return new TokenRequest
         {
-            ClientId = _clientId, ClientSecret = _clientSecret,
-            Audience = _audience, GrantType = _grantType
+            ClientId = _clientId,
+            ClientSecret = _clientSecret,
+            Audience = _audience,
+            GrantType = _grantType
         };
     }
 

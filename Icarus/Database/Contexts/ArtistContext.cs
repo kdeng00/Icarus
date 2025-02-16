@@ -8,11 +8,11 @@ public class ArtistContext : DbContext
 {
     public DbSet<Artist> Artists { get; set; }
 
-    public ArtistContext(DbContextOptions<ArtistContext> options) : base (options) { }
+    public ArtistContext(DbContextOptions<ArtistContext> options) : base(options) { }
     public ArtistContext(string connString) : base(new DbContextOptionsBuilder<ArtistContext>()
                         .UseMySQL(connString).Options)
     {
-    }                        
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

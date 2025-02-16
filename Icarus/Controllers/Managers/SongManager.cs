@@ -110,10 +110,17 @@ public class SongManager : BaseManager
         {
             var songPath = songMetaData.SongPath();
             System.IO.File.Delete(songPath);
-            successful = true;
+            successful = !System.IO.File.Exists(songPath);
+            if (successful)
+            {
+                Console.WriteLine("Song successfully deleted");
+            }
             DirectoryManager dirMgr = new DirectoryManager(_config!, songMetaData);
-            dirMgr.DeleteEmptyDirectories();
-            Console.WriteLine("Song successfully deleted");
+            var deletedAmount = dirMgr.DeleteEmptyDirectories(songMetaData.SongDirectory, 1);
+            if (deletedAmount > 0)
+            {
+                Console.WriteLine($"{deletedAmount} directories deleted");
+            }
         }
         catch (Exception ex)
         {
