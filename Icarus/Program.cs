@@ -1,5 +1,4 @@
-﻿// using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -53,11 +52,6 @@ var Configuration = builder.Configuration;
 
 var connString = Configuration.GetConnectionString("DefaultConnection");
 
-// Microsoft.AspNetCore.Authentication
-// builder.Services.AddAuthentication()
-
-// var sch = Microsoft.AspNetCore.Authentication.JwtBearer;
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
@@ -70,8 +64,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true,
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true,
-        ValidAudience = Configuration["JWT:Audience"],
-        ValidIssuer = Configuration["JWT:Issuer"],
+        ValidAudience = audience,
+        ValidIssuer = issuer,
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]!))
     };
 });
