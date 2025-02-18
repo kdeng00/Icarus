@@ -79,9 +79,10 @@ public class SongDataController : BaseController
     // Cover art
     //
     [HttpPost("upload"), DisableRequestSizeLimit]
+    [Obsolete("Support for this endoint is no longer supported")]
     public IActionResult Upload([FromForm(Name = "file")] List<IFormFile> songData)
     {
-        return new StatusCodeResult(410);
+        return new StatusCodeResult(StatusCodes.Status410Gone);
     }
 
     // The client is expected to send the file, metadata, and cover art separately.
