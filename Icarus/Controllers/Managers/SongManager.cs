@@ -3,7 +3,6 @@ using NLog;
 using Icarus.Controllers.Utilities;
 using Icarus.Models;
 using Icarus.Database.Contexts;
-using TagLib.Mpeg4;
 
 namespace Icarus.Controllers.Managers;
 

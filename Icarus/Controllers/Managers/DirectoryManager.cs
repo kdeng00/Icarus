@@ -136,7 +136,9 @@ public class DirectoryManager : BaseManager
                     deleted++;
                 }
 
-                curDir = System.IO.Directory.GetParent(curDir).ToString();
+                var parentDirectory = System.IO.Directory.GetParent(curDir);
+
+                curDir = parentDirectory!.ToString();
             }
         }
         catch (Exception ex)
