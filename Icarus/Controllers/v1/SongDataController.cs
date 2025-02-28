@@ -79,32 +79,10 @@ public class SongDataController : BaseController
     // Cover art
     //
     [HttpPost("upload"), DisableRequestSizeLimit]
+    [Obsolete("Support for this endoint is no longer supported")]
     public IActionResult Upload([FromForm(Name = "file")] List<IFormFile> songData)
     {
-        try
-        {
-            _logger!.LogInformation("Uploading song...");
-
-            var uploads = _songTempDir;
-            _logger!.LogInformation($"Song root path {uploads}");
-
-            foreach (var sng in songData)
-                if (sng.Length > 0)
-                {
-                    _logger!.LogInformation($"Song filename {sng.FileName}");
-
-                    _songMgr!.SaveSongToFileSystem(sng).Wait();
-                }
-
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            var msg = ex.Message;
-            _logger!.LogError(msg, "An error occurred");
-        }
-
-        return NotFound();
+        return new StatusCodeResult(StatusCodes.Status410Gone);
     }
 
     // The client is expected to send the file, metadata, and cover art separately.
