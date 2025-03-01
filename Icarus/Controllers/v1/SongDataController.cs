@@ -197,11 +197,11 @@ public class SongDataController : BaseController
     {
         #region Properties
         [Newtonsoft.Json.JsonProperty("message")]
-        public string Message { get; set; }
+        public string? Message { get; set; }
         [Newtonsoft.Json.JsonProperty("subject")]
-        public string Subject { get; set; }
+        public string? Subject { get; set; }
         [Newtonsoft.Json.JsonProperty("data")]
-        public List<Song> Songs { get; set; }
+        public List<Song>? Songs { get; set; }
         #endregion
     }
 }
