@@ -1,14 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 
-using Icarus.Models;
-
 namespace Icarus.Database.Contexts;
-
 
 public class AccessLevelContext : DbContext
 {
-    public DbSet<AccessLevel> AccessLevels { get; set; }
+    public DbSet<Icarus.Models.AccessLevel>? AccessLevels { get; set; }
 
+    public AccessLevelContext(DbContextOptions<AccessLevelContext> options) : base(options) { }
     public AccessLevelContext(string connString) : base(new DbContextOptionsBuilder<AccessLevelContext>()
         .UseMySQL(connString).Options)
     {
@@ -18,6 +16,9 @@ public class AccessLevelContext : DbContext
     #region Methods
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Icarus.Models.AccessLevel>().ToTable("AccessLevel");
+
+        // modelBuilder.Entity<Icarus.Models.AccessLevel>().Property(m => m.Level).IsRequired(true);
     }
     #endregion
 }
