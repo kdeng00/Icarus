@@ -12,4 +12,22 @@ public class AccessLevel
     [Newtonsoft.Json.JsonProperty("song_id")]
     public int SongId { get; set; }
     #endregion
+
+    #region Methods
+    public static AccessLevel DefaultLevel()
+    {
+        return new AccessLevel
+        {
+            Level = "Public"
+        };
+    }
+
+    public static AccessLevel PrivateLevel()
+    {
+        return new AccessLevel
+        {
+            Level = "Private"
+        };
+    }
+    #endregion
 }
