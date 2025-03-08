@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Icarus.Models;
 
-public class AccessLevel {
+public class AccessLevel
+{
     #region Properties
     [Newtonsoft.Json.JsonProperty("id")]
     public int Id { get; set; }
