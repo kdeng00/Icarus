@@ -18,7 +18,7 @@ public class AccessLevelContext : DbContext
     {
         modelBuilder.Entity<Icarus.Models.AccessLevel>().ToTable("AccessLevel");
 
-        // modelBuilder.Entity<Icarus.Models.AccessLevel>().Property(m => m.Level).IsRequired(true);
+        modelBuilder.Entity<Icarus.Models.AccessLevel>().Property(m => m.Level).IsRequired(true);
     }
     #endregion
 }
