@@ -157,6 +157,11 @@ public class SongManager : BaseManager
 
             DeleteSongFromDatabase(song);
             coverMgr.DeleteCoverArtFromDatabase(coverArt);
+            // var accessLevel = new AccessLevel{SongId = song.Id};
+            var accessLevelContext = new AccessLevelContext(_config!.GetConnectionString("DefaultConnection")!);
+            var accessLevel = accessLevelContext.AccessLevels.FirstOrDefault(al => al.SongId == song.Id);
+            accessLevelContext.AccessLevels.Remove(accessLevel!);
+            accessLevelContext.SaveChanges();
         }
         catch (Exception ex)
         {
