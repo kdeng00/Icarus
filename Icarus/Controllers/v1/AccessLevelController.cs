@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-// using I
-// using Icarus.Database.Contexts;
-
 namespace Icarus.Controllers.V1;
 
 [Route("api/v1/accesslevel")]
@@ -53,18 +50,22 @@ public class AccessLevelController : BaseController
             response.Subject = "Successful";
             response.Data = new List<Icarus.Models.AccessLevel>();
             response.Data.Add(accLevel);
+            return Ok(response);
         }
         else
         {
             response.Subject = "Failure";
+            return BadRequest(response);
         }
-
-        return Ok(response);
     }
 
-    public IActionResult UpdateAccessLevel()
+    [HttpPatch("{id}")]
+    public IActionResult UpdateAccessLevel(int id, [FromBody] Icarus.Models.AccessLevel accessLevel)
     {
-        return Ok(new UpdateAccessLevelResponse());
+        var response = new UpdateAccessLevelResponse();
+        var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(this._connectionString!);
+
+        return Ok(response);
     }
     #endregion
 }
