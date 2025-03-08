@@ -32,8 +32,6 @@ public class AccessLevelController : BaseController
     [HttpGet]
     public IActionResult GetAccessLevels([FromBody] Icarus.Models.AccessLevel accessLevel)
     {
-        // var id = 0;
-        // var songId = 0;
         var accLevel = new Icarus.Models.AccessLevel { Id = 0 };
         var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(_connectionString!);
 
@@ -49,20 +47,17 @@ public class AccessLevelController : BaseController
         }
 
         var response = new GetAccessLevelsResponse();
-        var subject = "";
 
         if (accLevel?.Id > 0)
         {
-            subject = "Successful";
+            response.Subject = "Successful";
             response.Data = new List<Icarus.Models.AccessLevel>();
             response.Data.Add(accLevel);
         }
         else
         {
-            subject = "Failure";
+            response.Subject = "Failure";
         }
-
-        response.Subject = subject;
 
         return Ok(response);
     }
