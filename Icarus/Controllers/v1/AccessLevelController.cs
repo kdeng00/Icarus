@@ -27,7 +27,7 @@ public class AccessLevelController : BaseController
 
     #region HTTP Routes
     [HttpGet]
-    public IActionResult GetAccessLevels(int? id, int? songId) 
+    public IActionResult GetAccessLevels(int? id, int? songId)
     {
         var accLevel = new Icarus.Models.AccessLevel { Id = 0 };
         var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(_connectionString!);
@@ -41,7 +41,7 @@ public class AccessLevelController : BaseController
             accLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.SongId == songId);
         }
 
-        var response = new GetAccessLevelsResponse{ Data = new List<Models.AccessLevel>()};
+        var response = new GetAccessLevelsResponse { Data = new List<Models.AccessLevel>() };
 
         if (accLevel?.Id > 0)
         {
@@ -59,13 +59,17 @@ public class AccessLevelController : BaseController
     [HttpPatch("{id}")]
     public IActionResult UpdateAccessLevel(int id, [FromBody] Models.AccessLevel accessLevel)
     {
-        var response = new UpdateAccessLevelResponse{ Data = new List<Models.AccessLevel>()};
+        var response = new UpdateAccessLevelResponse { Data = new List<Models.AccessLevel>() };
         var targetLevel = accessLevel.Level;
-        if (targetLevel == null) {
+        if (targetLevel == null)
+        {
             response.Subject = "No level provided";
             return BadRequest(response);
-        } else {
-            if (!Models.AccessLevel.IsAccessLevelValid(targetLevel)) {
+        }
+        else
+        {
+            if (!Models.AccessLevel.IsAccessLevelValid(targetLevel))
+            {
                 response.Subject = "Invalid level";
                 return BadRequest(response);
             }
@@ -73,21 +77,25 @@ public class AccessLevelController : BaseController
 
         var accessLevelContext = new Database.Contexts.AccessLevelContext(this._connectionString!);
 
-            var fetchedAccLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.Id == id);
+        var fetchedAccLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.Id == id);
 
-            if (fetchedAccLevel == null) {
-                response.Subject = "Nothing found";
-                return NotFound(response);
-            }
+        if (fetchedAccLevel == null)
+        {
+            response.Subject = "Nothing found";
+            return NotFound(response);
+        }
 
         var fetchedLevel = fetchedAccLevel!.Level;
 
-        if (fetchedLevel!.Equals(targetLevel)) {
+        if (fetchedLevel!.Equals(targetLevel))
+        {
             // No change
             response.Subject = "No change";
             response.Data.Add(fetchedAccLevel);
             return Ok(response);
-        } else {
+        }
+        else
+        {
             fetchedAccLevel.Level = targetLevel;
             response.Subject = "Successful";
             accessLevelContext.Update(fetchedAccLevel);

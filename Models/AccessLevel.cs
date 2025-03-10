@@ -30,17 +30,21 @@ public class AccessLevel
         };
     }
 
-public static bool IsAccessLevelValid(string level) {
-    if (level.Equals(DefaultLevel().Level)) {
-        return true;
-    } 
-    else if (level.Equals(PrivateLevel().Level)) {
-        return true;
-    } 
-    else {
-        return false;
+    public static bool IsAccessLevelValid(string level)
+    {
+        if (level.Equals(DefaultLevel().Level))
+        {
+            return true;
+        }
+        else if (level.Equals(PrivateLevel().Level))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-}
     #endregion
 }
 
