@@ -116,9 +116,9 @@ public class SongDataController : BaseController
                 var accessToken = Request.Headers["Authorization"];
                 var userId = tokMgr.RetrieveUserIdFromToken(accessToken!);
 
-                if (userId != -1)
+                if (userId != null)
                 {
-                    song!.UserId = userId;
+                    song!.UserId = userId.Value;
                 }
 
                 _logger!.LogInformation($"Song title: {song!.Title}");

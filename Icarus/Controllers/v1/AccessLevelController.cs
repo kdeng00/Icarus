@@ -27,28 +27,25 @@ public class AccessLevelController : BaseController
 
     #region HTTP Routes
     [HttpGet]
-    public IActionResult GetAccessLevels([FromBody] Icarus.Models.AccessLevel accessLevel)
+    public IActionResult GetAccessLevels(int? id, int? songId) 
     {
         var accLevel = new Icarus.Models.AccessLevel { Id = 0 };
         var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(_connectionString!);
 
-        if (accessLevel.Id != 0)
+        if (id != null)
         {
-            var id = accessLevel.Id;
             accLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.Id == id);
         }
-        else if (accessLevel.SongId != 0)
+        else if (songId != null)
         {
-            var songId = accessLevel.SongId;
             accLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.SongId == songId);
         }
 
-        var response = new GetAccessLevelsResponse();
+        var response = new GetAccessLevelsResponse{ Data = new List<Models.AccessLevel>()};
 
         if (accLevel?.Id > 0)
         {
             response.Subject = "Successful";
-            response.Data = new List<Icarus.Models.AccessLevel>();
             response.Data.Add(accLevel);
             return Ok(response);
         }
@@ -60,12 +57,45 @@ public class AccessLevelController : BaseController
     }
 
     [HttpPatch("{id}")]
-    public IActionResult UpdateAccessLevel(int id, [FromBody] Icarus.Models.AccessLevel accessLevel)
+    public IActionResult UpdateAccessLevel(int id, [FromBody] Models.AccessLevel accessLevel)
     {
-        var response = new UpdateAccessLevelResponse();
-        var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(this._connectionString!);
+        var response = new UpdateAccessLevelResponse{ Data = new List<Models.AccessLevel>()};
+        var targetLevel = accessLevel.Level;
+        if (targetLevel == null) {
+            response.Subject = "No level provided";
+            return BadRequest(response);
+        } else {
+            if (!Models.AccessLevel.IsAccessLevelValid(targetLevel)) {
+                response.Subject = "Invalid level";
+                return BadRequest(response);
+            }
+        }
 
-        return Ok(response);
+        var accessLevelContext = new Database.Contexts.AccessLevelContext(this._connectionString!);
+
+            var fetchedAccLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.Id == id);
+
+            if (fetchedAccLevel == null) {
+                response.Subject = "Nothing found";
+                return NotFound(response);
+            }
+
+        var fetchedLevel = fetchedAccLevel!.Level;
+
+        if (fetchedLevel!.Equals(targetLevel)) {
+            // No change
+            response.Subject = "No change";
+            response.Data.Add(fetchedAccLevel);
+            return Ok(response);
+        } else {
+            fetchedAccLevel.Level = targetLevel;
+            response.Subject = "Successful";
+            accessLevelContext.Update(fetchedAccLevel);
+            accessLevelContext.SaveChanges();
+
+            response.Data.Add(fetchedAccLevel);
+            return Ok(response);
+        }
     }
     #endregion
 }

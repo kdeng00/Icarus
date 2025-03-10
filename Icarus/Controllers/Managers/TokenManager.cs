@@ -121,7 +121,23 @@ public class TokenManager : BaseManager
         };
     }
 
-    public int RetrieveUserIdFromToken(string token)
+    // TODO: Make this call to whenver media is being accessed or modified - cover art, genre, 
+    // album, song, et cetera
+    public bool CanAccessSong(string token, Song song, AccessLevel accessLevel)
+    {
+        if (accessLevel!.Level!.Equals(Models.AccessLevel.DefaultLevel().Level)) {
+            return true;
+        }
+        var tokenUserId = this.RetrieveUserIdFromToken(token);
+        if (tokenUserId == null)
+        {
+            return false;
+        }
+
+        return tokenUserId.Value == song.UserId;
+    }
+
+    public int? RetrieveUserIdFromToken(string token)
     {
         if (this.ContainsBearer(token))
         {
@@ -130,18 +146,19 @@ public class TokenManager : BaseManager
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var readTok = tokenHandler.ReadJwtToken(token);
-        var userId = -1;
+        // var userId = -1;
 
         foreach (var item in readTok.Payload)
         {
             if (item.Key == "user_id")
             {
-                userId = Convert.ToInt32(item.Value);
-                break;
+                // userId = 
+                return Convert.ToInt32(item.Value);
+                // break;
             }
         }
 
-        return userId;
+        return null;
     }
 
     private string StripBearer(string token)
