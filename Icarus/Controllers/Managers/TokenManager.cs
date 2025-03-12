@@ -138,24 +138,30 @@ public class TokenManager : BaseManager
         return tokenUserId.Value == song.UserId;
     }
 
-    public int? RetrieveUserIdFromToken(string token)
+    public string? GetBearerToken(HttpContext context)
     {
-        if (this.ContainsBearer(token))
+        string authorizationHeader = context.Request.Headers["Authorization"]!;
+
+        if (!authorizationHeader.IsNullOrEmpty() && authorizationHeader.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
         {
-            token = this.StripBearer(token);
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            return token;
         }
 
+        return null;
+    }
+
+    public int? RetrieveUserIdFromToken(string token)
+    {
+            var parsedToken = this.ContainsBearer(token) ? this.StripBearer(token) : token;
         var tokenHandler = new JwtSecurityTokenHandler();
-        var readTok = tokenHandler.ReadJwtToken(token);
-        // var userId = -1;
+        var readTok = tokenHandler.ReadJwtToken(parsedToken);
 
         foreach (var item in readTok.Payload)
         {
             if (item.Key == "user_id")
             {
-                // userId = 
                 return Convert.ToInt32(item.Value);
-                // break;
             }
         }
 

@@ -38,11 +38,23 @@ public class SongDataController : BaseController
     #endregion
 
 
+
     [HttpGet("download/{id}")]
     public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
-        var songContext = new SongContext(_connectionString!);
+        var tokenManager = new TokenManager(this._config!);
+        var songContext = new SongContext(this._connectionString!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
+        var accessLevel = accLvlContext.GetAccessLevel(songMetaData.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null) {
+            return BadRequest();
+        }
+
+        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel)) {
+            return BadRequest();
+        }
 
         var song = _songMgr!.RetrieveSong(songMetaData).Result;
         string filename;
@@ -66,6 +78,7 @@ public class SongDataController : BaseController
         return File(song.Data!, "application/x-msdownload", filename);
     }
 
+    // NOTE: No longer being used
     // Assumes that the song already has metadata such as
     // Title
     // Artist
