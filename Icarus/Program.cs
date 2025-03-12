@@ -76,6 +76,7 @@ builder.Services.AddDbContext<ArtistContext>(options => options.UseMySQL(connStr
 builder.Services.AddDbContext<UserContext>(options => options.UseMySQL(connString!));
 builder.Services.AddDbContext<GenreContext>(options => options.UseMySQL(connString!));
 builder.Services.AddDbContext<CoverArtContext>(options => options.UseMySQL(connString!));
+builder.Services.AddDbContext<AccessLevelContext>(options => options.UseMySQL(connString!));
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson();

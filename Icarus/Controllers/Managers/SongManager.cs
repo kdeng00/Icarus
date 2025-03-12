@@ -157,6 +157,10 @@ public class SongManager : BaseManager
 
             DeleteSongFromDatabase(song);
             coverMgr.DeleteCoverArtFromDatabase(coverArt);
+            var accessLevelContext = new AccessLevelContext(_config!.GetConnectionString("DefaultConnection")!);
+            var accessLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.SongId == song.Id);
+            accessLevelContext.AccessLevels!.Remove(accessLevel!);
+            accessLevelContext.SaveChanges();
         }
         catch (Exception ex)
         {
@@ -165,7 +169,7 @@ public class SongManager : BaseManager
         }
     }
 
-    
+
     public Song SaveFlacSongToFileSystem(IFormFile songFile, IFormFile coverArtData, Song song)
     {
         // Save temp song (Should already be saved to the filesystem by the time it gets to this method)
@@ -345,10 +349,10 @@ public class SongManager : BaseManager
     {
         _logger.Info("Starting process to save the song to the database");
 
-        var albumMgr = new AlbumManager(_config!);
-        var artistMgr = new ArtistManager(_config!);
-        var genreMgr = new GenreManager(_config!);
-        var coverMgr = new CoverArtManager(_config!);
+        var albumMgr = new AlbumManager(this._config!);
+        var artistMgr = new ArtistManager(this._config!);
+        var genreMgr = new GenreManager(this._config!);
+        var coverMgr = new CoverArtManager(this._config!);
         albumMgr.SaveAlbumToDatabase(ref song);
         artistMgr.SaveArtistToDatabase(ref song);
         genreMgr.SaveGenreToDatabase(ref song);
@@ -356,10 +360,20 @@ public class SongManager : BaseManager
         var info = "Saving Song to DB";
         _logger.Info(info);
 
-        _songContext!.Add(song);
-        _songContext!.SaveChanges();
+        this._songContext!.Add(song);
+        this._songContext!.SaveChanges();
 
-        coverMgr.SaveCoverArtToDatabase(ref song, ref cover!);
+        if (cover != null)
+        {
+            coverMgr.SaveCoverArtToDatabase(ref song, ref cover!);
+        }
+
+        var accessLevel = Icarus.Models.AccessLevel.DefaultLevel();
+        accessLevel.SongId = song.Id;
+
+        var accessLevelContext = new AccessLevelContext(this._connectionString!);
+        accessLevelContext.Add(accessLevel);
+        accessLevelContext.SaveChanges();
     }
 
 

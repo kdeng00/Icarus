@@ -12,6 +12,8 @@ echo "Adding Cover art migration"
 dotnet dotnet-ef migrations add CoverArt --context CoverArtContext
 echo "Adding Song migration"
 dotnet dotnet-ef migrations add Song --context SongContext
+echo "Adding AccessLevel migration" 
+dotnet dotnet-ef migrations add AccessLevel --context AccessLevelContext
 
 echo "Updating migrations.."
 echo "Updating User migration"
@@ -26,4 +28,6 @@ echo "Updating Cover art migration"
 dotnet dotnet-ef database update --context CoverArtContext
 echo "Updating Song migration"
 dotnet dotnet-ef database update --context SongContext
+echo "Updating AccessLevel migration"
+dotnet dotnet-ef database update --context AccessLevelContext
 

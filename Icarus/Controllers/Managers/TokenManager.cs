@@ -121,27 +121,49 @@ public class TokenManager : BaseManager
         };
     }
 
-    public int RetrieveUserIdFromToken(string token)
+    public bool CanAccessSong(string token, Song song, AccessLevel accessLevel)
     {
-        if (this.ContainsBearer(token))
+        if (accessLevel!.Level!.Equals(Models.AccessLevel.DefaultLevel().Level))
         {
-            token = this.StripBearer(token);
+            return true;
+        }
+        var tokenUserId = this.RetrieveUserIdFromToken(token);
+        if (tokenUserId == null)
+        {
+            return false;
         }
 
+        return tokenUserId.Value == song.UserId;
+    }
+
+    public string? GetBearerToken(HttpContext context)
+    {
+        string authorizationHeader = context.Request.Headers["Authorization"]!;
+
+        if (!authorizationHeader.IsNullOrEmpty() && authorizationHeader.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
+        {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            return token;
+        }
+
+        return null;
+    }
+
+    public int? RetrieveUserIdFromToken(string token)
+    {
+        var parsedToken = this.ContainsBearer(token) ? this.StripBearer(token) : token;
         var tokenHandler = new JwtSecurityTokenHandler();
-        var readTok = tokenHandler.ReadJwtToken(token);
-        var userId = -1;
+        var readTok = tokenHandler.ReadJwtToken(parsedToken);
 
         foreach (var item in readTok.Payload)
         {
             if (item.Key == "user_id")
             {
-                userId = Convert.ToInt32(item.Value);
-                break;
+                return Convert.ToInt32(item.Value);
             }
         }
 
-        return userId;
+        return null;
     }
 
     private string StripBearer(string token)

@@ -38,11 +38,25 @@ public class SongDataController : BaseController
     #endregion
 
 
+
     [HttpGet("download/{id}")]
     public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
     {
-        var songContext = new SongContext(_connectionString!);
+        var tokenManager = new TokenManager(this._config!);
+        var songContext = new SongContext(this._connectionString!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
+        var accessLevel = accLvlContext.GetAccessLevel(songMetaData.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
+
+        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel))
+        {
+            return BadRequest();
+        }
 
         var song = _songMgr!.RetrieveSong(songMetaData).Result;
         string filename;
@@ -66,6 +80,7 @@ public class SongDataController : BaseController
         return File(song.Data!, "application/x-msdownload", filename);
     }
 
+    // NOTE: No longer being used
     // Assumes that the song already has metadata such as
     // Title
     // Artist
@@ -116,9 +131,9 @@ public class SongDataController : BaseController
                 var accessToken = Request.Headers["Authorization"];
                 var userId = tokMgr.RetrieveUserIdFromToken(accessToken!);
 
-                if (userId != -1)
+                if (userId != null)
                 {
-                    song!.UserId = userId;
+                    song!.UserId = userId.Value;
                 }
 
                 _logger!.LogInformation($"Song title: {song!.Title}");
@@ -160,11 +175,21 @@ public class SongDataController : BaseController
     public IActionResult DeleteSong(int id)
     {
         var songContext = new SongContext(_connectionString!);
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
 
-        var songMetaData = new Song { Id = id };
-        Console.WriteLine($"Id {songMetaData.Id}");
+        var tokenManager = new TokenManager(this._config!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
+        var accessLevel = accLvlContext.GetAccessLevel(songMetaData.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
 
-        songMetaData = songContext.RetrieveRecord(songMetaData);
+        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel))
+        {
+            return BadRequest();
+        }
 
         if (string.IsNullOrEmpty(songMetaData.Title))
         {
@@ -179,7 +204,6 @@ public class SongDataController : BaseController
 
             return Ok(songMetaData);
         }
-
     }
 
     public class UploadSongWithDataForm

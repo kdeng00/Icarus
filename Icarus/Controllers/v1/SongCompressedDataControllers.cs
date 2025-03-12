@@ -47,6 +47,20 @@ public class SongCompressedDataController : BaseController
 
         Console.WriteLine("Starting process of retrieving comrpessed song");
         var sng = context.RetrieveRecord(new Song { Id = id });
+
+        var tokenManager = new TokenManager(this._config!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
+        var accessLevel = accLvlContext.GetAccessLevel(sng.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
+
+        if (!tokenManager.CanAccessSong(token, sng, accessLevel))
+        {
+            return BadRequest();
+        }
         SongData song = await cmp.RetrieveCompressedSong(sng);
 
         var filename = DirectoryManager.GenerateDownloadFilename(10, Constants.FileExtensions.ZIP_EXTENSION, sng.Title!, randomizeFilename);
