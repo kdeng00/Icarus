@@ -37,7 +37,8 @@ public class SongStreamController : BaseController
         var context = new SongContext(_config!.GetConnectionString("DefaultConnection")!);
 
         var song = context.Songs!.FirstOrDefault(sng => sng.Id == id);
-        if (song == null) {
+        if (song == null)
+        {
             return BadRequest();
         }
         var tokenManager = new Managers.TokenManager(this._config!);
