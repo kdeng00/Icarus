@@ -86,6 +86,20 @@ public class SongController : BaseController
             });
         }
 
+        var tokenManager = new TokenManager(this._config!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
+        var accessLevel = accLvlContext.GetAccessLevel(song.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
+
+        if (!tokenManager.CanAccessSong(token, song, accessLevel))
+        {
+            return BadRequest();
+        }
+
         var songRes = _songMgr.UpdateSong(song);
 
         return Ok(songRes);

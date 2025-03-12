@@ -175,11 +175,21 @@ public class SongDataController : BaseController
     public IActionResult DeleteSong(int id)
     {
         var songContext = new SongContext(_connectionString!);
+        var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
 
-        var songMetaData = new Song { Id = id };
-        Console.WriteLine($"Id {songMetaData.Id}");
+        var tokenManager = new TokenManager(this._config!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
+        var accessLevel = accLvlContext.GetAccessLevel(songMetaData.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
 
-        songMetaData = songContext.RetrieveRecord(songMetaData);
+        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel))
+        {
+            return BadRequest();
+        }
 
         if (string.IsNullOrEmpty(songMetaData.Title))
         {

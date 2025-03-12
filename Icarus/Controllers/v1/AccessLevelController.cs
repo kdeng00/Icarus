@@ -21,7 +21,7 @@ public class AccessLevelController : BaseController
     {
         this._logger = logger;
         this._config = config;
-        _connectionString = this._config.GetConnectionString("DefaultConnection");
+        this._connectionString = this._config.GetConnectionString("DefaultConnection");
     }
     #endregion
 
@@ -29,8 +29,8 @@ public class AccessLevelController : BaseController
     [HttpGet]
     public IActionResult GetAccessLevels(int? id, int? songId)
     {
-        var accLevel = new Icarus.Models.AccessLevel { Id = 0 };
-        var accessLevelContext = new Icarus.Database.Contexts.AccessLevelContext(_connectionString!);
+        var accLevel = new Models.AccessLevel { Id = 0 };
+        var accessLevelContext = new Database.Contexts.AccessLevelContext(_connectionString!);
 
         if (id != null)
         {
@@ -38,7 +38,7 @@ public class AccessLevelController : BaseController
         }
         else if (songId != null)
         {
-            accLevel = accessLevelContext.AccessLevels!.FirstOrDefault(al => al.SongId == songId);
+            accLevel = accessLevelContext.GetAccessLevel(songId.Value);
         }
 
         var response = new GetAccessLevelsResponse { Data = new List<Models.AccessLevel>() };
@@ -115,7 +115,7 @@ public class GetAccessLevelsResponse
     [Newtonsoft.Json.JsonProperty("subject")]
     public string? Subject { get; set; }
     [Newtonsoft.Json.JsonProperty("data")]
-    public List<Icarus.Models.AccessLevel>? Data { get; set; }
+    public List<Models.AccessLevel>? Data { get; set; }
     #endregion
 }
 
@@ -125,7 +125,7 @@ public class UpdateAccessLevelResponse
     [Newtonsoft.Json.JsonProperty("subject")]
     public string? Subject { get; set; }
     [Newtonsoft.Json.JsonProperty("data")]
-    public List<Icarus.Models.AccessLevel>? Data { get; set; }
+    public List<Models.AccessLevel>? Data { get; set; }
     #endregion
 }
 #endregion

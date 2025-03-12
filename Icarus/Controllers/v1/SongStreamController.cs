@@ -11,6 +11,7 @@ namespace Icarus.Controllers.V1;
 public class SongStreamController : BaseController
 {
     #region Fields
+    private string? _connectionString;
     private ILogger<SongStreamController>? _logger;
     #endregion
 
@@ -22,8 +23,9 @@ public class SongStreamController : BaseController
     #region Constructor
     public SongStreamController(ILogger<SongStreamController> logger, IConfiguration config)
     {
-        _logger = logger;
-        _config = config;
+        this._logger = logger;
+        this._config = config;
+        this._connectionString = this._config.GetConnectionString("DefaultConnection");
     }
     #endregion
 
@@ -35,6 +37,22 @@ public class SongStreamController : BaseController
         var context = new SongContext(_config!.GetConnectionString("DefaultConnection")!);
 
         var song = context.Songs!.FirstOrDefault(sng => sng.Id == id);
+        if (song == null) {
+            return BadRequest();
+        }
+        var tokenManager = new Managers.TokenManager(this._config!);
+        var accLvlContext = new AccessLevelContext(this._connectionString!);
+        var accessLevel = accLvlContext.GetAccessLevel(song.Id);
+        var token = tokenManager.GetBearerToken(HttpContext);
+        if (token == null || accessLevel == null)
+        {
+            return BadRequest();
+        }
+
+        if (!tokenManager.CanAccessSong(token, song, accessLevel))
+        {
+            return BadRequest();
+        }
 
         var stream = new FileStream(song!.SongPath(), FileMode.Open, FileAccess.Read);
         stream.Position = 0;

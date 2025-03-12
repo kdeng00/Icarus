@@ -121,8 +121,6 @@ public class TokenManager : BaseManager
         };
     }
 
-    // TODO: Make this call to whenver media is being accessed or modified - cover art, genre, 
-    // album, song, et cetera
     public bool CanAccessSong(string token, Song song, AccessLevel accessLevel)
     {
         if (accessLevel!.Level!.Equals(Models.AccessLevel.DefaultLevel().Level))
