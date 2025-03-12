@@ -153,7 +153,7 @@ public class TokenManager : BaseManager
 
     public int? RetrieveUserIdFromToken(string token)
     {
-            var parsedToken = this.ContainsBearer(token) ? this.StripBearer(token) : token;
+        var parsedToken = this.ContainsBearer(token) ? this.StripBearer(token) : token;
         var tokenHandler = new JwtSecurityTokenHandler();
         var readTok = tokenHandler.ReadJwtToken(parsedToken);
 

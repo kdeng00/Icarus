@@ -20,7 +20,8 @@ public class AccessLevelContext : DbContext
     #endregion
 
     #region Methods
-    public Models.AccessLevel? GetAccessLevel(int songId) {
+    public Models.AccessLevel? GetAccessLevel(int songId)
+    {
         var accessLevel = this.AccessLevels!.FirstOrDefault(acc => acc.SongId == songId);
         return accessLevel;
     }

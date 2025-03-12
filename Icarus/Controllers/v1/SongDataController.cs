@@ -48,11 +48,13 @@ public class SongDataController : BaseController
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id });
         var accessLevel = accLvlContext.GetAccessLevel(songMetaData.Id);
         var token = tokenManager.GetBearerToken(HttpContext);
-        if (token == null || accessLevel == null) {
+        if (token == null || accessLevel == null)
+        {
             return BadRequest();
         }
 
-        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel)) {
+        if (!tokenManager.CanAccessSong(token, songMetaData, accessLevel))
+        {
             return BadRequest();
         }
 
