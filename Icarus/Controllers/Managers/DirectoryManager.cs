@@ -92,29 +92,6 @@ public class DirectoryManager : BaseManager
         }
     }
 
-    public void DeleteEmptyDirectories()
-    {
-        try
-        {
-            var albumDirectory = AlbumDirectory();
-            var artistDirectory = ArtistDirectory();
-            if (Directory.Exists(albumDirectory) && IsDirectoryEmpty(albumDirectory))
-            {
-                Directory.Delete(albumDirectory);
-                Console.WriteLine($"directory {albumDirectory} deleted");
-            }
-            if (Directory.Exists(artistDirectory) && IsDirectoryEmpty(artistDirectory))
-            {
-                Directory.Delete(artistDirectory);
-                Console.WriteLine($"directory {artistDirectory} deleted");
-            }
-        }
-        catch (Exception ex)
-        {
-            var exMsg = ex.Message;
-            Console.WriteLine($"An error occurred {exMsg}");
-        }
-    }
 
     public int DeleteEmptyDirectories(string? directory, int level)
     {
@@ -175,66 +152,7 @@ public class DirectoryManager : BaseManager
         }
     }
 
-    public string RetrieveAlbumPath(Song song)
-    {
-        _logger.Info("Retrieving album song path");
 
-        var albumPath = string.Empty;
-        albumPath = AlbumDirectory(song);
-
-        return albumPath;
-    }
-    public string RetrieveArtistPath(Song song)
-    {
-        _logger.Info("Retrieving artist path");
-
-        var artistPath = string.Empty;
-        artistPath = ArtistDirectory(song);
-
-        return artistPath;
-    }
-
-    public string GenerateSongPath(Song song)
-    {
-        _logger.Info("Generating song path");
-
-        var artistPath = ArtistDirectory(song);
-        var albumPath = AlbumDirectory(song);
-
-        GenerateDirectories(new List<DirEnt>{
-            new DirEnt
-            {
-                Pre = "Artist path does not exist",
-                Path = artistPath,
-                Post = "Creating artist path"
-            },
-            new DirEnt
-            {
-                Pre = "Album path does not exist",
-                Path = albumPath,
-                Post = "Created album path"
-            }
-        });
-
-        return albumPath;
-    }
-
-    private class DirEnt
-    {
-        public string? Pre { get; set; }
-        public string? Path { get; set; }
-        public string? Post { get; set; }
-    }
-
-    private void GenerateDirectories(List<DirEnt> dirs)
-    {
-        foreach (var di in dirs)
-        {
-            _logger.Info(di.Pre);
-            Directory.CreateDirectory(di.Path!);
-            _logger.Info(di.Post);
-        }
-    }
 
     private void Initialize(DirectoryType dirTypes = DirectoryType.Music)
     {
@@ -268,10 +186,6 @@ public class DirectoryManager : BaseManager
         Console.WriteLine($"Album directory {directory}");
 
         return directory;
-    }
-    private string ArtistDirectory()
-    {
-        return ArtistDirectory(_song!);
     }
     private string ArtistDirectory(Song song)
     {
