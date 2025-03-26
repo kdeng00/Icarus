@@ -98,12 +98,12 @@ public class DirectoryManager : BaseManager
         {
             var albumDirectory = AlbumDirectory();
             var artistDirectory = ArtistDirectory();
-            if (IsDirectoryEmpty(albumDirectory))
+            if (Directory.Exists(albumDirectory) && IsDirectoryEmpty(albumDirectory))
             {
                 Directory.Delete(albumDirectory);
                 Console.WriteLine($"directory {albumDirectory} deleted");
             }
-            if (IsDirectoryEmpty(artistDirectory))
+            if (Directory.Exists(artistDirectory) && IsDirectoryEmpty(artistDirectory))
             {
                 Directory.Delete(artistDirectory);
                 Console.WriteLine($"directory {artistDirectory} deleted");
@@ -157,12 +157,12 @@ public class DirectoryManager : BaseManager
             var albumDirectory = AlbumDirectory(song);
             var artistDirectory = ArtistDirectory(song);
 
-            if (IsDirectoryEmpty(albumDirectory))
+            if (Directory.Exists(albumDirectory) && IsDirectoryEmpty(albumDirectory))
             {
                 Directory.Delete(albumDirectory);
                 _logger.Info("Album directory deleted");
             }
-            if (IsDirectoryEmpty(artistDirectory))
+            if (Directory.Exists(artistDirectory) && IsDirectoryEmpty(artistDirectory))
             {
                 Directory.Delete(artistDirectory);
                 _logger.Info("Artist directory deleted");
@@ -251,7 +251,9 @@ public class DirectoryManager : BaseManager
 
     private bool IsDirectoryEmpty(string path)
     {
-        return !Directory.EnumerateFileSystemEntries(path).Any();
+        var paths = Directory.EnumerateFileSystemEntries(path);
+
+        return !paths.Any();
     }
 
     private string AlbumDirectory()
