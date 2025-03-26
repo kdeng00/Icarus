@@ -167,12 +167,8 @@ public class DirectoryManager : BaseManager
         }
     }
 
-    private bool IsDirectoryEmpty(string path)
-    {
-        var paths = Directory.EnumerateFileSystemEntries(path);
-
-        return !paths.Any();
-    }
+    private bool IsDirectoryEmpty(string path) =>
+        !(Directory.EnumerateFileSystemEntries(path).Any());
 
     private string AlbumDirectory()
     {
