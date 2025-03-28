@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <Version>0.1.22</Version>
+    <Version>0.1.30</Version>
   </PropertyGroup>
 
   <ItemGroup>
