@@ -1,7 +1,7 @@
 use axum::{
-    routing::{get, post},
-    http::StatusCode,
     Json, Router,
+    http::StatusCode,
+    routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
 
@@ -14,8 +14,8 @@ async fn main() {
     let app = Router::new()
         // `GET /` goes to `root`
         .route("/", get(root));
-        // `POST /users` goes to `create_user`
-        // .route("/users", post(create_user));
+    // `POST /users` goes to `create_user`
+    // .route("/users", post(create_user));
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(get_full()).await.unwrap();
