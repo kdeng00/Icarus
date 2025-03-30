@@ -2,9 +2,9 @@ name: Rust CI
 
 on:
   push:
-    branches: [ "master" ] # Changed from main to master
+    branches: [ "v0.2" ] # Changed from main to master
   pull_request:
-    branches: [ "master" ] # Changed from main to master
+    branches: [ "v0.2" ] # Changed from main to master
 
 jobs:
   build:
