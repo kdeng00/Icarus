@@ -6,7 +6,7 @@ public class LoginResult : BaseResult
 {
     #region Properties
     [JsonProperty("user_id")]
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
     [JsonProperty("username")]
     public string? Username { get; set; }
     [JsonProperty("token")]

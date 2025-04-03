@@ -12,7 +12,7 @@ public class User
     [JsonProperty("id")]
     [Column("Id")]
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     [JsonProperty("username")]
     public string? Username { get; set; }
     [JsonProperty("password")]
