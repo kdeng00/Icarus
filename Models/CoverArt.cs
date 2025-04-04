@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 using Newtonsoft.Json;
 
 namespace Icarus.Models;
@@ -6,7 +8,8 @@ public class CoverArt
 {
     #region Properties
     [JsonProperty("id")]
-    public int Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
     [JsonProperty("title")]
     public string? SongTitle { get; set; }
     [JsonIgnore]

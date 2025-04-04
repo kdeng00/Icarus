@@ -46,7 +46,7 @@ public class AlbumController : BaseController
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetAlbum(int id)
+    public IActionResult GetAlbum(Guid id)
     {
         Album album = new Album { Id = id };
 

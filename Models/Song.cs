@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
@@ -8,7 +9,8 @@ public class Song
 {
     #region Properties
     [JsonProperty("id")]
-    public int Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
     [JsonProperty("title")]
     public string? Title { get; set; }
     [JsonProperty("album")]
@@ -39,17 +41,17 @@ public class Song
     [JsonProperty("disc_count")]
     public int DiscCount { get; set; } = 0;
     [JsonIgnore]
-    public int? AlbumId { get; set; }
+    public Guid? AlbumId { get; set; }
     [JsonIgnore]
-    public int? ArtistId { get; set; }
+    public Guid? ArtistId { get; set; }
     [JsonIgnore]
-    public int? GenreId { get; set; }
+    public Guid? GenreId { get; set; }
     [JsonIgnore]
-    public int? CoverArtId { get; set; }
+    public Guid? CoverArtId { get; set; }
     [JsonProperty("date_created")]
     public DateTime DateCreated { get; set; }
     [JsonProperty("user_id")]
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
     #endregion
 
 

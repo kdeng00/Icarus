@@ -37,7 +37,7 @@ public class SongCompressedDataController : BaseController
 
     #region API Routes
     [HttpGet("{id}")]
-    public async Task<IActionResult> DownloadCompressedSong(int id, [FromQuery] bool? randomizeFilename)
+    public async Task<IActionResult> DownloadCompressedSong(Guid id, [FromQuery] bool? randomizeFilename)
     {
         var context = new SongContext(_connectionString!);
 

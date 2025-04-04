@@ -20,7 +20,7 @@ public class AccessLevelContext : DbContext
     #endregion
 
     #region Methods
-    public Models.AccessLevel? GetAccessLevel(int songId)
+    public Models.AccessLevel? GetAccessLevel(Guid songId)
     {
         var accessLevel = this.AccessLevels!.FirstOrDefault(acc => acc.SongId == songId);
         return accessLevel;
@@ -29,6 +29,14 @@ public class AccessLevelContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Models.AccessLevel>().ToTable("AccessLevel");
+
+        modelBuilder.Entity<Models.AccessLevel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
 
         modelBuilder.Entity<Models.AccessLevel>().Property(m => m.Level).IsRequired(true);
     }

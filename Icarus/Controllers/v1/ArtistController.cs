@@ -46,7 +46,7 @@ public class ArtistController : BaseController
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetArtist(int id)
+    public IActionResult GetArtist(Guid id)
     {
         Artist artist = new Artist { Id = id };
 

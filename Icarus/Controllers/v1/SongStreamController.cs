@@ -32,7 +32,7 @@ public class SongStreamController : BaseController
 
     #region HTTP endpoints
     [HttpGet("{id}")]
-    public async Task<IActionResult> StreamSong(int id)
+    public async Task<IActionResult> StreamSong(Guid id)
     {
         var context = new SongContext(_config!.GetConnectionString("DefaultConnection")!);
 

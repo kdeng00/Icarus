@@ -18,6 +18,14 @@ public class AlbumContext : DbContext
     {
         modelBuilder.Entity<Album>()
             .ToTable("Album");
+
+        modelBuilder.Entity<Album>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
     }
 
     public Album RetrieveRecord(Album album)

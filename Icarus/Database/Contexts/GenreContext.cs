@@ -20,6 +20,14 @@ public class GenreContext : DbContext
     {
         modelBuilder.Entity<Genre>()
             .ToTable("Genre");
+
+        modelBuilder.Entity<Genre>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
     }
 
 
