@@ -25,12 +25,12 @@ public class UserContext : DbContext
             .ToTable("User");
 
         modelBuilder.Entity<User>(entity =>
-{
-    entity.HasKey(e => e.Id);
+        {
+            entity.HasKey(e => e.Id);
 
-    entity.Property(e => e.Id)
-          .HasColumnType("binary(16)"); // **** Map Guid to BINARY(16) ****
-});
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)"); // **** Map Guid to BINARY(16) ****
+        });
         modelBuilder.Entity<User>()
             .Property(u => u.LastLogin).IsRequired(false);
         modelBuilder.Entity<User>()

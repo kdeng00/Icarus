@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
@@ -8,7 +9,8 @@ public class Song
 {
     #region Properties
     [JsonProperty("id")]
-    public int Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
     [JsonProperty("title")]
     public string? Title { get; set; }
     [JsonProperty("album")]

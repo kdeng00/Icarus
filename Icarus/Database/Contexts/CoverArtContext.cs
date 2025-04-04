@@ -20,6 +20,13 @@ public class CoverArtContext : DbContext
     {
         modelBuilder.Entity<CoverArt>()
             .ToTable("CoverArt");
+        modelBuilder.Entity<CoverArt>(entity => 
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
     }
 
     public CoverArt RetrieveRecord(CoverArt cover)

@@ -21,6 +21,14 @@ public class SongContext : DbContext
         modelBuilder.Entity<Song>()
             .ToTable("Song");
 
+        modelBuilder.Entity<Song>(entity => 
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
+
         modelBuilder.Entity<Song>()
             .Property(s => s.Year)
             .IsRequired(false);

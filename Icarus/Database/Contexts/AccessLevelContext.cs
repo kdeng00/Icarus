@@ -30,6 +30,14 @@ public class AccessLevelContext : DbContext
     {
         modelBuilder.Entity<Models.AccessLevel>().ToTable("AccessLevel");
 
+        modelBuilder.Entity<Models.AccessLevel>(entity => 
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnType("binary(16)");
+        });
+
         modelBuilder.Entity<Models.AccessLevel>().Property(m => m.Level).IsRequired(true);
     }
     #endregion

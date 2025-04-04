@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
@@ -8,7 +9,8 @@ public class Artist
 {
     #region Properties
     [JsonProperty("id")]
-    public int Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
     [JsonProperty("name")]
     [Column("Artist")]
     public string? Name { get; set; }

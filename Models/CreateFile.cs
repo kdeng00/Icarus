@@ -1,6 +1,3 @@
-
-
-
 namespace Icarus.Models;
 
 public enum CreateFileResult
