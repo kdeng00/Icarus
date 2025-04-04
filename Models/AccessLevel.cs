@@ -11,7 +11,7 @@ public class AccessLevel
     [Newtonsoft.Json.JsonProperty("level")]
     public string? Level { get; set; }
     [Newtonsoft.Json.JsonProperty("song_id")]
-    public int SongId { get; set; }
+    public Guid SongId { get; set; }
     #endregion
 
     #region Methods

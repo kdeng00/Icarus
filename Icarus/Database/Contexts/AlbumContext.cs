@@ -19,7 +19,7 @@ public class AlbumContext : DbContext
         modelBuilder.Entity<Album>()
             .ToTable("Album");
 
-        modelBuilder.Entity<Album>(entity => 
+        modelBuilder.Entity<Album>(entity =>
         {
             entity.HasKey(e => e.Id);
 

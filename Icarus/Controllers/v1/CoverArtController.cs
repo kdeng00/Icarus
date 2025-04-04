@@ -49,7 +49,7 @@ public class CoverArtController : BaseController
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetCoverArt(int id)
+    public IActionResult GetCoverArt(Guid id)
     {
         var coverArt = new CoverArt { Id = id };
 
@@ -74,7 +74,7 @@ public class CoverArtController : BaseController
     }
 
     [HttpGet("data/download/{id}")]
-    public async Task<IActionResult> Download(int id, [FromQuery] bool? randomizeFilename)
+    public async Task<IActionResult> Download(Guid id, [FromQuery] bool? randomizeFilename)
     {
         var songContext = new SongContext(_connectionString!);
         var covMgr = new CoverArtManager(this._config!);

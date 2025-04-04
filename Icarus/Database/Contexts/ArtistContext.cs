@@ -19,7 +19,7 @@ public class ArtistContext : DbContext
         modelBuilder.Entity<Artist>()
             .ToTable("Artist");
 
-        modelBuilder.Entity<Artist>(entity => 
+        modelBuilder.Entity<Artist>(entity =>
         {
             entity.HasKey(e => e.Id);
 

@@ -20,7 +20,7 @@ public class CoverArtContext : DbContext
     {
         modelBuilder.Entity<CoverArt>()
             .ToTable("CoverArt");
-        modelBuilder.Entity<CoverArt>(entity => 
+        modelBuilder.Entity<CoverArt>(entity =>
         {
             entity.HasKey(e => e.Id);
 

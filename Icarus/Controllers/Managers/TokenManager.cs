@@ -149,7 +149,7 @@ public class TokenManager : BaseManager
         return null;
     }
 
-    public int? RetrieveUserIdFromToken(string token)
+    public Guid? RetrieveUserIdFromToken(string token)
     {
         var parsedToken = this.ContainsBearer(token) ? this.StripBearer(token) : token;
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -159,7 +159,15 @@ public class TokenManager : BaseManager
         {
             if (item.Key == "user_id")
             {
-                return Convert.ToInt32(item.Value);
+                if (item.Value != null)
+                {
+                    var id = item.Value.ToString();
+                    return Guid.Parse(id!);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

@@ -21,7 +21,7 @@ public class GenreContext : DbContext
         modelBuilder.Entity<Genre>()
             .ToTable("Genre");
 
-        modelBuilder.Entity<Genre>(entity => 
+        modelBuilder.Entity<Genre>(entity =>
         {
             entity.HasKey(e => e.Id);
 

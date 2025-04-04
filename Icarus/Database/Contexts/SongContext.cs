@@ -21,7 +21,7 @@ public class SongContext : DbContext
         modelBuilder.Entity<Song>()
             .ToTable("Song");
 
-        modelBuilder.Entity<Song>(entity => 
+        modelBuilder.Entity<Song>(entity =>
         {
             entity.HasKey(e => e.Id);
 

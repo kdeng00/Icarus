@@ -20,7 +20,7 @@ public class AccessLevelContext : DbContext
     #endregion
 
     #region Methods
-    public Models.AccessLevel? GetAccessLevel(int songId)
+    public Models.AccessLevel? GetAccessLevel(Guid songId)
     {
         var accessLevel = this.AccessLevels!.FirstOrDefault(acc => acc.SongId == songId);
         return accessLevel;
@@ -30,7 +30,7 @@ public class AccessLevelContext : DbContext
     {
         modelBuilder.Entity<Models.AccessLevel>().ToTable("AccessLevel");
 
-        modelBuilder.Entity<Models.AccessLevel>(entity => 
+        modelBuilder.Entity<Models.AccessLevel>(entity =>
         {
             entity.HasKey(e => e.Id);
 

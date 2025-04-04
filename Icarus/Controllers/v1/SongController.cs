@@ -57,7 +57,7 @@ public class SongController : BaseController
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetSong(int id)
+    public IActionResult GetSong(Guid id)
     {
         var context = new SongContext(_connectionString!);
 
@@ -65,14 +65,14 @@ public class SongController : BaseController
 
         Console.WriteLine("Here");
 
-        if (song.Id != 0)
+        if (song.Id.ToString().Length != 0)
             return Ok(song);
         else
             return NotFound();
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateSong(int id, [FromBody] Song song)
+    public IActionResult UpdateSong(Guid id, [FromBody] Song song)
     {
         song.Id = id;
         Console.WriteLine("Retrieving filepath of song");

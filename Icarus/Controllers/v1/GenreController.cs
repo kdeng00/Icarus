@@ -50,7 +50,7 @@ public class GenreController : BaseController
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetGenre(int id)
+    public IActionResult GetGenre(Guid id)
     {
         var genre = new Genre { Id = id };
 

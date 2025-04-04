@@ -40,7 +40,7 @@ public class SongDataController : BaseController
 
 
     [HttpGet("download/{id}")]
-    public IActionResult Download(int id, [FromQuery] bool? randomizeFilename)
+    public IActionResult Download(Guid id, [FromQuery] bool? randomizeFilename)
     {
         var tokenManager = new TokenManager(this._config!);
         var songContext = new SongContext(this._connectionString!);
@@ -172,7 +172,7 @@ public class SongDataController : BaseController
     }
 
     [HttpDelete("delete/{id}")]
-    public IActionResult DeleteSong(int id)
+    public IActionResult DeleteSong(Guid id)
     {
         var songContext = new SongContext(_connectionString!);
         var songMetaData = songContext.RetrieveRecord(new Song { Id = id });

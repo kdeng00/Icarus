@@ -27,9 +27,9 @@ public class AccessLevelController : BaseController
 
     #region HTTP Routes
     [HttpGet]
-    public IActionResult GetAccessLevels(int? id, int? songId)
+    public IActionResult GetAccessLevels(Guid? id, Guid? songId)
     {
-        var accLevel = new Models.AccessLevel { Id = 0 };
+        var accLevel = new Models.AccessLevel { };
         var accessLevelContext = new Database.Contexts.AccessLevelContext(_connectionString!);
 
         if (id != null)
@@ -43,7 +43,7 @@ public class AccessLevelController : BaseController
 
         var response = new GetAccessLevelsResponse { Data = new List<Models.AccessLevel>() };
 
-        if (accLevel?.Id > 0)
+        if (accLevel?.Id.ToString().Length > 0)
         {
             response.Subject = "Successful";
             response.Data.Add(accLevel);
@@ -57,7 +57,7 @@ public class AccessLevelController : BaseController
     }
 
     [HttpPatch("{id}")]
-    public IActionResult UpdateAccessLevel(int id, [FromBody] Models.AccessLevel accessLevel)
+    public IActionResult UpdateAccessLevel(Guid id, [FromBody] Models.AccessLevel accessLevel)
     {
         var response = new UpdateAccessLevelResponse { Data = new List<Models.AccessLevel>() };
         var targetLevel = accessLevel.Level;
