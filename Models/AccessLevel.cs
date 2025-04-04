@@ -7,6 +7,7 @@ public class AccessLevel
 {
     #region Properties
     [Newtonsoft.Json.JsonProperty("id")]
+    [Key]
     public Guid Id { get; set; }
     [Newtonsoft.Json.JsonProperty("level")]
     public string? Level { get; set; }
