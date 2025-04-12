@@ -1,8 +1,8 @@
 version: '3.8' # Use a recent version
 
 services:
-  # Your Rust Application Service
-  app:
+  # --- Web API ---
+  api:
     build: . # Tells docker-compose to build the Dockerfile in the current directory
     container_name: icarus # Optional: Give the container a specific name
     ports:
@@ -23,7 +23,7 @@ services:
         condition: service_healthy # Wait for the DB to be healthy before starting the app
     restart: unless-stopped # Optional: Restart policy
 
-  # --- Web API Service ---
+  # --- Web API auth ---
   auth:
     build:
       context: ../icarus_auth # IMPORTANT: Relative path to the local checkout of your web API repo (containing the Dockerfile)
@@ -43,6 +43,7 @@ services:
     #  - ./path/to/your/web-api-repo:/app
 
   # PostgreSQL Database Service
+  # --- icarus web api db
   db:
     image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_db # Optional: Give the container a specific name
@@ -67,6 +68,7 @@ services:
         start_period: 10s
     restart: always # Optional: Restart policy
 
+  # --- icarus web auth api db
   auth_db:
     image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_auth_db # Optional: Give the container a specific name
