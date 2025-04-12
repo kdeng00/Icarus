@@ -1,0 +1,19 @@
+# Ignore build artifacts
+target/
+pkg/
+
+# Ignore git directory
+.git/
+
+# Ignore environment files (configure via docker-compose instead)
+.env*
+
+# Ignore IDE/editor specific files
+.idea/
+.vscode/
+
+# Ignore OS specific files
+*.DS_Store
+
+# Add any other files/directories you don't need in the image
+# e.g., logs/, tmp/

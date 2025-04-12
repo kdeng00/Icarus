@@ -1,0 +1,54 @@
+version: '3.8' # Use a recent version
+
+services:
+  # Your Rust Application Service
+  app:
+    build: . # Tells docker-compose to build the Dockerfile in the current directory
+    container_name: icarus # Optional: Give the container a specific name
+    ports:
+      # Map host port 8000 to container port 3000 (adjust as needed)
+      # Format: "HOST_PORT:CONTAINER_PORT"
+      - "8000:3000"
+    environment:
+      # Pass environment variables to your Rust application
+      # RUST_LOG: info # Example: Set log level
+      # IMPORTANT: Configure DATABASE_URL to connect to the 'db' service
+      # The hostname 'db' matches the service name defined below.
+      DATABASE_URL: postgresql://icarus:password@db:5432/icarus
+      # Add any other environment variables your app needs
+      # APP_HOST: 0.0.0.0
+      # APP_PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy # Wait for the DB to be healthy before starting the app
+    restart: unless-stopped # Optional: Restart policy
+
+  # PostgreSQL Database Service
+  db:
+    image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
+    container_name: icarus_db # Optional: Give the container a specific name
+    environment:
+      # These MUST match the user, password, and database name in the DATABASE_URL above
+      POSTGRES_USER: icarus
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: icarus
+    volumes:
+      # Persist database data using a named volume
+      - postgres_data:/var/lib/postgresql/data
+    ports: []
+      # Optional: Expose port 5432 ONLY if you need to connect directly from your host machine (e.g., for debugging)
+      # - "5432:5432"
+      # pass:
+    healthcheck:
+        # Checks if Postgres is ready to accept connections
+        test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 10s
+    restart: always # Optional: Restart policy
+
+# Define the named volume for data persistence
+volumes:
+  postgres_data:
+    driver: local # Use the default local driver
