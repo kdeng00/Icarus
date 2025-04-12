@@ -31,7 +31,7 @@ services:
     container_name: auth_api
     restart: unless-stopped
     ports:
-      - "8000:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
+      - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
     environment:
       # Environment variables your API needs, e.g., database connection
       DATABASE_URL: postgresql://icarus_op:password@postgres:5432/icarus_auth
@@ -74,7 +74,7 @@ services:
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
-      POSTGRES_USER: icarus
+      POSTGRES_USER: icarus_op
       POSTGRES_PASSWORD: password
       POSTGRES_DB: icarus_auth
     volumes:
