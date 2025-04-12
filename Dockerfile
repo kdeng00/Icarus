@@ -36,7 +36,7 @@ COPY src ./src
 # If you have other directories like `templates` or `static`, copy them too
 # COPY templates ./templates
 # COPY static ./static
-# COPY .env ./.env
+COPY .env ./.env
 # COPY migrations ./migrations
 
 # << --- SSH MOUNT ADDED HERE --- >>
@@ -62,7 +62,7 @@ COPY --from=builder /usr/src/app/target/release/icarus .
 
 # Copy other necessary files like .env (if used for runtime config) or static assets
 # It's generally better to configure via environment variables in Docker though
-# COPY --from=builder /usr/src/app/.env .
+COPY --from=builder /usr/src/app/.env .
 # COPY --from=builder /usr/src/app/migrations ./migrations
 # COPY --from=builder /usr/src/app/templates ./templates
 # COPY --from=builder /usr/src/app/static ./static

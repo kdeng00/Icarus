@@ -20,7 +20,9 @@ services:
       # APP_PORT: 3000
     depends_on:
       db:
-        condition: service_healthy # Wait for the DB to be healthy before starting the app
+        condition: service_healthy
+    networks:
+      - app-network
     restart: unless-stopped # Optional: Restart policy
 
   # --- Web API auth ---
@@ -34,10 +36,15 @@ services:
       - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
     environment:
       # Environment variables your API needs, e.g., database connection
-      DATABASE_URL: postgresql://icarus_op:password@postgres:5432/icarus_auth
+      DATABASE_URL: postgresql://icarus_op:password@auth_db:5432/icarus_auth
       # Add other necessary environment variables
+    env_file:
+      - ../icarus_auth/.env
     depends_on:
-      - auth_db # Ensures Postgres starts before the web API attempts to connect
+      auth_db:
+        condition: service_healthy
+    networks:
+      - app-network
     # Optional: Mount local code for development (live reload)
     # volumes:
     #  - ./path/to/your/web-api-repo:/app
