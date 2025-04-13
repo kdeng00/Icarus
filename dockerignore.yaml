@@ -5,6 +5,8 @@ pkg/
 # Ignore git directory
 .git/
 
+.github/
+
 # Ignore environment files (configure via docker-compose instead)
 .env*
 
