@@ -9,15 +9,6 @@ services:
       # Map host port 8000 to container port 3000 (adjust as needed)
       # Format: "HOST_PORT:CONTAINER_PORT"
       - "8000:3000"
-    # environment:
-      # Pass environment variables to your Rust application
-      # RUST_LOG: info # Example: Set log level
-      # IMPORTANT: Configure DATABASE_URL to connect to the 'db' service
-      # The hostname 'db' matches the service name defined below.
-      # DATABASE_URL: postgresql://icarus:password@main_db:5432/icarus_db
-      # Add any other environment variables your app needs
-      # APP_HOST: 0.0.0.0
-      # APP_PORT: 3000
     env_file:
       - .env
     depends_on:
@@ -52,7 +43,7 @@ services:
     #  - ./path/to/your/web-api-repo:/app
 
   # PostgreSQL Database Service
-  # --- icarus web api db
+  # --- icarus web api db ---
   main_db:
     image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_db # Optional: Give the container a specific name
@@ -67,7 +58,6 @@ services:
     ports:
       # Optional: Expose port 5432 ONLY if you need to connect directly from your host machine (e.g., for debugging)
       - "5432:5432"
-      # pass:
     healthcheck:
         # Checks if Postgres is ready to accept connections
         test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -79,7 +69,7 @@ services:
     networks:
       - main-api-network
 
-  # --- icarus web auth api db
+  # --- icarus web auth api db ---
   auth_db:
     image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_auth_db # Optional: Give the container a specific name
@@ -94,7 +84,6 @@ services:
     ports: 
       # Optional: Expose port 5432 ONLY if you need to connect directly from your host machine (e.g., for debugging)
       - "5433:5432"
-      # pass:
     healthcheck:
         # Checks if Postgres is ready to accept connections
         test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
