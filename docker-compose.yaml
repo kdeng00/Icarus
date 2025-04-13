@@ -14,19 +14,19 @@ services:
       # RUST_LOG: info # Example: Set log level
       # IMPORTANT: Configure DATABASE_URL to connect to the 'db' service
       # The hostname 'db' matches the service name defined below.
-      DATABASE_URL: postgresql://icarus:password@db:5432/icarus
+      DATABASE_URL: postgresql://icarus:password@main_db:5432/icarus_db
       # Add any other environment variables your app needs
       # APP_HOST: 0.0.0.0
       # APP_PORT: 3000
     depends_on:
-      db:
+      main_db:
         condition: service_healthy
     networks:
       - app-network
     restart: unless-stopped # Optional: Restart policy
 
   # --- Web API auth ---
-  auth:
+  auth_api:
     build:
       context: ../icarus_auth # IMPORTANT: Relative path to the local checkout of your web API repo (containing the Dockerfile)
       dockerfile: Dockerfile # Optional: Specify if your Dockerfile has a non-standard name
@@ -36,10 +36,10 @@ services:
       - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
     environment:
       # Environment variables your API needs, e.g., database connection
-      DATABASE_URL: postgresql://icarus_op:password@auth_db:5432/icarus_auth
+      DATABASE_URL: postgresql://icarus:password@auth_db:5432/icarus_auth_db
       # Add other necessary environment variables
-    env_file:
-      - ../icarus_auth/.env
+    # env_file:
+    #  - ../icarus_auth/.env
     depends_on:
       auth_db:
         condition: service_healthy
@@ -51,14 +51,14 @@ services:
 
   # PostgreSQL Database Service
   # --- icarus web api db
-  db:
+  main_db:
     image: postgres:17.4-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
       POSTGRES_USER: icarus
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: icarus
+      POSTGRES_DB: icarus_db
     volumes:
       # Persist database data using a named volume
       - postgres_data:/var/lib/postgresql/data
@@ -81,9 +81,9 @@ services:
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
-      POSTGRES_USER: icarus_op
+      POSTGRES_USER: icarus
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: icarus_auth
+      POSTGRES_DB: icarus_auth_db
     volumes:
       # Persist database data using a named volume
       - postgres_data_auth:/var/lib/postgresql/data
