@@ -29,7 +29,6 @@ services:
       - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
     # environment:
       # Environment variables your API needs, e.g., database connection
-      # DATABASE_URL: postgresql://icarus:password@auth_db:5432/icarus_auth_db
       # Add other necessary environment variables
     env_file:
      - ../icarus_auth/.env
