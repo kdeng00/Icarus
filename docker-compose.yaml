@@ -9,20 +9,22 @@ services:
       # Map host port 8000 to container port 3000 (adjust as needed)
       # Format: "HOST_PORT:CONTAINER_PORT"
       - "8000:3000"
-    environment:
+    # environment:
       # Pass environment variables to your Rust application
       # RUST_LOG: info # Example: Set log level
       # IMPORTANT: Configure DATABASE_URL to connect to the 'db' service
       # The hostname 'db' matches the service name defined below.
-      DATABASE_URL: postgresql://icarus:password@main_db:5432/icarus_db
+      # DATABASE_URL: postgresql://icarus:password@main_db:5432/icarus_db
       # Add any other environment variables your app needs
       # APP_HOST: 0.0.0.0
       # APP_PORT: 3000
+    env_file:
+      - .env
     depends_on:
       main_db:
         condition: service_healthy
     networks:
-      - app-network
+      - main-api-network
     restart: unless-stopped # Optional: Restart policy
 
   # --- Web API auth ---
@@ -34,17 +36,17 @@ services:
     restart: unless-stopped
     ports:
       - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
-    environment:
+    # environment:
       # Environment variables your API needs, e.g., database connection
-      DATABASE_URL: postgresql://icarus:password@auth_db:5432/icarus_auth_db
+      # DATABASE_URL: postgresql://icarus:password@auth_db:5432/icarus_auth_db
       # Add other necessary environment variables
-    # env_file:
-    #  - ../icarus_auth/.env
+    env_file:
+     - ../icarus_auth/.env
     depends_on:
       auth_db:
         condition: service_healthy
     networks:
-      - app-network
+      - auth-api-network
     # Optional: Mount local code for development (live reload)
     # volumes:
     #  - ./path/to/your/web-api-repo:/app
@@ -56,9 +58,9 @@ services:
     container_name: icarus_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
-      POSTGRES_USER: icarus
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: icarus_db
+      POSTGRES_USER: ${POSTGRES_USER:-icarus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-icarus_db}
     volumes:
       # Persist database data using a named volume
       - postgres_data:/var/lib/postgresql/data
@@ -74,6 +76,8 @@ services:
         retries: 5
         start_period: 10s
     restart: always # Optional: Restart policy
+    networks:
+      - main-api-network
 
   # --- icarus web auth api db
   auth_db:
@@ -81,9 +85,9 @@ services:
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
-      POSTGRES_USER: icarus
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: icarus_auth_db
+      POSTGRES_USER: ${POSTGRES_USER:-icarus_op}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-icarus_auth_db}
     volumes:
       # Persist database data using a named volume
       - postgres_data_auth:/var/lib/postgresql/data
@@ -99,6 +103,8 @@ services:
         retries: 5
         start_period: 10s
     restart: always # Optional: Restart policy
+    networks:
+      - auth-api-network
 
 # Define the named volume for data persistence
 volumes:
@@ -109,5 +115,7 @@ volumes:
 
 # Define the network (optional, but good practice)
 networks:
-  app-network:
+  main-api-network:
+    driver: bridge
+  auth-api-network:
     driver: bridge
