@@ -18,13 +18,82 @@ pub mod response {
     }
 }
 
+mod song_queue {
+    use sqlx::Row;
+
+    #[derive(Debug, serde::Serialize, sqlx::FromRow)]
+    pub struct InsertedData {
+        pub id: uuid::Uuid,
+    }
+
+    pub async fn insert(pool: &sqlx::PgPool, data: &Vec<u8>, filename: &String) -> Result<uuid::Uuid, sqlx::Error> {
+
+        let result = sqlx::query(
+            r#"
+            INSERT INTO "songQueue" (data, filename) VALUES($1, $2) RETURNING id;
+            "#
+        )
+        .bind(&data)
+        .bind(&filename)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => {
+                let id: uuid::Uuid = row.try_get("id")
+                .map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                Ok(id)
+            }
+            Err(err) => Err(sqlx::Error::RowNotFound)
+        }
+    }
+}
+
 pub mod endpoint {
     use axum::{http::{StatusCode}, Json};
+    // use axum::extract::M
+    use std::io::Write;
+
+    use crate::callers::song::song_queue;
 
     pub async fn queue_song(
-        Json(payload): Json<super::request::Request>,
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        mut multipart: axum::extract::Multipart,
+        // Json(payload): Json<super::request::Request>,
     ) -> (StatusCode, Json<super::response::Response>) {
-        (StatusCode::OK, Json(super::response::Response::default()))
+        let mut results: Vec<uuid::Uuid> = Vec::new();
+        let mut response = super::response::Response::default();
+
+        while let Some(field) = multipart.next_field().await.unwrap() {
+            let name = field.name().unwrap().to_string();
+            let file_name = field.file_name().unwrap().to_string();
+            let content_type = field.content_type().unwrap().to_string();
+            println!("Name {} filename {} content type {}", name, file_name, content_type);
+            let data = field.bytes().await.unwrap();
+    
+            println!(
+                "Received file '{}' (name = '{}', content-type = '{}', size = {})",
+                file_name,
+                name,
+                content_type,
+                data.len()
+            );
+    
+            // Save the file to disk
+            let mut file = std::fs::File::create(&file_name).unwrap();
+            file.write_all(&data).unwrap();
+
+            let raw_data: Vec<u8> = data.to_vec();
+            let queue_repo = song_queue::insert(&pool, &raw_data, &file_name).await.unwrap();
+            results.push(queue_repo);
+        }
+
+        response.data = results;
+
+        (StatusCode::OK, Json(response))
     }
 
 }

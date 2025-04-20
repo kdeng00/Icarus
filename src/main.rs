@@ -5,6 +5,8 @@ use axum::{
     // routing::{get, post},
     routing::{get, post},
 };
+use tower_http::timeout::TimeoutLayer;
+use std::time::Duration;
 // use serde::{Deserialize, Serialize};
 
 pub mod callers;
@@ -67,7 +69,9 @@ async fn main() {
         // `GET /` goes to `root`
         .route("/", get(root))
         .route(callers::endpoints::QUEUESONG, post(callers::song::endpoint::queue_song))
-        .layer(axum::Extension(pool));
+        .layer(axum::Extension(pool))
+        .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
+        .layer(TimeoutLayer::new(Duration::from_secs(300)));
     // `POST /users` goes to `create_user`
     // .route("/users", post(create_user));
 
