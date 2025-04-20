@@ -47,7 +47,7 @@ mod song_queue {
                 .map_err(|_e| sqlx::Error::RowNotFound).unwrap();
                 Ok(id)
             }
-            Err(err) => Err(sqlx::Error::RowNotFound)
+            Err(_err) => Err(sqlx::Error::RowNotFound)
         }
     }
 }
