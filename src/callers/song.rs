@@ -1,8 +1,5 @@
-pub mod request {
-}
+pub mod request {}
 
-pub mod response {
-}
+pub mod response {}
 
-pub mod endpoint {
-}
+pub mod endpoint {}
