@@ -3,7 +3,7 @@ use axum::{
     Router,
     // http::StatusCode,
     // routing::{get, post},
-    routing::get,
+    routing::{get, post},
 };
 // use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,8 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         // `GET /` goes to `root`
-        .route("/", get(root));
+        .route("/", get(root))
+        .route(callers::endpoints::QUEUESONG, post(callers::song::endpoint::queue_song));
     // `POST /users` goes to `create_user`
     // .route("/users", post(create_user));
 
