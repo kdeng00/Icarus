@@ -7,6 +7,8 @@ use axum::{
 };
 // use serde::{Deserialize, Serialize};
 
+pub mod callers;
+
 #[tokio::main]
 async fn main() {
     // initialize tracing
