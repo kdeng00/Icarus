@@ -7,7 +7,7 @@ edition = "2024"
 axum = { version = "0.8.3" }
 serde = { version = "1.0.218", features = ["derive"] }
 serde_json = { version = "1.0.139" }
-tokio = { version = "1.44.1", features = ["rt-multi-thread"] }
+tokio = { version = "1.44.2", features = ["rt-multi-thread"] }
 tracing-subscriber = "0.3.19"
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.1.0-main-0dc8c153d2-680" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.2.0" }
