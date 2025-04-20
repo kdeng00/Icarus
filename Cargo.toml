@@ -10,5 +10,7 @@ serde_json = { version = "1.0.140" }
 tokio = { version = "1.44.2", features = ["rt-multi-thread"] }
 tracing-subscriber = "0.3.19"
 uuid = { version = "1.16.0", features = ["v4", "serde"] }
+sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
+dotenvy = { version = "0.15.7" }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.1.30" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.4.3" }
