@@ -61,7 +61,7 @@ COPY --from=builder /usr/src/app/target/release/icarus .
 # Copy other necessary files like .env (if used for runtime config) or static assets
 # It's generally better to configure via environment variables in Docker though
 COPY --from=builder /usr/src/app/.env .
-COPY --from=builder /usr/src/app/migrations .
+COPY --from=builder /usr/src/app/migrations ./migrations
 
 # Expose the port your Axum app listens on (e.g., 3000 or 8000)
 EXPOSE 3000
