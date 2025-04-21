@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:$POSTGRES_VERSION
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: $POSTGRES_USER
+          POSTGRES_DB: $POSTGRES_DB
         ports:
           - 5432:5432
         options: >-
@@ -47,7 +47,7 @@ jobs:
       
     - name: Setup test database
       env:
-        DATABASE_URL: "postgres://${{ env.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}"
+        DATABASE_URL: "postgres://$POSTGRES_USER:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/$POSTGRES_DB"
       run: |
         # Wait for PostgreSQL to be ready
         for i in {1..10}; do
