@@ -211,7 +211,7 @@ mod tests {
         let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
         db::migrations(&pool).await;
 
-        let app = crate::init::routes().await.layer(axum::Extension(pool));
+        let _app = crate::init::routes().await.layer(axum::Extension(pool));
 
         // TODO: Add code to send request with multipart form data. Add a few flac files in the 
         // tests directory
