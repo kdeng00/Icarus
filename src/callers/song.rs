@@ -35,8 +35,8 @@ mod song_queue {
             INSERT INTO "songQueue" (data, filename) VALUES($1, $2) RETURNING id;
             "#,
         )
-        .bind(&data)
-        .bind(&filename)
+        .bind(data)
+        .bind(filename)
         .fetch_one(pool)
         .await
         .map_err(|e| {

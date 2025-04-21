@@ -116,7 +116,8 @@ pub async fn root() -> &'static str {
 mod tests {
     use crate::db;
 
-    use tower::ServiceExt;
+    // Might need later
+    // use tower::ServiceExt;
 
     mod db_mgr {
         use std::str::FromStr;
