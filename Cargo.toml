@@ -7,11 +7,22 @@ edition = "2024"
 axum = { version = "0.8.3", features = ["multipart"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = { version = "1.0.140" }
-tokio = { version = "1.44.2", features = ["rt-multi-thread"] }
+tower = { version = "0.5.2" }
+tokio = { version = "1.44.2", features = ["full"] }
+tokio-util = { version = "0.7.14" }
 tower-http = { version = "0.6.2", features = ["timeout"] }
+multer = { version = "3.1.0" }
+bytes = { version = "1.10.1" }
 tracing-subscriber = "0.3.19"
+mime = { version = "0.3.17" }
+mime_guess = { version = "2.0.5" }
+futures = { version = "0.3.31" }
 uuid = { version = "1.16.0", features = ["v4", "serde"] }
-sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
+sqlx = { version = "0.8.5", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
 dotenvy = { version = "0.15.7" }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.1.30" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.4.3" }
+
+[dev-dependencies]
+url = { version = "2.5.4" }
+reqwest = { version = "0.12.15", features = ["stream", "multipart"] }
