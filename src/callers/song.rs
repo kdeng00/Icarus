@@ -5,7 +5,6 @@ pub mod request {
     pub struct Request {
         pub message: String,
     }
-
 }
 
 pub mod response {
@@ -26,12 +25,15 @@ mod song_queue {
         pub id: uuid::Uuid,
     }
 
-    pub async fn insert(pool: &sqlx::PgPool, data: &Vec<u8>, filename: &String) -> Result<uuid::Uuid, sqlx::Error> {
-
+    pub async fn insert(
+        pool: &sqlx::PgPool,
+        data: &Vec<u8>,
+        filename: &String,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
             INSERT INTO "songQueue" (data, filename) VALUES($1, $2) RETURNING id;
-            "#
+            "#,
         )
         .bind(&data)
         .bind(&filename)
@@ -43,17 +45,19 @@ mod song_queue {
 
         match result {
             Ok(row) => {
-                let id: uuid::Uuid = row.try_get("id")
-                .map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                let id: uuid::Uuid = row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
                 Ok(id)
             }
-            Err(_err) => Err(sqlx::Error::RowNotFound)
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
 
 pub mod endpoint {
-    use axum::{http::{StatusCode}, Json};
+    use axum::{Json, http::StatusCode};
     // use axum::extract::M
     use std::io::Write;
 
@@ -71,9 +75,12 @@ pub mod endpoint {
             let name = field.name().unwrap().to_string();
             let file_name = field.file_name().unwrap().to_string();
             let content_type = field.content_type().unwrap().to_string();
-            println!("Name {} filename {} content type {}", name, file_name, content_type);
+            println!(
+                "Name {} filename {} content type {}",
+                name, file_name, content_type
+            );
             let data = field.bytes().await.unwrap();
-    
+
             println!(
                 "Received file '{}' (name = '{}', content-type = '{}', size = {})",
                 file_name,
@@ -81,13 +88,15 @@ pub mod endpoint {
                 content_type,
                 data.len()
             );
-    
+
             // Save the file to disk
             let mut file = std::fs::File::create(&file_name).unwrap();
             file.write_all(&data).unwrap();
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = song_queue::insert(&pool, &raw_data, &file_name).await.unwrap();
+            let queue_repo = song_queue::insert(&pool, &raw_data, &file_name)
+                .await
+                .unwrap();
             results.push(queue_repo);
         }
 
@@ -95,5 +104,4 @@ pub mod endpoint {
 
         (StatusCode::OK, Json(response))
     }
-
 }
