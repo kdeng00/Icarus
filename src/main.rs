@@ -123,6 +123,13 @@ mod tests {
     use tower_http::timeout::TimeoutLayer;
     use base64::Engine;
 
+    use axum::http::Request;
+    use axum::body::Body as AxumBody;
+    use anyhow::Result;
+    // use tower::ServiceExt;
+    use http_body_util::BodyExt;
+    use common_multipart_rfc7578::client::multipart::{Form as MultipartForm, Body as MultipartBody};
+
     mod util {
         use axum::body::Bytes;
         use axum_test::multipart::MultipartForm;
@@ -265,19 +272,96 @@ mod tests {
         "#, base64_str
         );
 
+        let true_data: Vec<u8> = Vec::new();
+
+        /*
         let request = axum::http::Request::builder()
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUESONG)
             .header(
                 axum::http::header::CONTENT_TYPE,
-                "multipart/form-data; boundary=boundary",
+                format!("multipart/form-data; boundary={}", mime::BOUNDARY),
             )
-            .body(axum::body::Body::from(raw_string))
+            // .body(axum::body::Body::from(raw_string))
+            .body(true_data.into())
             .unwrap();
-        // let response = app.clone().oneshot(request).await;
+        */
+        /*
+        let response = app.clone()
+        // .oneshot(request).await;
+        .oneshot(axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::QUEUESONG)
+            .header(
+                axum::http::header::CONTENT_TYPE,
+                format!("multipart/form-data; boundary={}", mime::BOUNDARY),
+            )
+            // .body(axum::body::Body::from(raw_string))
+            .body(true_data).unwrap()
+        ).await;
+        */
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
+
+    #[tokio::test]
+    async fn test_with_oneshot() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = crate::init::routes().await.layer(axum::Extension(pool))
+            .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
+            .layer(TimeoutLayer::new(Duration::from_secs(300)));
+
+        // Create multipart form
+        let mut form = MultipartForm::default();
+        // form.add_text("file", "hoge-able");
+        let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
+
+        // Create request
+        let content_type = form.content_type();
+        let body = MultipartBody::from(form);
+        let req = axum::http::Request::builder()
+            .method("POST")
+            .uri(crate::callers::endpoints::QUEUESONG)
+            .header("Content-Type", content_type)
+            .body(axum::body::Body::from_stream(body)).unwrap();
+
+        // Send request
+        match app.oneshot(req).await {
+            Ok(response) => {
+                let body = response.body();
+                println!("Body: {:?}", body);
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        // Assert response
+        /*
+        assert_eq!(response.status(), 200);
+        let response_body = response
+            .into_body().collect().await.to_bytes().to_vec();
+        */
+
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+
 }
 
 /*
