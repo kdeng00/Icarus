@@ -118,17 +118,19 @@ mod tests {
 
     use crate::db;
 
-    use tower::ServiceExt;
-    use std::time::Duration;
-    use tower_http::timeout::TimeoutLayer;
     use base64::Engine;
+    use std::time::Duration;
+    use tower::ServiceExt;
+    use tower_http::timeout::TimeoutLayer;
 
-    use axum::http::Request;
-    use axum::body::Body as AxumBody;
     use anyhow::Result;
+    use axum::body::Body as AxumBody;
+    use axum::http::Request;
     // use tower::ServiceExt;
+    use common_multipart_rfc7578::client::multipart::{
+        Body as MultipartBody, Form as MultipartForm,
+    };
     use http_body_util::BodyExt;
-    use common_multipart_rfc7578::client::multipart::{Form as MultipartForm, Body as MultipartBody};
 
     mod util {
         use axum::body::Bytes;
@@ -252,24 +254,26 @@ mod tests {
             .file_name(&"track01.flac")
             .mime_type(&"audio/flac");
 
-        let multipart_form =
-            axum_test::multipart::MultipartForm::new().add_part("file", file_part);
+        let multipart_form = axum_test::multipart::MultipartForm::new().add_part("file", file_part);
         let bytes = util::multipart_form_to_bytes(multipart_form).await;
 
-        let app = crate::init::routes().await.layer(axum::Extension(pool))
+        let app = crate::init::routes()
+            .await
+            .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)));
         // TODO: Add code to send request with multipart form data. Add a few flac files in the
         // tests directory
         let base64_str = base64::engine::general_purpose::STANDARD.encode(&bytes);
         let raw_string = format!(
-                r#"--boundary
+            r#"--boundary
             Content-Disposition:form-data;name="track01.flac";filename="track01.flac"
             Content-Type:audio/flac
 
             {}
             --boundary--
-        "#, base64_str
+        "#,
+            base64_str
         );
 
         let true_data: Vec<u8> = Vec::new();
@@ -321,7 +325,9 @@ mod tests {
         let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
         db::migrations(&pool).await;
 
-        let app = crate::init::routes().await.layer(axum::Extension(pool))
+        let app = crate::init::routes()
+            .await
+            .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)));
 
@@ -337,7 +343,8 @@ mod tests {
             .method("POST")
             .uri(crate::callers::endpoints::QUEUESONG)
             .header("Content-Type", content_type)
-            .body(axum::body::Body::from_stream(body)).unwrap();
+            .body(axum::body::Body::from_stream(body))
+            .unwrap();
 
         // Send request
         match app.oneshot(req).await {
@@ -357,11 +364,8 @@ mod tests {
             .into_body().collect().await.to_bytes().to_vec();
         */
 
-
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
-
-
 }
 
 /*
