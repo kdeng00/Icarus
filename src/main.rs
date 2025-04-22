@@ -114,41 +114,23 @@ pub async fn root() -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use std::os::macos::raw;
+    // use std::os::macos::raw;
 
     use crate::db;
 
-    use base64::Engine;
-    use std::time::Duration;
+    // use base64::Engine;
+    use std::{time::Duration, usize};
     use tower::ServiceExt;
     use tower_http::timeout::TimeoutLayer;
 
-    use anyhow::Result;
-    use axum::body::Body as AxumBody;
-    use axum::http::Request;
+    // use anyhow::Result;
+    // use axum::body::Body as AxumBody;
+    // use axum::http::Request;
     // use tower::ServiceExt;
     use common_multipart_rfc7578::client::multipart::{
         Body as MultipartBody, Form as MultipartForm,
     };
-    use http_body_util::BodyExt;
-
-    mod util {
-        use axum::body::Bytes;
-        use axum_test::multipart::MultipartForm;
-        use axum_test::multipart::Part;
-        use mime::Mime;
-        use std::str::FromStr;
-        use std::usize;
-
-        pub async fn multipart_form_to_bytes(multipart_form: MultipartForm) -> Bytes {
-            // let boundary = "my-boundary"; // You should generate a unique boundary
-            // let mut buffer = Vec::new();
-
-            let body = multipart_form.into();
-            let bytes = axum::body::to_bytes(body, usize::MAX).await;
-            bytes.unwrap()
-        }
-    }
+    // use http_body_util::BodyExt;
 
     // Might need later
     // use tower::ServiceExt;
@@ -246,85 +228,6 @@ mod tests {
         let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
         db::migrations(&pool).await;
 
-        let song_path = String::from("tests/Machine_gun/track01.flac");
-        let path = std::path::Path::new(&song_path);
-
-        let file_bytes = include_bytes!("../tests/Machine_gun/track01.flac");
-        let file_part = axum_test::multipart::Part::bytes(file_bytes.as_slice())
-            .file_name(&"track01.flac")
-            .mime_type(&"audio/flac");
-
-        let multipart_form = axum_test::multipart::MultipartForm::new().add_part("file", file_part);
-        let bytes = util::multipart_form_to_bytes(multipart_form).await;
-
-        let app = crate::init::routes()
-            .await
-            .layer(axum::Extension(pool))
-            .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
-            .layer(TimeoutLayer::new(Duration::from_secs(300)));
-        // TODO: Add code to send request with multipart form data. Add a few flac files in the
-        // tests directory
-        let base64_str = base64::engine::general_purpose::STANDARD.encode(&bytes);
-        let raw_string = format!(
-            r#"--boundary
-            Content-Disposition:form-data;name="track01.flac";filename="track01.flac"
-            Content-Type:audio/flac
-
-            {}
-            --boundary--
-        "#,
-            base64_str
-        );
-
-        let true_data: Vec<u8> = Vec::new();
-
-        /*
-        let request = axum::http::Request::builder()
-            .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUESONG)
-            .header(
-                axum::http::header::CONTENT_TYPE,
-                format!("multipart/form-data; boundary={}", mime::BOUNDARY),
-            )
-            // .body(axum::body::Body::from(raw_string))
-            .body(true_data.into())
-            .unwrap();
-        */
-        /*
-        let response = app.clone()
-        // .oneshot(request).await;
-        .oneshot(axum::http::Request::builder()
-            .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUESONG)
-            .header(
-                axum::http::header::CONTENT_TYPE,
-                format!("multipart/form-data; boundary={}", mime::BOUNDARY),
-            )
-            // .body(axum::body::Body::from(raw_string))
-            .body(true_data).unwrap()
-        ).await;
-        */
-
-        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
-    }
-
-    #[tokio::test]
-    async fn test_with_oneshot() {
-        let tm_pool = db_mgr::get_pool().await.unwrap();
-        let db_name = db_mgr::generate_db_name().await;
-
-        match db_mgr::create_database(&tm_pool, &db_name).await {
-            Ok(_) => {
-                println!("Success");
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        }
-
-        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-        db::migrations(&pool).await;
-
         let app = crate::init::routes()
             .await
             .layer(axum::Extension(pool))
@@ -333,45 +236,32 @@ mod tests {
 
         // Create multipart form
         let mut form = MultipartForm::default();
-        // form.add_text("file", "hoge-able");
         let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
 
         // Create request
         let content_type = form.content_type();
         let body = MultipartBody::from(form);
         let req = axum::http::Request::builder()
-            .method("POST")
+            .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUESONG)
-            .header("Content-Type", content_type)
+            .header(axum::http::header::CONTENT_TYPE, content_type)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
 
         // Send request
         match app.oneshot(req).await {
             Ok(response) => {
-                let body = response.body();
+                let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
                 println!("Body: {:?}", body);
+                let resp: crate::callers::song::response::Response = serde_json::from_slice(&body).unwrap();
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
             }
             Err(err) => {
                 assert!(false, "Error: {:?}", err);
             }
         };
 
-        // Assert response
-        /*
-        assert_eq!(response.status(), 200);
-        let response_body = response
-            .into_body().collect().await.to_bytes().to_vec();
-        */
-
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 }
-
-/*
-                       axum::http::header::CONTENT_TYPE,
-                       format!(
-                           "multipart/form-data; boundary={}",
-                           multipart_body.boundary()
-
-*/
