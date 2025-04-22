@@ -212,7 +212,36 @@ mod tests {
         let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
         db::migrations(&pool).await;
 
-        let _app = crate::init::routes().await.layer(axum::Extension(pool));
+        let song_path = String::from("tests/Machine_gun/track01.flac");
+        let path = std::path::Path::new(&song_path);
+
+        let file_bytes = include_bytes!("../tests/Machine_gun/track01.flac");
+        let file_part = axum_test::multipart::Part::bytes(file_bytes.as_slice())
+            .file_name(&"track01.flac")
+            .mime_type(&"audio/flac");
+
+        let _multipart_form = axum_test::multipart::MultipartForm::new().add_part("file", file_part);
+
+        let app = crate::init::routes().await.layer(axum::Extension(pool));
+        let server = axum_test::TestServer::new(app);
+        match server {
+            Ok(_ser) => {
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        match reqwest::multipart::Form::new().file("file", path).await {
+            Ok(_form) => {
+                let mut builder = axum::http::Request::builder();
+                builder = builder.method(axum::http::Method::POST);
+                builder = builder.uri(crate::callers::endpoints::QUEUESONG);
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
 
         // TODO: Add code to send request with multipart form data. Add a few flac files in the
         // tests directory
