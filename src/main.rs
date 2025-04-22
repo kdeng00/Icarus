@@ -251,9 +251,12 @@ mod tests {
         // Send request
         match app.oneshot(req).await {
             Ok(response) => {
-                let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+                let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
                 println!("Body: {:?}", body);
-                let resp: crate::callers::song::response::Response = serde_json::from_slice(&body).unwrap();
+                let resp: crate::callers::song::response::Response =
+                    serde_json::from_slice(&body).unwrap();
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
             }
