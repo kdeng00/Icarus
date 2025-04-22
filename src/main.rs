@@ -220,13 +220,13 @@ mod tests {
             .file_name(&"track01.flac")
             .mime_type(&"audio/flac");
 
-        let _multipart_form = axum_test::multipart::MultipartForm::new().add_part("file", file_part);
+        let _multipart_form =
+            axum_test::multipart::MultipartForm::new().add_part("file", file_part);
 
         let app = crate::init::routes().await.layer(axum::Extension(pool));
         let server = axum_test::TestServer::new(app);
         match server {
-            Ok(_ser) => {
-            }
+            Ok(_ser) => {}
             Err(err) => {
                 assert!(false, "Error: {:?}", err);
             }
