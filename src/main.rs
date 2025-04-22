@@ -114,7 +114,32 @@ pub async fn root() -> &'static str {
 
 #[cfg(test)]
 mod tests {
+    use std::os::macos::raw;
+
     use crate::db;
+
+    use tower::ServiceExt;
+    use std::time::Duration;
+    use tower_http::timeout::TimeoutLayer;
+    use base64::Engine;
+
+    mod util {
+        use axum::body::Bytes;
+        use axum_test::multipart::MultipartForm;
+        use axum_test::multipart::Part;
+        use mime::Mime;
+        use std::str::FromStr;
+        use std::usize;
+
+        pub async fn multipart_form_to_bytes(multipart_form: MultipartForm) -> Bytes {
+            // let boundary = "my-boundary"; // You should generate a unique boundary
+            // let mut buffer = Vec::new();
+
+            let body = multipart_form.into();
+            let bytes = axum::body::to_bytes(body, usize::MAX).await;
+            bytes.unwrap()
+        }
+    }
 
     // Might need later
     // use tower::ServiceExt;
@@ -220,51 +245,45 @@ mod tests {
             .file_name(&"track01.flac")
             .mime_type(&"audio/flac");
 
-        let _multipart_form =
+        let multipart_form =
             axum_test::multipart::MultipartForm::new().add_part("file", file_part);
+        let bytes = util::multipart_form_to_bytes(multipart_form).await;
 
-        let app = crate::init::routes().await.layer(axum::Extension(pool));
-        let server = axum_test::TestServer::new(app);
-        match server {
-            Ok(_ser) => {}
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        }
-
-        match reqwest::multipart::Form::new().file("file", path).await {
-            Ok(_form) => {
-                let mut builder = axum::http::Request::builder();
-                builder = builder.method(axum::http::Method::POST);
-                builder = builder.uri(crate::callers::endpoints::QUEUESONG);
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        }
-
+        let app = crate::init::routes().await.layer(axum::Extension(pool))
+            .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
+            .layer(TimeoutLayer::new(Duration::from_secs(300)));
         // TODO: Add code to send request with multipart form data. Add a few flac files in the
         // tests directory
+        let base64_str = base64::engine::general_purpose::STANDARD.encode(&bytes);
+        let raw_string = format!(
+                r#"--boundary
+            Content-Disposition:form-data;name="track01.flac";filename="track01.flac"
+            Content-Type:audio/flac
 
-        /*
-        let response = app
-            .clone()
-            .oneshot(
-                axum::http::Request::builder()
-                    .method(axum::http::Method::POST)
-                    .header(
-                        axum::http::header::CONTENT_TYPE,
-                        format!(
-                            "multipart/form-data; boundary={}",
-                            multipart_body.boundary()
-                        ),
-                    )
-                    .uri(crate::callers::endpoints::QUEUESONG)
-                    .body(axum::body::Body::from(multipart_bytes)),
+            {}
+            --boundary--
+        "#, base64_str
+        );
+
+        let request = axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::QUEUESONG)
+            .header(
+                axum::http::header::CONTENT_TYPE,
+                "multipart/form-data; boundary=boundary",
             )
-            .await;
-        */
+            .body(axum::body::Body::from(raw_string))
+            .unwrap();
+        // let response = app.clone().oneshot(request).await;
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 }
+
+/*
+                       axum::http::header::CONTENT_TYPE,
+                       format!(
+                           "multipart/form-data; boundary={}",
+                           multipart_body.boundary()
+
+*/
