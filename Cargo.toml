@@ -26,3 +26,4 @@ icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", ta
 [dev-dependencies]
 url = { version = "2.5.4" }
 reqwest = { version = "0.12.15", features = ["stream", "multipart"] }
+axum-test = { version = "17.3.0" }
