@@ -104,26 +104,14 @@ pub async fn root() -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    // use std::os::macos::raw;
-
     use crate::db;
 
-    // use base64::Engine;
-    use std::{time::Duration, usize};
-    use tower::ServiceExt;
-    use tower_http::timeout::TimeoutLayer;
-
-    // use anyhow::Result;
-    // use axum::body::Body as AxumBody;
-    // use axum::http::Request;
-    // use tower::ServiceExt;
     use common_multipart_rfc7578::client::multipart::{
         Body as MultipartBody, Form as MultipartForm,
     };
-    // use http_body_util::BodyExt;
-
-    // Might need later
-    // use tower::ServiceExt;
+    use std::{time::Duration, usize};
+    use tower::ServiceExt;
+    use tower_http::timeout::TimeoutLayer;
 
     mod db_mgr {
         use std::str::FromStr;
