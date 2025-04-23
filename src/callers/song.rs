@@ -58,7 +58,6 @@ mod song_queue {
 
 pub mod endpoint {
     use axum::{Json, http::StatusCode};
-    // use axum::extract::M
     use std::io::Write;
 
     use crate::callers::song::song_queue;
@@ -66,7 +65,6 @@ pub mod endpoint {
     pub async fn queue_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
-        // Json(payload): Json<super::request::Request>,
     ) -> (StatusCode, Json<super::response::Response>) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::Response::default();
@@ -75,10 +73,6 @@ pub mod endpoint {
             let name = field.name().unwrap().to_string();
             let file_name = field.file_name().unwrap().to_string();
             let content_type = field.content_type().unwrap().to_string();
-            println!(
-                "Name {} filename {} content type {}",
-                name, file_name, content_type
-            );
             let data = field.bytes().await.unwrap();
 
             println!(
@@ -101,6 +95,11 @@ pub mod endpoint {
         }
 
         response.data = results;
+        response.message = if response.data.is_empty() {
+            String::from("Error")
+        } else {
+            String::from("Success")
+        };
 
         (StatusCode::OK, Json(response))
     }

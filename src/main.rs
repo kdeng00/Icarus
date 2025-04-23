@@ -1,5 +1,3 @@
-// use serde::{Deserialize, Serialize};
-
 pub mod callers;
 
 pub mod db {
@@ -19,8 +17,6 @@ pub mod db {
         }
     }
 
-    // use crate::{connection_settings, keys};
-
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
         let database_url = get_db_url().await;
         println!("Database url: {:?}", database_url);
@@ -32,7 +28,6 @@ pub mod db {
     }
 
     async fn get_db_url() -> String {
-        // #[cfg(debug_assertions)] // Example: Only load .env in debug builds
         dotenvy::dotenv().ok();
         env::var(keys::DBURL).expect(keys::error::ERROR)
     }
@@ -57,11 +52,7 @@ async fn main() {
 
     // build our application with a route
     let app = init::app().await;
-    // `GET /` goes to `root`
-    // `POST /users` goes to `create_user`
-    // .route("/users", post(create_user));
 
-    // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(get_full()).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
@@ -73,7 +64,6 @@ pub mod init {
 
     pub async fn routes() -> axum::Router {
         axum::Router::new()
-            // `GET /` goes to `root`
             .route(crate::ROOT, get(crate::root))
             .route(
                 crate::callers::endpoints::QUEUESONG,

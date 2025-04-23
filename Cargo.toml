@@ -24,11 +24,5 @@ icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = 
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.4.3" }
 
 [dev-dependencies]
-http-body-util = { version = "0.1.3" }
 common-multipart-rfc7578 = { version = "0.7.0" }
-anyhow = { version = "1.0.98" }
 url = { version = "2.5.4" }
-reqwest = { version = "0.12.15", features = ["stream", "multipart"] }
-axum-test = { version = "17.3.0" }
-hyper = { version = "1.6.0" }
-base64 = "0.22.1"
