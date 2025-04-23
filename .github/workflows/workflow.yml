@@ -2,25 +2,58 @@ name: Rust CI
 
 on:
   push:
-    branches: [ "v0.2" ] # Changed from main to master
+    branches: [ "v0.2" ]
   pull_request:
-    branches: [ "v0.2" ] # Changed from main to master
+    branches: [ "v0.2" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17.4
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
+    
     - name: Install Rust 1.86.0
       uses: actions-rs/toolchain@v1
       with:
         toolchain: 1.86.0
         components: clippy, rustfmt
         override: true
+    
     - name: Cache dependencies
       uses: Swatinem/rust-cache@v2
+    
+    - name: Install libpq
+      run: sudo apt-get install -y libpq-dev
+      
+    - name: Setup test database
+      env:
+        DATABASE_URL: "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}"
+      run: |
+        # Wait for PostgreSQL to be ready
+        for i in {1..10}; do
+          pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} && break
+          sleep 2
+        done
+        
+        # Run database migrations (if you use sqlx migrations)
+        cargo install sqlx-cli --no-default-features --features native-tls,postgres
+        sqlx migrate run --database-url $DATABASE_URL
+    
     - name: Build
       run: |
         mkdir -p ~/.ssh
@@ -30,9 +63,14 @@ jobs:
         eval $(ssh-agent -s)
         ssh-add -v ~/.ssh/gitea_deploy_key
         cargo build --verbose --release
+    
     - name: Run tests
+      env:
+        DATABASE_URL: "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}"
       run: cargo test --verbose
+    
     - name: Run clippy
       run: cargo clippy -- -D warnings
+    
     - name: Run rustfmt
       run: cargo fmt --all -- --check

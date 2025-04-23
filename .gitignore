@@ -5,3 +5,4 @@ Cargo.lock
 .env
 
 .DS_STORE
+Storage/
