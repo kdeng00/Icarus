@@ -1,3 +1,4 @@
+pub mod metadata;
 pub mod song;
 
 pub mod endpoints {
