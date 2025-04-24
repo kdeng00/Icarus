@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS "songQueue" (
 CREATE TABLE IF NOT EXISTS "metadataQueue" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     metadata jsonb NOT NULL,
-    created_at timestamp DEFAULT now()
+    created_at timestamp DEFAULT now(),
+    song_queue_id UUID NOT NULL
 );
 
 -- Create an index for better query performance
