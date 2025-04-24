@@ -16,6 +16,26 @@ pub mod request {
         pub track_count: i32,
         pub year: i32,
     }
+
+    impl Request {
+        pub async fn to_json_value(&self) -> serde_json::Value {
+            serde_json::json!(
+            {
+                  "id": &self.id,
+                "album": &self.album,
+                "album_artist": &self.album_artist,
+                "genre": &self.genre,
+                "year": &self.year,
+                "track_count": &self.track_count,
+                "disc_count": &self.disc_count,
+                "title": &self.title,
+                "artist": &self.artist,
+                "disc": &self.disc,
+                "track": &self.track,
+                "duration": &self.duration,
+            })
+        }
+    }
 }
 
 pub mod response {
@@ -76,21 +96,7 @@ pub mod endpoint {
     ) -> (StatusCode, Json<super::response::Response>) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::Response::default();
-        let meta = serde_json::json!(
-            {
-                  "id": &payload.id,
-                "album": &payload.album,
-                "album_artist": &payload.album_artist,
-                "genre": &payload.genre,
-                "year": &payload.year,
-                "track_count": &payload.track_count,
-                "disc_count": &payload.disc_count,
-                "title": &payload.title,
-                "artist": &payload.artist,
-                "disc": &payload.disc,
-                "track": &payload.track,
-                "duration": &payload.duration,
-            });
+        let meta = payload.to_json_value().await;
         match super::metadata_queue::insert(&pool, &meta, &payload.id).await {
             Ok(id) => {
                 results.push(id);
