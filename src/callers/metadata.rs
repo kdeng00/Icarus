@@ -21,7 +21,7 @@ pub mod request {
         pub async fn to_json_value(&self) -> serde_json::Value {
             serde_json::json!(
             {
-                  "id": &self.id,
+                "id": &self.id,
                 "album": &self.album,
                 "album_artist": &self.album_artist,
                 "genre": &self.genre,
