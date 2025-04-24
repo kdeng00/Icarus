@@ -38,7 +38,7 @@ mod metadata_queue {
 
     pub async fn insert(
         pool: &sqlx::PgPool,
-        metadata: &String,
+        metadata: &serde_json::Value,
         song_queue_id: &uuid::Uuid,
     ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
@@ -76,24 +76,33 @@ pub mod endpoint {
     ) -> (StatusCode, Json<super::response::Response>) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::Response::default();
-        match serde_json::to_string_pretty(&payload) {
-            Ok(meta) => match super::metadata_queue::insert(&pool, &meta, &payload.id).await {
-                Ok(id) => {
-                    results.push(id);
-                    response.data = results;
-                    response.message = if response.data.is_empty() {
-                        String::from("Error")
-                    } else {
-                        String::from("Success")
-                    };
+        let meta = serde_json::json!(
+            {
+                  "id": &payload.id,
+                "album": &payload.album,
+                "album_artist": &payload.album_artist,
+                "genre": &payload.genre,
+                "year": &payload.year,
+                "track_count": &payload.track_count,
+                "disc_count": &payload.disc_count,
+                "title": &payload.title,
+                "artist": &payload.artist,
+                "disc": &payload.disc,
+                "track": &payload.track,
+                "duration": &payload.duration,
+            });
+        match super::metadata_queue::insert(&pool, &meta, &payload.id).await {
+            Ok(id) => {
+                results.push(id);
+                response.data = results;
+                response.message = if response.data.is_empty() {
+                    String::from("Error")
+                } else {
+                    String::from("Success")
+                };
 
-                    (StatusCode::OK, Json(response))
-                }
-                Err(err) => {
-                    response.message = err.to_string();
-                    (StatusCode::BAD_REQUEST, Json(response))
-                }
-            },
+                (StatusCode::OK, Json(response))
+            }
             Err(err) => {
                 response.message = err.to_string();
                 (StatusCode::BAD_REQUEST, Json(response))
