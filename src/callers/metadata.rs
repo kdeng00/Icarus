@@ -95,8 +95,8 @@ pub mod endpoint {
                 }
             },
             Err(err) => {
-            response.message = err.to_string();
-            (StatusCode::BAD_REQUEST, Json(response))
+                response.message = err.to_string();
+                (StatusCode::BAD_REQUEST, Json(response))
             }
         }
     }
