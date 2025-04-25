@@ -20,6 +20,13 @@ pub mod response {
 mod song_queue {
     use sqlx::Row;
 
+    pub mod status {
+        pub const PENDING: &str = "pending";
+        // Will be used later on
+        pub const _PROCESSING: &str = "processing";
+        pub const _DONE: &str = "done";
+    }
+
     #[derive(Debug, serde::Serialize, sqlx::FromRow)]
     pub struct InsertedData {
         pub id: uuid::Uuid,
@@ -29,14 +36,16 @@ mod song_queue {
         pool: &sqlx::PgPool,
         data: &Vec<u8>,
         filename: &String,
+        status: &String,
     ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            INSERT INTO "songQueue" (data, filename) VALUES($1, $2) RETURNING id;
+            INSERT INTO "songQueue" (data, filename, status) VALUES($1, $2, $3) RETURNING id;
             "#,
         )
         .bind(data)
         .bind(filename)
+        .bind(status)
         .fetch_one(pool)
         .await
         .map_err(|e| {
@@ -88,9 +97,14 @@ pub mod endpoint {
             file.write_all(&data).unwrap();
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = song_queue::insert(&pool, &raw_data, &file_name)
-                .await
-                .unwrap();
+            let queue_repo = song_queue::insert(
+                &pool,
+                &raw_data,
+                &file_name,
+                &song_queue::status::PENDING.to_string(),
+            )
+            .await
+            .unwrap();
             results.push(queue_repo);
         }
 
