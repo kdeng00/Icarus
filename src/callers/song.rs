@@ -97,9 +97,14 @@ pub mod endpoint {
             file.write_all(&data).unwrap();
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = song_queue::insert(&pool, &raw_data, &file_name, &song_queue::status::PENDING.to_string())
-                .await
-                .unwrap();
+            let queue_repo = song_queue::insert(
+                &pool,
+                &raw_data,
+                &file_name,
+                &song_queue::status::PENDING.to_string(),
+            )
+            .await
+            .unwrap();
             results.push(queue_repo);
         }
 
