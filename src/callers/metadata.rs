@@ -115,7 +115,7 @@ pub mod metadata_queue {
     pub async fn get_with_song_queue_id(
         pool: &sqlx::PgPool,
         song_queue_id: &uuid::Uuid,
-        ) -> Result<MetadataQueue, sqlx::Error> {
+    ) -> Result<MetadataQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
             SELECT * FROM "metadataQueue" WHERE song_queue_id = $1;
@@ -129,26 +129,24 @@ pub mod metadata_queue {
         });
 
         match result {
-            Ok(row) => {
-                Ok(MetadataQueue{
-                    id: row
+            Ok(row) => Ok(MetadataQueue {
+                id: row
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    metadata: row
+                metadata: row
                     .try_get("metadata")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    created_at: row
+                created_at: row
                     .try_get("created_at")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    song_queue_id: row
+                song_queue_id: row
                     .try_get("song_queue_id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                })
-            }
+            }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
@@ -183,14 +181,10 @@ pub mod endpoint {
         }
     }
 
-
     pub async fn fetch_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>
-    ) -> (
-        StatusCode,
-        Json<super::response::fetch_metadata::Response>,
-    ) {
+        axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,
+    ) -> (StatusCode, Json<super::response::fetch_metadata::Response>) {
         let mut response = super::response::fetch_metadata::Response::default();
         let song_queue_id: uuid::Uuid = match params.song_queue_id {
             Some(id) => id,
