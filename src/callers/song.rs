@@ -82,9 +82,7 @@ mod song_queue {
         }
     }
 
-    pub async fn get_most_recent_and_update(
-        pool: &sqlx::PgPool,
-        ) -> Result<SongQueue, sqlx::Error> {
+    pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
             UPDATE "songQueue"
@@ -98,27 +96,35 @@ mod song_queue {
             )
             RETURNING *;
             "#,
-            )
-            .bind(status::PROCESSING)
-            .bind(status::PENDING)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error inserting: {}", e);
-            });
+        )
+        .bind(status::PROCESSING)
+        .bind(status::PENDING)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
 
         match result {
-            Ok(row) => {
-                Ok(SongQueue{
-                    id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    filename: row.try_get("filename").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    status: row.try_get("status").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    data: row.try_get("data").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                })
-            }
-            Err(err) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Ok(row) => Ok(SongQueue {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                filename: row
+                    .try_get("filename")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                status: row
+                    .try_get("status")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                data: row
+                    .try_get("data")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
+            Err(err) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
@@ -176,8 +182,12 @@ pub mod endpoint {
         (StatusCode::OK, Json(response))
     }
 
-    pub async fn fetch_queue_song(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        ) -> (StatusCode, Json<super::response::fetch_queue_song::Response>) {
+    pub async fn fetch_queue_song(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+    ) -> (
+        StatusCode,
+        Json<super::response::fetch_queue_song::Response>,
+    ) {
         let mut response = super::response::fetch_queue_song::Response::default();
 
         match song_queue::get_most_recent_and_update(&pool).await {
