@@ -70,7 +70,7 @@ pub mod init {
                 post(crate::callers::song::endpoint::queue_song),
             )
             .route(
-                crate::callers::endpoints::QUEUESONG,
+                crate::callers::endpoints::QUEUESONGDATA,
                 get(crate::callers::song::endpoint::download_flac),
             )
             .route(

@@ -246,7 +246,7 @@ const ALLOWED_EXTENSION: &str = "flac";
     pub async fn download_flac(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>) -> (StatusCode, axum::response::Response) {
-        pritnln!("Id: {:?}", id);
+        println!("Id: {:?}", id);
 
         match song_queue::get_data(&pool, &id).await {
             Ok(data) => {
