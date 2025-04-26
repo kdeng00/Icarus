@@ -70,6 +70,10 @@ pub mod init {
                 post(crate::callers::song::endpoint::queue_song),
             )
             .route(
+                crate::callers::endpoints::QUEUESONGDATA,
+                get(crate::callers::song::endpoint::download_flac),
+            )
+            .route(
                 crate::callers::endpoints::NEXTQUEUESONG,
                 get(crate::callers::song::endpoint::fetch_queue_song),
             )
@@ -227,13 +231,47 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn fetch_queue_req(
+        app: &axum::Router,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let fetch_req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(crate::callers::endpoints::NEXTQUEUESONG)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        app.clone().oneshot(fetch_req).await
+    }
+
+    async fn fetch_queue_data_req(
+        app: &axum::Router,
+        id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let raw_uri = String::from(crate::callers::endpoints::QUEUESONGDATA);
+        let end_index = raw_uri.len() - 4;
+        let mut uri: String = (&raw_uri[..end_index]).to_string();
+        uri += &id.to_string();
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(uri)
+            .header(axum::http::header::CONTENT_TYPE, "audio/flac")
+            .body(axum::body::Body::empty())
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
+    pub async fn resp_to_bytes(
+        response: axum::response::Response,
+    ) -> Result<axum::body::Bytes, axum::Error> {
+        axum::body::to_bytes(response.into_body(), usize::MAX).await
+    }
+
     pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
     where
         Data: for<'a> serde::Deserialize<'a>,
     {
-        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
-            .await
-            .unwrap();
+        let body = resp_to_bytes(response).await.unwrap();
         serde_json::from_slice(&body).unwrap()
     }
 
@@ -299,20 +337,80 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
-                let fetch_req = axum::http::Request::builder()
-                    .method(axum::http::Method::GET)
-                    .uri(crate::callers::endpoints::NEXTQUEUESONG)
-                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                    .body(axum::body::Body::empty())
-                    .unwrap();
-
-                match app.clone().oneshot(fetch_req).await {
+                match fetch_queue_req(&app).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::fetch_queue_song::Response,
                         >(response)
                         .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_fetch_queue_data() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                match fetch_queue_req(&app).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::fetch_queue_song::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let id = resp.data[0].id;
+
+                        match fetch_queue_data_req(&app, &id).await {
+                            Ok(response) => match resp_to_bytes(response).await {
+                                Ok(bytes) => {
+                                    assert_eq!(
+                                        false,
+                                        bytes.is_empty(),
+                                        "Queued data should not be empty"
+                                    );
+                                }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            },
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
                     }
                     Err(err) => {
                         assert!(false, "Error: {:?}", err);

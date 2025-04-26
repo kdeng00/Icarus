@@ -122,10 +122,36 @@ mod song_queue {
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
+
+    pub async fn get_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<Vec<u8>, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT data FROM "songQueue"
+            WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => {
+                let data = row
+                    .try_get("data")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                Ok(data)
+            }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
 }
 
 pub mod endpoint {
-    use axum::{Json, http::StatusCode};
+    use axum::{Json, http::StatusCode, response::IntoResponse};
     use std::io::Write;
 
     use crate::callers::song::song_queue;
@@ -195,6 +221,34 @@ pub mod endpoint {
                 response.message = err.to_string();
                 (StatusCode::BAD_REQUEST, Json(response))
             }
+        }
+    }
+
+    pub async fn download_flac(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (StatusCode, axum::response::Response) {
+        println!("Id: {:?}", id);
+
+        match song_queue::get_data(&pool, &id).await {
+            Ok(data) => {
+                let by = axum::body::Bytes::from(data);
+                let mut response = by.into_response();
+                let headers = response.headers_mut();
+                headers.insert(
+                    axum::http::header::CONTENT_TYPE,
+                    "audio/flac".parse().unwrap(),
+                );
+                headers.insert(
+                    axum::http::header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}.flac\"", id)
+                        .parse()
+                        .unwrap(),
+                );
+
+                (StatusCode::OK, response)
+            }
+            Err(_err) => (StatusCode::BAD_REQUEST, axum::response::Response::default()),
         }
     }
 }
