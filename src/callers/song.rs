@@ -226,7 +226,8 @@ pub mod endpoint {
 
     pub async fn download_flac(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>) -> (StatusCode, axum::response::Response) {
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (StatusCode, axum::response::Response) {
         println!("Id: {:?}", id);
 
         match song_queue::get_data(&pool, &id).await {
@@ -240,14 +241,14 @@ pub mod endpoint {
                 );
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
-                    format!("attachment; filename=\"{}.flac\"", id).parse().unwrap(),
+                    format!("attachment; filename=\"{}.flac\"", id)
+                        .parse()
+                        .unwrap(),
                 );
 
                 (StatusCode::OK, response)
             }
-            Err(_err) => {
-                (StatusCode::BAD_REQUEST, axum::response::Response::default())
-            }
+            Err(_err) => (StatusCode::BAD_REQUEST, axum::response::Response::default()),
         }
     }
 }

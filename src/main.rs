@@ -231,17 +231,22 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    async fn fetch_queue_req(app: &axum::Router,) -> Result<axum::response::Response, std::convert::Infallible> {
-                let fetch_req = axum::http::Request::builder()
-                    .method(axum::http::Method::GET)
-                    .uri(crate::callers::endpoints::NEXTQUEUESONG)
-                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                    .body(axum::body::Body::empty())
-                    .unwrap();
+    async fn fetch_queue_req(
+        app: &axum::Router,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let fetch_req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(crate::callers::endpoints::NEXTQUEUESONG)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::empty())
+            .unwrap();
         app.clone().oneshot(fetch_req).await
     }
 
-    async fn fetch_queue_data_req(app: &axum::Router, id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn fetch_queue_data_req(
+        app: &axum::Router,
+        id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         let raw_uri = String::from(crate::callers::endpoints::QUEUESONGDATA);
         let end_index = raw_uri.len() - 4;
         let mut uri: String = (&raw_uri[..end_index]).to_string();
@@ -256,18 +261,17 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    pub async fn resp_to_bytes(response: axum::response::Response) -> Result<axum::body::Bytes, axum::Error> {
-        axum::body::to_bytes(response.into_body(), usize::MAX)
-            .await
+    pub async fn resp_to_bytes(
+        response: axum::response::Response,
+    ) -> Result<axum::body::Bytes, axum::Error> {
+        axum::body::to_bytes(response.into_body(), usize::MAX).await
     }
 
     pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
     where
         Data: for<'a> serde::Deserialize<'a>,
     {
-        let body = resp_to_bytes(response)
-            .await
-            .unwrap();
+        let body = resp_to_bytes(response).await.unwrap();
         serde_json::from_slice(&body).unwrap()
     }
 
@@ -391,16 +395,18 @@ mod tests {
                         let id = resp.data[0].id;
 
                         match fetch_queue_data_req(&app, &id).await {
-                            Ok(response) => {
-                                match resp_to_bytes(response).await {
-                                    Ok(bytes) => {
-                                        assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
+                            Ok(response) => match resp_to_bytes(response).await {
+                                Ok(bytes) => {
+                                    assert_eq!(
+                                        false,
+                                        bytes.is_empty(),
+                                        "Queued data should not be empty"
+                                    );
                                 }
-                            }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            },
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
