@@ -181,7 +181,8 @@ pub mod endpoint {
         let mut response = super::response::fetch_queue_song::Response::default();
 
         match song_queue::get_most_recent_and_update(&pool).await {
-            Ok(_q) => {
+            Ok(item) => {
+                response.data.push(item);
                 (StatusCode::OK, Json(response))
             }
             Err(err) => {
