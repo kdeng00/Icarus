@@ -15,6 +15,16 @@ pub mod response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
     }
+
+    pub mod fetch_queue_song {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<crate::callers::song::song_queue::SongQueue>,
+        }
+    }
 }
 
 mod song_queue {
@@ -23,13 +33,20 @@ mod song_queue {
     pub mod status {
         pub const PENDING: &str = "pending";
         // Will be used later on
-        pub const _PROCESSING: &str = "processing";
+        pub const PROCESSING: &str = "processing";
         pub const _DONE: &str = "done";
     }
 
     #[derive(Debug, serde::Serialize, sqlx::FromRow)]
     pub struct InsertedData {
         pub id: uuid::Uuid,
+    }
+
+    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
+    pub struct SongQueue {
+        pub id: uuid::Uuid,
+        pub filename: String,
+        pub status: String,
     }
 
     pub async fn insert(
@@ -60,6 +77,48 @@ mod song_queue {
                     .unwrap();
                 Ok(id)
             }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue"
+            SET status = $1
+            WHERE id = (
+                SELECT id FROM "songQueue"
+                WHERE status = $2
+                ORDER BY id
+                FOR UPDATE SKIP LOCKED
+                LIMIT 1
+            )
+            RETURNING id, filename, status;
+            "#,
+        )
+        .bind(status::PROCESSING)
+        .bind(status::PENDING)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => Ok(SongQueue {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                filename: row
+                    .try_get("filename")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                status: row
+                    .try_get("status")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
@@ -116,5 +175,26 @@ pub mod endpoint {
         };
 
         (StatusCode::OK, Json(response))
+    }
+
+    pub async fn fetch_queue_song(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+    ) -> (
+        StatusCode,
+        Json<super::response::fetch_queue_song::Response>,
+    ) {
+        let mut response = super::response::fetch_queue_song::Response::default();
+
+        match song_queue::get_most_recent_and_update(&pool).await {
+            Ok(item) => {
+                response.message = String::from("Successful");
+                response.data.push(item);
+                (StatusCode::OK, Json(response))
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (StatusCode::BAD_REQUEST, Json(response))
+            }
+        }
     }
 }

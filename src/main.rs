@@ -70,6 +70,10 @@ pub mod init {
                 post(crate::callers::song::endpoint::queue_song),
             )
             .route(
+                crate::callers::endpoints::NEXTQUEUESONG,
+                get(crate::callers::song::endpoint::fetch_queue_song),
+            )
+            .route(
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
             )
@@ -241,6 +245,84 @@ mod tests {
                     serde_json::from_slice(&body).unwrap();
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_fetch_queue_item() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = crate::init::routes()
+            .await
+            .layer(axum::Extension(pool))
+            .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
+            .layer(TimeoutLayer::new(Duration::from_secs(300)));
+
+        // Create multipart form
+        let mut form = MultipartForm::default();
+        let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
+
+        // Create request
+        let content_type = form.content_type();
+        let body = MultipartBody::from(form);
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::QUEUESONG)
+            .header(axum::http::header::CONTENT_TYPE, content_type)
+            .body(axum::body::Body::from_stream(body))
+            .unwrap();
+
+        // Send request
+        match app.clone().oneshot(req).await {
+            Ok(response) => {
+                let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                    .await
+                    .unwrap();
+                println!("Body: {:?}", body);
+                let resp: crate::callers::song::response::Response =
+                    serde_json::from_slice(&body).unwrap();
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                let fetch_req = axum::http::Request::builder()
+                    .method(axum::http::Method::GET)
+                    .uri(crate::callers::endpoints::NEXTQUEUESONG)
+                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                    .body(axum::body::Body::empty())
+                    .unwrap();
+
+                match app.clone().oneshot(fetch_req).await {
+                    Ok(response) => {
+                        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                            .await
+                            .unwrap();
+                        let resp: crate::callers::song::response::fetch_queue_song::Response =
+                            serde_json::from_slice(&body).unwrap();
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
             }
             Err(err) => {
                 assert!(false, "Error: {:?}", err);

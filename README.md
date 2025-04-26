@@ -12,4 +12,6 @@ docker compose build --ssh default api auth_api
 ```
 
 Bring it up
+```
 docker compose up -d --force-recreate api auth_api
+```
