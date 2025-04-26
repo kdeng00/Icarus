@@ -47,7 +47,7 @@ mod song_queue {
         pub id: uuid::Uuid,
         pub filename: String,
         pub status: String,
-        pub data: Vec<u8>,
+        // pub data: Vec<u8>,
     }
 
     pub async fn insert(
@@ -94,7 +94,7 @@ mod song_queue {
                 FOR UPDATE SKIP LOCKED
                 LIMIT 1
             )
-            RETURNING *;
+            RETURNING id, filename, status;
             "#,
         )
         .bind(status::PROCESSING)
@@ -119,12 +119,8 @@ mod song_queue {
                     .try_get("status")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                data: row
-                    .try_get("data")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
             }),
-            Err(err) => Err(sqlx::Error::RowNotFound),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
@@ -192,6 +188,7 @@ pub mod endpoint {
 
         match song_queue::get_most_recent_and_update(&pool).await {
             Ok(item) => {
+                response.message = String::from("Successful");
                 response.data.push(item);
                 (StatusCode::OK, Json(response))
             }
