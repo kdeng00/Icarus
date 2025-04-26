@@ -3,7 +3,9 @@ version: '3.8' # Use a recent version
 services:
   # --- Web API ---
   api:
-    build: . # Tells docker-compose to build the Dockerfile in the current directory
+    build: # Tells docker-compose to build the Dockerfile in the current directory
+      context: .
+      ssh: ["default"]  # Uses host's SSH agent
     container_name: icarus # Optional: Give the container a specific name
     ports:
       # Map host port 8000 to container port 3000 (adjust as needed)
@@ -22,6 +24,7 @@ services:
   auth_api:
     build:
       context: ../icarus_auth # IMPORTANT: Relative path to the local checkout of your web API repo (containing the Dockerfile)
+      ssh: ["default"]  # Uses host's SSH agent
       dockerfile: Dockerfile # Optional: Specify if your Dockerfile has a non-standard name
     container_name: auth_api
     restart: unless-stopped
