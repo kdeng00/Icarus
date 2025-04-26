@@ -392,7 +392,6 @@ mod tests {
 
                         match fetch_queue_data_req(&app, &id).await {
                             Ok(response) => {
-                                // let _resp = get_resp_data::<Vec<u8>>(response).await;
                                 match resp_to_bytes(response).await {
                                     Ok(bytes) => {
                                         assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
