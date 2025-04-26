@@ -69,6 +69,9 @@ pub mod init {
                 crate::callers::endpoints::QUEUESONG,
                 post(crate::callers::song::endpoint::queue_song),
             )
+            .route(crate::callers::endpoints::NEXTQUEUESONG,
+                get(crate::callers::song::endpoint::fetch_queue_song),
+            )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
