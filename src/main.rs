@@ -307,16 +307,17 @@ mod tests {
                     .method(axum::http::Method::GET)
                     .uri(crate::callers::endpoints::NEXTQUEUESONG)
                     .header(axum::http::header::CONTENT_TYPE, "application/json")
-                    .body(axum::body::Body::empty()).unwrap();
+                    .body(axum::body::Body::empty())
+                    .unwrap();
 
                 match app.clone().oneshot(fetch_req).await {
                     Ok(response) => {
-                let body = axum::body::to_bytes(response.into_body(), usize::MAX)
-                    .await
-                    .unwrap();
-                let resp: crate::callers::song::response::fetch_queue_song::Response =
-                    serde_json::from_slice(&body).unwrap();
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+                            .await
+                            .unwrap();
+                        let resp: crate::callers::song::response::fetch_queue_song::Response =
+                            serde_json::from_slice(&body).unwrap();
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     }
                     Err(err) => {
                         assert!(false, "Error: {:?}", err);

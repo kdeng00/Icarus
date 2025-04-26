@@ -47,7 +47,6 @@ mod song_queue {
         pub id: uuid::Uuid,
         pub filename: String,
         pub status: String,
-        // pub data: Vec<u8>,
     }
 
     pub async fn insert(
