@@ -197,6 +197,17 @@ mod tests {
         }
     }
 
+    mod init {
+        pub async fn app(pool: sqlx::PgPool) -> axum::Router {
+            let app = crate::init::routes()
+                .await
+                .layer(axum::Extension(pool))
+                .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
+                .layer(tower_http::timeout::TimeoutLayer::new(std::time::Duration::from_secs(300)));
+            app
+        }
+    }
+
     #[tokio::test]
     async fn test_song_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -214,11 +225,7 @@ mod tests {
         let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
         db::migrations(&pool).await;
 
-        let app = crate::init::routes()
-            .await
-            .layer(axum::Extension(pool))
-            .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
-            .layer(TimeoutLayer::new(Duration::from_secs(300)));
+        let app = init::app(pool).await;
 
         // Create multipart form
         let mut form = MultipartForm::default();
