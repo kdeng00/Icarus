@@ -122,10 +122,36 @@ mod song_queue {
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
+
+    pub async fn get_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<Vec<u8>, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT data FROM "songQueue"
+            WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => {
+                let data = row
+                    .try_get("data")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                Ok(data)
+            }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
 }
 
 pub mod endpoint {
-    use axum::{Json, http::StatusCode};
+    use axum::{Json, http::StatusCode, response::IntoResponse};
     use std::io::Write;
 
     use crate::callers::song::song_queue;
@@ -196,5 +222,138 @@ pub mod endpoint {
                 (StatusCode::BAD_REQUEST, Json(response))
             }
         }
+    }
+
+    /*
+    use axum::{
+    response::{Response, IntoResponse},
+    routing::get,
+    Router,
+    extract::Path,
+    http::{header, StatusCode, Uri},
+};
+use std::path::{Path, PathBuf};
+use tokio::fs::File;
+use tokio_util::io::ReaderStream;
+use mime_guess::from_path;
+use uuid::Uuid;
+
+// Configuration constants
+const MEDIA_DIRECTORY: &str = "./media";
+const ALLOWED_EXTENSION: &str = "flac";
+*/
+
+    pub async fn download_flac(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>) -> (StatusCode, axum::response::Response) {
+        pritnln!("Id: {:?}", id);
+
+        match song_queue::get_data(&pool, &id).await {
+            Ok(data) => {
+                let by = axum::body::Bytes::from(data);
+                /*
+                match axum::response::Response::builder()
+                    .status(StatusCode::OK)
+                    .header(
+                        axum::http::header::CONTENT_TYPE,
+                        "audio/flac",
+                    )
+                    .header(
+                        axum::http::header::CONTENT_DISPOSITION,
+                        format!("attachment; filename=\"{}.flac\"", id),
+                    )
+                    .header(axum::http::header::CONTENT_LENGTH, by.len())
+                    .body(by) {
+                        Ok(resp) => {
+                            (StatusCode::OK, resp)
+                        }
+                        Err(err) => {
+                        }
+                    }
+                */
+                let mut response = by.into_response();
+                let headers = response.headers_mut();
+                headers.insert(
+                    axum::http::header::CONTENT_TYPE,
+                    "audio/flac".parse().unwrap(),
+                );
+                headers.insert(
+                    axum::http::header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}.flac\"", id).parse().unwrap(),
+                );
+
+                (StatusCode::OK, response)
+            }
+            Err(_err) => {
+                (StatusCode::BAD_REQUEST, axum::response::Response::default())
+            }
+        }
+        // Construct the file path
+        /*
+        let file_name = format!("{}.{}", id, ALLOWED_EXTENSION);
+        let file_path = PathBuf::from(MEDIA_DIRECTORY).join(&file_name);
+
+        // Security check: prevent path traversal
+        if !file_path.starts_with(MEDIA_DIRECTORY) {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "Invalid file path".to_string(),
+            ));
+        }
+
+        // Get file metadata
+        let metadata = match tokio::fs::metadata(&file_path).await {
+            Ok(meta) => meta,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                return Err((
+                    StatusCode::NOT_FOUND,
+                    "File not found".to_string(),
+                ));
+            }
+            Err(err) => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to read file: {}", err),
+                ));
+            }
+        };
+
+        // Verify this is a FLAC file (extension check)
+        if file_path.extension().map(|ext| ext != ALLOWED_EXTENSION).unwrap_or(true) {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "Invalid file type".to_string(),
+            ));
+        }
+
+        // Open the file
+        let file = match File::open(&file_path).await {
+            Ok(file) => file,
+            Err(err) => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to open file: {}", err),
+                ));
+            }
+        };
+
+        // Create stream from file
+        let stream = ReaderStream::new(file);
+
+        // Build response
+        axum::response::Response::builder()
+            .status(StatusCode::OK)
+            .header(
+                header::CONTENT_TYPE,
+                "audio/flac", // Specific MIME type for FLAC
+            )
+            .header(
+                header::CONTENT_DISPOSITION,
+                format!("attachment; filename=\"{}\"", file_name),
+            )
+            .header(header::CONTENT_LENGTH, metadata.len())
+            .body(axum::body::Body::from_stream(stream))
+            .unwrap())
+            */
     }
 }
