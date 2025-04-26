@@ -117,7 +117,7 @@ mod tests {
     use common_multipart_rfc7578::client::multipart::{
         Body as MultipartBody, Form as MultipartForm,
     };
-    use std::{usize};
+    use std::usize;
     use tower::ServiceExt;
 
     mod db_mgr {
@@ -202,11 +202,15 @@ mod tests {
                 .await
                 .layer(axum::Extension(pool))
                 .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
-                .layer(tower_http::timeout::TimeoutLayer::new(std::time::Duration::from_secs(300)))
+                .layer(tower_http::timeout::TimeoutLayer::new(
+                    std::time::Duration::from_secs(300),
+                ))
         }
     }
 
-    async fn song_queue_req(app: &axum::Router) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn song_queue_req(
+        app: &axum::Router,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         // Create multipart form
         let mut form = MultipartForm::default();
         let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
@@ -223,14 +227,14 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data 
-        where
-            Data: for<'a>serde::Deserialize<'a>
+    pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
+    where
+        Data: for<'a> serde::Deserialize<'a>,
     {
-                let body = axum::body::to_bytes(response.into_body(), usize::MAX)
-                    .await
-                    .unwrap();
-                    serde_json::from_slice(&body).unwrap()
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        serde_json::from_slice(&body).unwrap()
     }
 
     #[tokio::test]
@@ -255,7 +259,8 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
             }
@@ -289,7 +294,8 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
@@ -302,7 +308,10 @@ mod tests {
 
                 match app.clone().oneshot(fetch_req).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<crate::callers::song::response::fetch_queue_song::Response>(response).await;
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::fetch_queue_song::Response,
+                        >(response)
+                        .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     }
                     Err(err) => {
@@ -340,7 +349,8 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
                 let new_payload: serde_json::Value = serde_json::json!(
@@ -372,7 +382,9 @@ mod tests {
                     .await
                 {
                     Ok(response) => {
-                        let resp = get_resp_data::<crate::callers::song::response::Response>(response).await;
+                        let resp =
+                            get_resp_data::<crate::callers::song::response::Response>(response)
+                                .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     }
                     Err(err) => {
