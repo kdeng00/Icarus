@@ -38,7 +38,9 @@ pub mod request {
     }
 
     pub mod fetch_metadata {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, sqlx::Decode)]
+        #[derive(
+            Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, sqlx::Decode,
+        )]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
             pub song_queue_id: Option<uuid::Uuid>,
@@ -180,7 +182,7 @@ pub mod metadata_queue {
                     .try_get("metadata")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    // serde_json::Value::new(),
+                // serde_json::Value::new(),
                 created_at: row
                     .try_get("created_at")
                     .map_err(|_e| sqlx::Error::RowNotFound)
@@ -248,7 +250,8 @@ pub mod endpoint {
                         }
                     }
                 } else {
-                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await {
+                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
+                    {
                         Ok(item) => {
                             response.message = String::from("Successful");
                             response.data.push(item);
