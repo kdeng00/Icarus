@@ -1,7 +1,7 @@
 pub mod request {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Default, Deserialize, Serialize)]
+    #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
     pub struct Request {
         pub id: uuid::Uuid,
         pub album: String,
@@ -38,7 +38,7 @@ pub mod request {
     }
 
     pub mod fetch_metadata {
-        #[derive(serde::Deserialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, sqlx::Decode)]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
             pub song_queue_id: Option<uuid::Uuid>,
@@ -77,7 +77,8 @@ pub mod metadata_queue {
     #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
     pub struct MetadataQueue {
         pub id: uuid::Uuid,
-        pub metadata: String,
+        // pub metadata: serde_json::Value,
+        pub metadata: serde_json::Value,
         pub created_at: time::OffsetDateTime,
         pub song_queue_id: uuid::Uuid,
     }
@@ -150,6 +151,48 @@ pub mod metadata_queue {
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
+
+    pub async fn get_with_id(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<MetadataQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, metadata, created_at, song_queue_id FROM "metadataQueue" WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        // println!("SQL {:?}", result);
+
+        match result {
+            Ok(row) => Ok(MetadataQueue {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                metadata: row
+                    .try_get("metadata")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                    // serde_json::Value::new(),
+                created_at: row
+                    .try_get("created_at")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                song_queue_id: row
+                    .try_get("song_queue_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
 }
 
 pub mod endpoint {
@@ -186,20 +229,40 @@ pub mod endpoint {
         axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,
     ) -> (StatusCode, Json<super::response::fetch_metadata::Response>) {
         let mut response = super::response::fetch_metadata::Response::default();
-        let song_queue_id: uuid::Uuid = match params.song_queue_id {
-            Some(id) => id,
-            None => uuid::Uuid::nil(),
-        };
-        // TODO: Make sure id works as well
 
-        match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await {
-            Ok(item) => {
-                response.message = String::from("Successful");
-                response.data.push(item);
-                (StatusCode::OK, Json(response))
+        // TODO: Make sure id works as well
+        match (params.id, params.song_queue_id) {
+            (Some(id), Some(song_queue_id)) => {
+                println!("Something works {:?} {:?}", id, song_queue_id);
+
+                if !id.is_nil() {
+                    match super::metadata_queue::get_with_id(&pool, &id).await {
+                        Ok(item) => {
+                            response.message = String::from("Successful");
+                            response.data.push(item);
+                            (StatusCode::OK, Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (StatusCode::BAD_REQUEST, Json(response))
+                        }
+                    }
+                } else {
+                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await {
+                        Ok(item) => {
+                            response.message = String::from("Successful");
+                            response.data.push(item);
+                            (StatusCode::OK, Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (StatusCode::BAD_REQUEST, Json(response))
+                        }
+                    }
+                }
             }
-            Err(err) => {
-                response.message = err.to_string();
+            _ => {
+                println!("What is going on?");
                 (StatusCode::BAD_REQUEST, Json(response))
             }
         }

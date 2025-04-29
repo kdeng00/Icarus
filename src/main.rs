@@ -81,6 +81,10 @@ pub mod init {
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
             )
+            .route(
+                crate::callers::endpoints::QUEUEMETADATA,
+                get(crate::callers::metadata::endpoint::fetch_metadata),
+            )
     }
 
     pub async fn app() -> axum::Router {
