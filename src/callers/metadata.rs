@@ -80,7 +80,7 @@ pub mod metadata_queue {
     pub struct MetadataQueue {
         pub id: uuid::Uuid,
         // pub metadata: serde_json::Value,
-        // pub metadata: serde_json::Value,
+        pub metadata: serde_json::Value,
         #[serde(with = "time::serde::rfc3339")]
         pub created_at: time::OffsetDateTime,
         pub song_queue_id: uuid::Uuid,
@@ -138,10 +138,10 @@ pub mod metadata_queue {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                // metadata: row
-                    // .try_get("metadata")
-                    // .map_err(|_e| sqlx::Error::RowNotFound)
-                    // .unwrap(),
+                metadata: row
+                    .try_get("metadata")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
                 created_at: row
                     .try_get("created_at")
                     .map_err(|_e| sqlx::Error::RowNotFound)
@@ -174,11 +174,15 @@ pub mod metadata_queue {
         // println!("SQL {:?}", result);
 
         match result {
-            Ok(row) => Ok(MetadataQueue {
+            Ok(row) => 
+            {
+                let data: serde_json::Value = row.try_get("metadata").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                Ok(MetadataQueue {
                 id: row
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
+                metadata: data,
                 // metadata: row
                     // .try_get("metadata")
                     // .map_err(|_e| sqlx::Error::RowNotFound)
@@ -192,7 +196,8 @@ pub mod metadata_queue {
                     .try_get("song_queue_id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-            }),
+                })
+            },
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
