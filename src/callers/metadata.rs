@@ -239,12 +239,10 @@ pub mod endpoint {
         let mut response = super::response::fetch_metadata::Response::default();
 
         // TODO: Make sure id works as well
-        match (params.id, params.song_queue_id) {
-            (Some(id), Some(song_queue_id)) => {
-                println!("Something works {:?} {:?}", id, song_queue_id);
+        match params.id {
+            Some(id) => {
+                println!("Something works {:?}", id);
 
-                if !id.is_nil() {
-                    println!("Id is not nil");
 
                     match super::metadata_queue::get_with_id(&pool, &id).await {
                         Ok(item) => {
@@ -257,25 +255,29 @@ pub mod endpoint {
                             (StatusCode::BAD_REQUEST, Json(response))
                         }
                     }
-                } else {
-                    println!("Song queue Id is probably not nil");
-                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
-                    {
-                        Ok(item) => {
-                            response.message = String::from("Successful");
-                            response.data.push(item);
-                            (StatusCode::OK, Json(response))
-                        }
-                        Err(err) => {
-                            response.message = err.to_string();
-                            (StatusCode::BAD_REQUEST, Json(response))
-                        }
-                    }
-                }
             }
             _ => {
-                println!("What is going on?");
-                (StatusCode::BAD_REQUEST, Json(response))
+                match params.song_queue_id {
+                    Some(song_queue_id) => {
+                        println!("Song queue Id is probably not nil");
+                        match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
+                        {
+                            Ok(item) => {
+                                response.message = String::from("Successful");
+                                response.data.push(item);
+                                (StatusCode::OK, Json(response))
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                (StatusCode::BAD_REQUEST, Json(response))
+                            }
+                        }
+                    }
+                    None => {
+                        println!("What is going on?");
+                        (StatusCode::BAD_REQUEST, Json(response))
+                    }
+                }
             }
         }
     }
