@@ -80,7 +80,8 @@ pub mod metadata_queue {
     pub struct MetadataQueue {
         pub id: uuid::Uuid,
         // pub metadata: serde_json::Value,
-        pub metadata: serde_json::Value,
+        // pub metadata: serde_json::Value,
+        #[serde(with = "time::serde::rfc3339")]
         pub created_at: time::OffsetDateTime,
         pub song_queue_id: uuid::Uuid,
     }
@@ -137,10 +138,10 @@ pub mod metadata_queue {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                metadata: row
-                    .try_get("metadata")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
+                // metadata: row
+                    // .try_get("metadata")
+                    // .map_err(|_e| sqlx::Error::RowNotFound)
+                    // .unwrap(),
                 created_at: row
                     .try_get("created_at")
                     .map_err(|_e| sqlx::Error::RowNotFound)
@@ -178,10 +179,10 @@ pub mod metadata_queue {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                metadata: row
-                    .try_get("metadata")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
+                // metadata: row
+                    // .try_get("metadata")
+                    // .map_err(|_e| sqlx::Error::RowNotFound)
+                    // .unwrap(),
                 // serde_json::Value::new(),
                 created_at: row
                     .try_get("created_at")
@@ -238,6 +239,8 @@ pub mod endpoint {
                 println!("Something works {:?} {:?}", id, song_queue_id);
 
                 if !id.is_nil() {
+                    println!("Id is not nil");
+
                     match super::metadata_queue::get_with_id(&pool, &id).await {
                         Ok(item) => {
                             response.message = String::from("Successful");
@@ -250,6 +253,7 @@ pub mod endpoint {
                         }
                     }
                 } else {
+                    println!("Song queue Id is probably not nil");
                     match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
                     {
                         Ok(item) => {
