@@ -79,7 +79,6 @@ pub mod metadata_queue {
     #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
     pub struct MetadataQueue {
         pub id: uuid::Uuid,
-        // pub metadata: serde_json::Value,
         pub metadata: serde_json::Value,
         #[serde(with = "time::serde::rfc3339")]
         pub created_at: time::OffsetDateTime,
@@ -171,8 +170,6 @@ pub mod metadata_queue {
             eprintln!("Error inserting: {}", e);
         });
 
-        // println!("SQL {:?}", result);
-
         match result {
             Ok(row) => 
             {
@@ -183,11 +180,6 @@ pub mod metadata_queue {
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 metadata: data,
-                // metadata: row
-                    // .try_get("metadata")
-                    // .map_err(|_e| sqlx::Error::RowNotFound)
-                    // .unwrap(),
-                // serde_json::Value::new(),
                 created_at: row
                     .try_get("created_at")
                     .map_err(|_e| sqlx::Error::RowNotFound)
@@ -201,6 +193,7 @@ pub mod metadata_queue {
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
+
 }
 
 pub mod endpoint {
@@ -238,7 +231,6 @@ pub mod endpoint {
     ) -> (StatusCode, Json<super::response::fetch_metadata::Response>) {
         let mut response = super::response::fetch_metadata::Response::default();
 
-        // TODO: Make sure id works as well
         match params.id {
             Some(id) => {
                 println!("Something works {:?}", id);
