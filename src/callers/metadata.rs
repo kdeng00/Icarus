@@ -171,29 +171,30 @@ pub mod metadata_queue {
         });
 
         match result {
-            Ok(row) => 
-            {
-                let data: serde_json::Value = row.try_get("metadata").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+            Ok(row) => {
+                let data: serde_json::Value = row
+                    .try_get("metadata")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
                 Ok(MetadataQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                metadata: data,
-                created_at: row
-                    .try_get("created_at")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                song_queue_id: row
-                    .try_get("song_queue_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    metadata: data,
+                    created_at: row
+                        .try_get("created_at")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    song_queue_id: row
+                        .try_get("song_queue_id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
                 })
-            },
+            }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
-
 }
 
 pub mod endpoint {
@@ -235,8 +236,23 @@ pub mod endpoint {
             Some(id) => {
                 println!("Something works {:?}", id);
 
-
-                    match super::metadata_queue::get_with_id(&pool, &id).await {
+                match super::metadata_queue::get_with_id(&pool, &id).await {
+                    Ok(item) => {
+                        response.message = String::from("Successful");
+                        response.data.push(item);
+                        (StatusCode::OK, Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (StatusCode::BAD_REQUEST, Json(response))
+                    }
+                }
+            }
+            _ => match params.song_queue_id {
+                Some(song_queue_id) => {
+                    println!("Song queue Id is probably not nil");
+                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
+                    {
                         Ok(item) => {
                             response.message = String::from("Successful");
                             response.data.push(item);
@@ -247,30 +263,12 @@ pub mod endpoint {
                             (StatusCode::BAD_REQUEST, Json(response))
                         }
                     }
-            }
-            _ => {
-                match params.song_queue_id {
-                    Some(song_queue_id) => {
-                        println!("Song queue Id is probably not nil");
-                        match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
-                        {
-                            Ok(item) => {
-                                response.message = String::from("Successful");
-                                response.data.push(item);
-                                (StatusCode::OK, Json(response))
-                            }
-                            Err(err) => {
-                                response.message = err.to_string();
-                                (StatusCode::BAD_REQUEST, Json(response))
-                            }
-                        }
-                    }
-                    None => {
-                        println!("What is going on?");
-                        (StatusCode::BAD_REQUEST, Json(response))
-                    }
                 }
-            }
+                None => {
+                    println!("What is going on?");
+                    (StatusCode::BAD_REQUEST, Json(response))
+                }
+            },
         }
     }
 }

@@ -565,18 +565,21 @@ mod tests {
                         let id = resp.data[0];
                         let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
 
-                        match app.clone().oneshot(
-                        axum::http::Request::builder()
-                            .method(axum::http::Method::GET)
-                            // .uri(crate::callers::endpoints::QUEUEMETADATA)
-                            .uri(crate::callers::endpoints::QUEUEMETADATA)
-                            .header(axum::http::header::CONTENT_TYPE, "application/json")
-                            // .body(axum::body::Body::from(new_payload.to_string()))
-                            .body(axum::body::Body::empty())
-                            .unwrap(),
-                            ).await {
-                            Ok(response) => {
-                            }
+                        match app
+                            .clone()
+                            .oneshot(
+                                axum::http::Request::builder()
+                                    .method(axum::http::Method::GET)
+                                    // .uri(crate::callers::endpoints::QUEUEMETADATA)
+                                    .uri(crate::callers::endpoints::QUEUEMETADATA)
+                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    // .body(axum::body::Body::from(new_payload.to_string()))
+                                    .body(axum::body::Body::empty())
+                                    .unwrap(),
+                            )
+                            .await
+                        {
+                            Ok(response) => {}
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
