@@ -279,6 +279,24 @@ mod tests {
         serde_json::from_slice(&body).unwrap()
     }
 
+    pub async fn payload_data(id: &uuid::Uuid) -> serde_json::Value {
+        serde_json::json!(
+        {
+                "id": id,
+                "album" : "Machine Gun: The FillMore East First Show",
+                "album_artist" : "Jimi Hendrix",
+                "artist" : "Jimi Hendrix",
+                "disc" : 1,
+                "disc_count" : 1,
+                "duration" : 330,
+                "genre" : "Psychadelic Rock",
+                "title" : "Power of Soul",
+                "track" : 1,
+                "track_count" : 11,
+                "year" : 2016
+        })
+    }
+
     #[tokio::test]
     async fn test_song_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -455,21 +473,7 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let new_payload: serde_json::Value = serde_json::json!(
-                {
-                        "id": resp.data[0],
-                        "album" : "Machine Gun: The FillMore East First Show",
-                        "album_artist" : "Jimi Hendrix",
-                        "artist" : "Jimi Hendrix",
-                        "disc" : 1,
-                        "disc_count" : 1,
-                        "duration" : 330,
-                        "genre" : "Psychadelic Rock",
-                        "title" : "Power of Soul",
-                        "track" : 1,
-                        "track_count" : 11,
-                        "year" : 2016
-                });
+                let new_payload = payload_data(&resp.data[0]).await;
 
                 match app
                     .clone()
@@ -528,21 +532,7 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let new_payload: serde_json::Value = serde_json::json!(
-                {
-                        "id": resp.data[0],
-                        "album" : "Machine Gun: The FillMore East First Show",
-                        "album_artist" : "Jimi Hendrix",
-                        "artist" : "Jimi Hendrix",
-                        "disc" : 1,
-                        "disc_count" : 1,
-                        "duration" : 330,
-                        "genre" : "Psychadelic Rock",
-                        "title" : "Power of Soul",
-                        "track" : 1,
-                        "track_count" : 11,
-                        "year" : 2016
-                });
+                let new_payload = payload_data(&resp.data[0]).await;
 
                 match app
                     .clone()
@@ -570,16 +560,20 @@ mod tests {
                             .oneshot(
                                 axum::http::Request::builder()
                                     .method(axum::http::Method::GET)
-                                    // .uri(crate::callers::endpoints::QUEUEMETADATA)
-                                    .uri(crate::callers::endpoints::QUEUEMETADATA)
+                                    .uri(uri)
                                     .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    // .body(axum::body::Body::from(new_payload.to_string()))
                                     .body(axum::body::Body::empty())
                                     .unwrap(),
                             )
                             .await
                         {
-                            Ok(response) => {}
+                            Ok(response) => 
+                            {
+                                let resp =
+                                    get_resp_data::<crate::callers::metadata::response::fetch_metadata::Response>(response)
+                                    .await;
+                                assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
+                            }
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
