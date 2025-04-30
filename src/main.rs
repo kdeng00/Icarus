@@ -567,11 +567,11 @@ mod tests {
                             )
                             .await
                         {
-                            Ok(response) => 
-                            {
-                                let resp =
-                                    get_resp_data::<crate::callers::metadata::response::fetch_metadata::Response>(response)
-                                    .await;
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::metadata::response::fetch_metadata::Response,
+                                >(response)
+                                .await;
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                             }
                             Err(err) => {
