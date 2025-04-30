@@ -9,10 +9,11 @@ CREATE TABLE IF NOT EXISTS "songQueue" (
     data BYTEA NOT NULL
 );
 
+-- Table to store queued metadata
 CREATE TABLE IF NOT EXISTS "metadataQueue" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     metadata jsonb NOT NULL,
-    created_at timestamp DEFAULT now(),
+    created_at timestamptz DEFAULT now(),
     song_queue_id UUID NOT NULL
 );
 

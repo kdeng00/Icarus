@@ -81,6 +81,10 @@ pub mod init {
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
             )
+            .route(
+                crate::callers::endpoints::QUEUEMETADATA,
+                get(crate::callers::metadata::endpoint::fetch_metadata),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -275,6 +279,24 @@ mod tests {
         serde_json::from_slice(&body).unwrap()
     }
 
+    pub async fn payload_data(id: &uuid::Uuid) -> serde_json::Value {
+        serde_json::json!(
+        {
+                "id": id,
+                "album" : "Machine Gun: The FillMore East First Show",
+                "album_artist" : "Jimi Hendrix",
+                "artist" : "Jimi Hendrix",
+                "disc" : 1,
+                "disc_count" : 1,
+                "duration" : 330,
+                "genre" : "Psychadelic Rock",
+                "title" : "Power of Soul",
+                "track" : 1,
+                "track_count" : 11,
+                "year" : 2016
+        })
+    }
+
     #[tokio::test]
     async fn test_song_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -451,21 +473,7 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let new_payload: serde_json::Value = serde_json::json!(
-                {
-                        "id": resp.data[0],
-                        "album" : "Machine Gun: The FillMore East First Show",
-                        "album_artist" : "Jimi Hendrix",
-                        "artist" : "Jimi Hendrix",
-                        "disc" : 1,
-                        "disc_count" : 1,
-                        "duration" : 330,
-                        "genre" : "Psychadelic Rock",
-                        "title" : "Power of Soul",
-                        "track" : 1,
-                        "track_count" : 11,
-                        "year" : 2016
-                });
+                let new_payload = payload_data(&resp.data[0]).await;
 
                 match app
                     .clone()
@@ -484,6 +492,92 @@ mod tests {
                             get_resp_data::<crate::callers::song::response::Response>(response)
                                 .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_get_metadata_queue() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let new_payload = payload_data(&resp.data[0]).await;
+
+                match app
+                    .clone()
+                    .oneshot(
+                        axum::http::Request::builder()
+                            .method(axum::http::Method::POST)
+                            .uri(crate::callers::endpoints::QUEUEMETADATA)
+                            .header(axum::http::header::CONTENT_TYPE, "application/json")
+                            .body(axum::body::Body::from(new_payload.to_string()))
+                            .unwrap(),
+                    )
+                    .await
+                {
+                    Ok(response) => {
+                        let resp =
+                            get_resp_data::<crate::callers::song::response::Response>(response)
+                                .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                        let id = resp.data[0];
+                        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
+
+                        match app
+                            .clone()
+                            .oneshot(
+                                axum::http::Request::builder()
+                                    .method(axum::http::Method::GET)
+                                    .uri(uri)
+                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .body(axum::body::Body::empty())
+                                    .unwrap(),
+                            )
+                            .await
+                        {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::metadata::response::fetch_metadata::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
                     }
                     Err(err) => {
                         assert!(false, "Error: {:?}", err);

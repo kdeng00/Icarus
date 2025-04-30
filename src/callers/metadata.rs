@@ -1,7 +1,7 @@
 pub mod request {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Default, Deserialize, Serialize)]
+    #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
     pub struct Request {
         pub id: uuid::Uuid,
         pub album: String,
@@ -36,6 +36,16 @@ pub mod request {
             })
         }
     }
+
+    pub mod fetch_metadata {
+        #[derive(
+            Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, sqlx::Decode,
+        )]
+        pub struct Params {
+            pub id: Option<uuid::Uuid>,
+            pub song_queue_id: Option<uuid::Uuid>,
+        }
+    }
 }
 
 pub mod response {
@@ -46,14 +56,33 @@ pub mod response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
     }
+
+    pub mod fetch_metadata {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<crate::callers::metadata::metadata_queue::MetadataQueue>,
+        }
+    }
 }
 
-mod metadata_queue {
+pub mod metadata_queue {
     use sqlx::Row;
 
     #[derive(Debug, serde::Serialize, sqlx::FromRow)]
     pub struct InsertedData {
         pub id: uuid::Uuid,
+    }
+
+    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
+    pub struct MetadataQueue {
+        pub id: uuid::Uuid,
+        pub metadata: serde_json::Value,
+        #[serde(with = "time::serde::rfc3339")]
+        pub created_at: time::OffsetDateTime,
+        pub song_queue_id: uuid::Uuid,
     }
 
     pub async fn insert(
@@ -81,6 +110,87 @@ mod metadata_queue {
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
                 Ok(id)
+            }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_with_song_queue_id(
+        pool: &sqlx::PgPool,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<MetadataQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT * FROM "metadataQueue" WHERE song_queue_id = $1;
+            "#,
+        )
+        .bind(song_queue_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => Ok(MetadataQueue {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                metadata: row
+                    .try_get("metadata")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                created_at: row
+                    .try_get("created_at")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                song_queue_id: row
+                    .try_get("song_queue_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_with_id(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<MetadataQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, metadata, created_at, song_queue_id FROM "metadataQueue" WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => {
+                let data: serde_json::Value = row
+                    .try_get("metadata")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                Ok(MetadataQueue {
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    metadata: data,
+                    created_at: row
+                        .try_get("created_at")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    song_queue_id: row
+                        .try_get("song_queue_id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                })
             }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
@@ -113,6 +223,52 @@ pub mod endpoint {
                 response.message = err.to_string();
                 (StatusCode::BAD_REQUEST, Json(response))
             }
+        }
+    }
+
+    pub async fn fetch_metadata(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,
+    ) -> (StatusCode, Json<super::response::fetch_metadata::Response>) {
+        let mut response = super::response::fetch_metadata::Response::default();
+
+        match params.id {
+            Some(id) => {
+                println!("Something works {:?}", id);
+
+                match super::metadata_queue::get_with_id(&pool, &id).await {
+                    Ok(item) => {
+                        response.message = String::from("Successful");
+                        response.data.push(item);
+                        (StatusCode::OK, Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (StatusCode::BAD_REQUEST, Json(response))
+                    }
+                }
+            }
+            _ => match params.song_queue_id {
+                Some(song_queue_id) => {
+                    println!("Song queue Id is probably not nil");
+                    match super::metadata_queue::get_with_song_queue_id(&pool, &song_queue_id).await
+                    {
+                        Ok(item) => {
+                            response.message = String::from("Successful");
+                            response.data.push(item);
+                            (StatusCode::OK, Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (StatusCode::BAD_REQUEST, Json(response))
+                        }
+                    }
+                }
+                None => {
+                    println!("What is going on?");
+                    (StatusCode::BAD_REQUEST, Json(response))
+                }
+            },
         }
     }
 }
