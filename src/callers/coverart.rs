@@ -1,4 +1,3 @@
-
 pub mod response {
     #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
     pub struct Response {
@@ -6,14 +5,15 @@ pub mod response {
     }
 }
 
-
 pub mod endpoint {
     // TODO: Implement this
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::Response>) {
-
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::Response>,
+    ) {
         let response = super::response::Response::default();
 
         while let Some(field) = multipart.next_field().await.unwrap() {
