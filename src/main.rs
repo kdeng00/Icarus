@@ -622,14 +622,18 @@ mod tests {
         let body = MultipartBody::from(form);
 
         // Send request
-        match app.clone().oneshot(
-            axum::http::Request::builder()
-            .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUECOVERART)
-            .header(axum::http::header::CONTENT_TYPE, content_type)
-            .body(axum::body::Body::from_stream(body))
-            .unwrap()
-            ).await {
+        match app
+            .clone()
+            .oneshot(
+                axum::http::Request::builder()
+                    .method(axum::http::Method::POST)
+                    .uri(crate::callers::endpoints::QUEUECOVERART)
+                    .header(axum::http::header::CONTENT_TYPE, content_type)
+                    .body(axum::body::Body::from_stream(body))
+                    .unwrap(),
+            )
+            .await
+        {
             Ok(response) => {
                 let resp =
                     get_resp_data::<crate::callers::coverart::response::Response>(response).await;
