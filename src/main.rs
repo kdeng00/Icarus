@@ -86,7 +86,7 @@ pub mod init {
                 get(crate::callers::metadata::endpoint::fetch_metadata),
             )
             .route(
-                crate::callers::endpoints::QUEUEMETADATA,
+                crate::callers::endpoints::QUEUECOVERART,
                 post(crate::callers::coverart::endpoint::queue),
             )
     }
