@@ -39,7 +39,6 @@ mod db {
 }
 
 pub mod endpoint {
-    // TODO: Implement this
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
@@ -49,7 +48,6 @@ pub mod endpoint {
     ) {
         let mut response = super::response::Response::default();
 
-        // while let Some(field) = multipart.next_field().await.unwrap() {
         match multipart.next_field().await {
             Ok(Some(field)) => {
             let name = field.name().unwrap().to_string();
@@ -77,10 +75,6 @@ pub mod endpoint {
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                  }
              }
-
-            // Save the file to disk
-            // let mut file = std::fs::File::create(&file_name).unwrap();
-            // file.write_all(&data).unwrap();
             }
             Ok(None) => {
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
