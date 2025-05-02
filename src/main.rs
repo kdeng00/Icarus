@@ -634,7 +634,8 @@ mod tests {
                 let resp =
                     get_resp_data::<crate::callers::coverart::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let id = resp.data[0];
+                assert_eq!(false, id.is_nil(), "Should not be empty");
             }
             Err(err) => {
                 assert!(false, "Error: {:?}", err);
