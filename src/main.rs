@@ -595,4 +595,52 @@ mod tests {
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
+
+    #[tokio::test]
+    async fn test_song_coverart_queue() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+        let mut form = MultipartForm::default();
+        let _ = form.add_file("jpg", "tests/Machine_gun/160809_machinegun.jpg");
+
+        // Create request
+        let content_type = form.content_type();
+        let body = MultipartBody::from(form);
+
+        // Send request
+        match app.clone().oneshot(
+            axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::QUEUECOVERART)
+            .header(axum::http::header::CONTENT_TYPE, content_type)
+            .body(axum::body::Body::from_stream(body))
+            .unwrap()
+            ).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
 }
