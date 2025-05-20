@@ -17,10 +17,16 @@ pub mod response {
     }
 
     pub mod link {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Id {
+            pub coverart_id: uuid::Uuid,
+            pub song_queue_id: uuid::Uuid,
+        }
+
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<uuid::Uuid>,
+            pub data: Vec<Id>,
         }
     }
 }
@@ -54,7 +60,24 @@ mod db {
     }
 
     pub async fn update(pool: &sqlx::PgPool, coverart_id: &uuid::Uuid, song_queue_id: &uuid::Uuid,) -> Result<i32, sqlx::Error> {
-        Ok(0)
+        let result = sqlx::query(
+            r#"
+            UPDATE "coverartQueue" SET song_queue_id = $1 WHERE id = $2;
+            "#
+            )
+            .bind(song_queue_id)
+            .bind(coverart_id)
+            .execute(pool)
+            .await;
+
+        match result {
+            Ok(_) => {
+                Ok(0)
+            }
+            Err(_err) => {
+                Err(sqlx::Error::RowNotFound)
+            }
+        }
     }
 }
 
@@ -113,7 +136,12 @@ pub mod endpoint {
         let song_queue_id = payload.song_queue_id;
 
         match super::db::update(&pool, &coverart_id, &song_queue_id).await {
-            Ok(o) => {
+            Ok(_o) => {
+                response.data.push(super::response::link::Id {
+                    song_queue_id: song_queue_id,
+                    coverart_id: coverart_id,
+                });
+
                 (axum::http::StatusCode::OK, axum::Json(response))
             }
             Err(err) => {
