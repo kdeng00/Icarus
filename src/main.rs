@@ -276,7 +276,6 @@ mod tests {
     async fn upload_coverart_queue_req(
         app: &axum::Router,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-        // let app = init::app(pool).await;
         let mut form = MultipartForm::default();
         let _ = form.add_file("jpg", "tests/Machine_gun/160809_machinegun.jpg");
 
