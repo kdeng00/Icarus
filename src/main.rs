@@ -273,6 +273,33 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn upload_coverart_queue(
+        app: &axum::Router,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
+        // let app = init::app(pool).await;
+        let mut form = MultipartForm::default();
+        let _ = form.add_file("jpg", "tests/Machine_gun/160809_machinegun.jpg");
+
+        // Create request
+        let content_type = form.content_type();
+        let body = MultipartBody::from(form);
+
+        let req = axum::http::Request::builder()
+                    .method(axum::http::Method::POST)
+                    .uri(crate::callers::endpoints::QUEUECOVERART)
+                    .header(axum::http::header::CONTENT_TYPE, content_type)
+                    .body(axum::body::Body::from_stream(body))
+                    .unwrap();
+
+        // Send request
+        app
+            .clone()
+            .oneshot(
+                req
+            )
+            .await
+    }
+
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
@@ -618,25 +645,9 @@ mod tests {
         db::migrations(&pool).await;
 
         let app = init::app(pool).await;
-        let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/Machine_gun/160809_machinegun.jpg");
-
-        // Create request
-        let content_type = form.content_type();
-        let body = MultipartBody::from(form);
 
         // Send request
-        match app
-            .clone()
-            .oneshot(
-                axum::http::Request::builder()
-                    .method(axum::http::Method::POST)
-                    .uri(crate::callers::endpoints::QUEUECOVERART)
-                    .header(axum::http::header::CONTENT_TYPE, content_type)
-                    .body(axum::body::Body::from_stream(body))
-                    .unwrap(),
-            )
-            .await
+        match upload_coverart_queue(&app).await
         {
             Ok(response) => {
                 let resp =
@@ -651,5 +662,9 @@ mod tests {
         };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_coverart_queue_link() {
     }
 }
