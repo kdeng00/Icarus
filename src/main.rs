@@ -58,7 +58,7 @@ async fn main() {
 }
 
 pub mod init {
-    use axum::routing::{get, post};
+    use axum::routing::{get, patch, post};
     use std::time::Duration;
     use tower_http::timeout::TimeoutLayer;
 
@@ -89,6 +89,10 @@ pub mod init {
                 crate::callers::endpoints::QUEUECOVERART,
                 post(crate::callers::coverart::endpoint::queue),
             )
+            .route(
+                crate::callers::endpoints::QUEUECOVERARTLINK,
+                patch(crate::callers::coverart::endpoint::link),
+                )
     }
 
     pub async fn app() -> axum::Router {

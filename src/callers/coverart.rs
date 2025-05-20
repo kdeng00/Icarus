@@ -1,8 +1,27 @@
+pub mod request {
+
+    pub mod link {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub coverart_id: uuid::Uuid,
+            pub song_queue_id: uuid::Uuid,
+        }
+    }
+}
+
 pub mod response {
     #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
     pub struct Response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
+    }
+
+    pub mod link {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
+        }
     }
 }
 
@@ -32,6 +51,10 @@ mod db {
             }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
+    }
+
+    pub async fn update(pool: &sqlx::PgPool, coverart_id: &uuid::Uuid, song_queue_id: &uuid::Uuid,) -> Result<i32, sqlx::Error> {
+        Ok(0)
     }
 }
 
@@ -74,6 +97,25 @@ pub mod endpoint {
                 }
             }
             Ok(None) => (axum::http::StatusCode::BAD_REQUEST, axum::Json(response)),
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn link(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::link::Request>,
+        ) -> (axum::http::StatusCode, axum::Json<super::response::link::Response>,) {
+        let mut response = super::response::link::Response::default();
+        let coverart_id = payload.coverart_id;
+        let song_queue_id = payload.song_queue_id;
+
+        match super::db::update(&pool, &coverart_id, &song_queue_id).await {
+            Ok(o) => {
+                (axum::http::StatusCode::OK, axum::Json(response))
+            }
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
