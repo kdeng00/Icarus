@@ -59,24 +59,24 @@ mod db {
         }
     }
 
-    pub async fn update(pool: &sqlx::PgPool, coverart_id: &uuid::Uuid, song_queue_id: &uuid::Uuid,) -> Result<i32, sqlx::Error> {
+    pub async fn update(
+        pool: &sqlx::PgPool,
+        coverart_id: &uuid::Uuid,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<i32, sqlx::Error> {
         let result = sqlx::query(
             r#"
             UPDATE "coverartQueue" SET song_queue_id = $1 WHERE id = $2;
-            "#
-            )
-            .bind(song_queue_id)
-            .bind(coverart_id)
-            .execute(pool)
-            .await;
+            "#,
+        )
+        .bind(song_queue_id)
+        .bind(coverart_id)
+        .execute(pool)
+        .await;
 
         match result {
-            Ok(_) => {
-                Ok(0)
-            }
-            Err(_err) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Ok(_) => Ok(0),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
@@ -130,7 +130,10 @@ pub mod endpoint {
     pub async fn link(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::link::Request>,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::link::Response>,) {
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::link::Response>,
+    ) {
         let mut response = super::response::link::Response::default();
         let coverart_id = payload.coverart_id;
         let song_queue_id = payload.song_queue_id;
