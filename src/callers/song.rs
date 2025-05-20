@@ -27,15 +27,24 @@ pub mod response {
     }
 }
 
+pub mod status {
+    pub const PENDING: &str = "pending";
+    // Will be used later on
+    pub const PROCESSING: &str = "processing";
+    pub const DONE: &str = "done";
+
+    pub async fn is_valid(status: &str) -> bool {
+        if status == PENDING || status == PROCESSING || status == DONE {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+
 mod song_queue {
     use sqlx::Row;
-
-    pub mod status {
-        pub const PENDING: &str = "pending";
-        // Will be used later on
-        pub const PROCESSING: &str = "processing";
-        pub const _DONE: &str = "done";
-    }
 
     #[derive(Debug, serde::Serialize, sqlx::FromRow)]
     pub struct InsertedData {
@@ -96,8 +105,8 @@ mod song_queue {
             RETURNING id, filename, status;
             "#,
         )
-        .bind(status::PROCESSING)
-        .bind(status::PENDING)
+        .bind(super::status::PROCESSING)
+        .bind(super::status::PENDING)
         .fetch_one(pool)
         .await
         .map_err(|e| {
@@ -186,7 +195,7 @@ pub mod endpoint {
                 &pool,
                 &raw_data,
                 &file_name,
-                &song_queue::status::PENDING.to_string(),
+                &super::status::PENDING.to_string(),
             )
             .await
             .unwrap();
