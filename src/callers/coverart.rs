@@ -135,14 +135,14 @@ pub mod endpoint {
         axum::Json<super::response::link::Response>,
     ) {
         let mut response = super::response::link::Response::default();
-        let coverart_id = payload.coverart_id;
-        let song_queue_id = payload.song_queue_id;
+        let id = payload.coverart_id;
+        let song_id = payload.song_queue_id;
 
-        match super::db::update(&pool, &coverart_id, &song_queue_id).await {
+        match super::db::update(&pool, &id, &song_id).await {
             Ok(_o) => {
                 response.data.push(super::response::link::Id {
-                    song_queue_id: song_queue_id,
-                    coverart_id: coverart_id,
+                    song_queue_id: song_id,
+                    coverart_id: id,
                 });
 
                 (axum::http::StatusCode::OK, axum::Json(response))
