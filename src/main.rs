@@ -273,7 +273,7 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    async fn upload_coverart_queue(
+    async fn upload_coverart_queue_req(
         app: &axum::Router,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
         // let app = init::app(pool).await;
@@ -647,7 +647,7 @@ mod tests {
         let app = init::app(pool).await;
 
         // Send request
-        match upload_coverart_queue(&app).await
+        match upload_coverart_queue_req(&app).await
         {
             Ok(response) => {
                 let resp =
@@ -666,5 +666,81 @@ mod tests {
 
     #[tokio::test]
     async fn test_song_coverart_queue_link() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp = 
+                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                let song_queue_id = resp.data[0];
+                assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
+
+                // Send request
+                match upload_coverart_queue_req(&app).await
+                {
+                    Ok(response) => {
+                        let resp =
+                            get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let coverart_id = resp.data[0];
+                        assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
+
+                        let payload = serde_json::json!(
+                        {
+                                "song_queue_id": song_queue_id,
+                                "coverart_id" : coverart_id,
+                        });
+
+                        match app.clone().oneshot(
+                            axum::http::Request::builder()
+                            .method(axum::http::Method::PATCH)
+                            .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
+                            .header(axum::http::header::CONTENT_TYPE, "application/json")
+                            .body(axum::body::Body::from(payload.to_string()))
+                            .unwrap(),
+                            ).await {
+                            Ok(response) => {
+                                let resp =
+                                    get_resp_data::<crate::callers::coverart::response::link::Response>(response).await;
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                let resp_coverart_id = resp.data[0].coverart_id;
+                                let resp_song_queue_id = resp.data[0].song_queue_id;
+
+                                assert_eq!(false, resp_coverart_id.is_nil(), "Should not be empty");
+                                assert_eq!(false, resp_song_queue_id.is_nil(), "Should not be empty");
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 }
