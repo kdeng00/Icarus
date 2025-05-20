@@ -1,8 +1,33 @@
+pub mod request {
+
+    pub mod link {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub coverart_id: uuid::Uuid,
+            pub song_queue_id: uuid::Uuid,
+        }
+    }
+}
+
 pub mod response {
     #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
     pub struct Response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
+    }
+
+    pub mod link {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Id {
+            pub coverart_id: uuid::Uuid,
+            pub song_queue_id: uuid::Uuid,
+        }
+
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<Id>,
+        }
     }
 }
 
@@ -30,6 +55,27 @@ mod db {
                     .unwrap();
                 Ok(id)
             }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn update(
+        pool: &sqlx::PgPool,
+        coverart_id: &uuid::Uuid,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<i32, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "coverartQueue" SET song_queue_id = $1 WHERE id = $2;
+            "#,
+        )
+        .bind(song_queue_id)
+        .bind(coverart_id)
+        .execute(pool)
+        .await;
+
+        match result {
+            Ok(_) => Ok(0),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
@@ -74,6 +120,33 @@ pub mod endpoint {
                 }
             }
             Ok(None) => (axum::http::StatusCode::BAD_REQUEST, axum::Json(response)),
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn link(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::link::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::link::Response>,
+    ) {
+        let mut response = super::response::link::Response::default();
+        let id = payload.coverart_id;
+        let song_id = payload.song_queue_id;
+
+        match super::db::update(&pool, &id, &song_id).await {
+            Ok(_o) => {
+                response.data.push(super::response::link::Id {
+                    song_queue_id: song_id,
+                    coverart_id: id,
+                });
+
+                (axum::http::StatusCode::OK, axum::Json(response))
+            }
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
