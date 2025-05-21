@@ -55,11 +55,7 @@ pub mod status {
     pub const DONE: &str = "done";
 
     pub async fn is_valid(status: &str) -> bool {
-        if status == PENDING || status == PROCESSING || status == DONE {
-            true
-        } else {
-            false
-        }
+        status == PENDING || status == PROCESSING || status == DONE
     }
 }
 
