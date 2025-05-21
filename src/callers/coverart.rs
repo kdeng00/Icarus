@@ -1,3 +1,9 @@
+#[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+pub struct CoverArtQueue {
+    pub id: uuid::Uuid,
+    pub song_queue_id: uuid::Uuid,
+}
+
 pub mod request {
 
     pub mod link {
@@ -5,6 +11,14 @@ pub mod request {
         pub struct Request {
             pub coverart_id: uuid::Uuid,
             pub song_queue_id: uuid::Uuid,
+        }
+    }
+
+    pub mod fetch_coverart_no_data {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Params {
+            pub id: Option<uuid::Uuid>,
+            pub song_queue_id: Option<uuid::Uuid>,
         }
     }
 }
@@ -29,10 +43,19 @@ pub mod response {
             pub data: Vec<Id>,
         }
     }
+
+    pub mod fetch_coverart_no_data {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<super::super::CoverArtQueue>,
+        }
+    }
 }
 
-mod db {
+pub mod db {
     use sqlx::Row;
+
 
     pub async fn insert(pool: &sqlx::PgPool, data: &Vec<u8>) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
@@ -77,6 +100,54 @@ mod db {
         match result {
             Ok(_) => Ok(0),
             Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_coverart_queue_with_id(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<super::CoverArtQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, song_queue_id FROM "coverartQueue" WHERE id = $1 RETURNING id, song_queue_id;
+            "#
+            )
+            .bind(id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error querying data: {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                Ok(super::CoverArtQueue {
+                    id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    song_queue_id: row.try_get("song_queue_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                })
+            }
+            Err(_) => Err(sqlx::Error::RowNotFound)
+        }
+    }
+
+    pub async fn get_coverart_queue_with_song_queue_id(pool: &sqlx::PgPool, song_queue_id: &uuid::Uuid) -> Result<super::CoverArtQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1 RETURNING id, song_queue_id;
+            "#
+            )
+            .bind(song_queue_id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error querying data: {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                Ok(super::CoverArtQueue {
+                    id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    song_queue_id: row.try_get("song_queue_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                })
+            }
+            Err(_) => Err(sqlx::Error::RowNotFound)
         }
     }
 }
@@ -150,6 +221,48 @@ pub mod endpoint {
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn fetch_coverart_no_data(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Query(params): axum::extract::Query<super::request::fetch_coverart_no_data::Params>,
+        ) -> (axum::http::StatusCode, axum::Json<super::response::fetch_coverart_no_data::Response>) {
+        let mut response = super::response::fetch_coverart_no_data::Response::default();
+
+        match params.id {
+            Some(id) => {
+                match super::db::get_coverart_queue_with_id(&pool, &id).await {
+                    Ok(cover_art_queue) => {
+                        response.message = String::from("Successful");
+                        response.data.push(cover_art_queue);
+                        (axum::http::StatusCode::OK, axum::Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
+                }
+            }
+            _ => match params.song_queue_id {
+                Some(song_queue_id) => {
+                    match super::db::get_coverart_queue_with_song_queue_id(&pool, &song_queue_id).await {
+                        Ok(cover_art_queue) => {
+                            response.message = String::from("Successful");
+                            response.data.push(cover_art_queue);
+                            (axum::http::StatusCode::OK, axum::Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                        }
+                    }
+                }
+                None => {
+                    response.message = String::from("No valid id provided");
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
             }
         }
     }
