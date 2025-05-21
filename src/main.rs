@@ -802,22 +802,29 @@ mod tests {
                                     .body(axum::body::Body::from(payload.to_string()))
                                     .unwrap(),
                             )
-                            .await {
-                                Ok(response) => {
-                                    let resp = get_resp_data::<
-                                        crate::callers::song::response::update_status::Response,
-                                    >(response)
-                                    .await;
-                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                                    let changed_status = &resp.data[0];
+                            .await
+                        {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::song::response::update_status::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                let changed_status = &resp.data[0];
 
-                                    assert_eq!(*old, changed_status.old_status, "Old status does not match");
-                                    assert_eq!(done, changed_status.new_status, "New status does not match");
-                                }
-                                Err(err) => {
-                                    assert!(false, "Error: {:?}", err);
-                                }
+                                assert_eq!(
+                                    *old, changed_status.old_status,
+                                    "Old status does not match"
+                                );
+                                assert_eq!(
+                                    done, changed_status.new_status,
+                                    "New status does not match"
+                                );
                             }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
                     }
                     Err(err) => {
                         assert!(false, "Error: {:?}", err);

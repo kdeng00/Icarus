@@ -63,7 +63,6 @@ pub mod status {
     }
 }
 
-
 mod song_queue {
     use sqlx::Row;
 
@@ -153,50 +152,55 @@ mod song_queue {
         }
     }
 
-    pub async fn get_status_of_song_queue(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<String, sqlx::Error> {
+    pub async fn get_status_of_song_queue(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<String, sqlx::Error> {
         let result = sqlx::query(
             r#"
             SELECT id, status FROM "songQueue" WHERE id = $1
             "#,
-            )
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error selecting: {:?}", e);
-            });
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error selecting: {:?}", e);
+        });
 
         match result {
-            Ok(row) => {
-                Ok(row.try_get("status").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
-            }
-            Err(_err) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Ok(row) => Ok(row
+                .try_get("status")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 
-    pub async fn update_song_queue_status(pool: &sqlx::PgPool, status: &String, id: &uuid::Uuid) -> Result<String, sqlx::Error> {
+    pub async fn update_song_queue_status(
+        pool: &sqlx::PgPool,
+        status: &String,
+        id: &uuid::Uuid,
+    ) -> Result<String, sqlx::Error> {
         let result = sqlx::query(
             r#"
             UPDATE "songQueue" SET status = $1 WHERE id = $2 RETURNING status;
             "#,
-            )
-            .bind(status)
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error updating record {:?}", e);
-            });
+        )
+        .bind(status)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error updating record {:?}", e);
+        });
 
         match result {
-            Ok(row) => {
-                Ok(row.try_get("status").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
-            }
-            Err(_) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Ok(row) => Ok(row
+                .try_get("status")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
         }
     }
 
@@ -330,9 +334,12 @@ pub mod endpoint {
     }
 
     pub async fn update_song_queue_status(
-            axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-            axum::Json(payload): axum::Json<super::request::update_status::Request>,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::update_status::Response>) {
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::update_status::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::update_status::Response>,
+    ) {
         let mut response = super::response::update_status::Response::default();
 
         if super::status::is_valid(&payload.status).await {
@@ -340,13 +347,21 @@ pub mod endpoint {
             if !id.is_nil() {
                 match super::song_queue::get_status_of_song_queue(&pool, &id).await {
                     Ok(old) => {
-                        match super::song_queue::update_song_queue_status(&pool, &payload.status, &id).await {
+                        match super::song_queue::update_song_queue_status(
+                            &pool,
+                            &payload.status,
+                            &id,
+                        )
+                        .await
+                        {
                             Ok(new) => {
                                 response.message = String::from("Successful");
-                                response.data.push(super::response::update_status::ChangedStatus{
-                                    old_status: old,
-                                    new_status: new
-                                });
+                                response
+                                    .data
+                                    .push(super::response::update_status::ChangedStatus {
+                                        old_status: old,
+                                        new_status: new,
+                                    });
                                 (axum::http::StatusCode::OK, axum::Json(response))
                             }
                             Err(err) => {
