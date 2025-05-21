@@ -351,13 +351,13 @@ pub mod endpoint {
                             }
                             Err(err) => {
                                 response.message = err.to_string();
-                                (axum::http::StatusCode::OK, response)
+                                (axum::http::StatusCode::BAD_REQUEST, response)
                             }
                         }
                     }
                     Err(err) => {
                         response.message = err.to_string();
-                        (axum::http::StatusCode::OK, response)
+                        (axum::http::StatusCode::BAD_REQUEST, response)
                     }
                 }
             } else {
