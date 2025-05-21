@@ -94,6 +94,10 @@ pub mod init {
                 post(crate::callers::coverart::endpoint::queue),
             )
             .route(
+                crate::callers::endpoints::QUEUECOVERART,
+                get(crate::callers::coverart::endpoint::fetch_coverart_no_data)
+                )
+            .route(
                 crate::callers::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::coverart::endpoint::link),
             )
