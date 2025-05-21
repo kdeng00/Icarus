@@ -95,8 +95,8 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERART,
-                get(crate::callers::coverart::endpoint::fetch_coverart_no_data)
-                )
+                get(crate::callers::coverart::endpoint::fetch_coverart_no_data),
+            )
             .route(
                 crate::callers::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::coverart::endpoint::link),
@@ -302,18 +302,22 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    async fn coverart_queue_song_queue_link_req(app: &axum::Router, coverart_id: &uuid::Uuid, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn coverart_queue_song_queue_link_req(
+        app: &axum::Router,
+        coverart_id: &uuid::Uuid,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!(
         {
                 "song_queue_id": song_queue_id,
                 "coverart_id" : coverart_id,
         });
         let req = axum::http::Request::builder()
-                .method(axum::http::Method::PATCH)
-                .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
-                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                .body(axum::body::Body::from(payload.to_string()))
-                .unwrap();
+            .method(axum::http::Method::PATCH)
+            .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
 
         app.clone().oneshot(req).await
     }
@@ -718,7 +722,8 @@ mod tests {
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
 
-                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id).await
+                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id)
+                            .await
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
@@ -880,7 +885,8 @@ mod tests {
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
 
-                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id).await
+                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id)
+                            .await
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
@@ -898,22 +904,37 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let uri = format!("{}?id={}", crate::callers::endpoints::QUEUECOVERART, resp_coverart_id);
+                                let uri = format!(
+                                    "{}?id={}",
+                                    crate::callers::endpoints::QUEUECOVERART,
+                                    resp_coverart_id
+                                );
 
-                                match app.clone().oneshot(
-                                    axum::http::Request::builder()
-                                    .method(axum::http::Method::GET)
-                                    .uri(uri)
-                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    .body(axum::body::Body::empty())
-                                    .unwrap()
-                                    ).await {
+                                match app
+                                    .clone()
+                                    .oneshot(
+                                        axum::http::Request::builder()
+                                            .method(axum::http::Method::GET)
+                                            .uri(uri)
+                                            .header(
+                                                axum::http::header::CONTENT_TYPE,
+                                                "application/json",
+                                            )
+                                            .body(axum::body::Body::empty())
+                                            .unwrap(),
+                                    )
+                                    .await
+                                {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::fetch_coverart_no_data::Response,
                                         >(response)
                                         .await;
-                                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                        assert_eq!(
+                                            false,
+                                            resp.data.is_empty(),
+                                            "Should not be empty"
+                                        );
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
