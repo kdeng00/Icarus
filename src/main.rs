@@ -749,4 +749,86 @@ mod tests {
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
+
+    #[tokio::test]
+    async fn test_song_queue_update_status() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                match fetch_queue_req(&app).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::fetch_queue_song::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                        let old = &resp.data[0].status;
+                        let done = crate::callers::song::status::DONE;
+                        let payload = serde_json::json!({
+                            "id": &resp.data[0].id,
+                            "status": done,
+                        });
+
+                        match app
+                            .clone()
+                            .oneshot(
+                                axum::http::Request::builder()
+                                    .method(axum::http::Method::PATCH)
+                                    .uri(crate::callers::endpoints::QUEUESONG)
+                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .body(axum::body::Body::from(payload.to_string()))
+                                    .unwrap(),
+                            )
+                            .await {
+                                Ok(response) => {
+                                    let resp = get_resp_data::<
+                                        crate::callers::song::response::update_status::Response,
+                                    >(response)
+                                    .await;
+                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                    let changed_status = &resp.data[0];
+
+                                    assert_eq!(*old, changed_status.old_status, "Old status does not match");
+                                    assert_eq!(done, changed_status.new_status, "New status does not match");
+                                }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
 }
