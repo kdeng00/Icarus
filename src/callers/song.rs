@@ -332,7 +332,7 @@ pub mod endpoint {
     pub async fn update_song_queue_status(
             axum::Extension(pool): axum::Extension<sqlx::PgPool>,
             axum::Json(payload): axum::Json<super::request::update_status::Request>,
-        ) -> (axum::http::StatusCode, super::response::update_status::Response) {
+        ) -> (axum::http::StatusCode, axum::Json<super::response::update_status::Response>) {
         let mut response = super::response::update_status::Response::default();
 
         if super::status::is_valid(&payload.status).await {
@@ -347,26 +347,26 @@ pub mod endpoint {
                                     old_status: old,
                                     new_status: new
                                 });
-                                (axum::http::StatusCode::OK, response)
+                                (axum::http::StatusCode::OK, axum::Json(response))
                             }
                             Err(err) => {
                                 response.message = err.to_string();
-                                (axum::http::StatusCode::BAD_REQUEST, response)
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                             }
                         }
                     }
                     Err(err) => {
                         response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, response)
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                     }
                 }
             } else {
                 response.message = String::from("Id is nil");
-                (axum::http::StatusCode::BAD_REQUEST, response)
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
             }
         } else {
             response.message = String::from("Status not valid");
-            (axum::http::StatusCode::BAD_REQUEST, response)
+            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
         }
     }
 }
