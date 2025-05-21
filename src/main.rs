@@ -302,6 +302,22 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn coverart_queue_song_queue_link_req(app: &axum::Router, coverart_id: &uuid::Uuid, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!(
+        {
+                "song_queue_id": song_queue_id,
+                "coverart_id" : coverart_id,
+        });
+        let req = axum::http::Request::builder()
+                .method(axum::http::Method::PATCH)
+                .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::from(payload.to_string()))
+                .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
@@ -702,23 +718,7 @@ mod tests {
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
 
-                        let payload = serde_json::json!(
-                        {
-                                "song_queue_id": song_queue_id,
-                                "coverart_id" : coverart_id,
-                        });
-
-                        match app
-                            .clone()
-                            .oneshot(
-                                axum::http::Request::builder()
-                                    .method(axum::http::Method::PATCH)
-                                    .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
-                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    .body(axum::body::Body::from(payload.to_string()))
-                                    .unwrap(),
-                            )
-                            .await
+                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id).await
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
