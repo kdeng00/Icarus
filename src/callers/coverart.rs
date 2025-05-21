@@ -106,7 +106,7 @@ pub mod db {
     pub async fn get_coverart_queue_with_id(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<super::CoverArtQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, song_queue_id FROM "coverartQueue" WHERE id = $1 RETURNING id, song_queue_id;
+            SELECT id, song_queue_id FROM "coverartQueue" WHERE id = $1 RETURNING id;
             "#
             )
             .bind(id)
@@ -120,7 +120,8 @@ pub mod db {
             Ok(row) => {
                 Ok(super::CoverArtQueue {
                     id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    song_queue_id: row.try_get("song_queue_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    // song_queue_id: row.try_get("song_queue_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    song_queue_id: uuid::Uuid::nil(),
                 })
             }
             Err(_) => Err(sqlx::Error::RowNotFound)
