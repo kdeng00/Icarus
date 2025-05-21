@@ -5,6 +5,14 @@ pub mod request {
     pub struct Request {
         pub message: String,
     }
+
+    pub mod update_status {
+        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub id: uuid::Uuid,
+            pub status: String,
+        }
+    }
 }
 
 pub mod response {
@@ -25,11 +33,24 @@ pub mod response {
             pub data: Vec<crate::callers::song::song_queue::SongQueue>,
         }
     }
+
+    pub mod update_status {
+        #[derive(serde::Deserialize, serde::Serialize)]
+        pub struct ChangedStatus {
+            pub old_status: String,
+            pub new_status: String,
+        }
+
+        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<ChangedStatus>,
+        }
+    }
 }
 
 pub mod status {
     pub const PENDING: &str = "pending";
-    // Will be used later on
     pub const PROCESSING: &str = "processing";
     pub const DONE: &str = "done";
 
@@ -129,6 +150,53 @@ mod song_queue {
                     .unwrap(),
             }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_status_of_song_queue(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<String, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, status FROM "songQueue" WHERE id = $1
+            "#,
+            )
+            .bind(id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error selecting: {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                Ok(row.try_get("status").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
+            }
+            Err(_err) => {
+                Err(sqlx::Error::RowNotFound)
+            }
+        }
+    }
+
+    pub async fn update_song_queue_status(pool: &sqlx::PgPool, status: &String, id: &uuid::Uuid) -> Result<String, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue" SET status = $1 WHERE id = $2 RETURNING status;
+            "#,
+            )
+            .bind(status)
+            .bind(id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error updating record {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                Ok(row.try_get("status").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
+            }
+            Err(_) => {
+                Err(sqlx::Error::RowNotFound)
+            }
         }
     }
 
@@ -258,6 +326,47 @@ pub mod endpoint {
                 (StatusCode::OK, response)
             }
             Err(_err) => (StatusCode::BAD_REQUEST, axum::response::Response::default()),
+        }
+    }
+
+    pub async fn update_song_queue_status(
+            axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+            axum::Json(payload): axum::Json<super::request::update_status::Request>,
+        ) -> (axum::http::StatusCode, super::response::update_status::Response) {
+        let mut response = super::response::update_status::Response::default();
+
+        if super::status::is_valid(&payload.status).await {
+            let id = payload.id;
+            if !id.is_nil() {
+                match super::song_queue::get_status_of_song_queue(&pool, &id).await {
+                    Ok(old) => {
+                        match super::song_queue::update_song_queue_status(&pool, &payload.status, &id).await {
+                            Ok(new) => {
+                                response.message = String::from("Successful");
+                                response.data.push(super::response::update_status::ChangedStatus{
+                                    old_status: old,
+                                    new_status: new
+                                });
+                                (axum::http::StatusCode::OK, response)
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                (axum::http::StatusCode::OK, response)
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::OK, response)
+                    }
+                }
+            } else {
+                response.message = String::from("Id is nil");
+                (axum::http::StatusCode::BAD_REQUEST, response)
+            }
+        } else {
+            response.message = String::from("Status not valid");
+            (axum::http::StatusCode::BAD_REQUEST, response)
         }
     }
 }
