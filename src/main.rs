@@ -82,6 +82,10 @@ pub mod init {
                 get(crate::callers::song::endpoint::fetch_queue_song),
             )
             .route(
+                crate::callers::endpoints::QUEUESONGUPDATE,
+                patch(crate::callers::song::endpoint::update_song_queue)
+            )
+            .route(
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
             )
