@@ -47,6 +47,14 @@ pub mod response {
             pub data: Vec<ChangedStatus>,
         }
     }
+
+    pub mod update_song_queue {
+        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<Vec<u8>>,
+        }
+    }
 }
 
 pub mod status {
@@ -103,6 +111,32 @@ mod song_queue {
                 Ok(id)
             }
             Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn update(
+        pool: &sqlx::PgPool,
+        data: &Vec<u8>,
+        id: &uuid::Uuid,
+        ) -> Result<Vec<u8>, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue" SET data = $1 WHERE id = $2 RETURNING data;
+            "#
+            )
+            .bind(data)
+            .bind(id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error inserting: {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                Ok(row.try_get("data").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
+            }
+            Err(_) => Err(sqlx::Error::RowNotFound)
         }
     }
 
@@ -378,6 +412,53 @@ pub mod endpoint {
         } else {
             response.message = String::from("Status not valid");
             (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+        }
+    }
+
+    pub async fn update_song_queue(
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        mut multipart: axum::extract::Multipart,
+        ) -> (axum::http::StatusCode, axum::Json<super::response::update_song_queue::Response>) {
+
+        let mut response = super::response::update_song_queue::Response::default();
+
+        if let Some(field) = multipart.next_field().await.unwrap() {
+            let name = field.name().unwrap().to_string();
+            let file_name = field.file_name().unwrap().to_string();
+            let content_type = field.content_type().unwrap().to_string();
+            let data = field.bytes().await.unwrap();
+
+            println!(
+                "Received file '{}' (name = '{}', content-type = '{}', size = {})",
+                file_name,
+                name,
+                content_type,
+                data.len()
+            );
+
+            // Save the file to disk
+            // let mut file = std::fs::File::create(&file_name).unwrap();
+            // file.write_all(&data).unwrap();
+
+            let raw_data: Vec<u8> = data.to_vec();
+            match song_queue::update(
+                &pool,
+                &raw_data,
+                &id,
+            ).await {
+                Ok(queued_data) => {
+                    response.data.push(queued_data);
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            }
+        } else {
+            response.message = String::from("No data provided");
+            (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
         }
     }
 }
