@@ -440,10 +440,6 @@ pub mod endpoint {
                 data.len()
             );
 
-            // Save the file to disk
-            // let mut file = std::fs::File::create(&file_name).unwrap();
-            // file.write_all(&data).unwrap();
-
             let raw_data: Vec<u8> = data.to_vec();
             match song_queue::update(&pool, &raw_data, &id).await {
                 Ok(queued_data) => {

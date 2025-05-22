@@ -1122,8 +1122,6 @@ mod tests {
                                         "Queued data should not be empty"
                                     );
 
-                                    // let new_file = String::from("tests/Machine_gun/new_file.flac");
-
                                     let temp_file = tempfile::tempdir()
                                         .expect("Could not create test directory");
                                     let test_dir = String::from(temp_file.path().to_str().unwrap());
@@ -1142,8 +1140,6 @@ mod tests {
                                     let raw_uri =
                                         String::from(crate::callers::endpoints::QUEUESONGUPDATE);
                                     let end_index = raw_uri.len() - 5;
-                                    // let mut uri: String = (&raw_uri[..end_index]).to_string();
-                                    // uri += &id.to_string();
 
                                     let uri = format!(
                                         "{}/{}",
@@ -1151,7 +1147,6 @@ mod tests {
                                         id.to_string()
                                     );
 
-                                    // app.clone().oneshot(req).await
                                     match app
                                         .clone()
                                         .oneshot(
