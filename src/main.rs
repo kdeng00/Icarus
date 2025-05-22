@@ -1154,12 +1154,12 @@ mod tests {
                                         .body(axum::body::Body::from_stream(body))
                                         .unwrap()
                                         ).await {
-                                        Ok(_) => {
-                        let resp = get_resp_data::<
-                            crate::callers::song::response::fetch_queue_song::Response,
-                        >(response)
-                        .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                        Ok(response) => {
+                                            let resp = get_resp_data::<
+                                                crate::callers::song::response::update_song_queue::Response,
+                                            >(response)
+                                            .await;
+                                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                                         }
                                         Err(err) => {
                                             assert!(false, "Error: {:?}", err);
