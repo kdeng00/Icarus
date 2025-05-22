@@ -82,6 +82,10 @@ pub mod init {
                 get(crate::callers::song::endpoint::fetch_queue_song),
             )
             .route(
+                crate::callers::endpoints::QUEUESONGUPDATE,
+                patch(crate::callers::song::endpoint::update_song_queue),
+            )
+            .route(
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
             )
@@ -142,10 +146,12 @@ pub async fn root() -> &'static str {
 mod tests {
     use crate::db;
 
+    use std::io::Write;
+    use std::usize;
+
     use common_multipart_rfc7578::client::multipart::{
         Body as MultipartBody, Form as MultipartForm,
     };
-    use std::usize;
     use tower::ServiceExt;
 
     mod db_mgr {
@@ -1067,6 +1073,129 @@ mod tests {
                 assert!(false, "Error: {:?}", err);
             }
         }
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_update_song_from_queue() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                match fetch_queue_req(&app).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::fetch_queue_song::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let id = resp.data[0].id;
+
+                        match fetch_queue_data_req(&app, &id).await {
+                            Ok(response) => match resp_to_bytes(response).await {
+                                Ok(bytes) => {
+                                    assert_eq!(
+                                        false,
+                                        bytes.is_empty(),
+                                        "Queued data should not be empty"
+                                    );
+
+                                    let temp_file = tempfile::tempdir()
+                                        .expect("Could not create test directory");
+                                    let test_dir = String::from(temp_file.path().to_str().unwrap());
+                                    let new_file = format!("{}/new_file.flac", test_dir);
+
+                                    let mut file = std::fs::File::create(&new_file).unwrap();
+                                    file.write_all(&bytes).unwrap();
+
+                                    let mut form = MultipartForm::default();
+                                    let _ = form.add_file("flac", new_file);
+
+                                    // Create request
+                                    let content_type = form.content_type();
+                                    let body = MultipartBody::from(form);
+
+                                    let raw_uri =
+                                        String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                                    let end_index = raw_uri.len() - 5;
+
+                                    let uri = format!(
+                                        "{}/{}",
+                                        (&raw_uri[..end_index]).to_string(),
+                                        id.to_string()
+                                    );
+
+                                    match app
+                                        .clone()
+                                        .oneshot(
+                                            axum::http::Request::builder()
+                                                .method(axum::http::Method::PATCH)
+                                                .uri(uri)
+                                                .header(
+                                                    axum::http::header::CONTENT_TYPE,
+                                                    content_type,
+                                                )
+                                                .body(axum::body::Body::from_stream(body))
+                                                .unwrap(),
+                                        )
+                                        .await
+                                    {
+                                        Ok(response) => {
+                                            let resp = get_resp_data::<
+                                                crate::callers::song::response::update_song_queue::Response,
+                                            >(response)
+                                            .await;
+                                            assert_eq!(
+                                                false,
+                                                resp.data.is_empty(),
+                                                "Should not be empty"
+                                            );
+                                        }
+                                        Err(err) => {
+                                            assert!(false, "Error: {:?}", err);
+                                        }
+                                    }
+                                }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            },
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }

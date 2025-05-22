@@ -25,3 +25,4 @@ icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", ta
 [dev-dependencies]
 common-multipart-rfc7578 = { version = "0.7.0" }
 url = { version = "2.5.4" }
+tempfile = { version = "3.19.1" }
