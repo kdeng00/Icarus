@@ -1031,10 +1031,7 @@ mod tests {
                                         axum::http::Request::builder()
                                             .method(axum::http::Method::GET)
                                             .uri(uri)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                "image/jpeg",
-                                            )
+                                            .header(axum::http::header::CONTENT_TYPE, "image/jpeg")
                                             .body(axum::body::Body::empty())
                                             .unwrap(),
                                     )
