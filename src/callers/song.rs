@@ -118,25 +118,26 @@ mod song_queue {
         pool: &sqlx::PgPool,
         data: &Vec<u8>,
         id: &uuid::Uuid,
-        ) -> Result<Vec<u8>, sqlx::Error> {
+    ) -> Result<Vec<u8>, sqlx::Error> {
         let result = sqlx::query(
             r#"
             UPDATE "songQueue" SET data = $1 WHERE id = $2 RETURNING data;
-            "#
-            )
-            .bind(data)
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error inserting: {:?}", e);
-            });
+            "#,
+        )
+        .bind(data)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {:?}", e);
+        });
 
         match result {
-            Ok(row) => {
-                Ok(row.try_get("data").map_err(|_e| sqlx::Error::RowNotFound).unwrap())
-            }
-            Err(_) => Err(sqlx::Error::RowNotFound)
+            Ok(row) => Ok(row
+                .try_get("data")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
         }
     }
 
@@ -419,8 +420,10 @@ pub mod endpoint {
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::update_song_queue::Response>) {
-
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::update_song_queue::Response>,
+    ) {
         let mut response = super::response::update_song_queue::Response::default();
 
         if let Some(field) = multipart.next_field().await.unwrap() {
@@ -442,11 +445,7 @@ pub mod endpoint {
             // file.write_all(&data).unwrap();
 
             let raw_data: Vec<u8> = data.to_vec();
-            match song_queue::update(
-                &pool,
-                &raw_data,
-                &id,
-            ).await {
+            match song_queue::update(&pool, &raw_data, &id).await {
                 Ok(queued_data) => {
                     response.data.push(queued_data);
                     (axum::http::StatusCode::OK, axum::Json(response))

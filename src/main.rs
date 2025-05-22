@@ -83,7 +83,7 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUESONGUPDATE,
-                patch(crate::callers::song::endpoint::update_song_queue)
+                patch(crate::callers::song::endpoint::update_song_queue),
             )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
@@ -1124,7 +1124,8 @@ mod tests {
 
                                     // let new_file = String::from("tests/Machine_gun/new_file.flac");
 
-                                    let temp_file = tempfile::tempdir().expect("Could not create test directory");
+                                    let temp_file = tempfile::tempdir()
+                                        .expect("Could not create test directory");
                                     let test_dir = String::from(temp_file.path().to_str().unwrap());
                                     let new_file = format!("{}/new_file.flac", test_dir);
 
@@ -1138,28 +1139,44 @@ mod tests {
                                     let content_type = form.content_type();
                                     let body = MultipartBody::from(form);
 
-                                    let raw_uri = String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                                    let raw_uri =
+                                        String::from(crate::callers::endpoints::QUEUESONGUPDATE);
                                     let end_index = raw_uri.len() - 5;
                                     // let mut uri: String = (&raw_uri[..end_index]).to_string();
                                     // uri += &id.to_string();
 
-                                    let uri = format!("{}/{}", (&raw_uri[..end_index]).to_string(), id.to_string());
+                                    let uri = format!(
+                                        "{}/{}",
+                                        (&raw_uri[..end_index]).to_string(),
+                                        id.to_string()
+                                    );
 
                                     // app.clone().oneshot(req).await
-                                    match app.clone().oneshot(
-                                        axum::http::Request::builder()
-                                        .method(axum::http::Method::PATCH)
-                                        .uri(uri)
-                                        .header(axum::http::header::CONTENT_TYPE, content_type)
-                                        .body(axum::body::Body::from_stream(body))
-                                        .unwrap()
-                                        ).await {
+                                    match app
+                                        .clone()
+                                        .oneshot(
+                                            axum::http::Request::builder()
+                                                .method(axum::http::Method::PATCH)
+                                                .uri(uri)
+                                                .header(
+                                                    axum::http::header::CONTENT_TYPE,
+                                                    content_type,
+                                                )
+                                                .body(axum::body::Body::from_stream(body))
+                                                .unwrap(),
+                                        )
+                                        .await
+                                    {
                                         Ok(response) => {
                                             let resp = get_resp_data::<
                                                 crate::callers::song::response::update_song_queue::Response,
                                             >(response)
                                             .await;
-                                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                            assert_eq!(
+                                                false,
+                                                resp.data.is_empty(),
+                                                "Should not be empty"
+                                            );
                                         }
                                         Err(err) => {
                                             assert!(false, "Error: {:?}", err);
