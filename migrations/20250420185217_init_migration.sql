@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS "song" (
     album_artist TEXT NOT NULL,
     album TEXT NOT NULL,
     genre TEXT NOT NULL,
-    date TEXT NOT NULL,
+    -- TODO: Address discrepancy of date and year at some point
+    -- date TEXT NOT NULL,
     year INT NOT NULL,
     track SMALLINT NOT NULL,
     disc SMALLINT NOT NULL,
