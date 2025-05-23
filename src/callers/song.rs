@@ -598,6 +598,7 @@ pub mod endpoint {
                                     song.id = id;
                                     song.date_created = date_created;
                                     // response.data.push(returned_song);
+                                    response.data.push(song);
                                     (axum::http::StatusCode::OK, axum::Json(response))
                                 }
                                 Err(err) => {
