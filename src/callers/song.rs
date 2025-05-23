@@ -163,9 +163,9 @@ mod song {
             .fetch_one(pool)
             .await
             .map_err(|e| {
-                eprintln!("Error inserting query: {:?}", e);
-                eprintln!("Year: {:?}", song.year);
-                eprintln!("Song: {:?}", song);
+                eprintln!("Error inserting query: {:?} year {:?} song {:?}", e, song.year, song);
+                // eprintln!("Year: {:?}", song.year);
+                // eprintln!("Song: {:?}", song);
             });
 
         match result {
@@ -586,10 +586,15 @@ pub mod endpoint {
         if payload.is_valid() {
             let mut song = payload.to_song();
             song.filename = song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
+            eprintln!("File: {:?}", song.filename);
             song.directory = crate::environment::get_root_directory().await.unwrap();
+            eprintln!("Song queue_id: {:?}", payload.song_queue_id);
+
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
                 Ok(data) => {
+                    eprintln!("Year: {:?}", song.year);
                     song.data = data;
+                    eprintln!("Song fetched: {:?}", song);
                     let dir = std::path::Path::new(&song.directory);
                     let save_path = dir.join(&song.filename);
                     let mut file = std::fs::File::create(&save_path).unwrap();
@@ -606,7 +611,8 @@ pub mod endpoint {
                                     (axum::http::StatusCode::OK, axum::Json(response))
                                 }
                                 Err(err) => {
-                                    response.message = err.to_string();
+                                    println!("Song: {:?}", song);
+                                    response.message = format!("{:?} song {:?}", err.to_string(), song);
                                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                                 }
                             }
@@ -618,6 +624,7 @@ pub mod endpoint {
                     }
                 }
                 Err(err) => {
+                    eprintln!("Big whoopsie {:?}", song);
                     response.message = err.to_string();
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }

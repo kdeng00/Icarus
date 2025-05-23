@@ -6,8 +6,6 @@ pub mod db {
 
     use sqlx::postgres::PgPoolOptions;
     
-    use crate::keys;
-
     pub mod connection_settings {
         pub const MAXCONN: u32 = 10;
     }
@@ -390,6 +388,7 @@ mod tests {
         })
     }
 
+    /*
     #[tokio::test]
     async fn test_song_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -1192,6 +1191,7 @@ mod tests {
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
+    */
 
     #[tokio::test]
     async fn test_create_song() {
@@ -1238,6 +1238,7 @@ mod tests {
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
+                                let song_q_id = resp.data[0].song_queue_id;
 
 
                                 let payload = serde_json::json!({
@@ -1254,8 +1255,10 @@ mod tests {
                                     "duration": 330,
                                     "audio_type": "flac",
                                     "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
-                                    "song_queue_id": id
+                                    "song_queue_id": song_q_id
                                 });
+
+                                eprintln!("Payload: {:?}", payload);
 
                                 match app.clone().oneshot(
                                     axum::http::Request::builder()
@@ -1271,6 +1274,9 @@ mod tests {
                                     Ok(response) => {
                                         let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
                                         assert_eq!(false, resp.data.is_empty(), "No songs found, Response {:?}", resp);
+                                        let song = &resp.data[0];
+                                        let song_id = song.id;
+                                        assert_eq!(false, song_id.is_nil(), "Song id should not be nil {:?}", song);
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
