@@ -106,6 +106,10 @@ pub mod init {
                 crate::callers::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::coverart::endpoint::link),
             )
+            .route(
+                crate::callers::endpoints::CREATESONG,
+                post(crate::callers::song::endpoint::create_metadata)
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -270,6 +274,19 @@ mod tests {
         app.clone().oneshot(fetch_req).await
     }
 
+    async fn fetch_metadata_queue_req(app: &axum::Router, id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
+
+        let req = axum::http::Request::builder()
+                    .method(axum::http::Method::GET)
+                    .uri(uri)
+                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                    .body(axum::body::Body::empty())
+                    .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     async fn fetch_queue_data_req(
         app: &axum::Router,
         id: &uuid::Uuid,
@@ -306,6 +323,18 @@ mod tests {
             .unwrap();
 
         // Send request
+        app.clone().oneshot(req).await
+    }
+
+    async fn queue_metadata_req(app: &axum::Router, id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = payload_data(&id).await;
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::QUEUEMETADATA)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string())).unwrap();
+
         app.clone().oneshot(req).await
     }
 
@@ -537,19 +566,8 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let new_payload = payload_data(&resp.data[0]).await;
 
-                match app
-                    .clone()
-                    .oneshot(
-                        axum::http::Request::builder()
-                            .method(axum::http::Method::POST)
-                            .uri(crate::callers::endpoints::QUEUEMETADATA)
-                            .header(axum::http::header::CONTENT_TYPE, "application/json")
-                            .body(axum::body::Body::from(new_payload.to_string()))
-                            .unwrap(),
-                    )
-                    .await
+                match queue_metadata_req(&app, &resp.data[0]).await
                 {
                     Ok(response) => {
                         let resp =
@@ -596,19 +614,8 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let new_payload = payload_data(&resp.data[0]).await;
 
-                match app
-                    .clone()
-                    .oneshot(
-                        axum::http::Request::builder()
-                            .method(axum::http::Method::POST)
-                            .uri(crate::callers::endpoints::QUEUEMETADATA)
-                            .header(axum::http::header::CONTENT_TYPE, "application/json")
-                            .body(axum::body::Body::from(new_payload.to_string()))
-                            .unwrap(),
-                    )
-                    .await
+                match queue_metadata_req(&app, &resp.data[0]).await
                 {
                     Ok(response) => {
                         let resp =
@@ -617,19 +624,8 @@ mod tests {
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
                         let id = resp.data[0];
-                        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
 
-                        match app
-                            .clone()
-                            .oneshot(
-                                axum::http::Request::builder()
-                                    .method(axum::http::Method::GET)
-                                    .uri(uri)
-                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    .body(axum::body::Body::empty())
-                                    .unwrap(),
-                            )
-                            .await
+                        match fetch_metadata_queue_req(&app, &id).await
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
@@ -1195,5 +1191,9 @@ mod tests {
         };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_create_song() {
     }
 }
