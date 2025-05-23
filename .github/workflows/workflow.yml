@@ -66,6 +66,7 @@ jobs:
     
     - name: Run tests
       env:
+        ROOT_DIRECTORY: "/"
         DATABASE_URL: "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}"
       run: cargo test --verbose
     
