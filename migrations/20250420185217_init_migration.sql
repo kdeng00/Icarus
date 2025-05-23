@@ -47,5 +47,5 @@ CREATE TABLE IF NOT EXISTS "song" (
     date_created timestamptz DEFAULT now(),
     filename TEXT NOT NULL,
     directory TEXT NOT NULL,
-    user_id UUID NULL,
+    user_id UUID NULL
 );
