@@ -51,13 +51,13 @@ pub mod request {
                     album: self.album.clone(),
                     genre: self.genre.clone(),
                     year: self.date[..3].parse().unwrap(),
-                    track: self.track.clone(),
-                    disc: self.disc.clone(),
-                    track_count: self.track_count.clone(),
-                    disc_count: self.disc_count.clone(),
-                    duration: self.duration.clone(),
+                    track: self.track,
+                    disc: self.disc,
+                    track_count: self.track_count,
+                    disc_count: self.disc_count,
+                    duration: self.duration,
                     audio_type: self.audio_type.clone(),
-                    user_id: self.user_id.clone(),
+                    user_id: self.user_id,
                     // TODO: Change the type of this in icarus_models lib
                     date_created: String::new(),
                     filename: String::new(),
@@ -131,7 +131,7 @@ pub mod status {
     }
 }
 
-mod song {
+mod song_db {
     use sqlx::Row;
 
     // TODO: Change first parameter of return value from string to a time type
@@ -150,16 +150,16 @@ mod song {
             .bind(&song.album_artist)
             .bind(&song.album)
             .bind(&song.genre)
-            .bind(&song.year)
-            .bind(&song.track)
-            .bind(&song.disc)
-            .bind(&song.track_count)
-            .bind(&song.disc_count)
-            .bind(&song.duration)
+            .bind(song.year)
+            .bind(song.track)
+            .bind(song.disc)
+            .bind(song.track_count)
+            .bind(song.disc_count)
+            .bind(song.duration)
             .bind(&song.audio_type)
             .bind(&song.filename)
             .bind(&song.directory)
-            .bind(&song.user_id)
+            .bind(song.user_id)
             .fetch_one(pool)
             .await
             .map_err(|e| {
@@ -603,7 +603,7 @@ pub mod endpoint {
 
                     match song.song_path() {
                         Ok(_) => {
-                            match super::song::insert(&pool, &song).await {
+                            match super::song_db::insert(&pool, &song).await {
                                 Ok((date_created, id)) => {
                                     song.id = id;
                                     song.date_created = date_created;
