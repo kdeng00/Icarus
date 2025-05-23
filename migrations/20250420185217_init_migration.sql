@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS "coverartQueue" (
 -- Create an index for better query performance
 CREATE INDEX metadata_queue_data_metadata ON "metadataQueue" USING gin (metadata);
 
+-- Table to store a song's metadata
 CREATE TABLE IF NOT EXISTS "metadata" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
