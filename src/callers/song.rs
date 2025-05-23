@@ -408,6 +408,7 @@ pub mod endpoint {
                 data.len()
             );
 
+            // TODO: Remove this
             // Save the file to disk
             let mut file = std::fs::File::create(&file_name).unwrap();
             file.write_all(&data).unwrap();
