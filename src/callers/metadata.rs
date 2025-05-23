@@ -60,7 +60,7 @@ pub mod request {
             pub disc: i32,
             pub track_count: i32,
             pub disc_count: i32,
-            pub duration: i64,
+            pub duration: i32,
         }
 
         impl Request {
