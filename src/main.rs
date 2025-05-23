@@ -1,20 +1,15 @@
 pub mod callers;
+pub mod keys;
 
 pub mod db {
 
     use sqlx::postgres::PgPoolOptions;
     use std::env;
+    
+    use crate::keys;
 
     pub mod connection_settings {
         pub const MAXCONN: u32 = 10;
-    }
-
-    pub mod keys {
-        pub const DBURL: &str = "DATABASE_URL";
-
-        pub mod error {
-            pub const ERROR: &str = "DATABASE_URL must be set in .env";
-        }
     }
 
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
@@ -157,13 +152,13 @@ mod tests {
     mod db_mgr {
         use std::str::FromStr;
 
-        use crate::db;
+        use crate::keys;
 
         pub const LIMIT: usize = 6;
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            let tm_db_url = std::env::var(db::keys::DBURL).expect("DATABASE_URL must be present");
+            let tm_db_url = std::env::var(keys::DBURL).expect("DATABASE_URL must be present");
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
@@ -177,7 +172,7 @@ mod tests {
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
             let db_url =
-                std::env::var(db::keys::DBURL).expect("DATABASE_URL must be set for tests");
+                std::env::var(keys::DBURL).expect("DATABASE_URL must be set for tests");
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
@@ -206,7 +201,7 @@ mod tests {
         pub fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
             dotenvy::dotenv().ok(); // Load .env file if it exists
 
-            match std::env::var(db::keys::DBURL) {
+            match std::env::var(keys::DBURL) {
                 Ok(database_url) => {
                     let parsed_url = url::Url::parse(&database_url)?;
                     if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
