@@ -111,7 +111,7 @@ pub mod response {
     }
 
     pub mod create_metadata {
-        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::song::Song>
@@ -136,33 +136,36 @@ mod song {
 
     // TODO: Change first parameter of return value from string to a time type
     pub async fn insert(pool: &sqlx::PgPool, song: &icarus_models::song::Song) -> Result<(String, uuid::Uuid), sqlx::Error> {
+
+            // $11, $12, $13, $14, $15) RETURNING date_created, id;
+
         let result = sqlx::query(
             r#"
-            INSERT INTO "song" (title, artist, album_artist, album, genre, year,
-            track, disc, track_count, disc_count, duration, audio_type, filename,
-            directory, user_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15) RETURNING date_created, id;
+            INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id;
             "#
             )
-            .bind(song.title.clone())
-            .bind(song.artist.clone())
-            .bind(song.album_artist.clone())
-            .bind(song.album.clone())
-            .bind(song.genre.clone())
-            .bind(song.year)
-            .bind(song.track)
-            .bind(song.disc)
-            .bind(song.track_count)
-            .bind(song.disc_count)
-            .bind(song.duration)
-            .bind(song.audio_type.clone())
-            .bind(song.filename.clone())
-            .bind(song.directory.clone())
-            .bind(song.user_id)
+            .bind(&song.title)
+            .bind(&song.artist)
+            .bind(&song.album_artist)
+            .bind(&song.album)
+            .bind(&song.genre)
+            .bind(&song.year)
+            .bind(&song.track)
+            .bind(&song.disc)
+            .bind(&song.track_count)
+            .bind(&song.disc_count)
+            .bind(&song.duration)
+            .bind(&song.audio_type)
+            .bind(&song.filename)
+            .bind(&song.directory)
+            .bind(&song.user_id)
             .fetch_one(pool)
             .await
             .map_err(|e| {
                 eprintln!("Error inserting query: {:?}", e);
+                eprintln!("Year: {:?}", song.year);
+                eprintln!("Song: {:?}", song);
             });
 
         match result {
@@ -171,7 +174,8 @@ mod song {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
-                let date_created = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                // let date_created = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                let date_created = String::from("2025-01-01");
 
                 Ok((date_created, id))
             }
