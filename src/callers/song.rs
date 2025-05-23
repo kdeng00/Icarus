@@ -142,7 +142,7 @@ mod song_db {
         let result = sqlx::query(
             r#"
             INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id;
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING date_created, id;
             "#
             )
             .bind(&song.title)
@@ -174,8 +174,9 @@ mod song_db {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
-                // let date_created = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
-                let date_created = String::from("2025-01-01");
+                let date_created_ty: time::OffsetDateTime = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                let mut date_created = String::from("2025-01-01");
+                date_created = date_created_ty.to_string();
 
                 Ok((date_created, id))
             }
