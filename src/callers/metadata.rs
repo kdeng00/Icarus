@@ -66,6 +66,13 @@ pub mod response {
             pub data: Vec<crate::callers::metadata::metadata_queue::MetadataQueue>,
         }
     }
+
+    pub mod create_metadata {
+        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+        }
+    }
 }
 
 pub mod metadata_queue {
@@ -270,5 +277,13 @@ pub mod endpoint {
                 }
             },
         }
+    }
+
+    // TODO: Implement
+    pub async fn create_metadata(
+        ) -> (axum::http::StatusCode, axum::Json<super::response::create_metadata::Response>) {
+        let mut response = super::response::create_metadata::Response::default();
+
+        (axum::http::StatusCode::OK, axum::Json(response))
     }
 }
