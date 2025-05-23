@@ -13,6 +13,32 @@ pub mod request {
             pub status: String,
         }
     }
+
+    pub mod create_metadata {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub title: String,
+            pub artist: String,
+            pub album_artist: String,
+            pub album: String,
+            pub genre: String,
+            pub date: String,
+            pub track: i32,
+            pub disc: i32,
+            pub track_count: i32,
+            pub disc_count: i32,
+            pub duration: i32,
+        }
+
+        impl Request {
+            pub fn is_valid(&self) -> bool {
+                !self.title.is_empty() || !self.artist.is_empty() || !self.album_artist.is_empty() 
+                    || !self.album.is_empty() || !self.genre.is_empty() || !self.date.is_empty()
+                    || self.track > 0 || self.disc > 0 || self.track_count > 0 || self.disc_count > 0
+                    || self.duration > 0
+            }
+        }
+    }
 }
 
 pub mod response {
@@ -55,7 +81,16 @@ pub mod response {
             pub data: Vec<Vec<u8>>,
         }
     }
+
+    pub mod create_metadata {
+        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+        }
+    }
 }
+
+// TODO: Might make a distinction between year and date in a song's tag at some point
 
 pub mod status {
     pub const PENDING: &str = "pending";
@@ -454,6 +489,21 @@ pub mod endpoint {
         } else {
             response.message = String::from("No data provided");
             (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+        }
+    }
+
+    // TODO: Implement
+    pub async fn create_metadata(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::create_metadata::Request>,
+        ) -> (axum::http::StatusCode, axum::Json<super::response::create_metadata::Response>) {
+        let mut response = super::response::create_metadata::Response::default();
+
+        if payload.is_valid() {
+            (axum::http::StatusCode::OK, axum::Json(response))
+        } else {
+            response.message = String::from("Request body is not valid");
+            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
         }
     }
 }
