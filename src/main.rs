@@ -1,10 +1,10 @@
 pub mod callers;
+pub mod environment;
 pub mod keys;
 
 pub mod db {
 
     use sqlx::postgres::PgPoolOptions;
-    use std::env;
     
     use crate::keys;
 
@@ -13,7 +13,7 @@ pub mod db {
     }
 
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-        let database_url = get_db_url().await;
+        let database_url = crate::environment::get_db_url().await;
         println!("Database url: {:?}", database_url);
 
         PgPoolOptions::new()
@@ -22,10 +22,12 @@ pub mod db {
             .await
     }
 
+    /*
     async fn get_db_url() -> String {
         dotenvy::dotenv().ok();
         env::var(keys::DBURL).expect(keys::error::ERROR)
     }
+    */
 
     pub async fn migrations(pool: &sqlx::PgPool) {
         // Run migrations using the sqlx::migrate! macro
@@ -158,7 +160,8 @@ mod tests {
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            let tm_db_url = std::env::var(keys::DBURL).expect("DATABASE_URL must be present");
+            // let tm_db_url = std::env::var(keys::DBURL).expect("DATABASE_URL must be present");
+            let tm_db_url = crate::environment::get_db_url().await;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
@@ -171,8 +174,7 @@ mod tests {
 
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            let db_url =
-                std::env::var(keys::DBURL).expect("DATABASE_URL must be set for tests");
+            let db_url = crate::environment::get_db_url().await;
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
