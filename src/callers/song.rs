@@ -28,6 +28,8 @@ pub mod request {
             pub track_count: i32,
             pub disc_count: i32,
             pub duration: i32,
+            pub audio_type: String,
+            pub user_id: uuid::Uuid,
         }
 
         impl Request {
@@ -35,7 +37,7 @@ pub mod request {
                 !self.title.is_empty() || !self.artist.is_empty() || !self.album_artist.is_empty() 
                     || !self.album.is_empty() || !self.genre.is_empty() || !self.date.is_empty()
                     || self.track > 0 || self.disc > 0 || self.track_count > 0 || self.disc_count > 0
-                    || self.duration > 0
+                    || self.duration > 0 || !self.audio_type.is_empty() || !self.user_id.is_nil()
             }
         }
     }
