@@ -35,10 +35,19 @@ pub mod request {
 
         impl Request {
             pub fn is_valid(&self) -> bool {
-                !self.title.is_empty() || !self.artist.is_empty() || !self.album_artist.is_empty() 
-                    || !self.album.is_empty() || !self.genre.is_empty() || !self.date.is_empty()
-                    || self.track > 0 || self.disc > 0 || self.track_count > 0 || self.disc_count > 0
-                    || self.duration > 0 || !self.audio_type.is_empty() || !self.user_id.is_nil()
+                !self.title.is_empty()
+                    || !self.artist.is_empty()
+                    || !self.album_artist.is_empty()
+                    || !self.album.is_empty()
+                    || !self.genre.is_empty()
+                    || !self.date.is_empty()
+                    || self.track > 0
+                    || self.disc > 0
+                    || self.track_count > 0
+                    || self.disc_count > 0
+                    || self.duration > 0
+                    || !self.audio_type.is_empty()
+                    || !self.user_id.is_nil()
                     || !self.song_queue_id.is_nil()
             }
 
@@ -114,7 +123,7 @@ pub mod response {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<icarus_models::song::Song>
+            pub data: Vec<icarus_models::song::Song>,
         }
     }
 }
@@ -135,7 +144,10 @@ mod song_db {
     use sqlx::Row;
 
     // TODO: Change first parameter of return value from string to a time type
-    pub async fn insert(pool: &sqlx::PgPool, song: &icarus_models::song::Song) -> Result<(String, uuid::Uuid), sqlx::Error> {
+    pub async fn insert(
+        pool: &sqlx::PgPool,
+        song: &icarus_models::song::Song,
+    ) -> Result<(String, uuid::Uuid), sqlx::Error> {
         let result = sqlx::query(
             r#"
             INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
@@ -169,14 +181,15 @@ mod song_db {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
-                let date_created_time: time::OffsetDateTime = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                let date_created_time: time::OffsetDateTime = row
+                    .try_get("date_created")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
                 let date_created = date_created_time.to_string();
 
                 Ok((date_created, id))
             }
-            Err(_) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Err(_) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
@@ -575,12 +588,16 @@ pub mod endpoint {
     pub async fn create_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::create_metadata::Request>,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::create_metadata::Response>) {
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::create_metadata::Response>,
+    ) {
         let mut response = super::response::create_metadata::Response::default();
 
         if payload.is_valid() {
             let mut song = payload.to_song();
-            song.filename = song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
+            song.filename =
+                song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
             song.directory = crate::environment::get_root_directory().await.unwrap();
 
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
@@ -593,21 +610,19 @@ pub mod endpoint {
                     file.write_all(&song.data).unwrap();
 
                     match song.song_path() {
-                        Ok(_) => {
-                            match super::song_db::insert(&pool, &song).await {
-                                Ok((date_created, id)) => {
-                                    song.id = id;
-                                    song.date_created = date_created;
-                                    response.data.push(song);
+                        Ok(_) => match super::song_db::insert(&pool, &song).await {
+                            Ok((date_created, id)) => {
+                                song.id = id;
+                                song.date_created = date_created;
+                                response.data.push(song);
 
-                                    (axum::http::StatusCode::OK, axum::Json(response))
-                                }
-                                Err(err) => {
-                                    response.message = format!("{:?} song {:?}", err.to_string(), song);
-                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                }
+                                (axum::http::StatusCode::OK, axum::Json(response))
                             }
-                        }
+                            Err(err) => {
+                                response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        },
                         Err(err) => {
                             response.message = err.to_string();
                             (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
