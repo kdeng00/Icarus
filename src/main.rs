@@ -385,7 +385,6 @@ mod tests {
         })
     }
 
-    /*
     #[tokio::test]
     async fn test_song_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -1188,7 +1187,6 @@ mod tests {
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
-    */
 
     #[tokio::test]
     async fn test_create_song() {
