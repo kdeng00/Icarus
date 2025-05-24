@@ -456,8 +456,10 @@ pub mod endpoint {
         match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
                 let song_id = payload.song_id;
+                eprintln!("One song_id {:?}", song_id);
                 match crate::callers::song::song_db::get_song(&pool, &song_id).await {
                     Ok(song) => {
+                        eprintln!("Two");
                         let directory = crate::environment::get_root_directory().await.unwrap();
                         let dir = std::path::Path::new(&directory);
 

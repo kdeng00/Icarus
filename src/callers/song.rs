@@ -194,6 +194,7 @@ pub mod song_db {
     }
 
     pub async fn get_song(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::song::Song, sqlx::Error> {
+        eprintln!("Fetching song");
         let result = sqlx::query(
             r#"
             SELECT * FROM "song" WHERE id = $1
@@ -206,12 +207,16 @@ pub mod song_db {
                 eprintln!("Error querying data: {:?}", e);
             });
 
+        eprintln!("Result {:?}", result);
+
         match result {
             Ok(row) => {
+                eprintln!("Row found {:?}", row);
                 let date_created_time: time::OffsetDateTime = row
                     .try_get("date_created")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
+                eprintln!("date_created {:?}", date_created_time);
 
                 Ok(icarus_models::song::Song {
                     id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
