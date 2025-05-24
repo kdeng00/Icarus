@@ -20,13 +20,6 @@ pub mod db {
             .await
     }
 
-    /*
-    async fn get_db_url() -> String {
-        dotenvy::dotenv().ok();
-        env::var(keys::DBURL).expect(keys::error::ERROR)
-    }
-    */
-
     pub async fn migrations(pool: &sqlx::PgPool) {
         // Run migrations using the sqlx::migrate! macro
         // Assumes your migrations are in a ./migrations folder relative to Cargo.toml
@@ -162,7 +155,6 @@ mod tests {
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            // let tm_db_url = std::env::var(keys::DBURL).expect("DATABASE_URL must be present");
             let tm_db_url = crate::environment::get_db_url().await;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await

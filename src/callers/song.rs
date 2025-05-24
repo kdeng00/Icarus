@@ -136,9 +136,6 @@ mod song_db {
 
     // TODO: Change first parameter of return value from string to a time type
     pub async fn insert(pool: &sqlx::PgPool, song: &icarus_models::song::Song) -> Result<(String, uuid::Uuid), sqlx::Error> {
-
-            // $11, $12, $13, $14, $15) RETURNING date_created, id;
-
         let result = sqlx::query(
             r#"
             INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
@@ -163,9 +160,7 @@ mod song_db {
             .fetch_one(pool)
             .await
             .map_err(|e| {
-                eprintln!("Error inserting query: {:?} year {:?} song {:?}", e, song.year, song);
-                // eprintln!("Year: {:?}", song.year);
-                // eprintln!("Song: {:?}", song);
+                eprintln!("Error inserting query: {:?}", e);
             });
 
         match result {
@@ -174,9 +169,8 @@ mod song_db {
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
-                let date_created_ty: time::OffsetDateTime = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
-                let mut date_created = String::from("2025-01-01");
-                date_created = date_created_ty.to_string();
+                let date_created_time: time::OffsetDateTime = row.try_get("date_created").map_err(|_e| sqlx::Error::RowNotFound).unwrap();
+                let date_created = date_created_time.to_string();
 
                 Ok((date_created, id))
             }
@@ -578,7 +572,6 @@ pub mod endpoint {
         }
     }
 
-    // TODO: Implement
     pub async fn create_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::create_metadata::Request>,
@@ -588,17 +581,14 @@ pub mod endpoint {
         if payload.is_valid() {
             let mut song = payload.to_song();
             song.filename = song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
-            eprintln!("File: {:?}", song.filename);
             song.directory = crate::environment::get_root_directory().await.unwrap();
-            eprintln!("Song queue_id: {:?}", payload.song_queue_id);
 
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
                 Ok(data) => {
-                    eprintln!("Year: {:?}", song.year);
                     song.data = data;
-                    eprintln!("Song fetched: {:?}", song);
                     let dir = std::path::Path::new(&song.directory);
                     let save_path = dir.join(&song.filename);
+
                     let mut file = std::fs::File::create(&save_path).unwrap();
                     file.write_all(&song.data).unwrap();
 
@@ -608,12 +598,11 @@ pub mod endpoint {
                                 Ok((date_created, id)) => {
                                     song.id = id;
                                     song.date_created = date_created;
-                                    // response.data.push(returned_song);
                                     response.data.push(song);
+
                                     (axum::http::StatusCode::OK, axum::Json(response))
                                 }
                                 Err(err) => {
-                                    println!("Song: {:?}", song);
                                     response.message = format!("{:?} song {:?}", err.to_string(), song);
                                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                                 }
@@ -626,7 +615,6 @@ pub mod endpoint {
                     }
                 }
                 Err(err) => {
-                    eprintln!("Big whoopsie {:?}", song);
                     response.message = err.to_string();
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }
