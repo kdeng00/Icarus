@@ -193,19 +193,22 @@ pub mod song_db {
         }
     }
 
-    pub async fn get_song(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::song::Song, sqlx::Error> {
+    pub async fn get_song(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<icarus_models::song::Song, sqlx::Error> {
         eprintln!("Fetching song");
         let result = sqlx::query(
             r#"
             SELECT * FROM "song" WHERE id = $1
-            "#
-            )
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error querying data: {:?}", e);
-            });
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error querying data: {:?}", e);
+        });
 
         eprintln!("Result {:?}", result);
 
@@ -219,27 +222,75 @@ pub mod song_db {
                 eprintln!("date_created {:?}", date_created_time);
 
                 Ok(icarus_models::song::Song {
-                    id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    title: row.try_get("title").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    artist: row.try_get("artist").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    album_artist: row.try_get("album_artist").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    album: row.try_get("album").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    genre: row.try_get("genre").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    year: row.try_get("year").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    track: row.try_get("track").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    disc: row.try_get("disc").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    track_count: row.try_get("track_count").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    disc_count: row.try_get("disc_count").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    duration: row.try_get("duration").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    audio_type: row.try_get("audio_type").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    filename: row.try_get("filename").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    directory: row.try_get("directory").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    title: row
+                        .try_get("title")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    artist: row
+                        .try_get("artist")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    album_artist: row
+                        .try_get("album_artist")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    album: row
+                        .try_get("album")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    genre: row
+                        .try_get("genre")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    year: row
+                        .try_get("year")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    track: row
+                        .try_get("track")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    disc: row
+                        .try_get("disc")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    track_count: row
+                        .try_get("track_count")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    disc_count: row
+                        .try_get("disc_count")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    duration: row
+                        .try_get("duration")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    audio_type: row
+                        .try_get("audio_type")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    filename: row
+                        .try_get("filename")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    directory: row
+                        .try_get("directory")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
                     date_created: date_created_time.to_string(),
-                    user_id: row.try_get("user_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    user_id: row
+                        .try_get("user_id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
                     data: Vec::new(),
                 })
             }
-            Err(_) => Err(sqlx::Error::RowNotFound)
+            Err(_) => Err(sqlx::Error::RowNotFound),
         }
     }
 }

@@ -34,7 +34,7 @@ pub mod request {
         #[derive(Debug, serde::Deserialize, serde::Serialize)]
         pub struct Request {
             pub song_id: uuid::Uuid,
-            pub coverart_queue_id: uuid::Uuid
+            pub coverart_queue_id: uuid::Uuid,
         }
     }
 }
@@ -80,7 +80,7 @@ pub mod response {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<icarus_models::coverart::CoverArt>
+            pub data: Vec<icarus_models::coverart::CoverArt>,
         }
     }
 }
@@ -250,7 +250,11 @@ pub mod db {
 pub mod cov_db {
     use sqlx::Row;
 
-    pub async fn create(pool: &sqlx::PgPool, coverart: &icarus_models::coverart::CoverArt, song_id: &uuid::Uuid) -> Result<uuid::Uuid, sqlx::Error> {
+    pub async fn create(
+        pool: &sqlx::PgPool,
+        coverart: &icarus_models::coverart::CoverArt,
+        song_id: &uuid::Uuid,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
             INSERT INTO "coverart" (title, path, song_id) VALUES($1, $2, $3) RETURNING id;
@@ -448,8 +452,13 @@ pub mod endpoint {
         }
     }
 
-    pub async fn create_coverart(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::Json(payload): axum::Json<super::request::create_coverart::Request>) -> (axum::http::StatusCode, axum::Json<super::response::create_coverart::Response>) {
+    pub async fn create_coverart(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::create_coverart::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::create_coverart::Response>,
+    ) {
         let mut response = super::response::create_coverart::Response::default();
         let id = payload.coverart_queue_id;
 
@@ -467,7 +476,8 @@ pub mod endpoint {
                         let filename = format!("{}-coverart.jpeg", &song.filename[..8]);
                         let save_path = dir.join(&filename);
                         let path = String::from(save_path.to_str().unwrap());
-                        let mut coverart = icarus_models::coverart::init::init_coverart_only_path(path);
+                        let mut coverart =
+                            icarus_models::coverart::init::init_coverart_only_path(path);
                         coverart.title = song.album.clone();
                         coverart.data = data;
 
