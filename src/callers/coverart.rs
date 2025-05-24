@@ -262,7 +262,7 @@ pub mod cov_db {
         )
         .bind(&coverart.title)
         .bind(&coverart.path)
-        .bind(&song_id)
+        .bind(song_id)
         .fetch_one(pool)
         .await
         .map_err(|e| {
