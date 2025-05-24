@@ -395,6 +395,23 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn get_queued_coverart(app: &axum::Router, coverart_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let uri = format!(
+            "{}?id={}",
+            crate::callers::endpoints::QUEUECOVERART,
+            coverart_queue_id
+        );
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(uri)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::empty())
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
@@ -941,26 +958,7 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let uri = format!(
-                                    "{}?id={}",
-                                    crate::callers::endpoints::QUEUECOVERART,
-                                    resp_coverart_id
-                                );
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::GET)
-                                            .uri(uri)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                "application/json",
-                                            )
-                                            .body(axum::body::Body::empty())
-                                            .unwrap(),
-                                    )
-                                    .await
+                                match get_queued_coverart(&app, &resp_coverart_id).await
                                 {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
@@ -1409,26 +1407,7 @@ mod tests {
                                                             "Should not be empty"
                                                         );
 
-                                                        let uri = format!(
-                                                            "{}?id={}",
-                                                            crate::callers::endpoints::QUEUECOVERART,
-                                                            resp_coverart_id
-                                                        );
-
-                                                        match app
-                                                            .clone()
-                                                            .oneshot(
-                                                                axum::http::Request::builder()
-                                                                    .method(axum::http::Method::GET)
-                                                                    .uri(uri)
-                                                                    .header(
-                                                                        axum::http::header::CONTENT_TYPE,
-                                                                        "application/json",
-                                                                    )
-                                                                    .body(axum::body::Body::empty())
-                                                                    .unwrap(),
-                                                            )
-                                                            .await
+                                                        match get_queued_coverart(&app, &resp_coverart_id).await
                                                         {
                                                             Ok(response) => {
                                                                 let resp = get_resp_data::<
