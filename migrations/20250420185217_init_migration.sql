@@ -26,3 +26,26 @@ CREATE TABLE IF NOT EXISTS "coverartQueue" (
 
 -- Create an index for better query performance
 CREATE INDEX metadata_queue_data_metadata ON "metadataQueue" USING gin (metadata);
+
+-- Table to store a song's info
+CREATE TABLE IF NOT EXISTS "song" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    artist TEXT NOT NULL,
+    album_artist TEXT NOT NULL,
+    album TEXT NOT NULL,
+    genre TEXT NOT NULL,
+    -- TODO: Address discrepancy of date and year at some point
+    -- date TEXT NOT NULL,
+    year INT NOT NULL,
+    track SMALLINT NOT NULL,
+    disc SMALLINT NOT NULL,
+    track_count SMALLINT NOT NULL,
+    disc_count SMALLINT NOT NULL,
+    duration INT NOT NULL,
+    audio_type TEXT NOT NULL,
+    date_created timestamptz DEFAULT now(),
+    filename TEXT NOT NULL,
+    directory TEXT NOT NULL,
+    user_id UUID NULL
+);

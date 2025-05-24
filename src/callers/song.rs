@@ -13,6 +13,69 @@ pub mod request {
             pub status: String,
         }
     }
+
+    pub mod create_metadata {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub title: String,
+            pub artist: String,
+            pub album_artist: String,
+            pub album: String,
+            pub genre: String,
+            pub date: String,
+            pub track: i32,
+            pub disc: i32,
+            pub track_count: i32,
+            pub disc_count: i32,
+            pub duration: i32,
+            pub audio_type: String,
+            pub user_id: uuid::Uuid,
+            pub song_queue_id: uuid::Uuid,
+        }
+
+        impl Request {
+            pub fn is_valid(&self) -> bool {
+                !self.title.is_empty()
+                    || !self.artist.is_empty()
+                    || !self.album_artist.is_empty()
+                    || !self.album.is_empty()
+                    || !self.genre.is_empty()
+                    || !self.date.is_empty()
+                    || self.track > 0
+                    || self.disc > 0
+                    || self.track_count > 0
+                    || self.disc_count > 0
+                    || self.duration > 0
+                    || !self.audio_type.is_empty()
+                    || !self.user_id.is_nil()
+                    || !self.song_queue_id.is_nil()
+            }
+
+            pub fn to_song(&self) -> icarus_models::song::Song {
+                icarus_models::song::Song {
+                    id: uuid::Uuid::nil(),
+                    title: self.title.clone(),
+                    artist: self.artist.clone(),
+                    album_artist: self.album_artist.clone(),
+                    album: self.album.clone(),
+                    genre: self.genre.clone(),
+                    year: self.date[..3].parse().unwrap(),
+                    track: self.track,
+                    disc: self.disc,
+                    track_count: self.track_count,
+                    disc_count: self.disc_count,
+                    duration: self.duration,
+                    audio_type: self.audio_type.clone(),
+                    user_id: self.user_id,
+                    // TODO: Change the type of this in icarus_models lib
+                    date_created: String::new(),
+                    filename: String::new(),
+                    data: Vec::new(),
+                    directory: String::new(),
+                }
+            }
+        }
+    }
 }
 
 pub mod response {
@@ -55,7 +118,17 @@ pub mod response {
             pub data: Vec<Vec<u8>>,
         }
     }
+
+    pub mod create_metadata {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<icarus_models::song::Song>,
+        }
+    }
 }
+
+// TODO: Might make a distinction between year and date in a song's tag at some point
 
 pub mod status {
     pub const PENDING: &str = "pending";
@@ -64,6 +137,60 @@ pub mod status {
 
     pub async fn is_valid(status: &str) -> bool {
         status == PENDING || status == PROCESSING || status == DONE
+    }
+}
+
+mod song_db {
+    use sqlx::Row;
+
+    // TODO: Change first parameter of return value from string to a time type
+    pub async fn insert(
+        pool: &sqlx::PgPool,
+        song: &icarus_models::song::Song,
+    ) -> Result<(String, uuid::Uuid), sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING date_created, id;
+            "#
+            )
+            .bind(&song.title)
+            .bind(&song.artist)
+            .bind(&song.album_artist)
+            .bind(&song.album)
+            .bind(&song.genre)
+            .bind(song.year)
+            .bind(song.track)
+            .bind(song.disc)
+            .bind(song.track_count)
+            .bind(song.disc_count)
+            .bind(song.duration)
+            .bind(&song.audio_type)
+            .bind(&song.filename)
+            .bind(&song.directory)
+            .bind(song.user_id)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error inserting query: {:?}", e);
+            });
+
+        match result {
+            Ok(row) => {
+                let id: uuid::Uuid = row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                let date_created_time: time::OffsetDateTime = row
+                    .try_get("date_created")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                let date_created = date_created_time.to_string();
+
+                Ok((date_created, id))
+            }
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
     }
 }
 
@@ -289,6 +416,7 @@ pub mod endpoint {
                 data.len()
             );
 
+            // TODO: Remove this
             // Save the file to disk
             let mut file = std::fs::File::create(&file_name).unwrap();
             file.write_all(&data).unwrap();
@@ -454,6 +582,61 @@ pub mod endpoint {
         } else {
             response.message = String::from("No data provided");
             (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+        }
+    }
+
+    pub async fn create_metadata(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::create_metadata::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::create_metadata::Response>,
+    ) {
+        let mut response = super::response::create_metadata::Response::default();
+
+        if payload.is_valid() {
+            let mut song = payload.to_song();
+            song.filename =
+                song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
+            song.directory = crate::environment::get_root_directory().await.unwrap();
+
+            match song_queue::get_data(&pool, &payload.song_queue_id).await {
+                Ok(data) => {
+                    song.data = data;
+                    let dir = std::path::Path::new(&song.directory);
+                    let save_path = dir.join(&song.filename);
+
+                    let mut file = std::fs::File::create(&save_path).unwrap();
+                    file.write_all(&song.data).unwrap();
+
+                    match song.song_path() {
+                        Ok(_) => match super::song_db::insert(&pool, &song).await {
+                            Ok((date_created, id)) => {
+                                song.id = id;
+                                song.date_created = date_created;
+                                response.data.push(song);
+
+                                (axum::http::StatusCode::OK, axum::Json(response))
+                            }
+                            Err(err) => {
+                                response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        },
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                        }
+                    }
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            }
+        } else {
+            response.message = String::from("Request body is not valid");
+            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
         }
     }
 }
