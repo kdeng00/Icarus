@@ -29,6 +29,14 @@ pub mod request {
             pub song_queue_id: Option<uuid::Uuid>,
         }
     }
+
+    pub mod create_coverart {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub song_id: uuid::Uuid,
+            pub coverart_queue_id: uuid::Uuid
+        }
+    }
 }
 
 pub mod response {
@@ -65,6 +73,14 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<Vec<u8>>,
+        }
+    }
+
+    pub mod create_coverart {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<icarus_models::coverart::CoverArt>
         }
     }
 }
@@ -231,7 +247,40 @@ pub mod db {
     }
 }
 
+pub mod cov_db {
+    use sqlx::Row;
+
+    pub async fn create(pool: &sqlx::PgPool, coverart: &icarus_models::coverart::CoverArt, song_id: &uuid::Uuid) -> Result<uuid::Uuid, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            INSERT INTO "coverart" (title, path, song_id) VALUES($1, $2, $3) RETURNING id;
+            "#,
+        )
+        .bind(&coverart.title)
+        .bind(&coverart.path)
+        .bind(&song_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error inserting: {}", e);
+        });
+
+        match result {
+            Ok(row) => {
+                let id: uuid::Uuid = row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+                Ok(id)
+            }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+}
+
 pub mod endpoint {
+    use std::io::Write;
+
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
@@ -396,6 +445,56 @@ pub mod endpoint {
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }
             },
+        }
+    }
+
+    pub async fn create_coverart(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::create_coverart::Request>) -> (axum::http::StatusCode, axum::Json<super::response::create_coverart::Response>) {
+        let mut response = super::response::create_coverart::Response::default();
+        let id = payload.coverart_queue_id;
+
+        match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
+            Ok(data) => {
+                let song_id = payload.song_id;
+                match crate::callers::song::song_db::get_song(&pool, &song_id).await {
+                    Ok(song) => {
+                        let directory = crate::environment::get_root_directory().await.unwrap();
+                        let dir = std::path::Path::new(&directory);
+
+                        // TODO: Make this random and the file extension should not be hard coded
+                        let filename = format!("{}-coverart.jpeg", &song.filename[..8]);
+                        let save_path = dir.join(&filename);
+                        let path = String::from(save_path.to_str().unwrap());
+                        let mut coverart = icarus_models::coverart::init::init_coverart_only_path(path);
+                        coverart.title = song.album.clone();
+                        coverart.data = data;
+
+                        let mut file = std::fs::File::create(&save_path).unwrap();
+                        file.write_all(&coverart.data).unwrap();
+
+                        match super::cov_db::create(&pool, &coverart, &song.id).await {
+                            Ok(id) => {
+                                coverart.id = id;
+                                response.data.push(coverart);
+
+                                (axum::http::StatusCode::OK, axum::Json(response))
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
+                }
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
         }
     }
 }
