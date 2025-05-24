@@ -117,18 +117,23 @@ pub mod init {
     }
 }
 
+// TODO: Move elsewhere
 fn get_full() -> String {
     get_address() + ":" + &get_port()
 }
+// TODO: Move elsewhere
 fn get_address() -> String {
     String::from("0.0.0.0")
 }
 
+// TODO: Move elsewhere
 fn get_port() -> String {
     String::from("3000")
 }
 
+// TODO: Move elsewhere
 pub const ROOT: &str = "/";
+// TODO: Move elsewhere
 // basic handler that responds with a static string
 pub async fn root() -> &'static str {
     "Hello, World!"
