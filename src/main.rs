@@ -360,7 +360,10 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    async fn create_song_req(app: &axum::Router, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn create_song_req(
+        app: &axum::Router,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "title": "Power of Soul",
             "artist": "Jimmi Hendrix",
@@ -1265,8 +1268,7 @@ mod tests {
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                                 let song_q_id = resp.data[0].song_queue_id;
 
-                                match create_song_req(&app, &song_q_id).await
-                                {
+                                match create_song_req(&app, &song_q_id).await {
                                     Ok(response) => {
                                         let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
                                         assert_eq!(
