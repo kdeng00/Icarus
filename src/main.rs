@@ -360,6 +360,34 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn create_song_req(app: &axum::Router, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!({
+            "title": "Power of Soul",
+            "artist": "Jimmi Hendrix",
+            "album_artist": "Jimmi Hendrix",
+            "album": "Machine Gun",
+            "genre": "Psychadelic Rock",
+            "date": "2016-01-01",
+            "track": 1,
+            "disc": 1,
+            "track_count": 11,
+            "disc_count": 1,
+            "duration": 330,
+            "audio_type": "flac",
+            "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
+            "song_queue_id": song_queue_id
+        });
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::CREATESONG)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
@@ -1237,39 +1265,7 @@ mod tests {
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                                 let song_q_id = resp.data[0].song_queue_id;
 
-                                let payload = serde_json::json!({
-                                    "title": "Power of Soul",
-                                    "artist": "Jimmi Hendrix",
-                                    "album_artist": "Jimmi Hendrix",
-                                    "album": "Machine Gun",
-                                    "genre": "Psychadelic Rock",
-                                    "date": "2016-01-01",
-                                    "track": 1,
-                                    "disc": 1,
-                                    "track_count": 11,
-                                    "disc_count": 1,
-                                    "duration": 330,
-                                    "audio_type": "flac",
-                                    "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
-                                    "song_queue_id": song_q_id
-                                });
-
-                                eprintln!("Payload: {:?}", payload);
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::POST)
-                                            .uri(crate::callers::endpoints::CREATESONG)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                "application/json",
-                                            )
-                                            .body(axum::body::Body::from(payload.to_string()))
-                                            .unwrap(),
-                                    )
-                                    .await
+                                match create_song_req(&app, &song_q_id).await
                                 {
                                     Ok(response) => {
                                         let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
