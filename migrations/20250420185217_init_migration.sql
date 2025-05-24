@@ -38,14 +38,24 @@ CREATE TABLE IF NOT EXISTS "song" (
     -- TODO: Address discrepancy of date and year at some point
     -- date TEXT NOT NULL,
     year INT NOT NULL,
-    track SMALLINT NOT NULL,
-    disc SMALLINT NOT NULL,
-    track_count SMALLINT NOT NULL,
-    disc_count SMALLINT NOT NULL,
+    track INT NOT NULL,
+    disc INT NOT NULL,
+    track_count INT NOT NULL,
+    disc_count INT NOT NULL,
     duration INT NOT NULL,
     audio_type TEXT NOT NULL,
     date_created timestamptz DEFAULT now(),
     filename TEXT NOT NULL,
     directory TEXT NOT NULL,
     user_id UUID NULL
+    -- TODO: Add coverart id later. This will allow multiple songs to be linked to a single cover art
+);
+
+CREATE TABLE IF NOT EXISTS "coverart" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    -- TODO: Separate path later
+    path TEXT NOT NULL,
+    song_id UUID NOT NULL
+    -- TODO: Add type later
 );

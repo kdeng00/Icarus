@@ -101,6 +101,10 @@ pub mod init {
                 crate::callers::endpoints::CREATESONG,
                 post(crate::callers::song::endpoint::create_metadata),
             )
+            .route(
+                crate::callers::endpoints::CREATECOVERART,
+                post(crate::callers::coverart::endpoint::create_coverart),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -355,6 +359,57 @@ mod tests {
             .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
+    async fn create_song_req(
+        app: &axum::Router,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!({
+            "title": "Power of Soul",
+            "artist": "Jimmi Hendrix",
+            "album_artist": "Jimmi Hendrix",
+            "album": "Machine Gun",
+            "genre": "Psychadelic Rock",
+            "date": "2016-01-01",
+            "track": 1,
+            "disc": 1,
+            "track_count": 11,
+            "disc_count": 1,
+            "duration": 330,
+            "audio_type": "flac",
+            "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
+            "song_queue_id": song_queue_id
+        });
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::POST)
+            .uri(crate::callers::endpoints::CREATESONG)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
+    async fn get_queued_coverart(
+        app: &axum::Router,
+        coverart_queue_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let uri = format!(
+            "{}?id={}",
+            crate::callers::endpoints::QUEUECOVERART,
+            coverart_queue_id
+        );
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(uri)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::empty())
             .unwrap();
 
         app.clone().oneshot(req).await
@@ -906,27 +961,7 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let uri = format!(
-                                    "{}?id={}",
-                                    crate::callers::endpoints::QUEUECOVERART,
-                                    resp_coverart_id
-                                );
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::GET)
-                                            .uri(uri)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                "application/json",
-                                            )
-                                            .body(axum::body::Body::empty())
-                                            .unwrap(),
-                                    )
-                                    .await
-                                {
+                                match get_queued_coverart(&app, &resp_coverart_id).await {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::fetch_coverart_no_data::Response,
@@ -1237,40 +1272,7 @@ mod tests {
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                                 let song_q_id = resp.data[0].song_queue_id;
 
-                                let payload = serde_json::json!({
-                                    "title": "Power of Soul",
-                                    "artist": "Jimmi Hendrix",
-                                    "album_artist": "Jimmi Hendrix",
-                                    "album": "Machine Gun",
-                                    "genre": "Psychadelic Rock",
-                                    "date": "2016-01-01",
-                                    "track": 1,
-                                    "disc": 1,
-                                    "track_count": 11,
-                                    "disc_count": 1,
-                                    "duration": 330,
-                                    "audio_type": "flac",
-                                    "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
-                                    "song_queue_id": song_q_id
-                                });
-
-                                eprintln!("Payload: {:?}", payload);
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::POST)
-                                            .uri(crate::callers::endpoints::CREATESONG)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                "application/json",
-                                            )
-                                            .body(axum::body::Body::from(payload.to_string()))
-                                            .unwrap(),
-                                    )
-                                    .await
-                                {
+                                match create_song_req(&app, &song_q_id).await {
                                     Ok(response) => {
                                         let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
                                         assert_eq!(
@@ -1287,6 +1289,210 @@ mod tests {
                                             "Song id should not be nil {:?}",
                                             song
                                         );
+                                    }
+                                    Err(err) => {
+                                        assert!(false, "Error: {:?}", err);
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_create_coverart() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let song_queue_id = resp.data[0];
+                assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
+
+                match queue_metadata_req(&app, &resp.data[0]).await {
+                    Ok(response) => {
+                        let resp =
+                            get_resp_data::<crate::callers::song::response::Response>(response)
+                                .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                        let id = resp.data[0];
+
+                        match fetch_metadata_queue_req(&app, &id).await {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::metadata::response::fetch_metadata::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
+                                let song_q_id = resp.data[0].song_queue_id;
+
+                                match create_song_req(&app, &song_q_id).await {
+                                    Ok(response) => {
+                                        let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
+                                        assert_eq!(
+                                            false,
+                                            resp.data.is_empty(),
+                                            "No songs found, Response {:?}",
+                                            resp
+                                        );
+                                        let song = &resp.data[0];
+                                        let song_id = song.id;
+                                        assert_eq!(
+                                            false,
+                                            song_id.is_nil(),
+                                            "Song id should not be nil {:?}",
+                                            song
+                                        );
+
+                                        eprintln!("Song: {:?}", song);
+
+                                        match upload_coverart_queue_req(&app).await {
+                                            Ok(response) => {
+                                                let resp = get_resp_data::<
+                                                    crate::callers::coverart::response::Response,
+                                                >(
+                                                    response
+                                                )
+                                                .await;
+                                                assert_eq!(
+                                                    false,
+                                                    resp.data.is_empty(),
+                                                    "Should not be empty"
+                                                );
+                                                let coverart_id = resp.data[0];
+                                                assert_eq!(
+                                                    false,
+                                                    coverart_id.is_nil(),
+                                                    "Should not be empty"
+                                                );
+
+                                                match coverart_queue_song_queue_link_req(
+                                                    &app,
+                                                    &coverart_id,
+                                                    &song_queue_id,
+                                                )
+                                                .await
+                                                {
+                                                    Ok(response) => {
+                                                        let resp = get_resp_data::<
+                                                            crate::callers::coverart::response::link::Response,
+                                                        >(response)
+                                                        .await;
+                                                        assert_eq!(
+                                                            false,
+                                                            resp.data.is_empty(),
+                                                            "Should not be empty"
+                                                        );
+                                                        let resp_coverart_id =
+                                                            resp.data[0].coverart_id;
+                                                        let resp_song_queue_id =
+                                                            resp.data[0].song_queue_id;
+
+                                                        assert_eq!(
+                                                            false,
+                                                            resp_coverart_id.is_nil(),
+                                                            "Should not be empty"
+                                                        );
+                                                        assert_eq!(
+                                                            false,
+                                                            resp_song_queue_id.is_nil(),
+                                                            "Should not be empty"
+                                                        );
+
+                                                        match get_queued_coverart(
+                                                            &app,
+                                                            &resp_coverart_id,
+                                                        )
+                                                        .await
+                                                        {
+                                                            Ok(response) => {
+                                                                let resp = get_resp_data::<
+                                                                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                                                                >(response)
+                                                                .await;
+                                                                assert_eq!(
+                                                                    false,
+                                                                    resp.data.is_empty(),
+                                                                    "Should not be empty"
+                                                                );
+
+                                                                let payload = serde_json::json!({
+                                                                    "song_id": song_id,
+                                                                    "coverart_queue_id": resp_coverart_id,
+                                                                });
+
+                                                                match app.clone().oneshot(
+                                                                    axum::http::Request::builder()
+                                                                    .method(axum::http::Method::POST)
+                                                                    .uri(crate::callers::endpoints::CREATECOVERART)
+                                                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                                                    .body(axum::body::Body::from(payload.to_string()))
+                                                                    .unwrap()
+                                                                    ).await {
+                                                                    Ok(response) => {
+                                                                        let resp = get_resp_data::<
+                                                                            crate::callers::coverart::response::create_coverart::Response,
+                                                                        >(response)
+                                                                        .await;
+                                                                        assert_eq!(
+                                                                            false,
+                                                                            resp.data.is_empty(),
+                                                                            "Should not be empty"
+                                                                        );
+                                                                    }
+                                                                    Err(err) => {
+                                                                        assert!(false, "Error: {:?}", err);
+                                                                    }
+                                                                }
+                                                            }
+                                                            Err(err) => {
+                                                                assert!(false, "Error: {:?}", err);
+                                                            }
+                                                        }
+                                                    }
+                                                    Err(err) => {
+                                                        assert!(false, "Error: {:?}", err);
+                                                    }
+                                                }
+                                            }
+                                            Err(err) => {
+                                                assert!(false, "Error: {:?}", err);
+                                            }
+                                        }
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
