@@ -1,3 +1,4 @@
+// TODO: Separate queue and coverart endpoints
 #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
 pub struct CoverArtQueue {
     pub id: uuid::Uuid,

@@ -1,3 +1,4 @@
+// TODO: Explicitly make this module target queueing a song's metadata
 pub mod request {
     use serde::{Deserialize, Serialize};
 
