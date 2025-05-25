@@ -816,7 +816,7 @@ pub mod endpoint {
             Ok(song_queue) => {
                 match super::song_queue::wipe_data(&pool, &song_queue.id).await {
                     Ok(wiped_id) => {
-                        response.message = "Success";
+                        response.message = String::from("Success");
                         response.data.push(wiped_id);
 
                         (axum::http::StatusCode::OK, axum::Json(response))
