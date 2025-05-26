@@ -480,7 +480,7 @@ mod song_queue {
             SELECT id, filename, status FROM "songQueue" WHERE id = $1
             "#
             )
-            .bind(&id)
+            .bind(id)
             .fetch_one(pool)
             .await
             .map_err(|e| {
@@ -512,7 +512,7 @@ mod song_queue {
             UPDATE "songQueue" SET data = NULL WHERE id = $1 RETURNING id;
             "#
             )
-            .bind(&id)
+            .bind(id)
             .fetch_one(pool)
             .await
             .map_err(|e| {
