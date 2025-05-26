@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS "metadataQueue" (
 -- Table to store queued coverart
 CREATE TABLE IF NOT EXISTS "coverartQueue" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    data BYTEA NOT NULL,
+    data BYTEA NULL,
     song_queue_id UUID NULL
 );
 

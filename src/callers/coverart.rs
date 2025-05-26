@@ -38,6 +38,13 @@ pub mod request {
             pub coverart_queue_id: uuid::Uuid,
         }
     }
+
+    pub mod wipe_data_from_coverart_queue {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub coverart_queue_id: uuid::Uuid,
+        }
+    }
 }
 
 pub mod response {
@@ -82,6 +89,14 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::coverart::CoverArt>,
+        }
+    }
+
+    pub mod wipe_data_from_coverart_queue {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
         }
     }
 }
@@ -241,6 +256,31 @@ pub mod db {
         match result {
             Ok(row) => Ok(row
                 .try_get("data")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn wipe_data(
+        pool: &sqlx::PgPool,
+        coverart_queue_id: &uuid::Uuid,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "coverartQueue" SET data = NULL WHERE id = $1 RETURNING id;
+            "#,
+        )
+        .bind(coverart_queue_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error updating query: {:?}", e);
+        });
+
+        match result {
+            Ok(row) => Ok(row
+                .try_get("id")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap()),
             Err(_) => Err(sqlx::Error::RowNotFound),
@@ -505,6 +545,35 @@ pub mod endpoint {
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn wipe_data_from_coverart_queue(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::wipe_data_from_coverart_queue::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::wipe_data_from_coverart_queue::Response>,
+    ) {
+        let mut response = super::response::wipe_data_from_coverart_queue::Response::default();
+        let coverart_queue_id = payload.coverart_queue_id;
+
+        match super::db::get_coverart_queue_with_id(&pool, &coverart_queue_id).await {
+            Ok(coverart_queue) => match super::db::wipe_data(&pool, &coverart_queue.id).await {
+                Ok(id) => {
+                    response.message = String::from("Success");
+                    response.data.push(id);
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            },
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
             }
         }
     }
