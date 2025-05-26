@@ -75,8 +75,8 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUESONGDATAWIPE,
-                patch(crate::callers::song::endpoint::wipe_data_from_song_queue)
-                )
+                patch(crate::callers::song::endpoint::wipe_data_from_song_queue),
+            )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
                 post(crate::callers::metadata::endpoint::queue_metadata),
