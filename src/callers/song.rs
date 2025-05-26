@@ -1,3 +1,4 @@
+// TODO: Separate queue and song endpoints
 pub mod request {
     use serde::{Deserialize, Serialize};
 
@@ -76,6 +77,13 @@ pub mod request {
             }
         }
     }
+
+    pub mod wipe_data_from_song_queue {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub song_queue_id: uuid::Uuid,
+        }
+    }
 }
 
 pub mod response {
@@ -124,6 +132,14 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::song::Song>,
+        }
+    }
+
+    pub mod wipe_data_from_song_queue {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
         }
     }
 }
@@ -458,6 +474,66 @@ mod song_queue {
         }
     }
 
+    pub async fn get_song_queue(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<SongQueue, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, filename, status FROM "songQueue" WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error querying data: {:?}", e);
+        });
+
+        match result {
+            Ok(row) => Ok(SongQueue {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                filename: row
+                    .try_get("filename")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                status: row
+                    .try_get("status")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn wipe_data(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue" SET data = NULL WHERE id = $1 RETURNING id;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error updating record: {:?}", e);
+        });
+
+        match result {
+            Ok(row) => Ok(row
+                .try_get("id")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
     pub async fn get_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<Vec<u8>, sqlx::Error> {
         let result = sqlx::query(
             r#"
@@ -733,6 +809,36 @@ pub mod endpoint {
         } else {
             response.message = String::from("Request body is not valid");
             (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+        }
+    }
+
+    pub async fn wipe_data_from_song_queue(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::wipe_data_from_song_queue::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::wipe_data_from_song_queue::Response>,
+    ) {
+        let mut response = super::response::wipe_data_from_song_queue::Response::default();
+        let id = payload.song_queue_id;
+
+        match super::song_queue::get_song_queue(&pool, &id).await {
+            Ok(song_queue) => match super::song_queue::wipe_data(&pool, &song_queue.id).await {
+                Ok(wiped_id) => {
+                    response.message = String::from("Success");
+                    response.data.push(wiped_id);
+
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                }
+            },
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+            }
         }
     }
 }
