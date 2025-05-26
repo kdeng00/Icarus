@@ -101,9 +101,10 @@ pub mod init {
                 crate::callers::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::coverart::endpoint::link),
             )
-            .route(crate::callers::endpoints::QUEUECOVERARTDATAWIPE,
-                patch(crate::callers::coverart::endpoint::wipe_data_from_coverart_queue)
-                )
+            .route(
+                crate::callers::endpoints::QUEUECOVERARTDATAWIPE,
+                patch(crate::callers::coverart::endpoint::wipe_data_from_coverart_queue),
+            )
             .route(
                 crate::callers::endpoints::CREATESONG,
                 post(crate::callers::song::endpoint::create_metadata),
@@ -371,8 +372,11 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-
-    async fn create_coverart_req(app: &axum::Router, song_id: &uuid::Uuid, coverart_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn create_coverart_req(
+        app: &axum::Router,
+        song_id: &uuid::Uuid,
+        coverart_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "song_id": song_id,
             "coverart_queue_id": coverart_id
@@ -1472,7 +1476,13 @@ mod tests {
                                                                     "Should not be empty"
                                                                 );
 
-                                                                match create_coverart_req(&app, &song_id, &resp_coverart_id).await {
+                                                                match create_coverart_req(
+                                                                    &app,
+                                                                    &song_id,
+                                                                    &resp_coverart_id,
+                                                                )
+                                                                .await
+                                                                {
                                                                     Ok(response) => {
                                                                         let resp = get_resp_data::<
                                                                             crate::callers::coverart::response::create_coverart::Response,
@@ -1485,7 +1495,11 @@ mod tests {
                                                                         );
                                                                     }
                                                                     Err(err) => {
-                                                                        assert!(false, "Error: {:?}", err);
+                                                                        assert!(
+                                                                            false,
+                                                                            "Error: {:?}",
+                                                                            err
+                                                                        );
                                                                     }
                                                                 }
                                                             }
@@ -1781,7 +1795,13 @@ mod tests {
                                                                     "Should not be empty"
                                                                 );
 
-                                                                match create_coverart_req(&app, &song_id, &resp_coverart_id).await {
+                                                                match create_coverart_req(
+                                                                    &app,
+                                                                    &song_id,
+                                                                    &resp_coverart_id,
+                                                                )
+                                                                .await
+                                                                {
                                                                     Ok(response) => {
                                                                         let resp = get_resp_data::<
                                                                             crate::callers::coverart::response::create_coverart::Response,
@@ -1822,7 +1842,11 @@ mod tests {
                                                                         }
                                                                     }
                                                                     Err(err) => {
-                                                                        assert!(false, "Error: {:?}", err);
+                                                                        assert!(
+                                                                            false,
+                                                                            "Error: {:?}",
+                                                                            err
+                                                                        );
                                                                     }
                                                                 }
                                                             }
