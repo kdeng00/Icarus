@@ -101,6 +101,9 @@ pub mod init {
                 crate::callers::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::coverart::endpoint::link),
             )
+            .route(crate::callers::endpoints::QUEUECOVERARTDATAWIPE,
+                patch(crate::callers::coverart::endpoint::wipe_data_from_coverart_queue)
+                )
             .route(
                 crate::callers::endpoints::CREATESONG,
                 post(crate::callers::song::endpoint::create_metadata),
