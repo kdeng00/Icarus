@@ -1657,7 +1657,6 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
-    // TODO: Complete test
     #[tokio::test]
     async fn test_wipe_data_from_coverart_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
