@@ -77,9 +77,9 @@ services:
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
-      POSTGRES_USER: ${POSTGRES_USER:-icarus_op}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-icarus_auth_db}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER:-icarus_op}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB:-icarus_auth_db}
     volumes:
       # Persist database data using a named volume
       - postgres_data_auth:/var/lib/postgresql/data
