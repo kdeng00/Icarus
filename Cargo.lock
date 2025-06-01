@@ -732,6 +732,7 @@ dependencies = [
  "common-multipart-rfc7578",
  "dotenvy",
  "futures",
+ "icarus_envy",
  "icarus_meta",
  "icarus_models",
  "serde",
@@ -746,6 +747,14 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "icarus_envy"
+version = "0.2.0"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.2.0-devel-dbe4dc67cb-950#dbe4dc67cb1baa5ae5c5f2b452ff45d388c719ea"
+dependencies = [
+ "dotenvy",
 ]
 
 [[package]]
