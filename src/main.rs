@@ -207,7 +207,10 @@ mod tests {
         }
 
         pub fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
-            let database_url = icarus_envy::environment::get_db_url().await;
+            let rt = tokio::runtime::Runtime::new().unwrap();
+
+            // Block on the async function to get the result
+            let database_url = rt.block_on(icarus_envy::environment::get_db_url());
             let parsed_url = url::Url::parse(&database_url)?;
 
             if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
