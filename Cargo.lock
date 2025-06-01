@@ -730,7 +730,6 @@ version = "0.2.0"
 dependencies = [
  "axum",
  "common-multipart-rfc7578",
- "dotenvy",
  "futures",
  "icarus_envy",
  "icarus_meta",
