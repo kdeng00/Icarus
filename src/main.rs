@@ -170,7 +170,7 @@ mod tests {
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            let tm_db_url = crate::environment::get_db_url().await;
+            let tm_db_url = icarus_envy::environment::get_db_url().await;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
@@ -183,7 +183,7 @@ mod tests {
 
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
             dotenvy::dotenv().ok();
-            let db_url = crate::environment::get_db_url().await;
+            let db_url = icarus_envy::environment::get_db_url().await;
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
