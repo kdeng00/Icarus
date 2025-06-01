@@ -164,7 +164,6 @@ mod tests {
     mod db_mgr {
         use std::str::FromStr;
 
-
         pub const LIMIT: usize = 6;
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
@@ -174,8 +173,9 @@ mod tests {
         }
 
         pub async fn generate_db_name() -> String {
-            let db_name =
-                get_database_name().await.unwrap() + &"_" + &uuid::Uuid::new_v4().to_string()[..LIMIT];
+            let db_name = get_database_name().await.unwrap()
+                + &"_"
+                + &uuid::Uuid::new_v4().to_string()[..LIMIT];
             db_name
         }
 
