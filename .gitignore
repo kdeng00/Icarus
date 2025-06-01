@@ -1,7 +1,6 @@
 ﻿# Added by cargo
 
 /target
-Cargo.lock
 .env
 
 .DS_STORE
