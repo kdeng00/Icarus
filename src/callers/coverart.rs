@@ -508,7 +508,7 @@ pub mod endpoint {
                 let song_id = payload.song_id;
                 match crate::callers::song::song_db::get_song(&pool, &song_id).await {
                     Ok(song) => {
-                        let directory = crate::environment::get_root_directory().await.unwrap();
+                        let directory = icarus_envy::environment::get_root_directory().await;
                         let dir = std::path::Path::new(&directory);
 
                         // TODO: Make this random and the file extension should not be hard coded

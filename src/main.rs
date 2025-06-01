@@ -9,7 +9,7 @@ pub mod db {
     }
 
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-        let database_url = crate::environment::get_db_url().await;
+        let database_url = icarus_envy::environment::get_db_url().await;
         println!("Database url: {:?}", database_url);
 
         PgPoolOptions::new()
