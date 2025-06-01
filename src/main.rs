@@ -175,7 +175,7 @@ mod tests {
 
         pub async fn generate_db_name() -> String {
             let db_name =
-                get_database_name().unwrap() + &"_" + &uuid::Uuid::new_v4().to_string()[..LIMIT];
+                get_database_name().await.unwrap() + &"_" + &uuid::Uuid::new_v4().to_string()[..LIMIT];
             db_name
         }
 
