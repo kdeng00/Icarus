@@ -751,7 +751,7 @@ dependencies = [
 [[package]]
 name = "icarus_envy"
 version = "0.2.0"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.2.0-devel-dbe4dc67cb-950#dbe4dc67cb1baa5ae5c5f2b452ff45d388c719ea"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.2.0#3ee8c1e573ba9637769aa0538d2c11335e39ed9f"
 dependencies = [
  "dotenvy",
 ]

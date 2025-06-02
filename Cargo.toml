@@ -20,7 +20,7 @@ sqlx = { version = "0.8.5", features = ["postgres", "runtime-tokio-native-tls", 
 time = { version = "0.3.41", features = ["formatting", "macros", "parsing", "serde"]  }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.1.30" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.4.3" }
-icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.2.0-devel-dbe4dc67cb-950" }
+icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.2.0" }
 
 [dev-dependencies]
 common-multipart-rfc7578 = { version = "0.7.0" }
