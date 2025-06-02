@@ -770,7 +770,7 @@ pub mod endpoint {
             let mut song = payload.to_song();
             song.filename =
                 song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
-            song.directory = crate::environment::get_root_directory().await.unwrap();
+            song.directory = icarus_envy::environment::get_root_directory().await;
 
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
                 Ok(data) => {

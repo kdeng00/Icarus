@@ -1,6 +1,4 @@
 pub mod callers;
-pub mod environment;
-pub mod keys;
 
 pub mod db {
 
@@ -11,7 +9,7 @@ pub mod db {
     }
 
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-        let database_url = crate::environment::get_db_url().await;
+        let database_url = icarus_envy::environment::get_db_url().await;
         println!("Database url: {:?}", database_url);
 
         PgPoolOptions::new()
@@ -166,26 +164,23 @@ mod tests {
     mod db_mgr {
         use std::str::FromStr;
 
-        use crate::keys;
-
         pub const LIMIT: usize = 6;
 
         pub async fn get_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-            dotenvy::dotenv().ok();
-            let tm_db_url = crate::environment::get_db_url().await;
+            let tm_db_url = icarus_envy::environment::get_db_url().await;
             let tm_options = sqlx::postgres::PgConnectOptions::from_str(&tm_db_url).unwrap();
             sqlx::PgPool::connect_with(tm_options).await
         }
 
         pub async fn generate_db_name() -> String {
-            let db_name =
-                get_database_name().unwrap() + &"_" + &uuid::Uuid::new_v4().to_string()[..LIMIT];
+            let db_name = get_database_name().await.unwrap()
+                + &"_"
+                + &uuid::Uuid::new_v4().to_string()[..LIMIT];
             db_name
         }
 
         pub async fn connect_to_db(db_name: &str) -> Result<sqlx::PgPool, sqlx::Error> {
-            dotenvy::dotenv().ok();
-            let db_url = crate::environment::get_db_url().await;
+            let db_url = icarus_envy::environment::get_db_url().await;
             let options = sqlx::postgres::PgConnectOptions::from_str(&db_url)?.database(db_name);
             sqlx::PgPool::connect_with(options).await
         }
@@ -211,29 +206,21 @@ mod tests {
             Ok(())
         }
 
-        pub fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
-            dotenvy::dotenv().ok(); // Load .env file if it exists
+        pub async fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
+            let database_url = icarus_envy::environment::get_db_url().await;
+            let parsed_url = url::Url::parse(&database_url)?;
 
-            match std::env::var(keys::DBURL) {
-                Ok(database_url) => {
-                    let parsed_url = url::Url::parse(&database_url)?;
-                    if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
-                        match parsed_url
-                            .path_segments()
-                            .and_then(|segments| segments.last().map(|s| s.to_string()))
-                        {
-                            Some(sss) => Ok(sss),
-                            None => Err("Error parsing".into()),
-                        }
-                    } else {
-                        // Handle other database types if needed
-                        Err("Error parsing".into())
-                    }
+            if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
+                match parsed_url
+                    .path_segments()
+                    .and_then(|segments| segments.last().map(|s| s.to_string()))
+                {
+                    Some(sss) => Ok(sss),
+                    None => Err("Error parsing".into()),
                 }
-                Err(_) => {
-                    // DATABASE_URL environment variable not found
-                    Err("Error parsing".into())
-                }
+            } else {
+                // Handle other database types if needed
+                Err("Error parsing".into())
             }
         }
     }
