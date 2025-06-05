@@ -1631,83 +1631,57 @@ mod tests {
         let app = init::app(pool).await;
 
         // Send request
-        match song_queue_req(&app).await {
+        match sequence_flow::queue_song_flow(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
-                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let resp = get_resp_data::<
+                    crate::callers::metadata::response::fetch_metadata::Response,
+                >(response)
+                .await;
+                assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
+                let song_q_id = resp.data[0].song_queue_id;
 
-                match queue_metadata_req(&app, &resp.data[0]).await {
+                match create_song_req(&app, &song_q_id).await {
                     Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::song::response::Response>(response)
-                                .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
+                        assert_eq!(
+                            false,
+                            resp.data.is_empty(),
+                            "No songs found, Response {:?}",
+                            resp
+                        );
+                        let song = &resp.data[0];
+                        let song_id = song.id;
+                        assert_eq!(
+                            false,
+                            song_id.is_nil(),
+                            "Song id should not be nil {:?}",
+                            song
+                        );
 
-                        let id = resp.data[0];
+                        let payload = serde_json::json!({
+                            "song_queue_id": song_q_id
+                        });
 
-                        match fetch_metadata_queue_req(&app, &id).await {
+                        match app.clone().oneshot(
+                                axum::http::Request::builder()
+                                .method(axum::http::Method::PATCH)
+                                .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
+                                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                .body(axum::body::Body::from(payload.to_string()))
+                                .unwrap()
+                            ).await {
                             Ok(response) => {
-                                let resp = get_resp_data::<
-                                    crate::callers::metadata::response::fetch_metadata::Response,
-                                >(response)
-                                .await;
-                                assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
-                                let song_q_id = resp.data[0].song_queue_id;
+                                let resp = get_resp_data::<crate::callers::song::response::wipe_data_from_song_queue::Response>(response).await;
+                                assert_eq!(
+                                    false,
+                                    resp.data.is_empty(),
+                                    "Failure in wiping data from song queue {:?}",
+                                    resp
+                                );
 
-                                match create_song_req(&app, &song_q_id).await {
-                                    Ok(response) => {
-                                        let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
-                                        assert_eq!(
-                                            false,
-                                            resp.data.is_empty(),
-                                            "No songs found, Response {:?}",
-                                            resp
-                                        );
-                                        let song = &resp.data[0];
-                                        let song_id = song.id;
-                                        assert_eq!(
-                                            false,
-                                            song_id.is_nil(),
-                                            "Song id should not be nil {:?}",
-                                            song
-                                        );
-
-                                        let payload = serde_json::json!({
-                                            "song_queue_id": song_q_id
-                                        });
-
-                                        match app.clone().oneshot(
-                                                axum::http::Request::builder()
-                                                .method(axum::http::Method::PATCH)
-                                                .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
-                                                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                                .body(axum::body::Body::from(payload.to_string()))
-                                                .unwrap()
-                                            ).await {
-                                            Ok(response) => {
-                                                let resp = get_resp_data::<crate::callers::song::response::wipe_data_from_song_queue::Response>(response).await;
-                                                assert_eq!(
-                                                    false,
-                                                    resp.data.is_empty(),
-                                                    "Failure in wiping data from song queue {:?}",
-                                                    resp
-                                                );
-
-                                                let returned_id = &resp.data[0];
-                                                assert_eq!(false, returned_id.is_nil(), "Returned id should not be nil {:?}", returned_id);
-                                                assert_eq!(*returned_id, song_q_id, "Returned id does not match sent id {:?} {:?}", returned_id, song_q_id);
-                                            }
-                                            Err(err) => {
-                                                assert!(false, "Error: {:?}", err);
-                                            }
-                                        }
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
-                                }
+                                let returned_id = &resp.data[0];
+                                assert_eq!(false, returned_id.is_nil(), "Returned id should not be nil {:?}", returned_id);
+                                assert_eq!(*returned_id, song_q_id, "Returned id does not match sent id {:?} {:?}", returned_id, song_q_id);
                             }
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
@@ -1723,6 +1697,7 @@ mod tests {
                 assert!(false, "Error: {:?}", err);
             }
         };
+
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
