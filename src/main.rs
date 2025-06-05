@@ -432,11 +432,14 @@ mod tests {
         // use tower::ServiceExt;
 
         // Flow for queueing song
-        pub async fn queue_song_flow(app: &axum::Router) -> Result<axum::response::Response, std::convert::Infallible> {
+        pub async fn queue_song_flow(
+            app: &axum::Router,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
             match super::song_queue_req(&app).await {
                 Ok(response) => {
                     let resp =
-                        super::get_resp_data::<crate::callers::song::response::Response>(response).await;
+                        super::get_resp_data::<crate::callers::song::response::Response>(response)
+                            .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
                     let song_queue_id = resp.data[0];
@@ -444,50 +447,39 @@ mod tests {
 
                     match super::queue_metadata_req(&app, &resp.data[0]).await {
                         Ok(response) => {
-                            let resp =
-                                super::get_resp_data::<crate::callers::song::response::Response>(response)
-                                    .await;
+                            let resp = super::get_resp_data::<
+                                crate::callers::song::response::Response,
+                            >(response)
+                            .await;
                             assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
                             let id = resp.data[0];
 
                             match super::fetch_metadata_queue_req(&app, &id).await {
-                                Ok(response) => {
-                                    Ok(response)
-                                }
-                                Err(err) => {
-                                    Err(err)
-                                }
+                                Ok(response) => Ok(response),
+                                Err(err) => Err(err),
                             }
                         }
                     }
                 }
-                Err(err) => {
-                    Err(err)
-                }
+                Err(err) => Err(err),
             }
         }
 
-        pub async fn queue_coverart_flow(app: &axum::Router, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        pub async fn queue_coverart_flow(
+            app: &axum::Router,
+            song_queue_id: &uuid::Uuid,
+        ) -> Result<axum::response::Response, std::convert::Infallible> {
             match super::upload_coverart_queue_req(&app).await {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
-                        crate::callers::coverart::response::Response,
-                    >(
-                        response
-                    )
-                    .await;
-                    assert_eq!(
-                        false,
-                        resp.data.is_empty(),
-                        "Should not be empty"
-                    );
+                    let resp =
+                        super::get_resp_data::<crate::callers::coverart::response::Response>(
+                            response,
+                        )
+                        .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     let coverart_id = resp.data[0];
-                    assert_eq!(
-                        false,
-                        coverart_id.is_nil(),
-                        "Should not be empty"
-                    );
+                    assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
 
                     match super::coverart_queue_song_queue_link_req(
                         &app,
@@ -501,39 +493,16 @@ mod tests {
                                 crate::callers::coverart::response::link::Response,
                             >(response)
                             .await;
-                            assert_eq!(
-                                false,
-                                resp.data.is_empty(),
-                                "Should not be empty"
-                            );
-                            let resp_coverart_id =
-                                resp.data[0].coverart_id;
-                            let resp_song_queue_id =
-                                resp.data[0].song_queue_id;
+                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            let resp_coverart_id = resp.data[0].coverart_id;
+                            let resp_song_queue_id = resp.data[0].song_queue_id;
 
-                            assert_eq!(
-                                false,
-                                resp_coverart_id.is_nil(),
-                                "Should not be empty"
-                            );
-                            assert_eq!(
-                                false,
-                                resp_song_queue_id.is_nil(),
-                                "Should not be empty"
-                            );
+                            assert_eq!(false, resp_coverart_id.is_nil(), "Should not be empty");
+                            assert_eq!(false, resp_song_queue_id.is_nil(), "Should not be empty");
 
-                            match super::get_queued_coverart(
-                                &app,
-                                &resp_coverart_id,
-                            )
-                            .await
-                            {
-                                Ok(response) => {
-                                    Ok(response)
-                                }
-                                Err(err) => {
-                                    Err(err)
-                                }
+                            match super::get_queued_coverart(&app, &resp_coverart_id).await {
+                                Ok(response) => Ok(response),
+                                Err(err) => Err(err),
                             }
                         }
                     }
@@ -1786,10 +1755,12 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_queue_id = resp.data[0].song_queue_id;
 
-
                 match create_song_req(&app, &song_queue_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::create_metadata::Response,
+                        >(response)
+                        .await;
                         assert_eq!(
                             false,
                             resp.data.is_empty(),
@@ -1813,11 +1784,7 @@ mod tests {
                                     crate::callers::coverart::response::fetch_coverart_no_data::Response,
                                 >(response)
                                 .await;
-                                assert_eq!(
-                                    false,
-                                    resp.data.is_empty(),
-                                    "Should not be empty"
-                                );
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
                                 let resp_coverart_queue_id = resp.data[0].id;
 
@@ -1825,14 +1792,21 @@ mod tests {
                                     "coverart_queue_id": resp_coverart_queue_id
                                 });
 
-                                match app.clone().oneshot(
-                                    axum::http::Request::builder()
-                                    .method(axum::http::Method::PATCH)
-                                    .uri(crate::callers::endpoints::QUEUECOVERARTDATAWIPE)
-                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    .body(axum::body::Body::from(payload.to_string()))
-                                    .unwrap()
-                                    ).await {
+                                match app
+                                    .clone()
+                                    .oneshot(
+                                        axum::http::Request::builder()
+                                            .method(axum::http::Method::PATCH)
+                                            .uri(crate::callers::endpoints::QUEUECOVERARTDATAWIPE)
+                                            .header(
+                                                axum::http::header::CONTENT_TYPE,
+                                                "application/json",
+                                            )
+                                            .body(axum::body::Body::from(payload.to_string()))
+                                            .unwrap(),
+                                    )
+                                    .await
+                                {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::wipe_data_from_coverart_queue::Response,
@@ -1863,7 +1837,6 @@ mod tests {
                 assert!(false, "Error: {:?}", err);
             }
         };
-
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
