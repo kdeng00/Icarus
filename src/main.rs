@@ -469,7 +469,6 @@ mod tests {
         }
 
         pub async fn queue_coverart_flow(app: &axum::Router, song_queue_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
-
             match super::upload_coverart_queue_req(&app).await {
                 Ok(response) => {
                     let resp = super::get_resp_data::<
@@ -1835,7 +1834,6 @@ mod tests {
                                     .unwrap()
                                     ).await {
                                     Ok(response) => {
-                                        // Ok(response)
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::wipe_data_from_coverart_queue::Response,
                                         >(response)
@@ -1865,68 +1863,6 @@ mod tests {
                 assert!(false, "Error: {:?}", err);
             }
         };
-
-        // Send request
-        /*
-        match sequence_flow::create_coverart_flow(&app).await {
-            Ok(response) => {
-                let resp = get_resp_data::<
-                    crate::callers::coverart::response::create_coverart::Response,
-                >(response)
-                .await;
-
-                assert_eq!(
-                    false,
-                    resp.data.is_empty(),
-                    "Should not be empty"
-                );
-                // ???
-                // let resp_coverart_id = resp.data[0];
-
-                let payload = serde_json::json!({
-                    "coverart_queue_id": resp_coverart_id
-                });
-
-                match app.clone().oneshot(
-                    axum::http::Request::builder()
-                    .method(axum::http::Method::PATCH)
-                    .uri(crate::callers::endpoints::QUEUECOVERARTDATAWIPE)
-                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                    .body(axum::body::Body::from(payload.to_string()))
-                    .unwrap()
-                    ).await {
-                    Ok(response) => {
-                        // Ok(response)
-                        let resp = get_resp_data::<
-                            crate::callers::coverart::response::wipe_data_from_coverart_queue::Response,
-                        >(response)
-                        .await;
-                        assert_eq!(
-                            false,
-                            resp.data.is_empty(),
-                            "Should not be empty"
-                        );
-                    }
-                    Err(err) => {
-                        assert!(false, "Error: {:?}", err);
-                    }
-                }
-
-                    let resp = get_resp_data::<
-                        crate::callers::coverart::response::wipe_data_from_coverart_queue::Response,
-                    >(response)
-                    .await;
-                    assert_eq!(
-                        false,
-                        resp.data.is_empty(),
-                        "Should not be empty"
-                    );
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        };
-                    */
 
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
