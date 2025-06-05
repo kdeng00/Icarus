@@ -429,8 +429,6 @@ mod tests {
     }
 
     mod sequence_flow {
-        // use tower::ServiceExt;
-
         // Flow for queueing song
         pub async fn queue_song_flow(
             app: &axum::Router,
@@ -466,6 +464,7 @@ mod tests {
             }
         }
 
+        // Flow for queueing coverart
         pub async fn queue_coverart_flow(
             app: &axum::Router,
             song_queue_id: &uuid::Uuid,
