@@ -1642,7 +1642,10 @@ mod tests {
 
                 match create_song_req(&app, &song_q_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::create_metadata::Response,
+                        >(response)
+                        .await;
                         assert_eq!(
                             false,
                             resp.data.is_empty(),
@@ -1662,14 +1665,18 @@ mod tests {
                             "song_queue_id": song_q_id
                         });
 
-                        match app.clone().oneshot(
+                        match app
+                            .clone()
+                            .oneshot(
                                 axum::http::Request::builder()
-                                .method(axum::http::Method::PATCH)
-                                .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
-                                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                .body(axum::body::Body::from(payload.to_string()))
-                                .unwrap()
-                            ).await {
+                                    .method(axum::http::Method::PATCH)
+                                    .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
+                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .body(axum::body::Body::from(payload.to_string()))
+                                    .unwrap(),
+                            )
+                            .await
+                        {
                             Ok(response) => {
                                 let resp = get_resp_data::<crate::callers::song::response::wipe_data_from_song_queue::Response>(response).await;
                                 assert_eq!(
@@ -1680,8 +1687,17 @@ mod tests {
                                 );
 
                                 let returned_id = &resp.data[0];
-                                assert_eq!(false, returned_id.is_nil(), "Returned id should not be nil {:?}", returned_id);
-                                assert_eq!(*returned_id, song_q_id, "Returned id does not match sent id {:?} {:?}", returned_id, song_q_id);
+                                assert_eq!(
+                                    false,
+                                    returned_id.is_nil(),
+                                    "Returned id should not be nil {:?}",
+                                    returned_id
+                                );
+                                assert_eq!(
+                                    *returned_id, song_q_id,
+                                    "Returned id does not match sent id {:?} {:?}",
+                                    returned_id, song_q_id
+                                );
                             }
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
@@ -1697,7 +1713,6 @@ mod tests {
                 assert!(false, "Error: {:?}", err);
             }
         };
-
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
