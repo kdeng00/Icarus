@@ -760,23 +760,7 @@ mod tests {
         let app = init::app(pool).await;
 
         // Send request
-        match song_queue_req(&app).await {
-            Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
-                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                match queue_metadata_req(&app, &resp.data[0]).await {
-                    Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::song::response::Response>(response)
-                                .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                        let id = resp.data[0];
-
-                        match fetch_metadata_queue_req(&app, &id).await {
+                        match sequence_flow::queue_song_flow(&app).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
                                     crate::callers::metadata::response::fetch_metadata::Response,
@@ -787,17 +771,7 @@ mod tests {
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
-                        }
-                    }
-                    Err(err) => {
-                        assert!(false, "Error: {:?}", err);
-                    }
-                }
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        };
+                        };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
@@ -1028,36 +1002,7 @@ mod tests {
                 let song_queue_id = resp.data[0];
                 assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                // Send request
-                match upload_coverart_queue_req(&app).await {
-                    Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::coverart::response::Response>(response)
-                                .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                        let coverart_id = resp.data[0];
-                        assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
-
-                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id)
-                            .await
-                        {
-                            Ok(response) => {
-                                let resp = get_resp_data::<
-                                    crate::callers::coverart::response::link::Response,
-                                >(response)
-                                .await;
-                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                                let resp_coverart_id = resp.data[0].coverart_id;
-                                let resp_song_queue_id = resp.data[0].song_queue_id;
-
-                                assert_eq!(false, resp_coverart_id.is_nil(), "Should not be empty");
-                                assert_eq!(
-                                    false,
-                                    resp_song_queue_id.is_nil(),
-                                    "Should not be empty"
-                                );
-
-                                match get_queued_coverart(&app, &resp_coverart_id).await {
+                                match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::fetch_coverart_no_data::Response,
@@ -1077,16 +1022,6 @@ mod tests {
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
-                        }
-                    }
-                    Err(err) => {
-                        assert!(false, "Error: {:?}", err);
-                    }
-                }
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
         }
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
@@ -1343,23 +1278,7 @@ mod tests {
         let app = init::app(pool).await;
 
         // Send request
-        match song_queue_req(&app).await {
-            Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
-                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                match queue_metadata_req(&app, &resp.data[0]).await {
-                    Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::song::response::Response>(response)
-                                .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                        let id = resp.data[0];
-
-                        match fetch_metadata_queue_req(&app, &id).await {
+                        match sequence_flow::queue_song_flow(&app).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
                                     crate::callers::metadata::response::fetch_metadata::Response,
@@ -1394,17 +1313,7 @@ mod tests {
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
-                        }
-                    }
-                    Err(err) => {
-                        assert!(false, "Error: {:?}", err);
-                    }
-                }
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        };
+                        };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
@@ -1429,34 +1338,16 @@ mod tests {
         let app = init::app(pool).await;
 
         // Send request
-        match song_queue_req(&app).await {
-            Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
-                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                let song_queue_id = resp.data[0];
-                assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
-
-                match queue_metadata_req(&app, &resp.data[0]).await {
-                    Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::song::response::Response>(response)
-                                .await;
-                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                        let id = resp.data[0];
-
-                        match fetch_metadata_queue_req(&app, &id).await {
+                        match sequence_flow::queue_song_flow(&app).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
                                     crate::callers::metadata::response::fetch_metadata::Response,
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
-                                let song_q_id = resp.data[0].song_queue_id;
+                                let song_queue_id = resp.data[0].song_queue_id;
 
-                                match create_song_req(&app, &song_q_id).await {
+                                match create_song_req(&app, &song_queue_id).await {
                                     Ok(response) => {
                                         let resp = get_resp_data::<crate::callers::song::response::create_metadata::Response>(response).await;
                                         assert_eq!(
@@ -1476,36 +1367,35 @@ mod tests {
 
                                         eprintln!("Song: {:?}", song);
 
-                                        match upload_coverart_queue_req(&app).await {
+
+                                        match sequence_flow::queue_coverart_flow(
+                                            &app,
+                                            &song_queue_id
+                                        )
+                                        .await
+                                        {
                                             Ok(response) => {
                                                 let resp = get_resp_data::<
-                                                    crate::callers::coverart::response::Response,
-                                                >(
-                                                    response
-                                                )
+                                                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                                                >(response)
                                                 .await;
                                                 assert_eq!(
                                                     false,
                                                     resp.data.is_empty(),
                                                     "Should not be empty"
                                                 );
-                                                let coverart_id = resp.data[0];
-                                                assert_eq!(
-                                                    false,
-                                                    coverart_id.is_nil(),
-                                                    "Should not be empty"
-                                                );
+                                                let resp_queue_coverart_id = resp.data[0].id;
 
-                                                match coverart_queue_song_queue_link_req(
+                                                match create_coverart_req(
                                                     &app,
-                                                    &coverart_id,
-                                                    &song_queue_id,
+                                                    &song_id,
+                                                    &resp_queue_coverart_id,
                                                 )
                                                 .await
                                                 {
                                                     Ok(response) => {
                                                         let resp = get_resp_data::<
-                                                            crate::callers::coverart::response::link::Response,
+                                                            crate::callers::coverart::response::create_coverart::Response,
                                                         >(response)
                                                         .await;
                                                         assert_eq!(
@@ -1513,73 +1403,13 @@ mod tests {
                                                             resp.data.is_empty(),
                                                             "Should not be empty"
                                                         );
-                                                        let resp_coverart_id =
-                                                            resp.data[0].coverart_id;
-                                                        let resp_song_queue_id =
-                                                            resp.data[0].song_queue_id;
-
-                                                        assert_eq!(
-                                                            false,
-                                                            resp_coverart_id.is_nil(),
-                                                            "Should not be empty"
-                                                        );
-                                                        assert_eq!(
-                                                            false,
-                                                            resp_song_queue_id.is_nil(),
-                                                            "Should not be empty"
-                                                        );
-
-                                                        match get_queued_coverart(
-                                                            &app,
-                                                            &resp_coverart_id,
-                                                        )
-                                                        .await
-                                                        {
-                                                            Ok(response) => {
-                                                                let resp = get_resp_data::<
-                                                                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                                                                >(response)
-                                                                .await;
-                                                                assert_eq!(
-                                                                    false,
-                                                                    resp.data.is_empty(),
-                                                                    "Should not be empty"
-                                                                );
-
-                                                                match create_coverart_req(
-                                                                    &app,
-                                                                    &song_id,
-                                                                    &resp_coverart_id,
-                                                                )
-                                                                .await
-                                                                {
-                                                                    Ok(response) => {
-                                                                        let resp = get_resp_data::<
-                                                                            crate::callers::coverart::response::create_coverart::Response,
-                                                                        >(response)
-                                                                        .await;
-                                                                        assert_eq!(
-                                                                            false,
-                                                                            resp.data.is_empty(),
-                                                                            "Should not be empty"
-                                                                        );
-                                                                    }
-                                                                    Err(err) => {
-                                                                        assert!(
-                                                                            false,
-                                                                            "Error: {:?}",
-                                                                            err
-                                                                        );
-                                                                    }
-                                                                }
-                                                            }
-                                                            Err(err) => {
-                                                                assert!(false, "Error: {:?}", err);
-                                                            }
-                                                        }
                                                     }
                                                     Err(err) => {
-                                                        assert!(false, "Error: {:?}", err);
+                                                        assert!(
+                                                            false,
+                                                            "Error: {:?}",
+                                                            err
+                                                        );
                                                     }
                                                 }
                                             }
@@ -1587,26 +1417,13 @@ mod tests {
                                                 assert!(false, "Error: {:?}", err);
                                             }
                                         }
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
-                                }
+                                                }
+                                            }
                             }
                             Err(err) => {
                                 assert!(false, "Error: {:?}", err);
                             }
-                        }
-                    }
-                    Err(err) => {
-                        assert!(false, "Error: {:?}", err);
-                    }
-                }
-            }
-            Err(err) => {
-                assert!(false, "Error: {:?}", err);
-            }
-        };
+                        };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
