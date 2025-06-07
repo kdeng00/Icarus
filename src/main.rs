@@ -564,6 +564,49 @@ mod tests {
                 }
             }
         }
+
+        // pub async 
+            /*
+                            let done = crate::callers::song::status::DONE;
+                            let payload = serde_json::json!({
+                                "id": &resp.data[0].id,
+                                "status": done,
+                            });
+
+                            match app
+                                .clone()
+                                .oneshot(
+                                    axum::http::Request::builder()
+                                        .method(axum::http::Method::PATCH)
+                                        .uri(crate::callers::endpoints::QUEUESONG)
+                                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                        .body(axum::body::Body::from(payload.to_string()))
+                                        .unwrap(),
+                                )
+                                .await
+                            {
+                                Ok(response) => {
+                                    let resp = get_resp_data::<
+                                        crate::callers::song::response::update_status::Response,
+                                    >(response)
+                                    .await;
+                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                    let changed_status = &resp.data[0];
+
+                                    assert_eq!(
+                                        *old, changed_status.old_status,
+                                        "Old status does not match"
+                                    );
+                                    assert_eq!(
+                                        done, changed_status.new_status,
+                                        "New status does not match"
+                                    );
+                                }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            }
+            */
     }
 
 
@@ -736,89 +779,77 @@ mod tests {
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
-                    match fetch_queue_req(&app).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::fetch_queue_song::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let id = resp.data[0].id;
+                    let id = &resp.data[0];
 
-                            match fetch_queue_data_req(&app, &id).await {
-                                Ok(response) => match resp_to_bytes(response).await {
-                                    Ok(bytes) => {
+                    match fetch_queue_data_req(&app, &id).await {
+                        Ok(response) => match resp_to_bytes(response).await {
+                            Ok(bytes) => {
+                                assert_eq!(
+                                    false,
+                                    bytes.is_empty(),
+                                    "Queued data should not be empty"
+                                );
+
+                                let temp_file = tempfile::tempdir()
+                                    .expect("Could not create test directory");
+                                let test_dir = String::from(temp_file.path().to_str().unwrap());
+                                let new_file = format!("{}/new_file.flac", test_dir);
+
+                                let mut file = std::fs::File::create(&new_file).unwrap();
+                                file.write_all(&bytes).unwrap();
+
+                                let mut form = MultipartForm::default();
+                                let _ = form.add_file("flac", new_file);
+
+                                // Create request
+                                let content_type = form.content_type();
+                                let body = MultipartBody::from(form);
+
+                                let raw_uri =
+                                    String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                                let end_index = raw_uri.len() - 5;
+
+                                let uri = format!(
+                                    "{}/{}",
+                                    (&raw_uri[..end_index]).to_string(),
+                                    id.to_string()
+                                );
+
+                                match app
+                                    .clone()
+                                    .oneshot(
+                                        axum::http::Request::builder()
+                                            .method(axum::http::Method::PATCH)
+                                            .uri(uri)
+                                            .header(
+                                                axum::http::header::CONTENT_TYPE,
+                                                content_type,
+                                            )
+                                            .body(axum::body::Body::from_stream(body))
+                                            .unwrap(),
+                                    )
+                                    .await
+                                {
+                                    Ok(response) => {
+                                        let resp = get_resp_data::<
+                                            crate::callers::song::response::update_song_queue::Response,
+                                        >(response)
+                                        .await;
                                         assert_eq!(
                                             false,
-                                            bytes.is_empty(),
-                                            "Queued data should not be empty"
+                                            resp.data.is_empty(),
+                                            "Should not be empty"
                                         );
-
-                                        let temp_file = tempfile::tempdir()
-                                            .expect("Could not create test directory");
-                                        let test_dir = String::from(temp_file.path().to_str().unwrap());
-                                        let new_file = format!("{}/new_file.flac", test_dir);
-
-                                        let mut file = std::fs::File::create(&new_file).unwrap();
-                                        file.write_all(&bytes).unwrap();
-
-                                        let mut form = MultipartForm::default();
-                                        let _ = form.add_file("flac", new_file);
-
-                                        // Create request
-                                        let content_type = form.content_type();
-                                        let body = MultipartBody::from(form);
-
-                                        let raw_uri =
-                                            String::from(crate::callers::endpoints::QUEUESONGUPDATE);
-                                        let end_index = raw_uri.len() - 5;
-
-                                        let uri = format!(
-                                            "{}/{}",
-                                            (&raw_uri[..end_index]).to_string(),
-                                            id.to_string()
-                                        );
-
-                                        match app
-                                            .clone()
-                                            .oneshot(
-                                                axum::http::Request::builder()
-                                                    .method(axum::http::Method::PATCH)
-                                                    .uri(uri)
-                                                    .header(
-                                                        axum::http::header::CONTENT_TYPE,
-                                                        content_type,
-                                                    )
-                                                    .body(axum::body::Body::from_stream(body))
-                                                    .unwrap(),
-                                            )
-                                            .await
-                                        {
-                                            Ok(response) => {
-                                                let resp = get_resp_data::<
-                                                    crate::callers::song::response::update_song_queue::Response,
-                                                >(response)
-                                                .await;
-                                                assert_eq!(
-                                                    false,
-                                                    resp.data.is_empty(),
-                                                    "Should not be empty"
-                                                );
-                                            }
-                                            Err(err) => {
-                                                assert!(false, "Error: {:?}", err);
-                                            }
-                                        }
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
                                     }
-                                },
-                                Err(err) => {
-                                    assert!(false, "Error: {:?}", err);
                                 }
                             }
-                        }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        },
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
