@@ -889,34 +889,21 @@ mod tests {
                         get_resp_data::<crate::callers::song::response::Response>(response).await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                    let id = resp.data[0];
 
-                    match fetch_queue_req(&app).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::fetch_queue_song::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let id = resp.data[0].id;
-
-                            match fetch_queue_data_req(&app, &id).await {
-                                Ok(response) => match resp_to_bytes(response).await {
-                                    Ok(bytes) => {
-                                        assert_eq!(
-                                            false,
-                                            bytes.is_empty(),
-                                            "Queued data should not be empty"
-                                        );
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
-                                },
-                                Err(err) => {
-                                    assert!(false, "Error: {:?}", err);
-                                }
+                    match fetch_queue_data_req(&app, &id).await {
+                        Ok(response) => match resp_to_bytes(response).await {
+                            Ok(bytes) => {
+                                assert_eq!(
+                                    false,
+                                    bytes.is_empty(),
+                                    "Queued data should not be empty"
+                                );
                             }
-                        }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        },
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
