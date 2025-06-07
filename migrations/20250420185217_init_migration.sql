@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS "songQueue" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     filename TEXT NOT NULL,
-    status TEXT CHECK (status IN ('pending', 'processing', 'done')),
+    status TEXT CHECK (status IN ('pending', 'ready', 'processing', 'done')),
     data BYTEA NULL
 );
 

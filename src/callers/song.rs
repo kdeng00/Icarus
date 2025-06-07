@@ -148,11 +148,12 @@ pub mod response {
 
 pub mod status {
     pub const PENDING: &str = "pending";
+    pub const READY: &str = "ready";
     pub const PROCESSING: &str = "processing";
     pub const DONE: &str = "done";
 
     pub async fn is_valid(status: &str) -> bool {
-        status == PENDING || status == PROCESSING || status == DONE
+        status == PENDING || status == PROCESSING || status == DONE || status == READY
     }
 }
 
@@ -396,7 +397,7 @@ mod song_queue {
             "#,
         )
         .bind(super::status::PROCESSING)
-        .bind(super::status::PENDING)
+        .bind(super::status::READY)
         .fetch_one(pool)
         .await
         .map_err(|e| {
