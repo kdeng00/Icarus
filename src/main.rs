@@ -564,49 +564,6 @@ mod tests {
                 }
             }
         }
-
-        // pub async
-        /*
-                        let done = crate::callers::song::status::DONE;
-                        let payload = serde_json::json!({
-                            "id": &resp.data[0].id,
-                            "status": done,
-                        });
-
-                        match app
-                            .clone()
-                            .oneshot(
-                                axum::http::Request::builder()
-                                    .method(axum::http::Method::PATCH)
-                                    .uri(crate::callers::endpoints::QUEUESONG)
-                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                    .body(axum::body::Body::from(payload.to_string()))
-                                    .unwrap(),
-                            )
-                            .await
-                        {
-                            Ok(response) => {
-                                let resp = get_resp_data::<
-                                    crate::callers::song::response::update_status::Response,
-                                >(response)
-                                .await;
-                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                                let changed_status = &resp.data[0];
-
-                                assert_eq!(
-                                    *old, changed_status.old_status,
-                                    "Old status does not match"
-                                );
-                                assert_eq!(
-                                    done, changed_status.new_status,
-                                    "New status does not match"
-                                );
-                            }
-                            Err(err) => {
-                                assert!(false, "Error: {:?}", err);
-                            }
-                        }
-        */
     }
 
     pub async fn resp_to_bytes(
@@ -768,35 +725,7 @@ mod tests {
                 Err(err) => {
                     assert!(false, "Error: {:?}", err);
                 }
-            }
-
-            // Send request
-            /*
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                    match fetch_queue_req(&app).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::fetch_queue_song::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                        }
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
             };
-            */
 
             let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
         }
@@ -1037,75 +966,6 @@ mod tests {
                     assert!(false, "Error: {:?}", err);
                 }
             }
-
-            // Send request
-            /*
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                    match fetch_queue_req(&app).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::fetch_queue_song::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                            let old = &resp.data[0].status;
-                            let done = crate::callers::song::status::DONE;
-                            let payload = serde_json::json!({
-                                "id": &resp.data[0].id,
-                                "status": done,
-                            });
-
-                            match app
-                                .clone()
-                                .oneshot(
-                                    axum::http::Request::builder()
-                                        .method(axum::http::Method::PATCH)
-                                        .uri(crate::callers::endpoints::QUEUESONG)
-                                        .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                        .body(axum::body::Body::from(payload.to_string()))
-                                        .unwrap(),
-                                )
-                                .await
-                            {
-                                Ok(response) => {
-                                    let resp = get_resp_data::<
-                                        crate::callers::song::response::update_status::Response,
-                                    >(response)
-                                    .await;
-                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                                    let changed_status = &resp.data[0];
-
-                                    assert_eq!(
-                                        *old, changed_status.old_status,
-                                        "Old status does not match"
-                                    );
-                                    assert_eq!(
-                                        done, changed_status.new_status,
-                                        "New status does not match"
-                                    );
-                                }
-                                Err(err) => {
-                                    assert!(false, "Error: {:?}", err);
-                                }
-                            }
-                        }
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
-            */
 
             let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
         }
