@@ -407,6 +407,25 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn update_song_queue_status_req(
+        app: &axum::Router,
+        song_queue_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!({
+            "id": &song_queue_id,
+            "status": crate::callers::song::status::READY
+        });
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::PATCH)
+            .uri(crate::callers::endpoints::QUEUESONG)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     async fn get_queued_coverart(
         app: &axum::Router,
         coverart_queue_id: &uuid::Uuid,
@@ -670,23 +689,8 @@ mod tests {
 
                     let old = crate::callers::song::status::PENDING;
                     let target_status = crate::callers::song::status::READY;
-                    let payload = serde_json::json!({
-                        "id": &song_queue_id,
-                        "status": target_status,
-                    });
 
-                    match app
-                        .clone()
-                        .oneshot(
-                            axum::http::Request::builder()
-                                .method(axum::http::Method::PATCH)
-                                .uri(crate::callers::endpoints::QUEUESONG)
-                                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                .body(axum::body::Body::from(payload.to_string()))
-                                .unwrap(),
-                        )
-                        .await
-                    {
+                    match update_song_queue_status_req(&app, &song_queue_id).await {
                         Ok(response) => {
                             let resp = get_resp_data::<
                                 crate::callers::song::response::update_status::Response,
@@ -923,23 +927,8 @@ mod tests {
 
                     let old = crate::callers::song::status::PENDING;
                     let done = crate::callers::song::status::READY;
-                    let payload = serde_json::json!({
-                        "id": song_queue_id,
-                        "status": done,
-                    });
 
-                    match app
-                        .clone()
-                        .oneshot(
-                            axum::http::Request::builder()
-                                .method(axum::http::Method::PATCH)
-                                .uri(crate::callers::endpoints::QUEUESONG)
-                                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                .body(axum::body::Body::from(payload.to_string()))
-                                .unwrap(),
-                        )
-                        .await
-                    {
+                    match update_song_queue_status_req(&app, &song_queue_id).await {
                         Ok(response) => {
                             let resp = get_resp_data::<
                                 crate::callers::song::response::update_status::Response,
