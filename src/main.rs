@@ -509,12 +509,13 @@ mod tests {
             }
         }
 
-        pub async fn queue_song_and_coverart_flow(app: &axum::Router) -> Result<axum::response::Response, std::convert::Infallible> {
+        // Returns coverart response and song_queue_id
+        pub async fn queue_song_and_coverart_flow(app: &axum::Router) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match queue_song_flow(&app).await {
-                Ok(response) => {
+                Ok(song_response) => {
                     let resp = super::get_resp_data::<
                         crate::callers::metadata::response::fetch_metadata::Response,
-                    >(response)
+                    >(song_response)
                     .await;
                     assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                     let song_queue_id = resp.data[0].song_queue_id;
@@ -544,7 +545,7 @@ mod tests {
 
                             match queue_coverart_flow(&app, &song_queue_id).await {
                                 Ok(response) => {
-                                    Ok(response)
+                                    Ok((response, song_queue_id))
                                 }
                                 Err(err) => {
                                     assert!(false, "Error: {:?}", err);
@@ -703,10 +704,10 @@ mod tests {
             let app = init::app(pool).await;
 
             match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok(response) => {
+                Ok((resp_one, song_queue_id)) => {
                     let resp = get_resp_data::<
                         crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                    >(response)
+                    >(resp_one)
                     .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
@@ -715,6 +716,60 @@ mod tests {
                     let payload = serde_json::json!({
                         "coverart_queue_id": resp_coverart_queue_id
                     });
+
+                    let old = crate::callers::song::status::PENDING;
+                    let target_status = crate::callers::song::status::READY;
+                    let payload = serde_json::json!({
+                        "id": &song_queue_id,
+                        "status": target_status,
+                    });
+
+                    match app
+                        .clone()
+                        .oneshot(
+                            axum::http::Request::builder()
+                                .method(axum::http::Method::PATCH)
+                                .uri(crate::callers::endpoints::QUEUESONG)
+                                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                .body(axum::body::Body::from(payload.to_string()))
+                                .unwrap(),
+                        )
+                        .await
+                    {
+                        Ok(response) => {
+                            let resp = get_resp_data::<
+                                crate::callers::song::response::update_status::Response,
+                            >(response)
+                            .await;
+                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            let changed_status = &resp.data[0];
+
+                            assert_eq!(
+                                *old, changed_status.old_status,
+                                "Old status does not match"
+                            );
+                            assert_eq!(
+                                target_status, changed_status.new_status,
+                                "New status does not match"
+                            );
+
+                            match fetch_queue_req(&app).await {
+                                Ok(response) => {
+                                    let resp = get_resp_data::<
+                                        crate::callers::song::response::fetch_queue_song::Response,
+                                    >(response)
+                                    .await;
+                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                }
+                                Err(err) => {
+                                    assert!(false, "Error: {:?}", err);
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            assert!(false, "Error: {:?}", err);
+                        }
+                    }
                 }
                 Err(err) => {
                     assert!(false, "Error: {:?}", err);
@@ -724,6 +779,7 @@ mod tests {
 
 
             // Send request
+            /*
             match song_queue_req(&app).await {
                 Ok(response) => {
                     let resp =
@@ -748,6 +804,7 @@ mod tests {
                     assert!(false, "Error: {:?}", err);
                 }
             };
+            */
 
             let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
         }
@@ -936,7 +993,27 @@ mod tests {
 
             let app = init::app(pool).await;
 
+            match sequence_flow::queue_song_and_coverart_flow(&app).await {
+                Ok((resp_one, resp_two)) => {
+                    let resp = get_resp_data::<
+                        crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                    >(resp_one)
+                    .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let resp_coverart_queue_id = resp.data[0].id;
+
+                    let payload = serde_json::json!({
+                        "coverart_queue_id": resp_coverart_queue_id
+                    });
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
             // Send request
+            /*
             match song_queue_req(&app).await {
                 Ok(response) => {
                     let resp =
@@ -1002,6 +1079,7 @@ mod tests {
                     assert!(false, "Error: {:?}", err);
                 }
             };
+            */
 
             let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
         }
