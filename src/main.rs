@@ -153,7 +153,6 @@ pub async fn root() -> &'static str {
 mod tests {
     use crate::db;
 
-    use std::io::Write;
     use std::usize;
 
     use common_multipart_rfc7578::client::multipart::{
@@ -710,11 +709,7 @@ mod tests {
                     .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
-                    let resp_coverart_queue_id = resp.data[0].id;
-
-                    let payload = serde_json::json!({
-                        "coverart_queue_id": resp_coverart_queue_id
-                    });
+                    let _resp_coverart_queue_id = resp.data[0].id;
 
                     let old = crate::callers::song::status::PENDING;
                     let target_status = crate::callers::song::status::READY;
@@ -988,18 +983,55 @@ mod tests {
             let app = init::app(pool).await;
 
             match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok((resp_one, resp_two)) => {
+                Ok((resp_one, song_queue_id)) => {
                     let resp = get_resp_data::<
                         crate::callers::coverart::response::fetch_coverart_no_data::Response,
                     >(resp_one)
                     .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
-                    let resp_coverart_queue_id = resp.data[0].id;
+                    let _resp_coverart_queue_id = resp.data[0].id;
 
+                    let old = crate::callers::song::status::PENDING;
+                    let done = crate::callers::song::status::READY;
                     let payload = serde_json::json!({
-                        "coverart_queue_id": resp_coverart_queue_id
+                        "id": song_queue_id,
+                        "status": done,
                     });
+
+                    match app
+                        .clone()
+                        .oneshot(
+                            axum::http::Request::builder()
+                                .method(axum::http::Method::PATCH)
+                                .uri(crate::callers::endpoints::QUEUESONG)
+                                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                .body(axum::body::Body::from(payload.to_string()))
+                                .unwrap(),
+                        )
+                        .await
+                    {
+                        Ok(response) => {
+                            let resp = get_resp_data::<
+                                crate::callers::song::response::update_status::Response,
+                            >(response)
+                            .await;
+                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            let changed_status = &resp.data[0];
+
+                            assert_eq!(
+                                *old, changed_status.old_status,
+                                "Old status does not match"
+                            );
+                            assert_eq!(
+                                done, changed_status.new_status,
+                                "New status does not match"
+                            );
+                        }
+                        Err(err) => {
+                            assert!(false, "Error: {:?}", err);
+                        }
+                    }
                 }
                 Err(err) => {
                     assert!(false, "Error: {:?}", err);
