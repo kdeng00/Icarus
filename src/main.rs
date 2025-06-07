@@ -510,7 +510,9 @@ mod tests {
         }
 
         // Returns coverart response and song_queue_id
-        pub async fn queue_song_and_coverart_flow(app: &axum::Router) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
+        pub async fn queue_song_and_coverart_flow(
+            app: &axum::Router,
+        ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match queue_song_flow(&app).await {
                 Ok(song_response) => {
                     let resp = super::get_resp_data::<
@@ -544,9 +546,7 @@ mod tests {
                             eprintln!("Song: {:?}", song);
 
                             match queue_coverart_flow(&app, &song_queue_id).await {
-                                Ok(response) => {
-                                    Ok((response, song_queue_id))
-                                }
+                                Ok(response) => Ok((response, song_queue_id)),
                                 Err(err) => {
                                     assert!(false, "Error: {:?}", err);
                                     Err(err)
@@ -566,50 +566,49 @@ mod tests {
             }
         }
 
-        // pub async 
-            /*
-                            let done = crate::callers::song::status::DONE;
-                            let payload = serde_json::json!({
-                                "id": &resp.data[0].id,
-                                "status": done,
-                            });
+        // pub async
+        /*
+                        let done = crate::callers::song::status::DONE;
+                        let payload = serde_json::json!({
+                            "id": &resp.data[0].id,
+                            "status": done,
+                        });
 
-                            match app
-                                .clone()
-                                .oneshot(
-                                    axum::http::Request::builder()
-                                        .method(axum::http::Method::PATCH)
-                                        .uri(crate::callers::endpoints::QUEUESONG)
-                                        .header(axum::http::header::CONTENT_TYPE, "application/json")
-                                        .body(axum::body::Body::from(payload.to_string()))
-                                        .unwrap(),
-                                )
-                                .await
-                            {
-                                Ok(response) => {
-                                    let resp = get_resp_data::<
-                                        crate::callers::song::response::update_status::Response,
-                                    >(response)
-                                    .await;
-                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                                    let changed_status = &resp.data[0];
+                        match app
+                            .clone()
+                            .oneshot(
+                                axum::http::Request::builder()
+                                    .method(axum::http::Method::PATCH)
+                                    .uri(crate::callers::endpoints::QUEUESONG)
+                                    .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .body(axum::body::Body::from(payload.to_string()))
+                                    .unwrap(),
+                            )
+                            .await
+                        {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::song::response::update_status::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                                let changed_status = &resp.data[0];
 
-                                    assert_eq!(
-                                        *old, changed_status.old_status,
-                                        "Old status does not match"
-                                    );
-                                    assert_eq!(
-                                        done, changed_status.new_status,
-                                        "New status does not match"
-                                    );
-                                }
-                                Err(err) => {
-                                    assert!(false, "Error: {:?}", err);
-                                }
+                                assert_eq!(
+                                    *old, changed_status.old_status,
+                                    "Old status does not match"
+                                );
+                                assert_eq!(
+                                    done, changed_status.new_status,
+                                    "New status does not match"
+                                );
                             }
-            */
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+        */
     }
-
 
     pub async fn resp_to_bytes(
         response: axum::response::Response,
@@ -776,8 +775,6 @@ mod tests {
                 }
             }
 
-
-
             // Send request
             /*
             match song_queue_req(&app).await {
@@ -847,8 +844,8 @@ mod tests {
                                     "Queued data should not be empty"
                                 );
 
-                                let temp_file = tempfile::tempdir()
-                                    .expect("Could not create test directory");
+                                let temp_file =
+                                    tempfile::tempdir().expect("Could not create test directory");
                                 let test_dir = String::from(temp_file.path().to_str().unwrap());
                                 let new_file = format!("{}/new_file.flac", test_dir);
 
@@ -878,10 +875,7 @@ mod tests {
                                         axum::http::Request::builder()
                                             .method(axum::http::Method::PATCH)
                                             .uri(uri)
-                                            .header(
-                                                axum::http::header::CONTENT_TYPE,
-                                                content_type,
-                                            )
+                                            .header(axum::http::header::CONTENT_TYPE, content_type)
                                             .body(axum::body::Body::from_stream(body))
                                             .unwrap(),
                                     )
@@ -1085,8 +1079,6 @@ mod tests {
         }
     }
 
-
-
     #[tokio::test]
     async fn test_song_metadata_queue() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -1280,7 +1272,6 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
-
     #[tokio::test]
     async fn test_fetch_coverart_queue_without_data() {
         let tm_pool = db_mgr::get_pool().await.unwrap();
@@ -1436,7 +1427,6 @@ mod tests {
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
-
 
     #[tokio::test]
     async fn test_create_song() {
