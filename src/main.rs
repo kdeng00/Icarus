@@ -327,7 +327,7 @@ mod tests {
         app: &axum::Router,
         id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
-        let payload = payload_data(&id).await;
+        let payload = queue_metadata_payload_data(&id).await;
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
@@ -600,7 +600,7 @@ mod tests {
         serde_json::from_slice(&body).unwrap()
     }
 
-    pub async fn payload_data(id: &uuid::Uuid) -> serde_json::Value {
+    pub async fn queue_metadata_payload_data(id: &uuid::Uuid) -> serde_json::Value {
         serde_json::json!(
         {
                 "id": id,
