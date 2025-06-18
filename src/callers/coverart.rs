@@ -326,6 +326,8 @@ pub mod cov_db {
 pub mod endpoint {
     use std::io::Write;
 
+    use axum::response::IntoResponse;
+
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
@@ -447,15 +449,29 @@ pub mod endpoint {
 
     pub async fn fetch_coverart_with_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Query(params): axum::extract::Query<
-            super::request::fetch_coverart_with_data::Params,
-        >,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (
         axum::http::StatusCode,
-        axum::Json<super::response::fetch_coverart_with_data::Response>,
+        axum::response::Response,
     ) {
-        let mut response = super::response::fetch_coverart_with_data::Response::default();
+        match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
+            Ok(data) => {
+                let bytes = axum::body::Bytes::from(data);
+                let mut response = bytes.into_response();
+                let headers = response.headers_mut();
+                // TODO: Address this hard coding for the coverart content type
+                headers.insert(axum::http::header::CONTENT_TYPE, "image".parse().unwrap());
+                // TODO: Make the conent disposition more dynamic
+                headers.insert(axum::http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}.jpg\"", id).parse().unwrap());
 
+                (axum::http::StatusCode::OK, response)
+            }
+            Err(_err) => {
+                (axum::http::StatusCode::BAD_REQUEST, axum::response::Response::default())
+            }
+        }
+
+        /*
         match params.id {
             Some(id) => match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
                 Ok(cover_art_queue) => {
@@ -491,6 +507,7 @@ pub mod endpoint {
                 }
             },
         }
+        */
     }
 
     pub async fn create_coverart(
