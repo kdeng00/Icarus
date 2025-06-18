@@ -325,9 +325,9 @@ mod tests {
 
     async fn queue_metadata_req(
         app: &axum::Router,
-        id: &uuid::Uuid,
+        song_queue_id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
-        let payload = payload_data::queue_metadata_payload_data(&id).await;
+        let payload = payload_data::queue_metadata_payload_data(&song_queue_id).await;
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
@@ -601,10 +601,10 @@ mod tests {
     }
 
     pub mod payload_data {
-        pub async fn queue_metadata_payload_data(id: &uuid::Uuid) -> serde_json::Value {
+        pub async fn queue_metadata_payload_data(song_queue_id: &uuid::Uuid) -> serde_json::Value {
             serde_json::json!(
             {
-                    "song_queue_id": id,
+                    "song_queue_id": song_queue_id,
                     "album" : "Machine Gun: The FillMore East First Show",
                     "album_artist" : "Jimi Hendrix",
                     "artist" : "Jimi Hendrix",
