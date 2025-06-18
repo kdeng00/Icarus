@@ -1257,11 +1257,7 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let uri = format!(
-                                    "{}?id={}",
-                                    crate::callers::endpoints::QUEUECOVERARTDATA,
-                                    resp_coverart_id
-                                );
+                                let uri = format!("{}/{}", crate::callers::endpoint::QUEUECOVERARTDATA, resp_coverart_id);
 
                                 match app
                                     .clone()
@@ -1276,6 +1272,20 @@ mod tests {
                                     .await
                                 {
                                     Ok(response) => {
+                                        match resp_to_bytes(response).await {
+                                            Ok(bytes) => {
+                                                assert_eq!(false, bytes.is_empty(), "Downloaded coverart data should not be empty");
+                                                let temp_file = tempfile::tempdir().expect("Could not create test directory");
+                                                let test_dir = String::from(temp_file.path().to_str().unwrap());
+                                                let new_file = format!("{}/new_image.jpeg");
+
+                                                let mut file = std::fs::File::create(&new_file).unwrap();
+                                                file.write_all(&bytes).unwrap();
+                                            }
+                                            Err(err) => {
+                                                assert!(false, "Error: {:?}", err);
+                                            }
+                                        }
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::fetch_coverart_with_data::Response,
                                         >(response)
