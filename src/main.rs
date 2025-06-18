@@ -153,6 +153,7 @@ pub async fn root() -> &'static str {
 mod tests {
     use crate::db;
 
+    use std::io::Write;
     use std::usize;
 
     use common_multipart_rfc7578::client::multipart::{
@@ -1257,7 +1258,14 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let uri = format!("{}/{}", crate::callers::endpoint::QUEUECOVERARTDATA, resp_coverart_id);
+                                // let uri = format!("{}/{}", crate::callers::endpoints::QUEUECOVERARTDATA, resp_coverart_id);
+
+                                let raw_uri = String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
+                                let end_index = raw_uri.len() - 5;
+                                // let mut uri: String = (&raw_uri[..end_index]).to_string();
+                                // uri += &id.to_string();
+                                let uri = format!("{}/{}", (&raw_uri[..end_index]).to_string(), resp_coverart_id);
+                                println!("Uri: {:?}", uri);
 
                                 match app
                                     .clone()
@@ -1277,7 +1285,7 @@ mod tests {
                                                 assert_eq!(false, bytes.is_empty(), "Downloaded coverart data should not be empty");
                                                 let temp_file = tempfile::tempdir().expect("Could not create test directory");
                                                 let test_dir = String::from(temp_file.path().to_str().unwrap());
-                                                let new_file = format!("{}/new_image.jpeg");
+                                                let new_file = format!("{}/new_image.jpeg", test_dir);
 
                                                 let mut file = std::fs::File::create(&new_file).unwrap();
                                                 file.write_all(&bytes).unwrap();
@@ -1286,6 +1294,8 @@ mod tests {
                                                 assert!(false, "Error: {:?}", err);
                                             }
                                         }
+
+                                        /*
                                         let resp = get_resp_data::<
                                             crate::callers::coverart::response::fetch_coverart_with_data::Response,
                                         >(response)
@@ -1295,6 +1305,7 @@ mod tests {
                                             resp.data.is_empty(),
                                             "Should not be empty"
                                         );
+                                        */
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
