@@ -1258,12 +1258,8 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                // let uri = format!("{}/{}", crate::callers::endpoints::QUEUECOVERARTDATA, resp_coverart_id);
-
                                 let raw_uri = String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
                                 let end_index = raw_uri.len() - 5;
-                                // let mut uri: String = (&raw_uri[..end_index]).to_string();
-                                // uri += &id.to_string();
                                 let uri = format!("{}/{}", (&raw_uri[..end_index]).to_string(), resp_coverart_id);
                                 println!("Uri: {:?}", uri);
 
@@ -1294,18 +1290,6 @@ mod tests {
                                                 assert!(false, "Error: {:?}", err);
                                             }
                                         }
-
-                                        /*
-                                        let resp = get_resp_data::<
-                                            crate::callers::coverart::response::fetch_coverart_with_data::Response,
-                                        >(response)
-                                        .await;
-                                        assert_eq!(
-                                            false,
-                                            resp.data.is_empty(),
-                                            "Should not be empty"
-                                        );
-                                        */
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);

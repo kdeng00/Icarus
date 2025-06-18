@@ -470,44 +470,6 @@ pub mod endpoint {
                 (axum::http::StatusCode::BAD_REQUEST, axum::response::Response::default())
             }
         }
-
-        /*
-        match params.id {
-            Some(id) => match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
-                Ok(cover_art_queue) => {
-                    response.message = String::from("Successful");
-                    response.data.push(cover_art_queue);
-                    (axum::http::StatusCode::OK, axum::Json(response))
-                }
-                Err(err) => {
-                    response.message = err.to_string();
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                }
-            },
-            _ => match params.song_queue_id {
-                Some(song_queue_id) => match super::db::get_coverart_queue_data_with_song_queue_id(
-                    &pool,
-                    &song_queue_id,
-                )
-                .await
-                {
-                    Ok(cover_art_queue) => {
-                        response.message = String::from("Successful");
-                        response.data.push(cover_art_queue);
-                        (axum::http::StatusCode::OK, axum::Json(response))
-                    }
-                    Err(err) => {
-                        response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                    }
-                },
-                None => {
-                    response.message = String::from("No valid id provided");
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                }
-            },
-        }
-        */
     }
 
     pub async fn create_coverart(
