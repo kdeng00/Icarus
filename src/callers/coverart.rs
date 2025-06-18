@@ -326,6 +326,8 @@ pub mod cov_db {
 pub mod endpoint {
     use std::io::Write;
 
+    use axum::response::IntoResponse;
+
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
@@ -447,49 +449,29 @@ pub mod endpoint {
 
     pub async fn fetch_coverart_with_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Query(params): axum::extract::Query<
-            super::request::fetch_coverart_with_data::Params,
-        >,
-    ) -> (
-        axum::http::StatusCode,
-        axum::Json<super::response::fetch_coverart_with_data::Response>,
-    ) {
-        let mut response = super::response::fetch_coverart_with_data::Response::default();
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (axum::http::StatusCode, axum::response::Response) {
+        match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
+            Ok(data) => {
+                let bytes = axum::body::Bytes::from(data);
+                let mut response = bytes.into_response();
+                let headers = response.headers_mut();
+                // TODO: Address this hard coding for the coverart content type
+                headers.insert(axum::http::header::CONTENT_TYPE, "image".parse().unwrap());
+                // TODO: Make the conent disposition more dynamic
+                headers.insert(
+                    axum::http::header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}.jpg\"", id)
+                        .parse()
+                        .unwrap(),
+                );
 
-        match params.id {
-            Some(id) => match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
-                Ok(cover_art_queue) => {
-                    response.message = String::from("Successful");
-                    response.data.push(cover_art_queue);
-                    (axum::http::StatusCode::OK, axum::Json(response))
-                }
-                Err(err) => {
-                    response.message = err.to_string();
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                }
-            },
-            _ => match params.song_queue_id {
-                Some(song_queue_id) => match super::db::get_coverart_queue_data_with_song_queue_id(
-                    &pool,
-                    &song_queue_id,
-                )
-                .await
-                {
-                    Ok(cover_art_queue) => {
-                        response.message = String::from("Successful");
-                        response.data.push(cover_art_queue);
-                        (axum::http::StatusCode::OK, axum::Json(response))
-                    }
-                    Err(err) => {
-                        response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                    }
-                },
-                None => {
-                    response.message = String::from("No valid id provided");
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                }
-            },
+                (axum::http::StatusCode::OK, response)
+            }
+            Err(_err) => (
+                axum::http::StatusCode::BAD_REQUEST,
+                axum::response::Response::default(),
+            ),
         }
     }
 

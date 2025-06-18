@@ -9,7 +9,7 @@ pub mod endpoints {
     pub const NEXTQUEUESONG: &str = "/api/v2/song/queue/next";
     pub const QUEUEMETADATA: &str = "/api/v2/song/metadata/queue";
     pub const QUEUECOVERART: &str = "/api/v2/coverart/queue";
-    pub const QUEUECOVERARTDATA: &str = "/api/v2/coverart/queue/data";
+    pub const QUEUECOVERARTDATA: &str = "/api/v2/coverart/queue/data/{id}";
     pub const QUEUECOVERARTLINK: &str = "/api/v2/coverart/queue/link";
     pub const QUEUESONGDATAWIPE: &str = "/api/v2/song/queue/data/wipe";
     pub const QUEUECOVERARTDATAWIPE: &str = "/api/v2/coverart/queue/data/wipe";

@@ -153,6 +153,7 @@ pub async fn root() -> &'static str {
 mod tests {
     use crate::db;
 
+    use std::io::Write;
     use std::usize;
 
     use common_multipart_rfc7578::client::multipart::{
@@ -1257,11 +1258,15 @@ mod tests {
                                     "Should not be empty"
                                 );
 
+                                let raw_uri =
+                                    String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
+                                let end_index = raw_uri.len() - 5;
                                 let uri = format!(
-                                    "{}?id={}",
-                                    crate::callers::endpoints::QUEUECOVERARTDATA,
+                                    "{}/{}",
+                                    (&raw_uri[..end_index]).to_string(),
                                     resp_coverart_id
                                 );
+                                println!("Uri: {:?}", uri);
 
                                 match app
                                     .clone()
@@ -1275,17 +1280,27 @@ mod tests {
                                     )
                                     .await
                                 {
-                                    Ok(response) => {
-                                        let resp = get_resp_data::<
-                                            crate::callers::coverart::response::fetch_coverart_with_data::Response,
-                                        >(response)
-                                        .await;
-                                        assert_eq!(
-                                            false,
-                                            resp.data.is_empty(),
-                                            "Should not be empty"
-                                        );
-                                    }
+                                    Ok(response) => match resp_to_bytes(response).await {
+                                        Ok(bytes) => {
+                                            assert_eq!(
+                                                false,
+                                                bytes.is_empty(),
+                                                "Downloaded coverart data should not be empty"
+                                            );
+                                            let temp_file = tempfile::tempdir()
+                                                .expect("Could not create test directory");
+                                            let test_dir =
+                                                String::from(temp_file.path().to_str().unwrap());
+                                            let new_file = format!("{}/new_image.jpeg", test_dir);
+
+                                            let mut file =
+                                                std::fs::File::create(&new_file).unwrap();
+                                            file.write_all(&bytes).unwrap();
+                                        }
+                                        Err(err) => {
+                                            assert!(false, "Error: {:?}", err);
+                                        }
+                                    },
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
                                     }
