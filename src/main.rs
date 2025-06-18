@@ -1258,9 +1258,14 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let raw_uri = String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
+                                let raw_uri =
+                                    String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
                                 let end_index = raw_uri.len() - 5;
-                                let uri = format!("{}/{}", (&raw_uri[..end_index]).to_string(), resp_coverart_id);
+                                let uri = format!(
+                                    "{}/{}",
+                                    (&raw_uri[..end_index]).to_string(),
+                                    resp_coverart_id
+                                );
                                 println!("Uri: {:?}", uri);
 
                                 match app
@@ -1275,22 +1280,27 @@ mod tests {
                                     )
                                     .await
                                 {
-                                    Ok(response) => {
-                                        match resp_to_bytes(response).await {
-                                            Ok(bytes) => {
-                                                assert_eq!(false, bytes.is_empty(), "Downloaded coverart data should not be empty");
-                                                let temp_file = tempfile::tempdir().expect("Could not create test directory");
-                                                let test_dir = String::from(temp_file.path().to_str().unwrap());
-                                                let new_file = format!("{}/new_image.jpeg", test_dir);
+                                    Ok(response) => match resp_to_bytes(response).await {
+                                        Ok(bytes) => {
+                                            assert_eq!(
+                                                false,
+                                                bytes.is_empty(),
+                                                "Downloaded coverart data should not be empty"
+                                            );
+                                            let temp_file = tempfile::tempdir()
+                                                .expect("Could not create test directory");
+                                            let test_dir =
+                                                String::from(temp_file.path().to_str().unwrap());
+                                            let new_file = format!("{}/new_image.jpeg", test_dir);
 
-                                                let mut file = std::fs::File::create(&new_file).unwrap();
-                                                file.write_all(&bytes).unwrap();
-                                            }
-                                            Err(err) => {
-                                                assert!(false, "Error: {:?}", err);
-                                            }
+                                            let mut file =
+                                                std::fs::File::create(&new_file).unwrap();
+                                            file.write_all(&bytes).unwrap();
                                         }
-                                    }
+                                        Err(err) => {
+                                            assert!(false, "Error: {:?}", err);
+                                        }
+                                    },
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
                                     }

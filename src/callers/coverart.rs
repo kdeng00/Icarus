@@ -450,10 +450,7 @@ pub mod endpoint {
     pub async fn fetch_coverart_with_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
-    ) -> (
-        axum::http::StatusCode,
-        axum::response::Response,
-    ) {
+    ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
                 let bytes = axum::body::Bytes::from(data);
@@ -462,13 +459,19 @@ pub mod endpoint {
                 // TODO: Address this hard coding for the coverart content type
                 headers.insert(axum::http::header::CONTENT_TYPE, "image".parse().unwrap());
                 // TODO: Make the conent disposition more dynamic
-                headers.insert(axum::http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}.jpg\"", id).parse().unwrap());
+                headers.insert(
+                    axum::http::header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}.jpg\"", id)
+                        .parse()
+                        .unwrap(),
+                );
 
                 (axum::http::StatusCode::OK, response)
             }
-            Err(_err) => {
-                (axum::http::StatusCode::BAD_REQUEST, axum::response::Response::default())
-            }
+            Err(_err) => (
+                axum::http::StatusCode::BAD_REQUEST,
+                axum::response::Response::default(),
+            ),
         }
     }
 
