@@ -1,40 +1,43 @@
 // TODO: Explicitly make this module target queueing a song's metadata
 pub mod request {
-    use serde::{Deserialize, Serialize};
 
-    #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
-    pub struct Request {
-        pub id: uuid::Uuid,
-        pub album: String,
-        pub album_artist: String,
-        pub artist: String,
-        pub disc: i32,
-        pub disc_count: i32,
-        pub duration: i64,
-        pub genre: String,
-        pub title: String,
-        pub track: i32,
-        pub track_count: i32,
-        pub year: i32,
-    }
+    pub mod queue_metadata {
+        use serde::{Deserialize, Serialize};
 
-    impl Request {
-        pub async fn to_json_value(&self) -> serde_json::Value {
-            serde_json::json!(
-            {
-                "id": &self.id,
-                "album": &self.album,
-                "album_artist": &self.album_artist,
-                "genre": &self.genre,
-                "year": &self.year,
-                "track_count": &self.track_count,
-                "disc_count": &self.disc_count,
-                "title": &self.title,
-                "artist": &self.artist,
-                "disc": &self.disc,
-                "track": &self.track,
-                "duration": &self.duration,
-            })
+        #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
+        pub struct Request {
+            pub song_queue_id: uuid::Uuid,
+            pub album: String,
+            pub album_artist: String,
+            pub artist: String,
+            pub disc: i32,
+            pub disc_count: i32,
+            pub duration: i64,
+            pub genre: String,
+            pub title: String,
+            pub track: i32,
+            pub track_count: i32,
+            pub year: i32,
+        }
+
+        impl Request {
+            pub async fn to_json_value(&self) -> serde_json::Value {
+                serde_json::json!(
+                {
+                    "song_queue_id": &self.song_queue_id,
+                    "album": &self.album,
+                    "album_artist": &self.album_artist,
+                    "genre": &self.genre,
+                    "year": &self.year,
+                    "track_count": &self.track_count,
+                    "disc_count": &self.disc_count,
+                    "title": &self.title,
+                    "artist": &self.artist,
+                    "disc": &self.disc,
+                    "track": &self.track,
+                    "duration": &self.duration,
+                })
+            }
         }
     }
 
@@ -50,12 +53,15 @@ pub mod request {
 }
 
 pub mod response {
-    use serde::{Deserialize, Serialize};
 
-    #[derive(Default, Deserialize, Serialize)]
-    pub struct Response {
-        pub message: String,
-        pub data: Vec<uuid::Uuid>,
+    pub mod queue_metadata {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Default, Deserialize, Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
+        }
     }
 
     pub mod fetch_metadata {
@@ -203,14 +209,14 @@ pub mod endpoint {
 
     pub async fn queue_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        Json(payload): Json<super::request::Request>,
-    ) -> (StatusCode, Json<super::response::Response>) {
+        Json(payload): Json<super::request::queue_metadata::Request>,
+    ) -> (StatusCode, Json<super::response::queue_metadata::Response>) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
-        let mut response = super::response::Response::default();
+        let mut response = super::response::queue_metadata::Response::default();
         let meta = payload.to_json_value().await;
-        match super::metadata_queue::insert(&pool, &meta, &payload.id).await {
-            Ok(id) => {
-                results.push(id);
+        match super::metadata_queue::insert(&pool, &meta, &payload.song_queue_id).await {
+            Ok(metadata_queue_id) => {
+                results.push(metadata_queue_id);
                 response.data = results;
                 response.message = if response.data.is_empty() {
                     String::from("Error")
