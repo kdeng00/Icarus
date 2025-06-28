@@ -730,7 +730,11 @@ pub mod endpoint {
         if let Some(field) = multipart.next_field().await.unwrap() {
             let name = field.name().unwrap().to_string();
             let file_name = field.file_name().unwrap().to_string();
-            let content_type = field.content_type().unwrap().to_string();
+            let content_type = match field.content_type() {
+                Some(ct) => ct.to_string(),
+                None => String::new(),
+            };
+
             let data = field.bytes().await.unwrap();
 
             println!(
