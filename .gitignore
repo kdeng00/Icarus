@@ -2,6 +2,8 @@
 
 /target
 .env
+.env.docker
+.env.local
 
 .DS_STORE
 Storage/
