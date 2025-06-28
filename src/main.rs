@@ -822,6 +822,13 @@ mod tests {
                                             resp.data.is_empty(),
                                             "Should not be empty"
                                         );
+
+                                        let updated_song_queued_id = resp.data[0];
+                                        assert_eq!(
+                                            updated_song_queued_id, *id,
+                                            "Song queue Id should match, but they don't. {:?} {:?}",
+                                            updated_song_queued_id, id
+                                        );
                                     }
                                     Err(err) => {
                                         assert!(false, "Error: {:?}", err);
