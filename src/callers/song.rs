@@ -731,10 +731,8 @@ pub mod endpoint {
             let name = field.name().unwrap().to_string();
             let file_name = field.file_name().unwrap().to_string();
             let content_type = match field.content_type() {
-                Some(ct) => {
-                    ct.to_string()
-                }
-                None => String::new()
+                Some(ct) => ct.to_string(),
+                None => String::new(),
             };
             // .unwrap().to_string();
             let data = field.bytes().await.unwrap();
