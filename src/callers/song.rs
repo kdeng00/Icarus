@@ -123,7 +123,7 @@ pub mod response {
         #[derive(Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<Vec<u8>>,
+            pub data: Vec<uuid::Uuid>,
         }
     }
 
@@ -743,8 +743,8 @@ pub mod endpoint {
 
             let raw_data: Vec<u8> = data.to_vec();
             match song_queue::update(&pool, &raw_data, &id).await {
-                Ok(queued_data) => {
-                    response.data.push(queued_data);
+                Ok(_queued_data) => {
+                    response.data.push(id);
                     (axum::http::StatusCode::OK, axum::Json(response))
                 }
                 Err(err) => {
