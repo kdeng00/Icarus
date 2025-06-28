@@ -744,18 +744,16 @@ pub mod endpoint {
             let raw_data: Vec<u8> = data.to_vec();
             match song_queue::update(&pool, &raw_data, &id).await {
                 Ok(_) => {
-                    response.subject = String::from("Successful");
+                    response.message = String::from("Successful");
                     response.data.push(id);
                     (axum::http::StatusCode::OK, axum::Json(response))
                 }
                 Err(err) => {
-                    response.subject = String::from("Error");
                     response.message = err.to_string();
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }
             }
         } else {
-            response.subject = String::from("Error");
             response.message = String::from("No data provided");
             (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
         }
