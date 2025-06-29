@@ -641,7 +641,7 @@ pub mod endpoint {
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (StatusCode, axum::response::Response) {
-        println!("Id: {:?}", id);
+        println!("Id: {id}");
 
         match song_queue::get_data(&pool, &id).await {
             Ok(data) => {
@@ -654,7 +654,7 @@ pub mod endpoint {
                 );
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
-                    format!("attachment; filename=\"{}.flac\"", id)
+                    format!("attachment; filename=\"{id}.flac\"")
                         .parse()
                         .unwrap(),
                 );
