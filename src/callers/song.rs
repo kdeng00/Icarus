@@ -189,7 +189,7 @@ pub mod song_db {
             .fetch_one(pool)
             .await
             .map_err(|e| {
-                eprintln!("Error inserting query: {:?}", e);
+                eprintln!("Error inserting query: {e}");
             });
 
         match result {
@@ -223,7 +223,7 @@ pub mod song_db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e}");
         });
 
         match result {
@@ -339,7 +339,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -369,7 +369,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {:?}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -401,7 +401,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -436,7 +436,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error selecting: {:?}", e);
+            eprintln!("Error selecting: {e}");
         });
 
         match result {
@@ -463,7 +463,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error updating record {:?}", e);
+            eprintln!("Error updating record {e}");
         });
 
         match result {
@@ -488,7 +488,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e}");
         });
 
         match result {
@@ -523,7 +523,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error updating record: {:?}", e);
+            eprintln!("Error updating record: {e}");
         });
 
         match result {
@@ -546,7 +546,7 @@ mod song_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {

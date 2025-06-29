@@ -107,7 +107,7 @@ pub mod metadata_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -135,7 +135,7 @@ pub mod metadata_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -174,7 +174,7 @@ pub mod metadata_queue {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -241,7 +241,7 @@ pub mod endpoint {
 
         match params.id {
             Some(id) => {
-                println!("Something works {:?}", id);
+                println!("Something works {id}");
 
                 match super::metadata_queue::get_with_id(&pool, &id).await {
                     Ok(item) => {
