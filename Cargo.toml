@@ -16,8 +16,8 @@ tracing-subscriber = "0.3.19"
 # mime = { version = "0.3.17" }
 # mime_guess = { version = "2.0.5" }
 futures = { version = "0.3.31" }
-uuid = { version = "1.16.0", features = ["v4", "serde"] }
-sqlx = { version = "0.8.5", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
+uuid = { version = "1.17.0", features = ["v4", "serde"] }
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
 time = { version = "0.3.41", features = ["formatting", "macros", "parsing", "serde"]  }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.1.30" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.4.3" }
