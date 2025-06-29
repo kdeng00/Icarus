@@ -114,7 +114,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e:?}");
         });
 
         match result {
@@ -163,7 +163,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e:?}");
         });
 
         match result {
@@ -194,7 +194,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e:?}");
         });
 
         match result {
@@ -225,7 +225,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e:?}");
         });
 
         match result {
@@ -250,7 +250,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error querying data: {:?}", e);
+            eprintln!("Error querying data: {e}");
         });
 
         match result {
@@ -275,7 +275,7 @@ pub mod db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error updating query: {:?}", e);
+            eprintln!("Error updating query: {e}");
         });
 
         match result {
@@ -307,7 +307,7 @@ pub mod cov_db {
         .fetch_one(pool)
         .await
         .map_err(|e| {
-            eprintln!("Error inserting: {}", e);
+            eprintln!("Error inserting: {e}");
         });
 
         match result {
@@ -461,7 +461,7 @@ pub mod endpoint {
                 // TODO: Make the conent disposition more dynamic
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
-                    format!("attachment; filename=\"{}.jpg\"", id)
+                    format!("attachment; filename=\"{id}.jpg\"")
                         .parse()
                         .unwrap(),
                 );
