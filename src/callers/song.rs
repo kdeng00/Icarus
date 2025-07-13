@@ -799,7 +799,8 @@ pub mod endpoint {
                                         (axum::http::StatusCode::OK, axum::Json(response))
                                     }
                                     Err(err) => {
-                                        response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                        response.message =
+                                            format!("{:?} song {:?}", err.to_string(), song);
                                         (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                                     }
                                 },
@@ -811,7 +812,10 @@ pub mod endpoint {
                         }
                         Err(err) => {
                             response.message = err.to_string();
-                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                            (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            )
                         }
                     }
                 }
