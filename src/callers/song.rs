@@ -784,26 +784,34 @@ pub mod endpoint {
                     let dir = std::path::Path::new(&song.directory);
                     let save_path = dir.join(&song.filename);
 
-                    let mut file = std::fs::File::create(&save_path).unwrap();
-                    file.write_all(&song.data).unwrap();
+                    // let mut file = std::fs::File::create(&save_path).unwrap();
+                    match std::fs::File::create(&save_path) {
+                        Ok(mut file) => {
+                            file.write_all(&song.data).unwrap();
 
-                    match song.song_path() {
-                        Ok(_) => match super::song_db::insert(&pool, &song).await {
-                            Ok((date_created, id)) => {
-                                song.id = id;
-                                song.date_created = date_created;
-                                response.data.push(song);
+                            match song.song_path() {
+                                Ok(_) => match super::song_db::insert(&pool, &song).await {
+                                    Ok((date_created, id)) => {
+                                        song.id = id;
+                                        song.date_created = date_created;
+                                        response.data.push(song);
 
-                                (axum::http::StatusCode::OK, axum::Json(response))
+                                        (axum::http::StatusCode::OK, axum::Json(response))
+                                    }
+                                    Err(err) => {
+                                        response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                    }
+                                },
+                                Err(err) => {
+                                    response.message = err.to_string();
+                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                }
                             }
-                            Err(err) => {
-                                response.message = format!("{:?} song {:?}", err.to_string(), song);
-                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                            }
-                        },
+                        }
                         Err(err) => {
                             response.message = err.to_string();
-                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                         }
                     }
                 }
