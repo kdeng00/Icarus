@@ -1,7 +1,7 @@
 # Stage 1: Build the application
 # Use a specific Rust version for reproducibility. Choose one that matches your development environment.
 # Using slim variant for smaller base image
-FROM rust:1.86 as builder
+FROM rust:1.88 as builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
