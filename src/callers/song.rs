@@ -782,6 +782,17 @@ pub mod endpoint {
                 Ok(data) => {
                     song.data = data;
                     let dir = std::path::Path::new(&song.directory);
+                    if !dir.exists() {
+                        println!("Creating directory");
+                        match std::fs::create_dir_all(&dir) {
+                            Ok(_) => {
+                                println!("Successfully created directory");
+                            }
+                            Err(err) => {
+                                eprintln!("Error: Unable to create the directory {err:?}");
+                            }
+                        }
+                    }
                     let save_path = dir.join(&song.filename);
 
                     // let mut file = std::fs::File::create(&save_path).unwrap();
@@ -811,7 +822,8 @@ pub mod endpoint {
                             }
                         }
                         Err(err) => {
-                            response.message = err.to_string();
+                            let song_path = song.song_path();
+                            response.message = format!("{} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}", err.to_string(), song.directory, song.filename, save_path, song_path);
                             (
                                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                                 axum::Json(response),
