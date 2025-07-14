@@ -805,6 +805,7 @@ pub mod endpoint {
                                     Ok((date_created, id)) => {
                                         song.id = id;
                                         song.date_created = date_created;
+                                        response.message = String::from("Successful");
                                         response.data.push(song);
 
                                         (axum::http::StatusCode::OK, axum::Json(response))
