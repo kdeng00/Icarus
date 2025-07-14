@@ -824,7 +824,10 @@ pub mod endpoint {
                         }
                         Err(err) => {
                             let song_path = song.song_path();
-                            response.message = format!("{err:?} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}", song.directory, song.filename, save_path, song_path);
+                            response.message = format!(
+                                "{err:?} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}",
+                                song.directory, song.filename, save_path, song_path
+                            );
                             (
                                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                                 axum::Json(response),
