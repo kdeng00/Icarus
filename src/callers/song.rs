@@ -793,9 +793,9 @@ pub mod endpoint {
                             }
                         }
                     }
+
                     let save_path = dir.join(&song.filename);
 
-                    // let mut file = std::fs::File::create(&save_path).unwrap();
                     match std::fs::File::create(&save_path) {
                         Ok(mut file) => {
                             file.write_all(&song.data).unwrap();
