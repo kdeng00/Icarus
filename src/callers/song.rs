@@ -782,28 +782,56 @@ pub mod endpoint {
                 Ok(data) => {
                     song.data = data;
                     let dir = std::path::Path::new(&song.directory);
-                    let save_path = dir.join(&song.filename);
-
-                    let mut file = std::fs::File::create(&save_path).unwrap();
-                    file.write_all(&song.data).unwrap();
-
-                    match song.song_path() {
-                        Ok(_) => match super::song_db::insert(&pool, &song).await {
-                            Ok((date_created, id)) => {
-                                song.id = id;
-                                song.date_created = date_created;
-                                response.data.push(song);
-
-                                (axum::http::StatusCode::OK, axum::Json(response))
+                    if !dir.exists() {
+                        println!("Creating directory");
+                        match std::fs::create_dir_all(dir) {
+                            Ok(_) => {
+                                println!("Successfully created directory");
                             }
                             Err(err) => {
-                                response.message = format!("{:?} song {:?}", err.to_string(), song);
-                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                eprintln!("Error: Unable to create the directory {err:?}");
                             }
-                        },
+                        }
+                    }
+
+                    let save_path = dir.join(&song.filename);
+
+                    match std::fs::File::create(&save_path) {
+                        Ok(mut file) => {
+                            file.write_all(&song.data).unwrap();
+
+                            match song.song_path() {
+                                Ok(_) => match super::song_db::insert(&pool, &song).await {
+                                    Ok((date_created, id)) => {
+                                        song.id = id;
+                                        song.date_created = date_created;
+                                        response.message = String::from("Successful");
+                                        response.data.push(song);
+
+                                        (axum::http::StatusCode::OK, axum::Json(response))
+                                    }
+                                    Err(err) => {
+                                        response.message =
+                                            format!("{:?} song {:?}", err.to_string(), song);
+                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                    }
+                                },
+                                Err(err) => {
+                                    response.message = err.to_string();
+                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                }
+                            }
+                        }
                         Err(err) => {
-                            response.message = err.to_string();
-                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            let song_path = song.song_path();
+                            response.message = format!(
+                                "{err:?} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}",
+                                song.directory, song.filename, save_path, song_path
+                            );
+                            (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            )
                         }
                     }
                 }
