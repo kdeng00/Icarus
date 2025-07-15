@@ -508,6 +508,7 @@ pub mod endpoint {
                         match super::cov_db::create(&pool, &coverart, &song.id).await {
                             Ok(id) => {
                                 coverart.id = id;
+                                response.message = String::from("Successful");
                                 response.data.push(coverart);
 
                                 (axum::http::StatusCode::OK, axum::Json(response))
