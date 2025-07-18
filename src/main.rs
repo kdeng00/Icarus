@@ -261,6 +261,22 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
+    async fn song_queue_link_req(app: &axum::Router, song_queue_id: &uuid::Uuid, user_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!({
+            "song_queue_id": song_queue_id,
+            "user_id": user_id
+        });
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::PATCH)
+            .uri(crate::callers::endpoints::QUEUESONGLINKUSERID)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
+        app.clone().oneshot(req).await
+    }
+
     async fn fetch_queue_req(
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
@@ -654,6 +670,57 @@ mod tests {
                     get_resp_data::<crate::callers::song::response::Response>(response).await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_queue_link_user_id() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                let song_queue_id = &resp.data[0];
+                let user_id = uuid::Uuid::new_v4();
+                println!("User Id: {user_id:?}");
+
+                match song_queue_link_req(&app, &song_queue_id, &user_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await;
+                        let collected_user_id = &resp.data[0];
+
+                        assert!(!collected_user_id.is_nil(), "Collected user id should not be nil {collected_user_id:?}");
+                        assert_eq!(user_id, *collected_user_id, "User Id is different. First {user_id:?} Second {collected_user_id:?}");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {err:?} songQueue Id {song_queue_id:?} user id {user_id:?}");
+                    }
+                }
             }
             Err(err) => {
                 assert!(false, "Error: {:?}", err);
