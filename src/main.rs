@@ -241,6 +241,7 @@ mod tests {
         }
     }
 
+    // TODO: Put the *_req() functions in their own module
     async fn song_queue_req(
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
@@ -590,12 +591,14 @@ mod tests {
         }
     }
 
+    // TODO: Put this in a util module
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
         axum::body::to_bytes(response.into_body(), usize::MAX).await
     }
 
+    // TODO: Put this in a util module
     pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
     where
         Data: for<'a> serde::Deserialize<'a>,
@@ -604,6 +607,7 @@ mod tests {
         serde_json::from_slice(&body).unwrap()
     }
 
+    // TODO: Change the name of the function to be more expressive and put into it's own module
     pub mod payload_data {
         pub async fn queue_metadata_payload_data(song_queue_id: &uuid::Uuid) -> serde_json::Value {
             serde_json::json!(
