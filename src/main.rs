@@ -663,11 +663,6 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
-    mod special_area {
-
-        use super::*;
-
-        use std::io::Write;
 
         #[tokio::test]
         async fn test_song_fetch_queue_item() {
@@ -976,7 +971,6 @@ mod tests {
 
             let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
         }
-    }
 
     #[tokio::test]
     async fn test_song_metadata_queue() {
