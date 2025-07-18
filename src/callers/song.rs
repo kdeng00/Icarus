@@ -491,6 +491,33 @@ mod song_queue {
         }
     }
 
+    pub async fn link_user_id(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue" SET user_id = $1 WHERE id = $2 RETURNING user_id;
+            "#,
+        )
+        .bind(user_id)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error updating record {e}");
+        });
+
+        match result {
+            Ok(row) => Ok(row
+                .try_get("user_id")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
     pub async fn get_song_queue(
         pool: &sqlx::PgPool,
         id: &uuid::Uuid,
