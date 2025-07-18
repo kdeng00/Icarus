@@ -4,6 +4,7 @@ pub mod song;
 
 pub mod endpoints {
     pub const QUEUESONG: &str = "/api/v2/song/queue";
+    pub const QUEUESONGLINKUSERID: &str = "/api/v2/song/queue/link";
     pub const QUEUESONGDATA: &str = "/api/v2/song/queue/{id}";
     pub const QUEUESONGUPDATE: &str = "/api/v2/song/queue/{id}";
     pub const NEXTQUEUESONG: &str = "/api/v2/song/queue/next";
