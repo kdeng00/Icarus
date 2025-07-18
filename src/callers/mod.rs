@@ -19,7 +19,6 @@ pub mod endpoints {
     pub const CREATECOVERART: &str = "/api/v2/coverart";
 }
 
-
 pub mod response {
     pub const SUCCESSFUL: &str = "SUCCESSFUL";
 }

@@ -61,8 +61,8 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUESONGLINKUSERID,
-                patch(crate::callers::song::endpoint::link_user_id)
-                )
+                patch(crate::callers::song::endpoint::link_user_id),
+            )
             .route(
                 crate::callers::endpoints::QUEUESONGDATA,
                 get(crate::callers::song::endpoint::download_flac),
@@ -663,64 +663,162 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
+    #[tokio::test]
+    async fn test_song_fetch_queue_item() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
 
-        #[tokio::test]
-        async fn test_song_fetch_queue_item() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
 
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        match sequence_flow::queue_song_and_coverart_flow(&app).await {
+            Ok((resp_one, song_queue_id)) => {
+                let resp = get_resp_data::<
+                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                >(resp_one)
+                .await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                let _resp_coverart_queue_id = resp.data[0].id;
+
+                let old = crate::callers::song::status::PENDING;
+                let target_status = crate::callers::song::status::READY;
+
+                match update_song_queue_status_req(&app, &song_queue_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::update_status::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let changed_status = &resp.data[0];
+
+                        assert_eq!(*old, changed_status.old_status, "Old status does not match");
+                        assert_eq!(
+                            target_status, changed_status.new_status,
+                            "New status does not match"
+                        );
+
+                        match fetch_queue_req(&app).await {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::song::response::fetch_queue_song::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
                 }
             }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
 
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
 
-            let app = init::app(pool).await;
+    #[tokio::test]
+    async fn test_update_song_from_queue() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
 
-            match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok((resp_one, song_queue_id)) => {
-                    let resp = get_resp_data::<
-                        crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                    >(resp_one)
-                    .await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
 
-                    let _resp_coverart_queue_id = resp.data[0].id;
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
 
-                    let old = crate::callers::song::status::PENDING;
-                    let target_status = crate::callers::song::status::READY;
+        let app = init::app(pool).await;
 
-                    match update_song_queue_status_req(&app, &song_queue_id).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::update_status::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let changed_status = &resp.data[0];
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
-                            assert_eq!(
-                                *old, changed_status.old_status,
-                                "Old status does not match"
+                let id = &resp.data[0];
+
+                match fetch_queue_data_req(&app, &id).await {
+                    Ok(response) => match resp_to_bytes(response).await {
+                        Ok(bytes) => {
+                            assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
+
+                            let temp_file =
+                                tempfile::tempdir().expect("Could not create test directory");
+                            let test_dir = String::from(temp_file.path().to_str().unwrap());
+                            let new_file = format!("{}/new_file.flac", test_dir);
+
+                            let mut file = std::fs::File::create(&new_file).unwrap();
+                            file.write_all(&bytes).unwrap();
+
+                            let mut form = MultipartForm::default();
+                            let _ = form.add_file("flac", new_file);
+
+                            // Create request
+                            let content_type = form.content_type();
+                            let body = MultipartBody::from(form);
+
+                            let raw_uri = String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                            let end_index = raw_uri.len() - 5;
+
+                            let uri = format!(
+                                "{}/{}",
+                                (&raw_uri[..end_index]).to_string(),
+                                id.to_string()
                             );
-                            assert_eq!(
-                                target_status, changed_status.new_status,
-                                "New status does not match"
-                            );
 
-                            match fetch_queue_req(&app).await {
+                            match app
+                                .clone()
+                                .oneshot(
+                                    axum::http::Request::builder()
+                                        .method(axum::http::Method::PATCH)
+                                        .uri(uri)
+                                        .header(axum::http::header::CONTENT_TYPE, content_type)
+                                        .body(axum::body::Body::from_stream(body))
+                                        .unwrap(),
+                                )
+                                .await
+                            {
                                 Ok(response) => {
                                     let resp = get_resp_data::<
-                                        crate::callers::song::response::fetch_queue_song::Response,
+                                        crate::callers::song::response::update_song_queue::Response,
                                     >(response)
                                     .await;
                                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                                    let updated_song_queued_id = resp.data[0];
+                                    assert_eq!(
+                                        updated_song_queued_id, *id,
+                                        "Song queue Id should match, but they don't. {:?} {:?}",
+                                        updated_song_queued_id, id
+                                    );
                                 }
                                 Err(err) => {
                                     assert!(false, "Error: {:?}", err);
@@ -730,247 +828,126 @@ mod tests {
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
+                    },
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
                     }
                 }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
 
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_fetch_queue_data() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
         }
 
-        #[tokio::test]
-        async fn test_update_song_from_queue() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
 
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
+        let app = init::app(pool).await;
 
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let id = resp.data[0];
 
-            let app = init::app(pool).await;
-
-            // Send request
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                    let id = &resp.data[0];
-
-                    match fetch_queue_data_req(&app, &id).await {
-                        Ok(response) => match resp_to_bytes(response).await {
-                            Ok(bytes) => {
-                                assert_eq!(
-                                    false,
-                                    bytes.is_empty(),
-                                    "Queued data should not be empty"
-                                );
-
-                                let temp_file =
-                                    tempfile::tempdir().expect("Could not create test directory");
-                                let test_dir = String::from(temp_file.path().to_str().unwrap());
-                                let new_file = format!("{}/new_file.flac", test_dir);
-
-                                let mut file = std::fs::File::create(&new_file).unwrap();
-                                file.write_all(&bytes).unwrap();
-
-                                let mut form = MultipartForm::default();
-                                let _ = form.add_file("flac", new_file);
-
-                                // Create request
-                                let content_type = form.content_type();
-                                let body = MultipartBody::from(form);
-
-                                let raw_uri =
-                                    String::from(crate::callers::endpoints::QUEUESONGUPDATE);
-                                let end_index = raw_uri.len() - 5;
-
-                                let uri = format!(
-                                    "{}/{}",
-                                    (&raw_uri[..end_index]).to_string(),
-                                    id.to_string()
-                                );
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::PATCH)
-                                            .uri(uri)
-                                            .header(axum::http::header::CONTENT_TYPE, content_type)
-                                            .body(axum::body::Body::from_stream(body))
-                                            .unwrap(),
-                                    )
-                                    .await
-                                {
-                                    Ok(response) => {
-                                        let resp = get_resp_data::<
-                                            crate::callers::song::response::update_song_queue::Response,
-                                        >(response)
-                                        .await;
-                                        assert_eq!(
-                                            false,
-                                            resp.data.is_empty(),
-                                            "Should not be empty"
-                                        );
-
-                                        let updated_song_queued_id = resp.data[0];
-                                        assert_eq!(
-                                            updated_song_queued_id, *id,
-                                            "Song queue Id should match, but they don't. {:?} {:?}",
-                                            updated_song_queued_id, id
-                                        );
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
-                                }
-                            }
-                            Err(err) => {
-                                assert!(false, "Error: {:?}", err);
-                            }
-                        },
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
-        }
-
-        #[tokio::test]
-        async fn test_song_fetch_queue_data() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
-
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
-
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
-
-            let app = init::app(pool).await;
-
-            // Send request
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                    let id = resp.data[0];
-
-                    match fetch_queue_data_req(&app, &id).await {
-                        Ok(response) => match resp_to_bytes(response).await {
-                            Ok(bytes) => {
-                                assert_eq!(
-                                    false,
-                                    bytes.is_empty(),
-                                    "Queued data should not be empty"
-                                );
-                            }
-                            Err(err) => {
-                                assert!(false, "Error: {:?}", err);
-                            }
-                        },
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
-        }
-
-        #[tokio::test]
-        async fn test_song_queue_update_status() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
-
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
-
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
-
-            let app = init::app(pool).await;
-
-            match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok((resp_one, song_queue_id)) => {
-                    let resp = get_resp_data::<
-                        crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                    >(resp_one)
-                    .await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                    let _resp_coverart_queue_id = resp.data[0].id;
-
-                    let old = crate::callers::song::status::PENDING;
-                    let done = crate::callers::song::status::READY;
-
-                    match update_song_queue_status_req(&app, &song_queue_id).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::update_status::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let changed_status = &resp.data[0];
-
-                            assert_eq!(
-                                *old, changed_status.old_status,
-                                "Old status does not match"
-                            );
-                            assert_eq!(
-                                done, changed_status.new_status,
-                                "New status does not match"
-                            );
+                match fetch_queue_data_req(&app, &id).await {
+                    Ok(response) => match resp_to_bytes(response).await {
+                        Ok(bytes) => {
+                            assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
                         }
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
+                    },
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
                     }
                 }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_queue_update_status() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        match sequence_flow::queue_song_and_coverart_flow(&app).await {
+            Ok((resp_one, song_queue_id)) => {
+                let resp = get_resp_data::<
+                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                >(resp_one)
+                .await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                let _resp_coverart_queue_id = resp.data[0].id;
+
+                let old = crate::callers::song::status::PENDING;
+                let done = crate::callers::song::status::READY;
+
+                match update_song_queue_status_req(&app, &song_queue_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::update_status::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let changed_status = &resp.data[0];
+
+                        assert_eq!(*old, changed_status.old_status, "Old status does not match");
+                        assert_eq!(done, changed_status.new_status, "New status does not match");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
                 }
             }
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
         }
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
 
     #[tokio::test]
     async fn test_song_metadata_queue() {

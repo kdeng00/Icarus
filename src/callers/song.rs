@@ -659,12 +659,19 @@ pub mod endpoint {
         (StatusCode::OK, Json(response))
     }
 
-    pub async fn link_user_id(axum::Extension(pool): axum::Extension<sqlx::PgPool>, axum::Json(payload): axum::Json<super::request::link_user_id::Request>) -> (axum::http::StatusCode, axum::Json<super::response::link_user_id::Response>) {
+    pub async fn link_user_id(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::link_user_id::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::link_user_id::Response>,
+    ) {
         let mut response = super::response::link_user_id::Response::default();
 
         match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
             Ok(song_queue) => {
-                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await {
+                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await
+                {
                     Ok(user_id) => {
                         response.message = String::from(crate::callers::response::SUCCESSFUL);
                         response.data.push(user_id);
