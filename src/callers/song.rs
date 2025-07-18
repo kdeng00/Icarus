@@ -84,6 +84,14 @@ pub mod request {
             pub song_queue_id: uuid::Uuid,
         }
     }
+
+    pub mod link_user_id {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub song_queue_id: uuid::Uuid,
+            pub user_id: uuid::Uuid,
+        }
+    }
 }
 
 pub mod response {
@@ -136,6 +144,14 @@ pub mod response {
     }
 
     pub mod wipe_data_from_song_queue {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
+        }
+    }
+
+    pub mod link_user_id {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
@@ -614,6 +630,20 @@ pub mod endpoint {
         };
 
         (StatusCode::OK, Json(response))
+    }
+
+    pub async fn link_user_id(axum::Extension(pool): axum::Extension<sqlx::PgPool>, axum::Json(payload): axum::Json<super::request::link_user_id::Request>) -> (axum::http::StatusCode, axum::Json<super::response::link_user_id::Response>) {
+        let mut response = super::response::link_user_id::Response::default();
+
+        match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
+            Ok(song_queue) => {
+                (axum::http::StatusCode::OK, axum::Json(response))
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
     }
 
     pub async fn fetch_queue_song(
