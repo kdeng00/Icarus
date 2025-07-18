@@ -664,7 +664,17 @@ pub mod endpoint {
 
         match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
             Ok(song_queue) => {
-                (axum::http::StatusCode::OK, axum::Json(response))
+                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await {
+                    Ok(user_id) => {
+                        response.message = String::from(crate::callers::response::SUCCESSFUL);
+                        response.data.push(user_id);
+                        (axum::http::StatusCode::OK, axum::Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
+                }
             }
             Err(err) => {
                 response.message = err.to_string();
