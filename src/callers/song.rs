@@ -336,7 +336,7 @@ mod song_queue {
         pub id: uuid::Uuid,
         pub filename: String,
         pub status: String,
-        pub user_id: uuid::Uuid
+        pub user_id: uuid::Uuid,
     }
 
     pub async fn insert(
@@ -435,7 +435,10 @@ mod song_queue {
                     .try_get("status")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    user_id: row.try_get("user_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap()
+                user_id: row
+                    .try_get("user_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
             }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
@@ -550,7 +553,10 @@ mod song_queue {
                     .try_get("status")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                user_id: row.try_get("user_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap()
+                user_id: row
+                    .try_get("user_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
             }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
