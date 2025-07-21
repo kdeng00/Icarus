@@ -336,6 +336,7 @@ mod song_queue {
         pub id: uuid::Uuid,
         pub filename: String,
         pub status: String,
+        pub user_id: uuid::Uuid
     }
 
     pub async fn insert(
@@ -409,7 +410,7 @@ mod song_queue {
                 FOR UPDATE SKIP LOCKED
                 LIMIT 1
             )
-            RETURNING id, filename, status;
+            RETURNING id, filename, status, user_id;
             "#,
         )
         .bind(super::status::PROCESSING)
@@ -434,6 +435,7 @@ mod song_queue {
                     .try_get("status")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
+                    user_id: row.try_get("user_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap()
             }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
@@ -524,7 +526,7 @@ mod song_queue {
     ) -> Result<SongQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, filename, status FROM "songQueue" WHERE id = $1
+            SELECT id, filename, status, user_id FROM "songQueue" WHERE id = $1
             "#,
         )
         .bind(id)
@@ -548,6 +550,7 @@ mod song_queue {
                     .try_get("status")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
+                user_id: row.try_get("user_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap()
             }),
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
