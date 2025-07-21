@@ -261,7 +261,11 @@ mod tests {
         app.clone().oneshot(req).await
     }
 
-    async fn song_queue_link_req(app: &axum::Router, song_queue_id: &uuid::Uuid, user_id: &uuid::Uuid) -> Result<axum::response::Response, std::convert::Infallible> {
+    async fn song_queue_link_req(
+        app: &axum::Router,
+        song_queue_id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "song_queue_id": song_queue_id,
             "user_id": user_id
@@ -711,14 +715,26 @@ mod tests {
 
                 match song_queue_link_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await;
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::link_user_id::Response,
+                        >(response)
+                        .await;
                         let collected_user_id = &resp.data[0];
 
-                        assert!(!collected_user_id.is_nil(), "Collected user id should not be nil {collected_user_id:?}");
-                        assert_eq!(user_id, *collected_user_id, "User Id is different. First {user_id:?} Second {collected_user_id:?}");
+                        assert!(
+                            !collected_user_id.is_nil(),
+                            "Collected user id should not be nil {collected_user_id:?}"
+                        );
+                        assert_eq!(
+                            user_id, *collected_user_id,
+                            "User Id is different. First {user_id:?} Second {collected_user_id:?}"
+                        );
                     }
                     Err(err) => {
-                        assert!(false, "Error: {err:?} songQueue Id {song_queue_id:?} user id {user_id:?}");
+                        assert!(
+                            false,
+                            "Error: {err:?} songQueue Id {song_queue_id:?} user id {user_id:?}"
+                        );
                     }
                 }
             }
