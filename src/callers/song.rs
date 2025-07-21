@@ -422,24 +422,33 @@ mod song_queue {
         });
 
         match result {
-            Ok(row) => Ok(SongQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                status: row
-                    .try_get("status")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                user_id: row
-                    .try_get("user_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
+            Ok(row) => {
+                let user_id_result = row.try_get("user_id");
+                let song_queue = SongQueue {
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    filename: row
+                        .try_get("filename")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    status: row
+                        .try_get("status")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    user_id: match user_id_result {
+                        Ok(id) => {
+                            id
+                        }
+                        Err(_) => {
+                            uuid::Uuid::nil()
+                        }
+                    }
+                };
+
+                Ok(song_queue)
+            }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
