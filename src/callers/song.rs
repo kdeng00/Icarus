@@ -438,13 +438,9 @@ mod song_queue {
                         .map_err(|_e| sqlx::Error::RowNotFound)
                         .unwrap(),
                     user_id: match user_id_result {
-                        Ok(id) => {
-                            id
-                        }
-                        Err(_) => {
-                            uuid::Uuid::nil()
-                        }
-                    }
+                        Ok(id) => id,
+                        Err(_) => uuid::Uuid::nil(),
+                    },
                 };
 
                 Ok(song_queue)
@@ -565,13 +561,9 @@ mod song_queue {
                         .map_err(|_e| sqlx::Error::RowNotFound)
                         .unwrap(),
                     user_id: match user_id_result {
-                        Ok(id) => {
-                            id
-                        }
-                        Err(_) => {
-                            uuid::Uuid::nil()
-                        }
-                    }
+                        Ok(id) => id,
+                        Err(_) => uuid::Uuid::nil(),
+                    },
                 };
 
                 Ok(song_queue)

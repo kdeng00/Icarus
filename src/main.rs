@@ -493,30 +493,36 @@ mod tests {
                     // match super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await {
 
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
-                        Ok(response) => { 
-                            let resp = super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await;
-                                assert_eq!(false, resp.data.is_empty(), "The response should not be empty");
+                        Ok(response) => {
+                            let resp = super::get_resp_data::<
+                                crate::callers::song::response::link_user_id::Response,
+                            >(response)
+                            .await;
+                            assert_eq!(
+                                false,
+                                resp.data.is_empty(),
+                                "The response should not be empty"
+                            );
 
-                                match super::queue_metadata_req(&app, &song_queue_id).await {
-                                    Ok(response) => {
-                                        let resp = super::get_resp_data::<
-                                            crate::callers::song::response::Response,
-                                        >(response)
-                                        .await;
-                                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            match super::queue_metadata_req(&app, &song_queue_id).await {
+                                Ok(response) => {
+                                    let resp = super::get_resp_data::<
+                                        crate::callers::song::response::Response,
+                                    >(response)
+                                    .await;
+                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
-                                        let id = resp.data[0];
+                                    let id = resp.data[0];
 
-                                        match super::fetch_metadata_queue_req(&app, &id).await {
-                                            Ok(response) => Ok((response, user_id)),
-                                            Err(err) => Err(err),
-                                        }
+                                    match super::fetch_metadata_queue_req(&app, &id).await {
+                                        Ok(response) => Ok((response, user_id)),
+                                        Err(err) => Err(err),
                                     }
                                 }
+                            }
                         }
-                        Err(err) => Err(err)
+                        Err(err) => Err(err),
                     }
-
                 }
                 Err(err) => Err(err),
             }
