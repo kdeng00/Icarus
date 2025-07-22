@@ -405,6 +405,7 @@ mod tests {
     async fn create_song_req(
         app: &axum::Router,
         song_queue_id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "title": "Power of Soul",
@@ -419,7 +420,7 @@ mod tests {
             "disc_count": 1,
             "duration": 330,
             "audio_type": "flac",
-            "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
+            "user_id": user_id,
             "song_queue_id": song_queue_id
         });
 
@@ -579,7 +580,7 @@ mod tests {
                     assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                     let song_queue_id = resp.data[0].song_queue_id;
 
-                    match super::create_song_req(&app, &song_queue_id).await {
+                    match super::create_song_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
                             let resp = super::get_resp_data::<
                                 crate::callers::song::response::create_metadata::Response,
@@ -1113,7 +1114,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok((response, user_id)) => {
+            Ok((response, _user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1437,7 +1438,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_q_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_q_id).await {
+                match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1500,7 +1501,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_queue_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_queue_id).await {
+                match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1595,7 +1596,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_q_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_q_id).await {
+                match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1700,7 +1701,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_queue_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_queue_id).await {
+                match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
