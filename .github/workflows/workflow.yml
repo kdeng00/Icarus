@@ -59,7 +59,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.MYREPO_TOKEN }}" > ~/.ssh/gitea_deploy_key
         chmod 600 ~/.ssh/gitea_deploy_key
-        ssh-keyscan ${{ vars.MYHOST }} -p >> ~/.ssh/known_hosts
+        ssh-keyscan -p 8122 ${{ vars.MYHOST }} >> ~/.ssh/known_hosts
         eval $(ssh-agent -s)
         ssh-add -v ~/.ssh/gitea_deploy_key
         cargo build --verbose --release
