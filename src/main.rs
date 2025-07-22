@@ -476,7 +476,7 @@ mod tests {
         // Flow for queueing song
         pub async fn queue_song_flow(
             app: &axum::Router,
-        ) -> Result<axum::response::Response, std::convert::Infallible> {
+        ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match super::song_queue_req(&app).await {
                 Ok(response) => {
                     let resp =
@@ -487,22 +487,35 @@ mod tests {
                     let song_queue_id = resp.data[0];
                     assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                    match super::queue_metadata_req(&app, &resp.data[0]).await {
-                        Ok(response) => {
-                            let resp = super::get_resp_data::<
-                                crate::callers::song::response::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                    let user_id = uuid::Uuid::new_v4();
 
-                            let id = resp.data[0];
+                    // match super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await {
 
-                            match super::fetch_metadata_queue_req(&app, &id).await {
-                                Ok(response) => Ok(response),
-                                Err(err) => Err(err),
-                            }
+                    match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
+                        Ok(response) => { 
+                            let resp = super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await;
+                                assert_eq!(false, resp.data.is_empty(), "The response should not be empty");
+
+                                match super::queue_metadata_req(&app, &song_queue_id).await {
+                                    Ok(response) => {
+                                        let resp = super::get_resp_data::<
+                                            crate::callers::song::response::Response,
+                                        >(response)
+                                        .await;
+                                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                                        let id = resp.data[0];
+
+                                        match super::fetch_metadata_queue_req(&app, &id).await {
+                                            Ok(response) => Ok((response, user_id)),
+                                            Err(err) => Err(err),
+                                        }
+                                    }
+                                }
                         }
+                        Err(err) => Err(err)
                     }
+
                 }
                 Err(err) => Err(err),
             }
@@ -558,7 +571,7 @@ mod tests {
             app: &axum::Router,
         ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match queue_song_flow(&app).await {
-                Ok(song_response) => {
+                Ok((song_response, user_id)) => {
                     let resp = super::get_resp_data::<
                         crate::callers::metadata::response::fetch_metadata::Response,
                     >(song_response)
@@ -1100,7 +1113,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1416,7 +1429,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1479,7 +1492,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1574,7 +1587,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1679,7 +1692,7 @@ mod tests {
         let app = init::app(pool).await;
 
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
