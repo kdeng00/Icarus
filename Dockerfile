@@ -16,10 +16,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client git \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure SSH to use the custom port (e.g., 2222)
+RUN mkdir -p ~/.ssh && \
+    echo "Host git.kundeng.us" >> ~/.ssh/config && \
+    echo "    Port 8122" >> ~/.ssh/config && \
+    echo "    User git" >> ~/.ssh/config && \
+    chmod 600 ~/.ssh/config
+
 # << --- ADD HOST KEY HERE --- >>
 # Replace 'yourgithost.com' with the actual hostname (e.g., github.com)
 RUN mkdir -p -m 0700 ~/.ssh && \
-    ssh-keyscan git.kundeng.us >> ~/.ssh/known_hosts
+    ssh-keyscan -p 8122 git.kundeng.us >> ~/.ssh/known_hosts
 
 # Copy Cargo manifests
 COPY Cargo.toml Cargo.lock ./
