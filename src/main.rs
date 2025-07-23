@@ -60,6 +60,10 @@ pub mod init {
                 patch(crate::callers::song::endpoint::update_song_queue_status),
             )
             .route(
+                crate::callers::endpoints::QUEUESONGLINKUSERID,
+                patch(crate::callers::song::endpoint::link_user_id),
+            )
+            .route(
                 crate::callers::endpoints::QUEUESONGDATA,
                 get(crate::callers::song::endpoint::download_flac),
             )
@@ -237,6 +241,7 @@ mod tests {
         }
     }
 
+    // TODO: Put the *_req() functions in their own module
     async fn song_queue_req(
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
@@ -253,6 +258,26 @@ mod tests {
             .header(axum::http::header::CONTENT_TYPE, content_type)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
+        app.clone().oneshot(req).await
+    }
+
+    async fn song_queue_link_req(
+        app: &axum::Router,
+        song_queue_id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
+    ) -> Result<axum::response::Response, std::convert::Infallible> {
+        let payload = serde_json::json!({
+            "song_queue_id": song_queue_id,
+            "user_id": user_id
+        });
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::PATCH)
+            .uri(crate::callers::endpoints::QUEUESONGLINKUSERID)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::from(payload.to_string()))
+            .unwrap();
+
         app.clone().oneshot(req).await
     }
 
@@ -380,6 +405,7 @@ mod tests {
     async fn create_song_req(
         app: &axum::Router,
         song_queue_id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "title": "Power of Soul",
@@ -394,7 +420,7 @@ mod tests {
             "disc_count": 1,
             "duration": 330,
             "audio_type": "flac",
-            "user_id": "d6e159c1-9648-4c85-81e5-52f502ff53e4",
+            "user_id": user_id,
             "song_queue_id": song_queue_id
         });
 
@@ -451,7 +477,7 @@ mod tests {
         // Flow for queueing song
         pub async fn queue_song_flow(
             app: &axum::Router,
-        ) -> Result<axum::response::Response, std::convert::Infallible> {
+        ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match super::song_queue_req(&app).await {
                 Ok(response) => {
                     let resp =
@@ -462,21 +488,40 @@ mod tests {
                     let song_queue_id = resp.data[0];
                     assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                    match super::queue_metadata_req(&app, &resp.data[0]).await {
+                    let user_id = uuid::Uuid::new_v4();
+
+                    // match super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await {
+
+                    match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
                             let resp = super::get_resp_data::<
-                                crate::callers::song::response::Response,
+                                crate::callers::song::response::link_user_id::Response,
                             >(response)
                             .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            assert_eq!(
+                                false,
+                                resp.data.is_empty(),
+                                "The response should not be empty"
+                            );
 
-                            let id = resp.data[0];
+                            match super::queue_metadata_req(&app, &song_queue_id).await {
+                                Ok(response) => {
+                                    let resp = super::get_resp_data::<
+                                        crate::callers::song::response::Response,
+                                    >(response)
+                                    .await;
+                                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
-                            match super::fetch_metadata_queue_req(&app, &id).await {
-                                Ok(response) => Ok(response),
-                                Err(err) => Err(err),
+                                    let id = resp.data[0];
+
+                                    match super::fetch_metadata_queue_req(&app, &id).await {
+                                        Ok(response) => Ok((response, user_id)),
+                                        Err(err) => Err(err),
+                                    }
+                                }
                             }
                         }
+                        Err(err) => Err(err),
                     }
                 }
                 Err(err) => Err(err),
@@ -533,7 +578,7 @@ mod tests {
             app: &axum::Router,
         ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match queue_song_flow(&app).await {
-                Ok(song_response) => {
+                Ok((song_response, user_id)) => {
                     let resp = super::get_resp_data::<
                         crate::callers::metadata::response::fetch_metadata::Response,
                     >(song_response)
@@ -541,7 +586,7 @@ mod tests {
                     assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                     let song_queue_id = resp.data[0].song_queue_id;
 
-                    match super::create_song_req(&app, &song_queue_id).await {
+                    match super::create_song_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
                             let resp = super::get_resp_data::<
                                 crate::callers::song::response::create_metadata::Response,
@@ -586,12 +631,14 @@ mod tests {
         }
     }
 
+    // TODO: Put this in a util module
     pub async fn resp_to_bytes(
         response: axum::response::Response,
     ) -> Result<axum::body::Bytes, axum::Error> {
         axum::body::to_bytes(response.into_body(), usize::MAX).await
     }
 
+    // TODO: Put this in a util module
     pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
     where
         Data: for<'a> serde::Deserialize<'a>,
@@ -600,6 +647,7 @@ mod tests {
         serde_json::from_slice(&body).unwrap()
     }
 
+    // TODO: Change the name of the function to be more expressive and put into it's own module
     pub mod payload_data {
         pub async fn queue_metadata_payload_data(song_queue_id: &uuid::Uuid) -> serde_json::Value {
             serde_json::json!(
@@ -655,69 +703,225 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
-    mod special_area {
+    #[tokio::test]
+    async fn test_song_queue_link_user_id() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
 
-        use super::*;
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
 
-        use std::io::Write;
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
 
-        #[tokio::test]
-        async fn test_song_fetch_queue_item() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
+        let app = init::app(pool).await;
 
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                let song_queue_id = &resp.data[0];
+                let user_id = uuid::Uuid::new_v4();
+                println!("User Id: {user_id:?}");
+
+                match song_queue_link_req(&app, &song_queue_id, &user_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::link_user_id::Response,
+                        >(response)
+                        .await;
+                        let collected_user_id = &resp.data[0];
+
+                        assert!(
+                            !collected_user_id.is_nil(),
+                            "Collected user id should not be nil {collected_user_id:?}"
+                        );
+                        assert_eq!(
+                            user_id, *collected_user_id,
+                            "User Id is different. First {user_id:?} Second {collected_user_id:?}"
+                        );
+                    }
+                    Err(err) => {
+                        assert!(
+                            false,
+                            "Error: {err:?} songQueue Id {song_queue_id:?} user id {user_id:?}"
+                        );
+                    }
                 }
             }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
 
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
 
-            let app = init::app(pool).await;
+    #[tokio::test]
+    async fn test_song_fetch_queue_item() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
 
-            match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok((resp_one, song_queue_id)) => {
-                    let resp = get_resp_data::<
-                        crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                    >(resp_one)
-                    .await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
 
-                    let _resp_coverart_queue_id = resp.data[0].id;
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
 
-                    let old = crate::callers::song::status::PENDING;
-                    let target_status = crate::callers::song::status::READY;
+        let app = init::app(pool).await;
 
-                    match update_song_queue_status_req(&app, &song_queue_id).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::update_status::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let changed_status = &resp.data[0];
+        match sequence_flow::queue_song_and_coverart_flow(&app).await {
+            Ok((resp_one, song_queue_id)) => {
+                let resp = get_resp_data::<
+                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                >(resp_one)
+                .await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
-                            assert_eq!(
-                                *old, changed_status.old_status,
-                                "Old status does not match"
+                let _resp_coverart_queue_id = resp.data[0].id;
+
+                let old = crate::callers::song::status::PENDING;
+                let target_status = crate::callers::song::status::READY;
+
+                match update_song_queue_status_req(&app, &song_queue_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::update_status::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let changed_status = &resp.data[0];
+
+                        assert_eq!(*old, changed_status.old_status, "Old status does not match");
+                        assert_eq!(
+                            target_status, changed_status.new_status,
+                            "New status does not match"
+                        );
+
+                        match fetch_queue_req(&app).await {
+                            Ok(response) => {
+                                let resp = get_resp_data::<
+                                    crate::callers::song::response::fetch_queue_song::Response,
+                                >(response)
+                                .await;
+                                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                            }
+                            Err(err) => {
+                                assert!(false, "Error: {:?}", err);
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_update_song_from_queue() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+
+                let id = &resp.data[0];
+
+                match fetch_queue_data_req(&app, &id).await {
+                    Ok(response) => match resp_to_bytes(response).await {
+                        Ok(bytes) => {
+                            assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
+
+                            let temp_file =
+                                tempfile::tempdir().expect("Could not create test directory");
+                            let test_dir = String::from(temp_file.path().to_str().unwrap());
+                            let new_file = format!("{}/new_file.flac", test_dir);
+
+                            let mut file = std::fs::File::create(&new_file).unwrap();
+                            file.write_all(&bytes).unwrap();
+
+                            let mut form = MultipartForm::default();
+                            let _ = form.add_file("flac", new_file);
+
+                            // Create request
+                            let content_type = form.content_type();
+                            let body = MultipartBody::from(form);
+
+                            let raw_uri = String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                            let end_index = raw_uri.len() - 5;
+
+                            let uri = format!(
+                                "{}/{}",
+                                (&raw_uri[..end_index]).to_string(),
+                                id.to_string()
                             );
-                            assert_eq!(
-                                target_status, changed_status.new_status,
-                                "New status does not match"
-                            );
 
-                            match fetch_queue_req(&app).await {
+                            match app
+                                .clone()
+                                .oneshot(
+                                    axum::http::Request::builder()
+                                        .method(axum::http::Method::PATCH)
+                                        .uri(uri)
+                                        .header(axum::http::header::CONTENT_TYPE, content_type)
+                                        .body(axum::body::Body::from_stream(body))
+                                        .unwrap(),
+                                )
+                                .await
+                            {
                                 Ok(response) => {
                                     let resp = get_resp_data::<
-                                        crate::callers::song::response::fetch_queue_song::Response,
+                                        crate::callers::song::response::update_song_queue::Response,
                                     >(response)
                                     .await;
                                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                                    let updated_song_queued_id = resp.data[0];
+                                    assert_eq!(
+                                        updated_song_queued_id, *id,
+                                        "Song queue Id should match, but they don't. {:?} {:?}",
+                                        updated_song_queued_id, id
+                                    );
                                 }
                                 Err(err) => {
                                     assert!(false, "Error: {:?}", err);
@@ -727,247 +931,125 @@ mod tests {
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
+                    },
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
                     }
                 }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
 
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_fetch_queue_data() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
         }
 
-        #[tokio::test]
-        async fn test_update_song_from_queue() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
 
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
+        let app = init::app(pool).await;
 
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
+        // Send request
+        match song_queue_req(&app).await {
+            Ok(response) => {
+                let resp =
+                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
+                let id = resp.data[0];
 
-            let app = init::app(pool).await;
-
-            // Send request
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-
-                    let id = &resp.data[0];
-
-                    match fetch_queue_data_req(&app, &id).await {
-                        Ok(response) => match resp_to_bytes(response).await {
-                            Ok(bytes) => {
-                                assert_eq!(
-                                    false,
-                                    bytes.is_empty(),
-                                    "Queued data should not be empty"
-                                );
-
-                                let temp_file =
-                                    tempfile::tempdir().expect("Could not create test directory");
-                                let test_dir = String::from(temp_file.path().to_str().unwrap());
-                                let new_file = format!("{}/new_file.flac", test_dir);
-
-                                let mut file = std::fs::File::create(&new_file).unwrap();
-                                file.write_all(&bytes).unwrap();
-
-                                let mut form = MultipartForm::default();
-                                let _ = form.add_file("flac", new_file);
-
-                                // Create request
-                                let content_type = form.content_type();
-                                let body = MultipartBody::from(form);
-
-                                let raw_uri =
-                                    String::from(crate::callers::endpoints::QUEUESONGUPDATE);
-                                let end_index = raw_uri.len() - 5;
-
-                                let uri = format!(
-                                    "{}/{}",
-                                    (&raw_uri[..end_index]).to_string(),
-                                    id.to_string()
-                                );
-
-                                match app
-                                    .clone()
-                                    .oneshot(
-                                        axum::http::Request::builder()
-                                            .method(axum::http::Method::PATCH)
-                                            .uri(uri)
-                                            .header(axum::http::header::CONTENT_TYPE, content_type)
-                                            .body(axum::body::Body::from_stream(body))
-                                            .unwrap(),
-                                    )
-                                    .await
-                                {
-                                    Ok(response) => {
-                                        let resp = get_resp_data::<
-                                            crate::callers::song::response::update_song_queue::Response,
-                                        >(response)
-                                        .await;
-                                        assert_eq!(
-                                            false,
-                                            resp.data.is_empty(),
-                                            "Should not be empty"
-                                        );
-
-                                        let updated_song_queued_id = resp.data[0];
-                                        assert_eq!(
-                                            updated_song_queued_id, *id,
-                                            "Song queue Id should match, but they don't. {:?} {:?}",
-                                            updated_song_queued_id, id
-                                        );
-                                    }
-                                    Err(err) => {
-                                        assert!(false, "Error: {:?}", err);
-                                    }
-                                }
-                            }
-                            Err(err) => {
-                                assert!(false, "Error: {:?}", err);
-                            }
-                        },
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
-        }
-
-        #[tokio::test]
-        async fn test_song_fetch_queue_data() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
-
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
-
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
-
-            let app = init::app(pool).await;
-
-            // Send request
-            match song_queue_req(&app).await {
-                Ok(response) => {
-                    let resp =
-                        get_resp_data::<crate::callers::song::response::Response>(response).await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                    assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
-                    let id = resp.data[0];
-
-                    match fetch_queue_data_req(&app, &id).await {
-                        Ok(response) => match resp_to_bytes(response).await {
-                            Ok(bytes) => {
-                                assert_eq!(
-                                    false,
-                                    bytes.is_empty(),
-                                    "Queued data should not be empty"
-                                );
-                            }
-                            Err(err) => {
-                                assert!(false, "Error: {:?}", err);
-                            }
-                        },
-                        Err(err) => {
-                            assert!(false, "Error: {:?}", err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            };
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
-        }
-
-        #[tokio::test]
-        async fn test_song_queue_update_status() {
-            let tm_pool = db_mgr::get_pool().await.unwrap();
-            let db_name = db_mgr::generate_db_name().await;
-
-            match db_mgr::create_database(&tm_pool, &db_name).await {
-                Ok(_) => {
-                    println!("Success");
-                }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
-                }
-            }
-
-            let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
-            db::migrations(&pool).await;
-
-            let app = init::app(pool).await;
-
-            match sequence_flow::queue_song_and_coverart_flow(&app).await {
-                Ok((resp_one, song_queue_id)) => {
-                    let resp = get_resp_data::<
-                        crate::callers::coverart::response::fetch_coverart_no_data::Response,
-                    >(resp_one)
-                    .await;
-                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-
-                    let _resp_coverart_queue_id = resp.data[0].id;
-
-                    let old = crate::callers::song::status::PENDING;
-                    let done = crate::callers::song::status::READY;
-
-                    match update_song_queue_status_req(&app, &song_queue_id).await {
-                        Ok(response) => {
-                            let resp = get_resp_data::<
-                                crate::callers::song::response::update_status::Response,
-                            >(response)
-                            .await;
-                            assert_eq!(false, resp.data.is_empty(), "Should not be empty");
-                            let changed_status = &resp.data[0];
-
-                            assert_eq!(
-                                *old, changed_status.old_status,
-                                "Old status does not match"
-                            );
-                            assert_eq!(
-                                done, changed_status.new_status,
-                                "New status does not match"
-                            );
+                match fetch_queue_data_req(&app, &id).await {
+                    Ok(response) => match resp_to_bytes(response).await {
+                        Ok(bytes) => {
+                            assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
                         }
                         Err(err) => {
                             assert!(false, "Error: {:?}", err);
                         }
+                    },
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
                     }
                 }
-                Err(err) => {
-                    assert!(false, "Error: {:?}", err);
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        };
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    #[tokio::test]
+    async fn test_song_queue_update_status() {
+        let tm_pool = db_mgr::get_pool().await.unwrap();
+        let db_name = db_mgr::generate_db_name().await;
+
+        match db_mgr::create_database(&tm_pool, &db_name).await {
+            Ok(_) => {
+                println!("Success");
+            }
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
+        }
+
+        let pool = db_mgr::connect_to_db(&db_name).await.unwrap();
+        db::migrations(&pool).await;
+
+        let app = init::app(pool).await;
+
+        match sequence_flow::queue_song_and_coverart_flow(&app).await {
+            Ok((resp_one, song_queue_id)) => {
+                let resp = get_resp_data::<
+                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                >(resp_one)
+                .await;
+                assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                let _resp_coverart_queue_id = resp.data[0].id;
+
+                let old = crate::callers::song::status::PENDING;
+                let done = crate::callers::song::status::READY;
+
+                match update_song_queue_status_req(&app, &song_queue_id).await {
+                    Ok(response) => {
+                        let resp = get_resp_data::<
+                            crate::callers::song::response::update_status::Response,
+                        >(response)
+                        .await;
+                        assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+                        let changed_status = &resp.data[0];
+
+                        assert_eq!(*old, changed_status.old_status, "Old status does not match");
+                        assert_eq!(done, changed_status.new_status, "New status does not match");
+                    }
+                    Err(err) => {
+                        assert!(false, "Error: {:?}", err);
+                    }
                 }
             }
-
-            let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+            Err(err) => {
+                assert!(false, "Error: {:?}", err);
+            }
         }
+
+        let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
     #[tokio::test]
@@ -1038,7 +1120,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, _user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1354,7 +1436,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1362,7 +1444,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_q_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_q_id).await {
+                match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1417,7 +1499,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1425,7 +1507,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_queue_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_queue_id).await {
+                match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1512,7 +1594,7 @@ mod tests {
 
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1520,7 +1602,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_q_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_q_id).await {
+                match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
@@ -1617,7 +1699,7 @@ mod tests {
         let app = init::app(pool).await;
 
         match sequence_flow::queue_song_flow(&app).await {
-            Ok(response) => {
+            Ok((response, user_id)) => {
                 let resp = get_resp_data::<
                     crate::callers::metadata::response::fetch_metadata::Response,
                 >(response)
@@ -1625,7 +1707,7 @@ mod tests {
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
                 let song_queue_id = resp.data[0].song_queue_id;
 
-                match create_song_req(&app, &song_queue_id).await {
+                match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,

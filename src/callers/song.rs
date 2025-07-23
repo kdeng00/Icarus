@@ -84,6 +84,14 @@ pub mod request {
             pub song_queue_id: uuid::Uuid,
         }
     }
+
+    pub mod link_user_id {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Request {
+            pub song_queue_id: uuid::Uuid,
+            pub user_id: uuid::Uuid,
+        }
+    }
 }
 
 pub mod response {
@@ -136,6 +144,14 @@ pub mod response {
     }
 
     pub mod wipe_data_from_song_queue {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<uuid::Uuid>,
+        }
+    }
+
+    pub mod link_user_id {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
@@ -320,6 +336,7 @@ mod song_queue {
         pub id: uuid::Uuid,
         pub filename: String,
         pub status: String,
+        pub user_id: uuid::Uuid,
     }
 
     pub async fn insert(
@@ -393,7 +410,7 @@ mod song_queue {
                 FOR UPDATE SKIP LOCKED
                 LIMIT 1
             )
-            RETURNING id, filename, status;
+            RETURNING id, filename, status, user_id;
             "#,
         )
         .bind(super::status::PROCESSING)
@@ -405,20 +422,29 @@ mod song_queue {
         });
 
         match result {
-            Ok(row) => Ok(SongQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                status: row
-                    .try_get("status")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
+            Ok(row) => {
+                let user_id_result = row.try_get("user_id");
+                let song_queue = SongQueue {
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    filename: row
+                        .try_get("filename")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    status: row
+                        .try_get("status")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    user_id: match user_id_result {
+                        Ok(id) => id,
+                        Err(_) => uuid::Uuid::nil(),
+                    },
+                };
+
+                Ok(song_queue)
+            }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
@@ -475,13 +501,40 @@ mod song_queue {
         }
     }
 
+    pub async fn link_user_id(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+        user_id: &uuid::Uuid,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            UPDATE "songQueue" SET user_id = $1 WHERE id = $2 RETURNING user_id;
+            "#,
+        )
+        .bind(user_id)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error updating record {e}");
+        });
+
+        match result {
+            Ok(row) => Ok(row
+                .try_get("user_id")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap()),
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
     pub async fn get_song_queue(
         pool: &sqlx::PgPool,
         id: &uuid::Uuid,
     ) -> Result<SongQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, filename, status FROM "songQueue" WHERE id = $1
+            SELECT id, filename, status, user_id FROM "songQueue" WHERE id = $1
             "#,
         )
         .bind(id)
@@ -492,20 +545,29 @@ mod song_queue {
         });
 
         match result {
-            Ok(row) => Ok(SongQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                status: row
-                    .try_get("status")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
+            Ok(row) => {
+                let user_id_result = row.try_get("user_id");
+                let song_queue = SongQueue {
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    filename: row
+                        .try_get("filename")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    status: row
+                        .try_get("status")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    user_id: match user_id_result {
+                        Ok(id) => id,
+                        Err(_) => uuid::Uuid::nil(),
+                    },
+                };
+
+                Ok(song_queue)
+            }
             Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
@@ -614,6 +676,37 @@ pub mod endpoint {
         };
 
         (StatusCode::OK, Json(response))
+    }
+
+    pub async fn link_user_id(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::Json(payload): axum::Json<super::request::link_user_id::Request>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::link_user_id::Response>,
+    ) {
+        let mut response = super::response::link_user_id::Response::default();
+
+        match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
+            Ok(song_queue) => {
+                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await
+                {
+                    Ok(user_id) => {
+                        response.message = String::from(crate::callers::response::SUCCESSFUL);
+                        response.data.push(user_id);
+                        (axum::http::StatusCode::OK, axum::Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
+                }
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
     }
 
     pub async fn fetch_queue_song(
