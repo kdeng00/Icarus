@@ -36,7 +36,7 @@ jobs:
           echo "Tag Release: $PROJECT_TAG_RELEASE"
 
       - name: Print version
-        id: Version
+        id: print_version
         run: |
           echo "Printing version"
           echo "Version: ${{ steps.version.outputs.project_tag_release }}"
