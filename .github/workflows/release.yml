@@ -1,0 +1,52 @@
+name: Release Tagging
+
+on:
+  push:
+    branches: [ "v0.2" ]
+  pull_request:
+    branches: [ "v0.2" ]
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important for git describe --tags
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.88.0
+          components: cargo
+
+      - name: Extract Version from Cargo.toml
+        id: version
+        run: |
+          VERSION=$(grep '^version = "' Cargo.toml | sed -E 's/version = "([^"]+)"/\1/')
+          PROJECT_COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-10)
+          BRANCH_REF="${GITHUB_REF}"
+          BRANCH_NAME=$(echo "$BRANCH_REF" | cut -d '/' -f 3)
+          PROJECT_TAG_RELEASE="v$VERSION-$BRANCH_NAME-$PROJECT_COMMIT_HASH"
+          echo "::set-output name=project_tag_release::$PROJECT_TAG_RELEASE-961"
+          echo "Version: $VERSION"
+          echo "Hash: $PROJECT_COMMIT_HASH"
+          echo "Branch: $BRANCH_NAME"
+          echo "Tag Release: $PROJECT_TAG_RELEASE"
+
+      - name: Print version
+        id: print_version
+        run: |
+          echo "Printing version"
+          echo "Version: ${{ steps.version.outputs.project_tag_release }}"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.project_tag_release }}
+          release_name: Release ${{ steps.version.outputs.project_tag_release }}
+          body: |
+           Release of version ${{ steps.version.outputs.project_tag_release }}
