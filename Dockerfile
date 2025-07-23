@@ -1,13 +1,8 @@
 # Stage 1: Build the application
-# Use a specific Rust version for reproducibility. Choose one that matches your development environment.
-# Using slim variant for smaller base image
 FROM rust:1.88 as builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
-
-# Install build dependencies if needed (e.g., for certain crates like sqlx with native TLS)
-# RUN apt-get update && apt-get install -y pkg-config libssl-dev
 
 # Install build dependencies if needed (e.g., git for cloning)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p ~/.ssh && \
+# Create .ssh/ directory for internal dependencies
+RUN mkdir -p -m 0700 ~/.ssh && \
     echo "Host git.kundeng.us" >> ~/.ssh/config && \
     echo "    User git" >> ~/.ssh/config && \
     chmod 600 ~/.ssh/config
