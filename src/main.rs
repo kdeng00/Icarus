@@ -117,7 +117,7 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::GETSONGS,
-                get(crate::callers::song::endpoint::get_songs)
+                get(crate::callers::song::endpoint::get_songs),
             )
     }
 
@@ -1834,6 +1834,8 @@ mod tests {
             let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
             super::db_mgr::migrations(&pool).await;
 
+            let app = super::init::app(pool).await;
+
             let mut id = uuid::Uuid::nil();
             match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
                 Ok(val) => {
@@ -1843,19 +1845,26 @@ mod tests {
                     assert!(false, "Error: {err:?}");
                 }
             };
+
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
 
-            let app = super::init::app(pool).await;
-            match app.clone().oneshot(
-                axum::http::Request::builder()
-                .method(axum::http::Method::GET)
-                .uri(uri)
-                .header(axum::http::header::CONTENT_TYPE, "application/json")
-                .body(axum::body::Body::empty())
-                .unwrap()
-                ).await {
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(uri)
+                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<crate::callers::song::response::get_songs::Response>(response).await;
+                    let resp = super::get_resp_data::<
+                        crate::callers::song::response::get_songs::Response,
+                    >(response)
+                    .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
                     let song = resp.data[0].clone();
