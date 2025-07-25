@@ -228,6 +228,15 @@ mod tests {
                 Err("Error parsing".into())
             }
         }
+
+        pub async fn migrations(pool: &sqlx::PgPool) {
+            // Run migrations using the sqlx::migrate! macro
+            // Assumes your migrations are in a ./migrations folder relative to Cargo.toml
+            sqlx::migrate!("./test_migrations")
+                .run(pool)
+                .await
+                .expect("Failed to run migrations");
+        }
     }
 
     mod init {
@@ -1799,5 +1808,29 @@ mod tests {
         };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    pub mod after_song_queue {
+        #[tokio::test]
+        async fn test_get_songs() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let _app = super::init::app(pool).await;
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
     }
 }
