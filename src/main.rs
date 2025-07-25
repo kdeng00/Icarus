@@ -235,7 +235,7 @@ mod tests {
 
         pub async fn migrations(pool: &sqlx::PgPool) {
             // Run migrations using the sqlx::migrate! macro
-            // Assumes your migrations are in a ./migrations folder relative to Cargo.toml
+            // Assumes your test migrations are in a ./test_migrations folder relative to Cargo.toml
             sqlx::migrate!("./test_migrations")
                 .run(pool)
                 .await

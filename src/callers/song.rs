@@ -996,6 +996,7 @@ pub mod endpoint {
         match params.id {
             Some(id) => match super::song_db::get_song(&pool, &id).await {
                 Ok(song) => {
+                    response.message = String::from(super::super::response::SUCCESSFUL);
                     response.data.push(song);
                     (axum::http::StatusCode::OK, axum::Json(response))
                 }
