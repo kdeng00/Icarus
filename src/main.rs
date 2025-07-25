@@ -1815,6 +1815,8 @@ mod tests {
     }
 
     pub mod after_song_queue {
+        use tower::ServiceExt;
+
         #[tokio::test]
         async fn test_get_songs() {
             let tm_pool = super::db_mgr::get_pool().await.unwrap();
@@ -1833,7 +1835,50 @@ mod tests {
             // super::super::db::migrations(&pool).await;
             super::db_mgr::migrations(&pool).await;
 
-            let _app = super::init::app(pool).await;
+            /*
+        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
+
+        let req = axum::http::Request::builder()
+            .method(axum::http::Method::GET)
+            .uri(uri)
+            .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .body(axum::body::Body::empty())
+            .unwrap();
+
+        app.clone().oneshot(req).await
+            */
+            let id_result = uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9");
+            let mut id = uuid::Uuid::nil();
+            match id_result {
+                Ok(val) => {
+                    id = val;
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            };
+            let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
+
+            let app = super::init::app(pool).await;
+            match app.clone().oneshot(
+                axum::http::Request::builder()
+                .method(axum::http::Method::GET)
+                .uri(uri)
+                .header(axum::http::header::CONTENT_TYPE, "application/json")
+                .body(axum::body::Body::empty())
+                .unwrap()
+                ).await {
+                Ok(response) => {
+                    let resp = super::get_resp_data::<crate::callers::song::response::get_songs::Response>(response).await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let song = resp.data[0].clone();
+                    assert_eq!(id, song.id, "Id does not match {song:?}");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
 
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
