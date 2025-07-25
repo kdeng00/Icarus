@@ -652,7 +652,10 @@ mod tests {
             })
         }
 
-        pub async fn create_song(song_queue_id: &uuid::Uuid, user_id: &uuid::Uuid) -> serde_json::Value {
+        pub async fn create_song(
+            song_queue_id: &uuid::Uuid,
+            user_id: &uuid::Uuid,
+        ) -> serde_json::Value {
             serde_json::json!({
                 "title" : "Hypocrite Like The Rest",
                 "artist" : "Kuoth",
