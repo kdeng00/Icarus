@@ -407,22 +407,7 @@ mod tests {
         song_queue_id: &uuid::Uuid,
         user_id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
-        let payload = serde_json::json!({
-            "title": "Power of Soul",
-            "artist": "Jimmi Hendrix",
-            "album_artist": "Jimmi Hendrix",
-            "album": "Machine Gun",
-            "genre": "Psychadelic Rock",
-            "date": "2016-01-01",
-            "track": 1,
-            "disc": 1,
-            "track_count": 11,
-            "disc_count": 1,
-            "duration": 330,
-            "audio_type": "flac",
-            "user_id": user_id,
-            "song_queue_id": song_queue_id
-        });
+        let payload = payload_data::create_song(song_queue_id, user_id).await;
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
@@ -664,6 +649,25 @@ mod tests {
                     "track" : 1,
                     "track_count" : 11,
                     "year" : 2016
+            })
+        }
+
+        pub async fn create_song(song_queue_id: &uuid::Uuid, user_id: &uuid::Uuid) -> serde_json::Value {
+            serde_json::json!({
+                "title": "Power of Soul",
+                "artist": "Jimmi Hendrix",
+                "album_artist": "Jimmi Hendrix",
+                "album": "Machine Gun",
+                "genre": "Psychadelic Rock",
+                "date": "2016-01-01",
+                "track": 1,
+                "disc": 1,
+                "track_count": 11,
+                "disc_count": 1,
+                "duration": 330,
+                "audio_type": "flac",
+                "user_id": user_id,
+                "song_queue_id": song_queue_id
             })
         }
     }
