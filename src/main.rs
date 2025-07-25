@@ -1826,7 +1826,7 @@ mod tests {
             }
 
             let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
-            super::super::db::migrations(&pool).await;
+            // super::super::db::migrations(&pool).await;
             super::db_mgr::migrations(&pool).await;
 
             let _app = super::init::app(pool).await;

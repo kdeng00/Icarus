@@ -1,0 +1,8 @@
+{
+  "dev": {
+    "migrations": "./migrations"
+  },
+  "test": {
+    "migrations": "./test_migrations"
+  }
+}
