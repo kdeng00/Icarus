@@ -1,0 +1,64 @@
+{
+    "album": "I Am We",
+    "album_artist": "Kuoth",
+    "disc_count": 1,
+    "genre": "Alternative Hip-Hop",
+    "year": 2020,
+    "track_count": 9,
+    "tracks": [
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Hypocrite Like the Rest",
+            "track": 1
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "It's Too Late",
+            "track": 2
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Hell Might be Nice",
+            "track": 3
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Dark Side of Progress",
+            "track": 4
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Distractions",
+            "track": 5
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "But You Won't Listen",
+            "track": 6
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Guidance",
+            "track": 7
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "M",
+            "track": 8
+        },
+        {
+            "artist": "Kuoth",
+            "disc": 1,
+            "title": "Social Acceptance",
+            "track": 9
+        }
+    ]
+}
