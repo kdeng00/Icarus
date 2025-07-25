@@ -1832,24 +1832,10 @@ mod tests {
             }
 
             let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
-            // super::super::db::migrations(&pool).await;
             super::db_mgr::migrations(&pool).await;
 
-            /*
-        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
-
-        let req = axum::http::Request::builder()
-            .method(axum::http::Method::GET)
-            .uri(uri)
-            .header(axum::http::header::CONTENT_TYPE, "application/json")
-            .body(axum::body::Body::empty())
-            .unwrap();
-
-        app.clone().oneshot(req).await
-            */
-            let id_result = uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9");
             let mut id = uuid::Uuid::nil();
-            match id_result {
+            match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
                 Ok(val) => {
                     id = val;
                 }
