@@ -247,7 +247,8 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         // Create multipart form
         let mut form = MultipartForm::default();
-        let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
+        // let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
+        let _ = form.add_file("flac", "tests/IAmWe/track01.flac");
 
         // Create request
         let content_type = form.content_type();
@@ -331,7 +332,7 @@ mod tests {
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/Machine_gun/160809_machinegun.jpg");
+        let _ = form.add_file("jpg", "tests/IAmWe/Coverart.jpg");
 
         // Create request
         let content_type = form.content_type();
@@ -638,33 +639,33 @@ mod tests {
             serde_json::json!(
             {
                     "song_queue_id": song_queue_id,
-                    "album" : "Machine Gun: The FillMore East First Show",
-                    "album_artist" : "Jimi Hendrix",
-                    "artist" : "Jimi Hendrix",
+                    "album" : "I",
+                    "album_artist" : "Kuoth",
+                    "artist" : "Kuoth",
                     "disc" : 1,
                     "disc_count" : 1,
-                    "duration" : 330,
-                    "genre" : "Psychadelic Rock",
-                    "title" : "Power of Soul",
+                    "duration" : 139,
+                    "genre" : "Alternative Hip-Hop",
+                    "title" : "Hypocrite Like The Rest",
                     "track" : 1,
-                    "track_count" : 11,
-                    "year" : 2016
+                    "track_count" : 9,
+                    "year" : 2020
             })
         }
 
         pub async fn create_song(song_queue_id: &uuid::Uuid, user_id: &uuid::Uuid) -> serde_json::Value {
             serde_json::json!({
-                "title": "Power of Soul",
-                "artist": "Jimmi Hendrix",
-                "album_artist": "Jimmi Hendrix",
-                "album": "Machine Gun",
-                "genre": "Psychadelic Rock",
-                "date": "2016-01-01",
+                "title" : "Hypocrite Like The Rest",
+                "artist" : "Kuoth",
+                "album_artist": "Kuoth",
+                "album": "I",
+                "genre" : "Alternative Hip-Hop",
+                "date": "2020-01-01",
                 "track": 1,
                 "disc": 1,
-                "track_count": 11,
+                "track_count": 9,
                 "disc_count": 1,
-                "duration": 330,
+                "duration": 139,
                 "audio_type": "flac",
                 "user_id": user_id,
                 "song_queue_id": song_queue_id
