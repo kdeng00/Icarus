@@ -248,7 +248,7 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         // Create multipart form
         let mut form = MultipartForm::default();
-        let _ = form.add_file("flac", "tests/IAmWe/track01.flac");
+        let _ = form.add_file("flac", "tests/I/track01.flac");
 
         // Create request
         let content_type = form.content_type();
@@ -332,7 +332,7 @@ mod tests {
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/IAmWe/Coverart.jpg");
+        let _ = form.add_file("jpg", "tests/I/Coverart.jpg");
 
         // Create request
         let content_type = form.content_type();
