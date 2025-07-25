@@ -994,18 +994,16 @@ pub mod endpoint {
         let mut response = super::response::get_songs::Response::default();
 
         match params.id {
-            Some(id) => {
-                match super::song_db::get_song(&pool, &id).await {
-                    Ok(song) => {
-                        response.data.push(song);
-                        (axum::http::StatusCode::OK, axum::Json(response))
-                    }
-                    Err(err) => {
-                        response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                    }
+            Some(id) => match super::song_db::get_song(&pool, &id).await {
+                Ok(song) => {
+                    response.data.push(song);
+                    (axum::http::StatusCode::OK, axum::Json(response))
                 }
-            }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            },
             None => {
                 response.message = String::from("Invalid parameters");
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
