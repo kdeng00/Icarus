@@ -92,6 +92,13 @@ pub mod request {
             pub user_id: uuid::Uuid,
         }
     }
+
+    pub mod get_songs {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Params {
+            pub id: Option<uuid::Uuid>,
+        }
+    }
 }
 
 pub mod response {
@@ -156,6 +163,14 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
+        }
+    }
+
+    pub mod get_songs {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<icarus_models::song::Song>,
         }
     }
 }
@@ -965,6 +980,34 @@ pub mod endpoint {
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn get_songs(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>,
+    ) -> (
+        axum::http::StatusCode,
+        Json<super::response::get_songs::Response>,
+    ) {
+        let mut response = super::response::get_songs::Response::default();
+
+        match params.id {
+            Some(id) => match super::song_db::get_song(&pool, &id).await {
+                Ok(song) => {
+                    response.message = String::from(super::super::response::SUCCESSFUL);
+                    response.data.push(song);
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            },
+            None => {
+                response.message = String::from("Invalid parameters");
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
             }
         }
     }

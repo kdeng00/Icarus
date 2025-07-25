@@ -1,0 +1,3 @@
+-- Add migration script here
+INSERT INTO "song" (id, title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, date_created, filename, directory, user_id) VALUES('44cf7940-34ff-489f-9124-d0ec90a55af9', 'Hypocrite Like The Rest', 'Kuoth', 'Kuoth', 'I', 'Alternative Hip-Hop', 2020, 1, 1, 9, 1, 139, 'flac', '2020-01-01 13:00:00-05', 'track01.flac', 'tests/I', '47491f9b-725a-4ba4-b9a5-711e1be46670');
+INSERT INTO "coverart" VALUES('996122cd-5ae9-4013-9934-60768d3006ed', 'I', 'tests/I/Coverart.jpg', '44cf7940-34ff-489f-9124-d0ec90a55af9');

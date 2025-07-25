@@ -115,12 +115,17 @@ pub mod init {
                 crate::callers::endpoints::CREATECOVERART,
                 post(crate::callers::coverart::endpoint::create_coverart),
             )
+            .route(
+                crate::callers::endpoints::GETSONGS,
+                get(crate::callers::song::endpoint::get_songs),
+            )
     }
 
     pub async fn app() -> axum::Router {
         let pool = crate::db::create_pool()
             .await
             .expect("Failed to create pool");
+        // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
         routes()
@@ -227,6 +232,15 @@ mod tests {
                 Err("Error parsing".into())
             }
         }
+
+        pub async fn migrations(pool: &sqlx::PgPool) {
+            // Run migrations using the sqlx::migrate! macro
+            // Assumes your test migrations are in a ./test_migrations folder relative to Cargo.toml
+            sqlx::migrate!("./test_migrations")
+                .run(pool)
+                .await
+                .expect("Failed to run migrations");
+        }
     }
 
     mod init {
@@ -247,7 +261,7 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         // Create multipart form
         let mut form = MultipartForm::default();
-        let _ = form.add_file("flac", "tests/IAmWe/track01.flac");
+        let _ = form.add_file("flac", "tests/I/track01.flac");
 
         // Create request
         let content_type = form.content_type();
@@ -331,7 +345,7 @@ mod tests {
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/IAmWe/Coverart.jpg");
+        let _ = form.add_file("jpg", "tests/I/Coverart.jpg");
 
         // Create request
         let content_type = form.content_type();
@@ -1798,5 +1812,70 @@ mod tests {
         };
 
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
+    }
+
+    pub mod after_song_queue {
+        use tower::ServiceExt;
+
+        #[tokio::test]
+        async fn test_get_songs() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            let mut id = uuid::Uuid::nil();
+            match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
+                Ok(val) => {
+                    id = val;
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            };
+
+            let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(uri)
+                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let resp = super::get_resp_data::<
+                        crate::callers::song::response::get_songs::Response,
+                    >(response)
+                    .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let song = resp.data[0].clone();
+                    assert_eq!(id, song.id, "Id does not match {song:?}");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
     }
 }
