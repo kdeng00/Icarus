@@ -96,7 +96,7 @@ pub mod request {
     pub mod get_songs {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Params {
-            pub id: Option<uuid::Uuid>
+            pub id: Option<uuid::Uuid>,
         }
     }
 }
@@ -170,7 +170,7 @@ pub mod response {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<i32>
+            pub data: Vec<i32>,
         }
     }
 }
@@ -984,11 +984,15 @@ pub mod endpoint {
         }
     }
 
-    pub async fn get_songs(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>) 
-                                      -> (axum::http::StatusCode, Json<super::response::get_songs::Response>) {
-                                          let mut response = super::response::get_songs::Response::default();
+    pub async fn get_songs(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>,
+    ) -> (
+        axum::http::StatusCode,
+        Json<super::response::get_songs::Response>,
+    ) {
+        let mut response = super::response::get_songs::Response::default();
 
-                                          (axum::http::StatusCode::OK, axum::Json(response))
+        (axum::http::StatusCode::OK, axum::Json(response))
     }
 }
