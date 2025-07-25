@@ -247,7 +247,6 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         // Create multipart form
         let mut form = MultipartForm::default();
-        // let _ = form.add_file("flac", "tests/Machine_gun/track01.flac");
         let _ = form.add_file("flac", "tests/IAmWe/track01.flac");
 
         // Create request
