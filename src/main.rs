@@ -121,6 +121,7 @@ pub mod init {
         let pool = crate::db::create_pool()
             .await
             .expect("Failed to create pool");
+        // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
         routes()
