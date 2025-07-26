@@ -1881,5 +1881,67 @@ mod tests {
 
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
+
+        #[tokio::test]
+        async fn test_get_coverart() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            let mut id = uuid::Uuid::nil();
+            
+            match uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed") {
+                Ok(val) => {
+                    id = val;
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            };
+
+            let uri = format!("{}?id={id}", crate::callers::endpoints::GETCOVERART);
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(uri)
+                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let resp = super::get_resp_data::<
+                        crate::callers::coverart::response::get_coverart::Response,
+                    >(response)
+                    .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let coverart = resp.data[0].clone();
+                    assert_eq!(id, coverart.id, "Id does not match {coverart:?}");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
     }
 }
