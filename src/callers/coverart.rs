@@ -361,6 +361,7 @@ pub mod cov_db {
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 path: row.try_get("path").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                data: Vec::new(),
                 song_id: row.try_get("song_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap()
             }),
             Err(_) => Err(sqlx::Error::RowNotFound),

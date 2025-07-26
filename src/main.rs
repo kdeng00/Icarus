@@ -119,6 +119,10 @@ pub mod init {
                 crate::callers::endpoints::GETSONGS,
                 get(crate::callers::song::endpoint::get_songs),
             )
+            .route(
+                crate::callers::endpoints::GETCOVERART,
+                get(crate::callers::coverart::endpoint::get_coverart)
+                )
     }
 
     pub async fn app() -> axum::Router {
