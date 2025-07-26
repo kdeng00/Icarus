@@ -121,8 +121,8 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::GETCOVERART,
-                get(crate::callers::coverart::endpoint::get_coverart)
-                )
+                get(crate::callers::coverart::endpoint::get_coverart),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -1902,7 +1902,7 @@ mod tests {
             let app = super::init::app(pool).await;
 
             let mut id = uuid::Uuid::nil();
-            
+
             match uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed") {
                 Ok(val) => {
                     id = val;
