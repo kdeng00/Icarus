@@ -45,6 +45,13 @@ pub mod request {
             pub coverart_queue_id: uuid::Uuid,
         }
     }
+
+    pub mod get_coverart {
+        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        pub struct Params {
+            pub id: Option<uuid::Uuid>,
+        }
+    }
 }
 
 pub mod response {
@@ -97,6 +104,14 @@ pub mod response {
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
+        }
+    }
+
+    pub mod get_coverart {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<icarus_models::coverart::CoverArt>,
         }
     }
 }
@@ -319,6 +334,46 @@ pub mod cov_db {
                 Ok(id)
             }
             Err(_err) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn get_coverart(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT id, title, path, song_id FROM "coverart" WHERE id = $1;
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error querying data: {e:?}");
+        });
+
+        match result {
+            Ok(row) => Ok(icarus_models::coverart::CoverArt {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                title: row
+                    .try_get("title")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                path: row
+                    .try_get("path")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                data: Vec::new(),
+                song_id: row
+                    .try_get("song_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+            }),
+            Err(_) => Err(sqlx::Error::RowNotFound),
         }
     }
 }
@@ -557,6 +612,34 @@ pub mod endpoint {
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn get_coverart(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Query(params): axum::extract::Query<super::request::get_coverart::Params>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::get_coverart::Response>,
+    ) {
+        let mut response = super::response::get_coverart::Response::default();
+
+        match params.id {
+            Some(id) => match super::cov_db::get_coverart(&pool, &id).await {
+                Ok(coverart) => {
+                    response.data.push(coverart);
+                    response.message = String::from(super::super::response::SUCCESSFUL);
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                }
+            },
+            None => {
+                response.message = String::from("Invalid parameters");
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
             }
         }
     }
