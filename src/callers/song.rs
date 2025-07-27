@@ -1012,7 +1012,6 @@ pub mod endpoint {
         }
     }
 
-
     pub async fn stream_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -1033,24 +1032,30 @@ pub mod endpoint {
 
                 let file_size = match file.metadata().await {
                     Ok(meta) => meta.len(),
-                    Err(_) => return Err((axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Could not read file")),
+                    Err(_) => {
+                        return Err((
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            "Could not read file",
+                        ));
+                    }
                 };
 
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
                 let stream = tokio_util::io::ReaderStream::new(file);
 
                 let rep = axum::response::Response::builder()
-                .header("content-type", mime.to_string())
-                .header("accept-ranges", "bytes")
-                .header("content-length", file_size.to_string())
-                .body(axum::body::Body::from_stream(stream))
-                .unwrap();
+                    .header("content-type", mime.to_string())
+                    .header("accept-ranges", "bytes")
+                    .header("content-length", file_size.to_string())
+                    .body(axum::body::Body::from_stream(stream))
+                    .unwrap();
 
                 Ok(rep)
             }
-            Err(_err) => {
-                Err((axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Could not find file"))
-            }
+            Err(_err) => Err((
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "Could not find file",
+            )),
         }
     }
 }

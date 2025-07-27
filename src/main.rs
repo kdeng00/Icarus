@@ -123,7 +123,10 @@ pub mod init {
                 crate::callers::endpoints::GETCOVERART,
                 get(crate::callers::coverart::endpoint::get_coverart),
             )
-            .route(crate::callers::endpoints::STREAMSONG, get(crate::callers::song::endpoint::stream_song))
+            .route(
+                crate::callers::endpoints::STREAMSONG,
+                get(crate::callers::song::endpoint::stream_song),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -1980,8 +1983,7 @@ mod tests {
                     let mut data = e.into_data_stream();
                     while let Some(chunk) = data.next().await {
                         match chunk {
-                            Ok(_data) => {
-                            }
+                            Ok(_data) => {}
                             Err(err) => {
                                 assert!(false, "Error: {err:?}");
                             }
