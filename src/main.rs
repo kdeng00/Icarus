@@ -1845,7 +1845,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::coverart_id().await.unwrap();
+            let id = test_data::song_id().await.unwrap();
 
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
 
