@@ -1013,7 +1013,7 @@ pub mod endpoint {
     }
 
 
-    pub async fn stream_audio(
+    pub async fn stream_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> impl IntoResponse {
