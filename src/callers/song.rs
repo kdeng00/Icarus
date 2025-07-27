@@ -745,6 +745,7 @@ pub mod endpoint {
         }
     }
 
+    // TODO: Rename
     pub async fn download_flac(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
