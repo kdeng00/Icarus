@@ -562,7 +562,10 @@ pub mod endpoint {
 
                         match super::cov_db::create(&pool, &coverart, &song.id).await {
                             Ok(id) => {
+                                // TODO: Populate song_id
                                 coverart.id = id;
+                                println!("Cover Art created");
+
                                 response.message = String::from("Successful");
                                 response.data.push(coverart);
 
