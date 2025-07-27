@@ -745,6 +745,7 @@ pub mod endpoint {
         }
     }
 
+    // TODO: Rename
     pub async fn download_flac(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -1009,6 +1010,53 @@ pub mod endpoint {
                 response.message = String::from("Invalid parameters");
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
             }
+        }
+    }
+
+    pub async fn stream_song(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> impl IntoResponse {
+        match super::song_db::get_song(&pool, &id).await {
+            Ok(song) => {
+                let song_path = song.song_path().unwrap();
+                let path = std::path::Path::new(&song_path);
+
+                if !path.starts_with(&song.directory) || !path.exists() {
+                    return Err((axum::http::StatusCode::NOT_FOUND, "File not found"));
+                }
+
+                let file = match tokio::fs::File::open(&path).await {
+                    Ok(file) => file,
+                    Err(_) => return Err((axum::http::StatusCode::NOT_FOUND, "File not found")),
+                };
+
+                let file_size = match file.metadata().await {
+                    Ok(meta) => meta.len(),
+                    Err(_) => {
+                        return Err((
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            "Could not read file",
+                        ));
+                    }
+                };
+
+                let mime = mime_guess::from_path(path).first_or_octet_stream();
+                let stream = tokio_util::io::ReaderStream::new(file);
+
+                let rep = axum::response::Response::builder()
+                    .header("content-type", mime.to_string())
+                    .header("accept-ranges", "bytes")
+                    .header("content-length", file_size.to_string())
+                    .body(axum::body::Body::from_stream(stream))
+                    .unwrap();
+
+                Ok(rep)
+            }
+            Err(_err) => Err((
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "Could not find file",
+            )),
         }
     }
 }

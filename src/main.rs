@@ -123,6 +123,10 @@ pub mod init {
                 crate::callers::endpoints::GETCOVERART,
                 get(crate::callers::coverart::endpoint::get_coverart),
             )
+            .route(
+                crate::callers::endpoints::STREAMSONG,
+                get(crate::callers::song::endpoint::stream_song),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -1819,6 +1823,7 @@ mod tests {
     }
 
     pub mod after_song_queue {
+        use futures::StreamExt;
         use tower::ServiceExt;
 
         #[tokio::test]
@@ -1840,15 +1845,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let mut id = uuid::Uuid::nil();
-            match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
-                Ok(val) => {
-                    id = val;
-                }
-                Err(err) => {
-                    assert!(false, "Error: {err:?}");
-                }
-            };
+            let id = test_data::song_id().await.unwrap();
 
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
 
@@ -1901,16 +1898,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let mut id = uuid::Uuid::nil();
-
-            match uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed") {
-                Ok(val) => {
-                    id = val;
-                }
-                Err(err) => {
-                    assert!(false, "Error: {err:?}");
-                }
-            };
+            let id = test_data::coverart_id().await.unwrap();
 
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETCOVERART);
 
@@ -1935,6 +1923,72 @@ mod tests {
 
                     let coverart = resp.data[0].clone();
                     assert_eq!(id, coverart.id, "Id does not match {coverart:?}");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
+
+        pub mod test_data {
+            pub async fn song_id() -> Result<uuid::Uuid, uuid::Error> {
+                uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9")
+            }
+
+            pub async fn coverart_id() -> Result<uuid::Uuid, uuid::Error> {
+                uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed")
+            }
+        }
+
+        #[tokio::test]
+        async fn test_stream_song() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            let id = test_data::song_id().await.unwrap();
+
+            let my_url = crate::callers::endpoints::STREAMSONG;
+            let last = my_url.len() - 5;
+            let uri = format!("{}/{id}", &my_url[0..last]);
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(&uri)
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let e = response.into_body();
+                    let mut data = e.into_data_stream();
+                    while let Some(chunk) = data.next().await {
+                        match chunk {
+                            Ok(_data) => {}
+                            Err(err) => {
+                                assert!(false, "Error: {err:?}");
+                            }
+                        }
+                    }
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");
