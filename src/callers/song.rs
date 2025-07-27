@@ -1036,7 +1036,7 @@ pub mod endpoint {
                     Err(_) => return Err((axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Could not read file")),
                 };
 
-                let mime = mime_guess::from_path(&path).first_or_octet_stream();
+                let mime = mime_guess::from_path(path).first_or_octet_stream();
                 let stream = tokio_util::io::ReaderStream::new(file);
 
                 let rep = axum::response::Response::builder()
@@ -1049,7 +1049,7 @@ pub mod endpoint {
                 Ok(rep)
             }
             Err(_err) => {
-                return Err((axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Could not find file"));
+                Err((axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Could not find file"))
             }
         }
     }
