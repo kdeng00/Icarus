@@ -774,11 +774,6 @@ pub mod endpoint {
         }
     }
 
-    pub async fn download_song()
-        -> (axum::http::StatusCode, axum::response::Response) {
-            (axum::http::StatusCode::OK, axum::response::Response::default())
-    }
-
     pub async fn update_song_queue_status(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::update_status::Request>,
@@ -1064,4 +1059,29 @@ pub mod endpoint {
             )),
         }
     }
+
+    pub async fn download_song(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>)
+        -> (axum::http::StatusCode, axum::response::Response) {
+            match super::song_db::get_song(&pool, &id).await {
+                Ok(song) => match song.to_data() {
+                    Ok(data) => {
+                        let bytes = axum::body::Bytes::from(data);
+                        let mut response = bytes.into_response();
+                        let headers = response.headers_mut();
+                        headers.insert(axum::http::header::CONTENT_TYPE, "audio/flac".parse().unwrap());
+                        headers.insert(axum::http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{id}.flac\"").parse().unwrap());
+
+                        (axum::http::StatusCode::OK, response)
+                    }
+                    Err(_err) => {
+                        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::Response::default())
+                    }
+                }
+                Err(_err) => {
+                    (axum::http::StatusCode::NOT_FOUND, axum::response::Response::default())
+                }
+            }
+    }
+
 }
