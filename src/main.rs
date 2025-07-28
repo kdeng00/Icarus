@@ -2062,5 +2062,60 @@ mod tests {
 
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
+
+        #[tokio::test]
+        async fn test_download_coverart() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            let id = test_data::coverart_id().await.unwrap();
+
+            let uri =
+                super::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id).await;
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(&uri)
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let e = response.into_body();
+                    let mut data = e.into_data_stream();
+                    while let Some(chunk) = data.next().await {
+                        match chunk {
+                            Ok(_data) => {}
+                            Err(err) => {
+                                assert!(false, "Error: {err:?}");
+                            }
+                        }
+                    }
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
     }
 }
