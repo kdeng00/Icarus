@@ -646,4 +646,38 @@ pub mod endpoint {
             }
         }
     }
+
+    pub async fn download_coverart(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>) ->
+                                       (axum::http::StatusCode, axum::response::Response) {
+
+        match super::cov_db::get_coverart(&pool, &id).await {
+            Ok(coverart) => match coverart.to_data() {
+                Ok(data) => {
+                    let bytes = axum::body::Bytes::from(data);
+                    let mut response = bytes.into_response();
+                    let headers = response.headers_mut();
+                    // TODO: Address hard coding
+                    headers.insert(
+                        axum::http::header::CONTENT_TYPE,
+                        "audio/jpg".parse().unwrap(),
+                    );
+                    headers.insert(
+                        axum::http::header::CONTENT_DISPOSITION,
+                        format!("attachment; filename=\"{id}.jpg\"")
+                            .parse()
+                            .unwrap(),
+                    );
+
+                    (axum::http::StatusCode::OK, response)
+                }
+                Err(_err) => {
+                    (axum::http::StatusCode::NOT_FOUND, axum::response::Response::default())
+                }
+            }
+            Err(_err) => {
+                (axum::http::StatusCode::NOT_FOUND, axum::response::Response::default())
+            }
+        }
+    }
 }
