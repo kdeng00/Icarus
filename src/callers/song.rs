@@ -774,6 +774,11 @@ pub mod endpoint {
         }
     }
 
+    pub async fn download_song()
+        -> (axum::http::StatusCode, axum::response::Response) {
+            (axum::http::StatusCode::OK, axum::response::Response::default())
+    }
+
     pub async fn update_song_queue_status(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::update_status::Request>,
