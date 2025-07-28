@@ -127,6 +127,7 @@ pub mod init {
                 crate::callers::endpoints::STREAMSONG,
                 get(crate::callers::song::endpoint::stream_song),
             )
+            .route(crate::callers::endpoints::DOWNLOADSONG, get(crate::callers::song::endpoint::download_song))
     }
 
     pub async fn app() -> axum::Router {

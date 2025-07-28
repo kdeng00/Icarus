@@ -18,6 +18,7 @@ pub mod endpoints {
     pub const CREATESONG: &str = "/api/v2/song";
     pub const GETSONGS: &str = "/api/v2/song";
     pub const STREAMSONG: &str = "/api/v2/song/stream/{id}";
+    pub const DOWNLOADSONG: &str = "/api/v2/song/download/{id}";
     pub const CREATECOVERART: &str = "/api/v2/coverart";
     pub const GETCOVERART: &str = "/api/v2/coverart";
 }
