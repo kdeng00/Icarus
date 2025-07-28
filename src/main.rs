@@ -127,7 +127,10 @@ pub mod init {
                 crate::callers::endpoints::STREAMSONG,
                 get(crate::callers::song::endpoint::stream_song),
             )
-            .route(crate::callers::endpoints::DOWNLOADSONG, get(crate::callers::song::endpoint::download_song))
+            .route(
+                crate::callers::endpoints::DOWNLOADSONG,
+                get(crate::callers::song::endpoint::download_song),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -656,8 +659,8 @@ mod tests {
     }
 
     pub async fn format_url_with_value(endpoint: &str, value: &uuid::Uuid) -> String {
-            let last = endpoint.len() - 5;
-            format!("{}/{value}", &endpoint[0..last])
+        let last = endpoint.len() - 5;
+        format!("{}/{value}", &endpoint[0..last])
     }
 
     // TODO: Change the name of the function to be more expressive and put into it's own module
@@ -2025,7 +2028,8 @@ mod tests {
 
             let id = test_data::song_id().await.unwrap();
 
-            let uri = super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
+            let uri =
+                super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
 
             match app
                 .clone()
