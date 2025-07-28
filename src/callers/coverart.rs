@@ -647,10 +647,10 @@ pub mod endpoint {
         }
     }
 
-    pub async fn download_coverart(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>) ->
-                                       (axum::http::StatusCode, axum::response::Response) {
-
+    pub async fn download_coverart(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::cov_db::get_coverart(&pool, &id).await {
             Ok(coverart) => match coverart.to_data() {
                 Ok(data) => {
@@ -671,13 +671,15 @@ pub mod endpoint {
 
                     (axum::http::StatusCode::OK, response)
                 }
-                Err(_err) => {
-                    (axum::http::StatusCode::NOT_FOUND, axum::response::Response::default())
-                }
-            }
-            Err(_err) => {
-                (axum::http::StatusCode::NOT_FOUND, axum::response::Response::default())
-            }
+                Err(_err) => (
+                    axum::http::StatusCode::NOT_FOUND,
+                    axum::response::Response::default(),
+                ),
+            },
+            Err(_err) => (
+                axum::http::StatusCode::NOT_FOUND,
+                axum::response::Response::default(),
+            ),
         }
     }
 }

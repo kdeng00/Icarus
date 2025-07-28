@@ -123,7 +123,10 @@ pub mod init {
                 crate::callers::endpoints::GETCOVERART,
                 get(crate::callers::coverart::endpoint::get_coverart),
             )
-            .route(crate::callers::endpoints::DOWNLOADCOVERART, get(crate::callers::coverart::endpoint::download_coverart))
+            .route(
+                crate::callers::endpoints::DOWNLOADCOVERART,
+                get(crate::callers::coverart::endpoint::download_coverart),
+            )
             .route(
                 crate::callers::endpoints::STREAMSONG,
                 get(crate::callers::song::endpoint::stream_song),
@@ -2085,7 +2088,8 @@ mod tests {
             let id = test_data::coverart_id().await.unwrap();
 
             let uri =
-                super::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id).await;
+                super::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id)
+                    .await;
 
             match app
                 .clone()
