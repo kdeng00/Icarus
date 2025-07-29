@@ -173,6 +173,14 @@ pub mod response {
             pub data: Vec<icarus_models::song::Song>,
         }
     }
+
+    pub mod delete_song {
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct Response {
+            pub message: String,
+            pub data: Vec<icarus_models::song::Song>
+        }
+    }
 }
 
 // TODO: Might make a distinction between year and date in a song's tag at some point
@@ -255,6 +263,102 @@ pub mod song_db {
         .await
         .map_err(|e| {
             eprintln!("Error querying data: {e}");
+        });
+
+        match result {
+            Ok(row) => {
+                let date_created_time: time::OffsetDateTime = row
+                    .try_get("date_created")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap();
+
+                Ok(icarus_models::song::Song {
+                    id: row
+                        .try_get("id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    title: row
+                        .try_get("title")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    artist: row
+                        .try_get("artist")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    album_artist: row
+                        .try_get("album_artist")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    album: row
+                        .try_get("album")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    genre: row
+                        .try_get("genre")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    year: row
+                        .try_get("year")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    track: row
+                        .try_get("track")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    disc: row
+                        .try_get("disc")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    track_count: row
+                        .try_get("track_count")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    disc_count: row
+                        .try_get("disc_count")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    duration: row
+                        .try_get("duration")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    audio_type: row
+                        .try_get("audio_type")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    filename: row
+                        .try_get("filename")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    directory: row
+                        .try_get("directory")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    date_created: date_created_time.to_string(),
+                    user_id: row
+                        .try_get("user_id")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap(),
+                    data: Vec::new(),
+                })
+            }
+            Err(_) => Err(sqlx::Error::RowNotFound),
+        }
+    }
+
+    pub async fn delete_song(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::song::Song, sqlx::Error> {
+        let result = sqlx::query(
+            // icarus_models::song::Song,
+            r#"
+            DELETE FROM "song"
+            WHERE id = $1
+            RETURNING id, title, artist, album_artist, genre, year, disc, track_count, disc_count, duration, audio_type, date_created, filename, directory, user_id
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error deleting data: {e:?}")
         });
 
         match result {
@@ -1092,6 +1196,40 @@ pub mod endpoint {
                 axum::http::StatusCode::NOT_FOUND,
                 axum::response::Response::default(),
             ),
+        }
+    }
+
+    pub async fn delete_song(axum::Extension(pool): axum::Extension<sqlx::PgPool>, axum::extract::Path(id): axum::extract::Path<uuid::Uuid>)
+    -> (axum::http::StatusCode, axum::Json<super::response::delete_song::Response>) {
+        let mut response = super::response::delete_song::Response::default();
+
+        match super::song_db::get_song(&pool, &id).await {
+            Ok(song) => match song.song_path() {
+                Ok(song_path) => match super::song_db::delete_song(&pool, &id).await {
+                    Ok(deleted_song) => match std::fs::remove_file(song_path) {
+                        Ok(result) => {
+                            response.data.push(deleted_song);
+                            (axum::http::StatusCode::OK, axum::Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                        }
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                    }
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                }
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+            }
         }
     }
 }
