@@ -44,7 +44,7 @@ async fn main() {
 }
 
 pub mod init {
-    use axum::routing::{get, patch, post};
+    use axum::routing::{delete, get, patch, post};
     use std::time::Duration;
     use tower_http::timeout::TimeoutLayer;
 
@@ -135,6 +135,7 @@ pub mod init {
                 crate::callers::endpoints::DOWNLOADSONG,
                 get(crate::callers::song::endpoint::download_song),
             )
+            .route(crate::callers::endpoints::DELETESONG, delete(crate::callers::song::endpoint::delete_song))
     }
 
     pub async fn app() -> axum::Router {
