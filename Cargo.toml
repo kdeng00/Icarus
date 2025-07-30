@@ -6,6 +6,7 @@ rust-version = "1.88"
 
 [dependencies]
 axum = { version = "0.8.4", features = ["multipart"] }
+axum-extra = { version = "0.10.1", features = ["cookie"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = { version = "1.0.140" }
 tower = { version = "0.5.2", features = ["full"] }

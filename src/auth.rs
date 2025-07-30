@@ -1,24 +1,25 @@
-use std::collections::BTreeMap;
-
+// use std::collections::BTreeMap;
+// use std::sync::Arc;
 
 use axum::{
+    // extract::State,
     http::{Request, StatusCode},
     middleware::Next,
-    response::{IntoResponse, Response},
+    response::{IntoResponse},
     Json,
 };
-use josekit::{
-    jwt::{self, JwtPayload},
-    jws::{self, JwsHeader, JwsSigner, JwsVerifier},
-    jwk::Jwk,
-};
+use axum_extra::extract::cookie::CookieJar;
+use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+// use serde_json::{json, Value};
 use thiserror::Error;
-use time::OffsetDateTime;
+// use time::OffsetDateTime;
+
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserClaims {
+    pub aud: String,    // Audience
     pub sub: String,         // Subject (user ID)
     pub exp: i64,            // Expiration time (UTC timestamp)
     pub iat: i64,            // Issued at (UTC timestamp)
@@ -26,8 +27,6 @@ pub struct UserClaims {
     pub roles: Option<Vec<String>>,  // Optional roles
 }
 
-
-// use time::OffsetDateTime;
 
 #[derive(Error, Debug)]
 pub enum JwtError {
@@ -43,71 +42,72 @@ pub enum JwtError {
     InvalidKey,
 }
 
+/*
 pub struct JwtAuth {
     key: Jwk,    // Now properly parameterized
 }
+*/
 
-impl JwtAuth {
-    pub fn new(secret: &str) -> Result<Self, JwtError> {
-        let mut key = Jwk::new("oct");
-        key.set_parameter("k", Some(json!(base64::encode(secret))))
-            .map_err(|_| JwtError::InvalidKey)?;
-        Ok(Self { key })
-    }
 
-    pub fn create_token(&self, claims: &UserClaims) -> Result<String, JwtError> {
-        let mut header = JwsHeader::new();
-        header.set_token_type("JWT");
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    pub status: &'static str,
+    pub message: String,
+}
 
-        let claims_value = serde_json::to_value(claims)
-            .map_err(|_| JwtError::SerializationError)?;
-        let claims_map = claims_value.as_object()
-            .ok_or(JwtError::SerializationError)?
-            .to_owned();
+pub async fn auth<B>(
+    cookie_jar: CookieJar,
+    // State(data): State<Arc<AppState>>,
+    mut req: Request<axum::body::Body>,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
+    let token = cookie_jar
+        .get("token")
+        .map(|cookie| cookie.value().to_string())
+        .or_else(|| {
+            req.headers()
+                .get(axum::http::header::AUTHORIZATION)
+                .and_then(|auth_header| auth_header.to_str().ok())
+                .and_then(|auth_value| {
+                    if auth_value.starts_with("Bearer ") {
+                        Some(auth_value[7..].to_owned())
+                    } else {
+                        None
+                    }
+                })
+        });
 
-        let mut payload = JwtPayload::new();
-        for (k, v) in claims_map {
-            payload.set_claim(&k, Some(v))
-                .map_err(|_| JwtError::TokenCreation)?;
-        }
+    let token = token.ok_or_else(|| {
+        let json_error = ErrorResponse {
+            status: "fail",
+            message: "You are not logged in, please provide token".to_string(),
+        };
+        (StatusCode::UNAUTHORIZED, Json(json_error))
+    })?;
 
-        let signer = jws::HS256.signer_from_jwk(&self.key)
-            .map_err(|_| JwtError::TokenCreation)?;
+    let claims = decode::<UserClaims>(
+        &token,
+        // TODO: Replace with code to get secret from env
+        &DecodingKey::from_secret("my_super_secret".as_ref()),
+        &Validation::default(),
+    )
+    .map_err(|_| {
+        let json_error = ErrorResponse {
+            status: "fail",
+            message: "Invalid token".to_string(),
+        };
+        (StatusCode::UNAUTHORIZED, Json(json_error))
+    })?
+    .claims;
 
-        jwt::encode_with_signer(&payload, &header, &signer)
-            .map_err(|_| JwtError::TokenCreation)
-    }
+    let user_id = uuid::Uuid::parse_str(&claims.sub).map_err(|_| {
+        let json_error = ErrorResponse {
+            status: "fail",
+            message: "Invalid token".to_string(),
+        };
+        (StatusCode::UNAUTHORIZED, Json(json_error))
+    })?;
 
-    pub fn verify_token(&self, token: &str) -> Result<UserClaims, JwtError> {
-        let verifier = jws::HS256.verifier_from_jwk(&self.key)
-            .map_err(|_| JwtError::TokenVerification)?;
-
-        let (payload, _) = jwt::decode_with_verifier(token, &verifier)
-            .map_err(|_| JwtError::InvalidToken)?;
-
-        // Convert payload to JSON value
-        let mut claims_value = json!({});
-        if let Some(Value::Object(map)) = claims_value.as_object_mut() {
-            for key in payload.claim_names() {
-                if let Some(value) = payload.claim(key) {
-                    map.insert(key.to_string(), value.clone());
-                }
-            }
-        }
-
-        let claims = serde_json::from_value(claims_value)
-            .map_err(|_| JwtError::InvalidToken)?;
-
-        // Check expiration
-        if let Some(Value::Number(exp)) = payload.claim("exp") {
-            if let Some(exp) = exp.as_i64() {
-                let now = OffsetDateTime::now_utc().unix_timestamp();
-                if exp < now {
-                    return Err(JwtError::ExpiredToken);
-                }
-            }
-        }
-
-        Ok(claims)
-    }
+    req.extensions_mut().insert(user_id);
+    Ok(next.run(req).await)
 }
