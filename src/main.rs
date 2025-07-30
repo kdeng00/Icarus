@@ -365,7 +365,7 @@ mod tests {
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/I/Coverart.jpg");
+        let _ = form.add_file("jpg", "tests/I/Coverart-1.jpg");
 
         // Create request
         let content_type = form.content_type();
