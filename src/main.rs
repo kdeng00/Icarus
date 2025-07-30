@@ -49,12 +49,19 @@ pub mod init {
     use std::time::Duration;
     use tower_http::timeout::TimeoutLayer;
 
+    use axum::http::{
+        header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
+        HeaderValue, Method,
+    };
+
     pub async fn routes() -> axum::Router {
         axum::Router::new()
             .route(crate::ROOT, get(crate::root))
             .route(
                 crate::callers::endpoints::QUEUESONG,
-                post(crate::callers::song::endpoint::queue_song),
+                post(crate::callers::song::endpoint::queue_song)
+                // .route_layer(axum::middleware::from_fn_with_state(app_state.clone(), crate::auth::auth)),
+                // .route_layer(axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>)),
             )
             .route(
                 crate::callers::endpoints::QUEUESONG,
@@ -149,11 +156,18 @@ pub mod init {
         // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
+        let cors = tower_http::cors::CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+
         routes()
             .await
             .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)))
+            .layer(cors)
     }
 }
 
