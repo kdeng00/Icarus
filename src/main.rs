@@ -365,7 +365,7 @@ mod tests {
         app: &axum::Router,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let mut form = MultipartForm::default();
-        let _ = form.add_file("jpg", "tests/I/Coverart.jpg");
+        let _ = form.add_file("jpg", "tests/I/Coverart-1.jpg");
 
         // Create request
         let content_type = form.content_type();
@@ -1862,7 +1862,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _, _) = test_data::song_id().await.unwrap();
 
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
 
@@ -1950,8 +1950,29 @@ mod tests {
         }
 
         pub mod test_data {
-            pub async fn song_id() -> Result<uuid::Uuid, uuid::Error> {
-                uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9")
+            pub async fn song_id() -> Result<(uuid::Uuid, String, String, String), uuid::Error> {
+                match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
+                    Ok(id) => Ok((
+                        id,
+                        String::from("tests/I/"),
+                        String::from("track01.flac"),
+                        String::from("tests/I/Coverart-1.jpg"),
+                    )),
+                    Err(err) => Err(err),
+                }
+            }
+
+            pub async fn other_song_id() -> Result<(uuid::Uuid, String, String, String), uuid::Error>
+            {
+                match uuid::Uuid::parse_str("94cf7940-34ff-489f-9124-d0ec90a55af4") {
+                    Ok(id) => Ok((
+                        id,
+                        String::from("tests/I/"),
+                        String::from("track02.flac"),
+                        String::from("tests/I/Coverart-2.jpg"),
+                    )),
+                    Err(err) => Err(err),
+                }
             }
 
             pub async fn coverart_id() -> Result<uuid::Uuid, uuid::Error> {
@@ -1978,7 +1999,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _, _) = test_data::song_id().await.unwrap();
 
             let my_url = crate::callers::endpoints::STREAMSONG;
             let last = my_url.len() - 5;
@@ -2034,7 +2055,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _, _) = test_data::song_id().await.unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
@@ -2126,6 +2147,81 @@ mod tests {
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
 
+        async fn get_test_data(
+            song_directory: &String,
+            song_filename: &String,
+            coverart_path: &String,
+        ) -> Result<(Vec<u8>, Vec<u8>), std::io::Error> {
+            let song = icarus_models::song::Song {
+                directory: song_directory.clone(),
+                filename: song_filename.clone(),
+                ..Default::default()
+            };
+
+            let coverart = icarus_models::coverart::CoverArt {
+                path: coverart_path.clone(),
+                ..Default::default()
+            };
+
+            match song.to_data() {
+                Ok(song_data) => match coverart.to_data() {
+                    Ok(coverart_data) => Ok((song_data, coverart_data)),
+                    Err(err) => Err(err),
+                },
+                Err(err) => Err(err),
+            }
+        }
+
+        async fn save_test_again(
+            song_directory: &String,
+            song_filename: &String,
+            song_data: Vec<u8>,
+            coverart_path: &String,
+            coverart_data: Vec<u8>,
+        ) -> Result<(), std::io::Error> {
+            let song = icarus_models::song::Song {
+                directory: song_directory.clone(),
+                filename: song_filename.clone(),
+                ..Default::default()
+            };
+
+            let coverart = icarus_models::coverart::CoverArt {
+                path: coverart_path.clone(),
+                ..Default::default()
+            };
+
+            use std::io::Write;
+
+            match song.song_path() {
+                Ok(song_path) => {
+                    let song_p = std::path::Path::new(&song_path);
+                    match std::fs::File::create(song_p) {
+                        Ok(mut song_file) => match song_file.write_all(&song_data) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                return Err(err);
+                            }
+                        },
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+
+            let coverart_p = std::path::Path::new(&coverart.path);
+            match std::fs::File::create(coverart_p) {
+                Ok(mut coverart_file) => match coverart_file.write_all(&coverart_data) {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(err),
+                },
+                Err(err) => Err(err),
+            }
+        }
+
         #[tokio::test]
         async fn test_last_delete_song() {
             let tm_pool = super::db_mgr::get_pool().await.unwrap();
@@ -2145,7 +2241,12 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, song_directory, song_filename, coverart_path) =
+                test_data::other_song_id().await.unwrap();
+            let (song_data, coverart_data) =
+                get_test_data(&song_directory, &song_filename, &coverart_path)
+                    .await
+                    .unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
@@ -2174,6 +2275,21 @@ mod tests {
                         "Song Ids do not match {id:?} {:?}",
                         song_and_coverart.song.id
                     );
+
+                    match save_test_again(
+                        &song_directory,
+                        &song_filename,
+                        song_data,
+                        &coverart_path,
+                        coverart_data,
+                    )
+                    .await
+                    {
+                        Ok(_) => {}
+                        Err(err) => {
+                            assert!(false, "Error: {err:?}");
+                        }
+                    }
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");

@@ -762,7 +762,7 @@ dependencies = [
 
 [[package]]
 name = "icarus"
-version = "0.1.99"
+version = "0.1.100"
 dependencies = [
  "axum",
  "common-multipart-rfc7578",
