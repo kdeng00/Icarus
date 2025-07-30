@@ -85,10 +85,12 @@ pub async fn auth<B>(
         (StatusCode::UNAUTHORIZED, Json(json_error))
     })?;
 
+    let secret_key = icarus_envy::environment::get_secret_main_key().await;
+
     let claims = decode::<UserClaims>(
         &token,
         // TODO: Replace with code to get secret from env
-        &DecodingKey::from_secret("my_super_secret".as_ref()),
+        &DecodingKey::from_secret(secret_key.as_ref()),
         &Validation::default(),
     )
     .map_err(|_| {
