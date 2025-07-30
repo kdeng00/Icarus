@@ -68,7 +68,7 @@ jobs:
       env:
         ROOT_DIRECTORY: "/tmp"
         DATABASE_URL: "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}"
-      run: cargo test --verbose
+      run: cargo test --verbose -- --test-threads=1 
     
     - name: Run clippy
       run: cargo clippy -- -D warnings
