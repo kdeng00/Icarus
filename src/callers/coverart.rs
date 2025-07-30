@@ -436,9 +436,9 @@ pub mod cov_db {
             Ok(row) => {
                 Ok(icarus_models::coverart::CoverArt {
                     id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    title: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    path: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    song_id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    title: row.try_get("title").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    path: row.try_get("path").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
+                    song_id: row.try_get("song_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
                     data: Vec::new(),
                 })
             }
