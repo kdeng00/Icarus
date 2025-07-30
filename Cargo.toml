@@ -18,6 +18,7 @@ mime_guess = { version = "2.0.5" }
 uuid = { version = "1.17.0", features = ["v4", "serde"] }
 sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-native-tls", "time", "uuid"] }
 time = { version = "0.3.41", features = ["formatting", "macros", "parsing", "serde"]  }
+jwt = { version = "0.16.0" }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.3.0-devel-f4b71de969-680" }
 icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.5.1-devel-1c5de9dc26-111" }
 icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.3.0-devel-d73fba9899-006" }
