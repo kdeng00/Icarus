@@ -1954,6 +1954,10 @@ mod tests {
                 uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9")
             }
 
+            pub async fn other_song_id() -> Result<uuid::Uuid, uuid::Error> {
+                uuid::Uuid::parse_str("94cf7940-34ff-489f-9124-d0ec90a55af4")
+            }
+
             pub async fn coverart_id() -> Result<uuid::Uuid, uuid::Error> {
                 uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed")
             }
@@ -2145,7 +2149,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let id = test_data::other_song_id().await.unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
