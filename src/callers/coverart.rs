@@ -417,34 +417,45 @@ pub mod cov_db {
         }
     }
 
-    pub async fn delete_coverart(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
+    pub async fn delete_coverart(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
         let result = sqlx::query(
             r#"
             DELETE FROM "coverart"
             WHERE id = $1
             RETURNING id, title, path, song_id
-            "#
-            )
-            .bind(id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error deleting data: {e:?}");
-            });
+            "#,
+        )
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error deleting data: {e:?}");
+        });
 
         match result {
-            Ok(row) => {
-                Ok(icarus_models::coverart::CoverArt {
-                    id: row.try_get("id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    title: row.try_get("title").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    path: row.try_get("path").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    song_id: row.try_get("song_id").map_err(|_e| sqlx::Error::RowNotFound).unwrap(),
-                    data: Vec::new(),
-                })
-            }
-            Err(_err) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Ok(row) => Ok(icarus_models::coverart::CoverArt {
+                id: row
+                    .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                title: row
+                    .try_get("title")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                path: row
+                    .try_get("path")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                song_id: row
+                    .try_get("song_id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                data: Vec::new(),
+            }),
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 }

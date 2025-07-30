@@ -135,7 +135,10 @@ pub mod init {
                 crate::callers::endpoints::DOWNLOADSONG,
                 get(crate::callers::song::endpoint::download_song),
             )
-            .route(crate::callers::endpoints::DELETESONG, delete(crate::callers::song::endpoint::delete_song))
+            .route(
+                crate::callers::endpoints::DELETESONG,
+                delete(crate::callers::song::endpoint::delete_song),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -2159,22 +2162,18 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<crate::callers::song::response::delete_song::Response>(response).await;
+                    let resp = super::get_resp_data::<
+                        crate::callers::song::response::delete_song::Response,
+                    >(response)
+                    .await;
                     assert_eq!(false, resp.data.is_empty(), "Response has no data");
+
                     let song_and_coverart = &resp.data[0];
-                    assert_eq!(id, song_and_coverart.song.id, "Song Ids do not match {id:?} {:?}", song_and_coverart.song.id);
-                    // let e = response.into_body();
-                    // let mut data = e.into_data_stream();
-                    /*
-                    while let Some(chunk) = data.next().await {
-                        match chunk {
-                            Ok(_data) => {}
-                            Err(err) => {
-                                assert!(false, "Error: {err:?}");
-                            }
-                        }
-                    }
-                    */
+                    assert_eq!(
+                        id, song_and_coverart.song.id,
+                        "Song Ids do not match {id:?} {:?}",
+                        song_and_coverart.song.id
+                    );
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");

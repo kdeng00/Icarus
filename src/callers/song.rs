@@ -178,7 +178,7 @@ pub mod response {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct SongAndCoverArt {
             pub song: icarus_models::song::Song,
-            pub coverart: icarus_models::coverart::CoverArt
+            pub coverart: icarus_models::coverart::CoverArt,
         }
 
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
@@ -351,7 +351,10 @@ pub mod song_db {
         }
     }
 
-    pub async fn delete_song(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::song::Song, sqlx::Error> {
+    pub async fn delete_song(
+        pool: &sqlx::PgPool,
+        id: &uuid::Uuid,
+    ) -> Result<icarus_models::song::Song, sqlx::Error> {
         let result = sqlx::query(
             // icarus_models::song::Song,
             r#"
@@ -1205,59 +1208,94 @@ pub mod endpoint {
         }
     }
 
-    pub async fn delete_song(axum::Extension(pool): axum::Extension<sqlx::PgPool>, axum::extract::Path(id): axum::extract::Path<uuid::Uuid>)
-    -> (axum::http::StatusCode, axum::Json<super::response::delete_song::Response>) {
+    pub async fn delete_song(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::delete_song::Response>,
+    ) {
         let mut response = super::response::delete_song::Response::default();
 
         match super::song_db::get_song(&pool, &id).await {
-            Ok(song) => match super::super::coverart::cov_db::get_coverart_with_song_id(&pool, &song.id).await {
-                Ok(coverart) => {
-                    let coverart_path = std::path::Path::new(&coverart.path);
-                    if coverart_path.exists() {
-                        match song.song_path() {
-                            Ok(song_path) => match super::song_db::delete_song(&pool, &song.id).await {
-                                Ok(deleted_song) => match super::super::coverart::cov_db::delete_coverart(&pool, &coverart.id).await {
-                                    Ok(deleted_coverart) => match std::fs::remove_file(song_path) {
-                                        Ok(_) => match std::fs::remove_file(&coverart.path) {
-                                            Ok(_) => {
-                                                response.message = String::from(super::super::response::SUCCESSFUL);
-                                                response.data.push(super::response::delete_song::SongAndCoverArt{ song: deleted_song, coverart: deleted_coverart });
-                                                (axum::http::StatusCode::OK, axum::Json(response))
-                                            }
-                                            Err(err) => {
-                                                response.message = err.to_string();
-                                                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+            Ok(song) => {
+                match super::super::coverart::cov_db::get_coverart_with_song_id(&pool, &song.id)
+                    .await
+                {
+                    Ok(coverart) => {
+                        let coverart_path = std::path::Path::new(&coverart.path);
+                        if coverart_path.exists() {
+                            match song.song_path() {
+                                Ok(song_path) => {
+                                    match super::song_db::delete_song(&pool, &song.id).await {
+                                        Ok(deleted_song) => {
+                                            match super::super::coverart::cov_db::delete_coverart(
+                                                &pool,
+                                                &coverart.id,
+                                            )
+                                            .await
+                                            {
+                                                Ok(deleted_coverart) => {
+                                                    match std::fs::remove_file(song_path) {
+                                                        Ok(_) => match std::fs::remove_file(
+                                                            &coverart.path,
+                                                        ) {
+                                                            Ok(_) => {
+                                                                response.message = String::from(super::super::response::SUCCESSFUL);
+                                                                response.data.push(super::response::delete_song::SongAndCoverArt{ song: deleted_song, coverart: deleted_coverart });
+                                                                (
+                                                                    axum::http::StatusCode::OK,
+                                                                    axum::Json(response),
+                                                                )
+                                                            }
+                                                            Err(err) => {
+                                                                response.message = err.to_string();
+                                                                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                                            }
+                                                        },
+                                                        Err(err) => {
+                                                            response.message = err.to_string();
+                                                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                                        }
+                                                    }
+                                                }
+
+                                                Err(err) => {
+                                                    response.message = err.to_string();
+                                                    (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                                }
                                             }
                                         }
                                         Err(err) => {
                                             response.message = err.to_string();
-                                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                            (
+                                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                                axum::Json(response),
+                                            )
                                         }
-                                    }
-
-                                    Err(err) => {
-                                        response.message = err.to_string();
-                                        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                     }
                                 }
                                 Err(err) => {
-                                        response.message = err.to_string();
-                                        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                    response.message = err.to_string();
+                                    (
+                                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                        axum::Json(response),
+                                    )
                                 }
                             }
-                            Err(err) => {
-                                response.message = err.to_string();
-                                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
-                            }
+                        } else {
+                            response.message =
+                                String::from("Could not locate coverart on the filesystem");
+                            (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            )
                         }
-                    } else {
-                        response.message = String::from("Could not locate coverart on the filesystem");
-                        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                     }
-                }
-                Err(err) => {
-                    response.message = err.to_string();
-                    (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
+                    }
                 }
             }
             Err(err) => {
