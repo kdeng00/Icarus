@@ -1839,7 +1839,7 @@ mod tests {
         let _ = db_mgr::drop_database(&tm_pool, &db_name).await;
     }
 
-    pub mod after_song_queue {
+    pub mod zzz_after_song_queue {
         use futures::StreamExt;
         use tower::ServiceExt;
 
@@ -2127,7 +2127,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn test_delete_song() {
+        async fn test_last_delete_song() {
             let tm_pool = super::db_mgr::get_pool().await.unwrap();
             let db_name = super::db_mgr::generate_db_name().await;
 
