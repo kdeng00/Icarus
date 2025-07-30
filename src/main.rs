@@ -167,64 +167,18 @@ mod auth {
         response::{IntoResponse, Response},
         Json,
     };
-    use jwt::{Algorithm, VerifyWithKey};
 
-    #[derive(Clone, Debug, Serialize, Deserialize)]
+    use time::OffsetDateTime;
+
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct UserClaims {
-        pub sub: String,     // Subject (user ID)
-        pub exp: usize,     // Expiration time
-        // Add any additional claims you need
+        pub sub: String,         // Subject (user ID)
+        pub exp: i64,            // Expiration time (UTC timestamp)
+        pub iat: i64,            // Issued at (UTC timestamp)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub roles: Option<Vec<String>>,  // Optional roles
     }
 
-
-    pub async fn auth_middleware<B>(
-        req: axum::http::Request<B>,
-        next: axum::middleware::Next<B>,
-    ) -> Result<Response, Response> {
-        // Extract token from header
-        let token = extract_token_from_header(req.headers())
-            .ok_or_else(|| (StatusCode::UNAUTHORIZED, "Missing token").into_response())?;
-
-        // Create HMAC key from your secret
-        let key = jwt::Hmac::new("your-secret-key".as_bytes())
-            .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Key error").into_response())?;
-
-        // Verify and decode token
-        let claims: BTreeMap<String, String> = token
-            .verify_with_key(&key)
-            .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token").into_response())?;
-
-        // Convert to your claims struct
-        let user_claims = serde_json::from_value::<UserClaims>(serde_json::to_value(claims).unwrap())
-            .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid claims").into_response())?;
-
-        // Check expiration
-        if user_claims.exp < current_timestamp() {
-            return Err((StatusCode::UNAUTHORIZED, "Token expired").into_response());
-        }
-
-        // Attach claims to request
-        req.extensions_mut().insert(user_claims);
-
-        Ok(next.run(req).await)
-    }
-
-    // Helper to extract token from Authorization header
-    fn extract_token_from_header(headers: &HeaderMap) -> Option<String> {
-        headers
-            .get("Authorization")
-            .and_then(|value| value.to_str().ok())
-            .and_then(|value| value.strip_prefix("Bearer "))
-            .map(|s| s.to_string())
-    }
-
-    // Helper to get current timestamp
-    fn current_timestamp() -> usize {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as usize
-    }
 }
 
 // TODO: Move elsewhere
