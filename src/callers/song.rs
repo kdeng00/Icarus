@@ -176,9 +176,15 @@ pub mod response {
 
     pub mod delete_song {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        pub struct SongAndCoverArt {
+            pub song: icarus_models::song::Song,
+            pub coverart: icarus_models::coverart::CoverArt
+        }
+
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<(icarus_models::song::Song, icarus_models::coverart::CoverArt)>
+            pub data: Vec<SongAndCoverArt>,
         }
     }
 }
@@ -1214,32 +1220,33 @@ pub mod endpoint {
                                     Ok(deleted_coverart) => match std::fs::remove_file(song_path) {
                                         Ok(_) => match std::fs::remove_file(&coverart.path) {
                                             Ok(_) => {
-                                                response.data.push((deleted_song, deleted_coverart));
-                                                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                                response.message = String::from(super::super::response::SUCCESSFUL);
+                                                response.data.push(super::response::delete_song::SongAndCoverArt{ song: deleted_song, coverart: deleted_coverart });
+                                                (axum::http::StatusCode::OK, axum::Json(response))
                                             }
                                             Err(err) => {
-                                                response.message = String::from("Could not locate coverart on the filesystem");
+                                                response.message = err.to_string();
                                                 (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                             }
                                         }
                                         Err(err) => {
-                                            response.message = String::from("Could not locate coverart on the filesystem");
+                                            response.message = err.to_string();
                                             (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                         }
                                     }
 
                                     Err(err) => {
-                                        response.message = String::from("Could not locate coverart on the filesystem");
+                                        response.message = err.to_string();
                                         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                     }
                                 }
                                 Err(err) => {
-                                        response.message = String::from("Could not locate coverart on the filesystem");
+                                        response.message = err.to_string();
                                         (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                 }
                             }
                             Err(err) => {
-                                response.message = String::from("Could not locate coverart on the filesystem");
+                                response.message = err.to_string();
                                 (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                             }
                         }
