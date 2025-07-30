@@ -420,7 +420,7 @@ pub mod cov_db {
     pub async fn delete_coverart(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            DELETE FROM "coverrt"
+            DELETE FROM "coverart"
             WHERE id = $1
             RETURNING id, title, path, song_id
             "#

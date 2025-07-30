@@ -357,7 +357,7 @@ pub mod song_db {
             r#"
             DELETE FROM "song"
             WHERE id = $1
-            RETURNING id, title, artist, album_artist, genre, year, disc, track_count, disc_count, duration, audio_type, date_created, filename, directory, user_id
+            RETURNING id, title, artist, album, album_artist, genre, year, disc, track, track_count, disc_count, duration, audio_type, date_created, filename, directory, user_id
             "#,
         )
         .bind(id)
