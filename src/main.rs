@@ -2145,14 +2145,13 @@ mod tests {
             let id = test_data::song_id().await.unwrap();
 
             let uri =
-                super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
+                super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
 
-            /*
             match app
                 .clone()
                 .oneshot(
                     axum::http::Request::builder()
-                        .method(axum::http::Method::GET)
+                        .method(axum::http::Method::DELETE)
                         .uri(&uri)
                         .body(axum::body::Body::empty())
                         .unwrap(),
@@ -2160,8 +2159,13 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let e = response.into_body();
-                    let mut data = e.into_data_stream();
+                    let resp = super::get_resp_data::<crate::callers::song::response::delete_song::Response>(response).await;
+                    assert_eq!(false, resp.data.is_empty(), "Response has no data");
+                    let song_and_coverart = &resp.data[0];
+                    assert_eq!(id, song_and_coverart.song.id, "Song Ids do not match {id:?} {:?}", song_and_coverart.song.id);
+                    // let e = response.into_body();
+                    // let mut data = e.into_data_stream();
+                    /*
                     while let Some(chunk) = data.next().await {
                         match chunk {
                             Ok(_data) => {}
@@ -2170,12 +2174,12 @@ mod tests {
                             }
                         }
                     }
+                    */
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");
                 }
             }
-            */
 
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
