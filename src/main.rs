@@ -1862,7 +1862,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _) = test_data::song_id().await.unwrap();
 
             let uri = format!("{}?id={id}", crate::callers::endpoints::GETSONGS);
 
@@ -1950,12 +1950,26 @@ mod tests {
         }
 
         pub mod test_data {
-            pub async fn song_id() -> Result<uuid::Uuid, uuid::Error> {
-                uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9")
+            pub async fn song_id() -> Result<(uuid::Uuid, String, String), uuid::Error> {
+                match uuid::Uuid::parse_str("44cf7940-34ff-489f-9124-d0ec90a55af9") {
+                    Ok(id) => {
+                        Ok((id, String::from("tests/I/track01.flac"), String::from("tests/I/Coverart-1.jpg")))
+                    }
+                    Err(err) => {
+                        Err(err)
+                    }
+                }
             }
 
-            pub async fn other_song_id() -> Result<uuid::Uuid, uuid::Error> {
-                uuid::Uuid::parse_str("94cf7940-34ff-489f-9124-d0ec90a55af4")
+            pub async fn other_song_id() -> Result<(uuid::Uuid, String, String), uuid::Error> {
+                match uuid::Uuid::parse_str("94cf7940-34ff-489f-9124-d0ec90a55af4") {
+                    Ok(id) => {
+                        Ok((id, String::from("tests/I/track02.flac"), String::from("tests/I/Coverart-2.jpg")))
+                    }
+                    Err(err) => {
+                        Err(err)
+                    }
+                }
             }
 
             pub async fn coverart_id() -> Result<uuid::Uuid, uuid::Error> {
@@ -1982,7 +1996,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _) = test_data::song_id().await.unwrap();
 
             let my_url = crate::callers::endpoints::STREAMSONG;
             let last = my_url.len() - 5;
@@ -2038,7 +2052,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::song_id().await.unwrap();
+            let (id, _, _) = test_data::song_id().await.unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
@@ -2149,7 +2163,7 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let id = test_data::other_song_id().await.unwrap();
+            let (id, song_path, coverart_path) = test_data::other_song_id().await.unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
