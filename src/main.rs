@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod callers;
 
 pub mod db {
@@ -156,30 +157,6 @@ pub mod init {
     }
 }
 
-mod auth {
-    use std::collections::BTreeMap;
-
-    use serde::{Deserialize, Serialize};
-
-    use axum::{
-        http::{Request, StatusCode},
-        middleware::Next,
-        response::{IntoResponse, Response},
-        Json,
-    };
-
-    use time::OffsetDateTime;
-
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct UserClaims {
-        pub sub: String,         // Subject (user ID)
-        pub exp: i64,            // Expiration time (UTC timestamp)
-        pub iat: i64,            // Issued at (UTC timestamp)
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub roles: Option<Vec<String>>,  // Optional roles
-    }
-
-}
 
 // TODO: Move elsewhere
 fn get_full() -> String {
