@@ -61,7 +61,7 @@ pub mod init {
                 crate::callers::endpoints::QUEUESONG,
                 post(crate::callers::song::endpoint::queue_song)
                 // .route_layer(axum::middleware::from_fn_with_state(app_state.clone(), crate::auth::auth)),
-                // .route_layer(axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>)),
+                .route_layer(axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>)),
             )
             .route(
                 crate::callers::endpoints::QUEUESONG,
