@@ -2,7 +2,6 @@
 // use std::sync::Arc;
 
 use axum::{
-    // extract::State,
     http::{Request, StatusCode},
     middleware::Next,
     response::{IntoResponse},
@@ -64,12 +63,6 @@ pub enum JwtError {
     InvalidKey,
 }
 
-/*
-pub struct JwtAuth {
-    key: Jwk,    // Now properly parameterized
-}
-*/
-
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
@@ -79,8 +72,7 @@ pub struct ErrorResponse {
 
 pub async fn auth<B>(
     cookie_jar: CookieJar,
-    // State(data): State<Arc<AppState>>,
-    mut req: Request<axum::body::Body>,
+    req: Request<axum::body::Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     println!("Cookie: {cookie_jar:?}");
@@ -94,11 +86,7 @@ pub async fn auth<B>(
                 .and_then(|auth_header| auth_header.to_str().ok())
                 .and_then(|auth_value| {
                     println!("Auth value: {auth_value:?}");
-                    if let Some(stripped) = auth_value.strip_prefix("Bearer ") {
-                        Some(String::from(stripped))
-                    } else {
-                        None
-                    }
+                    auth_value.strip_prefix("Bearer ").map(String::from)
                 })
         });
 
@@ -132,16 +120,5 @@ pub async fn auth<B>(
 
     println!("Claims: {claims:?}");
 
-    /*
-    let user_id = uuid::Uuid::parse_str(&claims.sub).map_err(|_| {
-        let json_error = ErrorResponse {
-            status: "fail",
-            message: "Invalid token".to_string(),
-        };
-        (StatusCode::UNAUTHORIZED, Json(json_error))
-    })?;
-    */
-
-    // req.extensions_mut().insert(user_id);
     Ok(next.run(req).await)
 }
