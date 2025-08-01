@@ -2,18 +2,17 @@
 // use std::sync::Arc;
 
 use axum::{
+    Json,
     http::{Request, StatusCode},
     middleware::Next,
-    response::{IntoResponse},
-    Json,
+    response::IntoResponse,
 };
 use axum_extra::extract::cookie::CookieJar;
-use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
 // use serde_json::{json, Value};
 use thiserror::Error;
 // use time::OffsetDateTime;
-
 
 fn deserialize_i64_from_f64<'de, D>(deserializer: D) -> Result<i64, D::Error>
 where
@@ -36,18 +35,17 @@ where
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserClaims {
     pub iss: String,
-    pub aud: String,    // Audience
-    pub sub: String,         // Subject (user ID)
+    pub aud: String, // Audience
+    pub sub: String, // Subject (user ID)
     #[serde(deserialize_with = "deserialize_i64_from_f64")]
-    pub exp: i64,            // Expiration time (UTC timestamp)
+    pub exp: i64, // Expiration time (UTC timestamp)
     #[serde(deserialize_with = "deserialize_i64_from_f64")]
-    pub iat: i64,            // Issued at (UTC timestamp)
+    pub iat: i64, // Issued at (UTC timestamp)
     // pub azp: String,
     // pub gty: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub roles: Option<Vec<String>>,  // Optional roles
+    pub roles: Option<Vec<String>>, // Optional roles
 }
-
 
 #[derive(Error, Debug)]
 pub enum JwtError {
@@ -62,7 +60,6 @@ pub enum JwtError {
     #[error("Invalid key")]
     InvalidKey,
 }
-
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
