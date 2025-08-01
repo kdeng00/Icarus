@@ -291,6 +291,38 @@ mod tests {
         }
     }
 
+    pub fn token_fields() -> (String, String, String) {
+        (String::from("What a twist!"), String::from("icarus_test"), String::from("icarus"))
+    }
+
+    pub async fn test_token() -> Result<String, josekit::JoseError> {
+        let key: String = icarus_envy::environment::get_secret_main_key().await;
+        let (message, issuer, audience) = token_fields();
+
+        match icarus_models::token::create_token(&key, &message, &issuer, &audience) {
+            Ok((access_token, _some_time)) => {
+                Ok(access_token)
+            }
+            Err(err) => {
+                Err(err)
+            }
+        }
+    }
+
+    pub async fn bearer_auth() -> String {
+        let token  = match test_token().await {
+            Ok(access_token) => {
+                access_token
+            }
+            Err(err) => {
+                assert!(false, "Error: {err:?}");
+                String::new()
+            }
+        };
+
+        format!("Bearer {token}")
+    }
+
     // TODO: Put the *_req() functions in their own module
     async fn song_queue_req(
         app: &axum::Router,
@@ -299,6 +331,7 @@ mod tests {
         let mut form = MultipartForm::default();
         let _ = form.add_file("flac", "tests/I/track01.flac");
 
+
         // Create request
         let content_type = form.content_type();
         let body = MultipartBody::from(form);
@@ -306,6 +339,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, content_type)
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
         app.clone().oneshot(req).await
@@ -325,6 +359,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUESONGLINKUSERID)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -338,6 +373,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(crate::callers::endpoints::NEXTQUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
         app.clone().oneshot(fetch_req).await
@@ -353,6 +389,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -371,6 +408,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "audio/flac")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -391,6 +429,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUECOVERART)
             .header(axum::http::header::CONTENT_TYPE, content_type)
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
 
@@ -408,6 +447,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUEMETADATA)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -428,6 +468,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -447,6 +488,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::CREATECOVERART)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
         app.clone().oneshot(req).await
@@ -463,6 +505,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::CREATESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -482,6 +525,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -502,6 +546,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -966,6 +1011,7 @@ mod tests {
                                         .method(axum::http::Method::PATCH)
                                         .uri(uri)
                                         .header(axum::http::header::CONTENT_TYPE, content_type)
+                                        .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                         .body(axum::body::Body::from_stream(body))
                                         .unwrap(),
                                 )
@@ -1428,6 +1474,7 @@ mod tests {
                                             .method(axum::http::Method::GET)
                                             .uri(uri)
                                             .header(axum::http::header::CONTENT_TYPE, "image/jpeg")
+                                            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                             .body(axum::body::Body::empty())
                                             .unwrap(),
                                     )
@@ -1696,6 +1743,7 @@ mod tests {
                                     .method(axum::http::Method::PATCH)
                                     .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
                                     .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                     .body(axum::body::Body::from(payload.to_string()))
                                     .unwrap(),
                             )
@@ -1816,6 +1864,7 @@ mod tests {
                                                 axum::http::header::CONTENT_TYPE,
                                                 "application/json",
                                             )
+                                            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                             .body(axum::body::Body::from(payload.to_string()))
                                             .unwrap(),
                                     )
@@ -1889,6 +1938,7 @@ mod tests {
                         .method(axum::http::Method::GET)
                         .uri(uri)
                         .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -1942,6 +1992,7 @@ mod tests {
                         .method(axum::http::Method::GET)
                         .uri(uri)
                         .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -1994,6 +2045,7 @@ mod tests {
             pub async fn coverart_id() -> Result<uuid::Uuid, uuid::Error> {
                 uuid::Uuid::parse_str("996122cd-5ae9-4013-9934-60768d3006ed")
             }
+
         }
 
         #[tokio::test]
@@ -2027,6 +2079,7 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2082,6 +2135,7 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2138,6 +2192,7 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2273,6 +2328,7 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::DELETE)
                         .uri(&uri)
+                        .header(axum::http::header::AUTHORIZATION, super::bearer_auth().await)
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
