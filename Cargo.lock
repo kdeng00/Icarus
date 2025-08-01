@@ -866,9 +866,10 @@ dependencies = [
 
 [[package]]
 name = "icarus_models"
-version = "0.5.1"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.1-devel-1c5de9dc26-111#1c5de9dc26099ac5f21e1dc7a1f7d0dbb892b34b"
+version = "0.5.2"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.2-devel-d3251f935e-111#d3251f935e76caa110727203d910ee0683a668a0"
 dependencies = [
+ "josekit",
  "rand 0.9.1",
  "serde",
  "serde_json",
