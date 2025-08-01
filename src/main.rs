@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod callers;
 
 pub mod db {
@@ -48,96 +49,146 @@ pub mod init {
     use std::time::Duration;
     use tower_http::timeout::TimeoutLayer;
 
+    use axum::http::{
+        HeaderValue, Method,
+        header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
+    };
+
     pub async fn routes() -> axum::Router {
         axum::Router::new()
             .route(crate::ROOT, get(crate::root))
             .route(
                 crate::callers::endpoints::QUEUESONG,
-                post(crate::callers::song::endpoint::queue_song),
+                post(crate::callers::song::endpoint::queue_song).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUESONG,
-                patch(crate::callers::song::endpoint::update_song_queue_status),
+                patch(crate::callers::song::endpoint::update_song_queue_status).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUESONGLINKUSERID,
-                patch(crate::callers::song::endpoint::link_user_id),
+                patch(crate::callers::song::endpoint::link_user_id).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUESONGDATA,
-                get(crate::callers::song::endpoint::download_flac),
+                get(crate::callers::song::endpoint::download_flac).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::NEXTQUEUESONG,
-                get(crate::callers::song::endpoint::fetch_queue_song),
+                get(crate::callers::song::endpoint::fetch_queue_song).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUESONGUPDATE,
-                patch(crate::callers::song::endpoint::update_song_queue),
+                patch(crate::callers::song::endpoint::update_song_queue).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUESONGDATAWIPE,
-                patch(crate::callers::song::endpoint::wipe_data_from_song_queue),
+                patch(crate::callers::song::endpoint::wipe_data_from_song_queue).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
-                post(crate::callers::metadata::endpoint::queue_metadata),
+                post(crate::callers::metadata::endpoint::queue_metadata).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
-                get(crate::callers::metadata::endpoint::fetch_metadata),
+                get(crate::callers::metadata::endpoint::fetch_metadata).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERART,
-                post(crate::callers::coverart::endpoint::queue),
+                post(crate::callers::coverart::endpoint::queue).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERARTDATA,
-                get(crate::callers::coverart::endpoint::fetch_coverart_with_data),
+                get(crate::callers::coverart::endpoint::fetch_coverart_with_data).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERART,
-                get(crate::callers::coverart::endpoint::fetch_coverart_no_data),
+                get(crate::callers::coverart::endpoint::fetch_coverart_no_data).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERARTLINK,
-                patch(crate::callers::coverart::endpoint::link),
+                patch(crate::callers::coverart::endpoint::link).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERARTDATAWIPE,
-                patch(crate::callers::coverart::endpoint::wipe_data_from_coverart_queue),
+                patch(crate::callers::coverart::endpoint::wipe_data_from_coverart_queue)
+                    .route_layer(axum::middleware::from_fn(
+                        crate::auth::auth::<axum::body::Body>,
+                    )),
             )
             .route(
                 crate::callers::endpoints::CREATESONG,
-                post(crate::callers::song::endpoint::create_metadata),
+                post(crate::callers::song::endpoint::create_metadata).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::CREATECOVERART,
-                post(crate::callers::coverart::endpoint::create_coverart),
+                post(crate::callers::coverart::endpoint::create_coverart).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::GETSONGS,
-                get(crate::callers::song::endpoint::get_songs),
+                get(crate::callers::song::endpoint::get_songs).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::GETCOVERART,
-                get(crate::callers::coverart::endpoint::get_coverart),
+                get(crate::callers::coverart::endpoint::get_coverart).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::DOWNLOADCOVERART,
-                get(crate::callers::coverart::endpoint::download_coverart),
+                get(crate::callers::coverart::endpoint::download_coverart).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::STREAMSONG,
-                get(crate::callers::song::endpoint::stream_song),
+                get(crate::callers::song::endpoint::stream_song).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::DOWNLOADSONG,
-                get(crate::callers::song::endpoint::download_song),
+                get(crate::callers::song::endpoint::download_song).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
             .route(
                 crate::callers::endpoints::DELETESONG,
-                delete(crate::callers::song::endpoint::delete_song),
+                delete(crate::callers::song::endpoint::delete_song).route_layer(
+                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+                ),
             )
     }
 
@@ -148,11 +199,18 @@ pub mod init {
         // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
+        let cors = tower_http::cors::CorsLayer::new()
+            .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+            .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+            .allow_credentials(true)
+            .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+
         routes()
             .await
             .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)))
+            .layer(cors)
     }
 }
 
@@ -275,6 +333,36 @@ mod tests {
         }
     }
 
+    pub fn token_fields() -> (String, String, String) {
+        (
+            String::from("What a twist!"),
+            String::from("icarus_test"),
+            String::from("icarus"),
+        )
+    }
+
+    pub async fn test_token() -> Result<String, josekit::JoseError> {
+        let key: String = icarus_envy::environment::get_secret_main_key().await;
+        let (message, issuer, audience) = token_fields();
+
+        match icarus_models::token::create_token(&key, &message, &issuer, &audience) {
+            Ok((access_token, _some_time)) => Ok(access_token),
+            Err(err) => Err(err),
+        }
+    }
+
+    pub async fn bearer_auth() -> String {
+        let token = match test_token().await {
+            Ok(access_token) => access_token,
+            Err(err) => {
+                assert!(false, "Error: {err:?}");
+                String::new()
+            }
+        };
+
+        format!("Bearer {token}")
+    }
+
     // TODO: Put the *_req() functions in their own module
     async fn song_queue_req(
         app: &axum::Router,
@@ -290,6 +378,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, content_type)
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
         app.clone().oneshot(req).await
@@ -309,6 +398,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUESONGLINKUSERID)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -322,6 +412,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(crate::callers::endpoints::NEXTQUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
         app.clone().oneshot(fetch_req).await
@@ -337,6 +428,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -355,6 +447,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "audio/flac")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -375,6 +468,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUECOVERART)
             .header(axum::http::header::CONTENT_TYPE, content_type)
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
             .unwrap();
 
@@ -392,6 +486,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::QUEUEMETADATA)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -412,6 +507,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -431,6 +527,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::CREATECOVERART)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
         app.clone().oneshot(req).await
@@ -447,6 +544,7 @@ mod tests {
             .method(axum::http::Method::POST)
             .uri(crate::callers::endpoints::CREATESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -466,6 +564,7 @@ mod tests {
             .method(axum::http::Method::PATCH)
             .uri(crate::callers::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
             .unwrap();
 
@@ -486,6 +585,7 @@ mod tests {
             .method(axum::http::Method::GET)
             .uri(uri)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
+            .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
             .unwrap();
 
@@ -950,6 +1050,10 @@ mod tests {
                                         .method(axum::http::Method::PATCH)
                                         .uri(uri)
                                         .header(axum::http::header::CONTENT_TYPE, content_type)
+                                        .header(
+                                            axum::http::header::AUTHORIZATION,
+                                            bearer_auth().await,
+                                        )
                                         .body(axum::body::Body::from_stream(body))
                                         .unwrap(),
                                 )
@@ -1412,6 +1516,10 @@ mod tests {
                                             .method(axum::http::Method::GET)
                                             .uri(uri)
                                             .header(axum::http::header::CONTENT_TYPE, "image/jpeg")
+                                            .header(
+                                                axum::http::header::AUTHORIZATION,
+                                                bearer_auth().await,
+                                            )
                                             .body(axum::body::Body::empty())
                                             .unwrap(),
                                     )
@@ -1680,6 +1788,7 @@ mod tests {
                                     .method(axum::http::Method::PATCH)
                                     .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
                                     .header(axum::http::header::CONTENT_TYPE, "application/json")
+                                    .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                     .body(axum::body::Body::from(payload.to_string()))
                                     .unwrap(),
                             )
@@ -1800,6 +1909,10 @@ mod tests {
                                                 axum::http::header::CONTENT_TYPE,
                                                 "application/json",
                                             )
+                                            .header(
+                                                axum::http::header::AUTHORIZATION,
+                                                bearer_auth().await,
+                                            )
                                             .body(axum::body::Body::from(payload.to_string()))
                                             .unwrap(),
                                     )
@@ -1873,6 +1986,10 @@ mod tests {
                         .method(axum::http::Method::GET)
                         .uri(uri)
                         .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -1926,6 +2043,10 @@ mod tests {
                         .method(axum::http::Method::GET)
                         .uri(uri)
                         .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2011,6 +2132,10 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2066,6 +2191,10 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2122,6 +2251,10 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::GET)
                         .uri(&uri)
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
@@ -2257,6 +2390,10 @@ mod tests {
                     axum::http::Request::builder()
                         .method(axum::http::Method::DELETE)
                         .uri(&uri)
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
                         .body(axum::body::Body::empty())
                         .unwrap(),
                 )
