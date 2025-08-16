@@ -45,6 +45,7 @@ services:
     # Optional: Mount local code for development (live reload)
     # volumes:
     #  - ./path/to/your/web-api-repo:/app
+
   songparser:
     build:
       context: ../songparser
@@ -54,6 +55,11 @@ services:
     restart: unless-stopped
     env_file:
       - ../songparser/.env
+    depends_on:
+      - api
+      - main_db
+      - auth_api
+      - auth_db
     networks:
       - icarus-network
 
