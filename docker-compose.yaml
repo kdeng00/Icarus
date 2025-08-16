@@ -17,7 +17,6 @@ services:
       main_db:
         condition: service_healthy
     networks:
-      # - main-api-network
       - icarus-network
     restart: unless-stopped # Optional: Restart policy
 
@@ -40,12 +39,12 @@ services:
       auth_db:
         condition: service_healthy
     networks:
-      # - auth-api-network
       - icarus-network
     # Optional: Mount local code for development (live reload)
     # volumes:
     #  - ./path/to/your/web-api-repo:/app
 
+  # --- songparser service ---
   songparser:
     build:
       context: ../songparser
@@ -89,7 +88,6 @@ services:
         start_period: 10s
     restart: always # Optional: Restart policy
     networks:
-      # - main-api-network
       - icarus-network
 
   # --- icarus web auth api db ---
@@ -116,7 +114,6 @@ services:
         start_period: 10s
     restart: always # Optional: Restart policy
     networks:
-      # - auth-api-network
       - icarus-network
 
 # Define the named volume for data persistence
@@ -128,9 +125,5 @@ volumes:
 
 # Define the network (optional, but good practice)
 networks:
-  # main-api-network:
-    # driver: bridge
-  # auth-api-network:
-    # driver: bridge
   icarus-network:
     driver: bridge
