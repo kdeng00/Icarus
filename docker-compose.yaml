@@ -17,7 +17,8 @@ services:
       main_db:
         condition: service_healthy
     networks:
-      - main-api-network
+      # - main-api-network
+      - icarus-network
     restart: unless-stopped # Optional: Restart policy
 
   # --- Web API auth ---
@@ -39,10 +40,23 @@ services:
       auth_db:
         condition: service_healthy
     networks:
-      - auth-api-network
+      # - auth-api-network
+      - icarus-network
     # Optional: Mount local code for development (live reload)
     # volumes:
     #  - ./path/to/your/web-api-repo:/app
+  songparser:
+    build:
+      context: ../songparser
+      ssh: ["default"]
+      dockerfile: Dockerfile
+    container_name: songparser
+    restart: unless-stopped
+    env_file:
+      - ../songparser/.env
+    networks:
+      - icarus-network
+
 
   # PostgreSQL Database Service
   # --- icarus web api db ---
@@ -69,7 +83,8 @@ services:
         start_period: 10s
     restart: always # Optional: Restart policy
     networks:
-      - main-api-network
+      # - main-api-network
+      - icarus-network
 
   # --- icarus web auth api db ---
   auth_db:
@@ -95,7 +110,8 @@ services:
         start_period: 10s
     restart: always # Optional: Restart policy
     networks:
-      - auth-api-network
+      # - auth-api-network
+      - icarus-network
 
 # Define the named volume for data persistence
 volumes:
@@ -106,7 +122,9 @@ volumes:
 
 # Define the network (optional, but good practice)
 networks:
-  main-api-network:
-    driver: bridge
-  auth-api-network:
+  # main-api-network:
+    # driver: bridge
+  # auth-api-network:
+    # driver: bridge
+  icarus-network:
     driver: bridge
