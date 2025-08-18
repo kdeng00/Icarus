@@ -359,7 +359,7 @@ mod tests {
             id: TEST_USER_ID,
         };
 
-        match icarus_models::token::create_token(&key, &message, &issuer, &audience) {
+        match icarus_models::token::create_token(&key, &token_resource, time::Duration::hours(1)) {
             Ok((access_token, _some_time)) => Ok(access_token),
             Err(err) => Err(err),
         }
@@ -621,8 +621,7 @@ mod tests {
                     let song_queue_id = resp.data[0];
                     assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                    let user_id = TEST_USER_ID;
-
+                    let user_id = super::TEST_USER_ID;
 
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
