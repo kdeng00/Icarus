@@ -351,6 +351,109 @@ pub mod song_db {
         }
     }
 
+    pub async fn get_all_songs(pool: &sqlx::PgPool) -> Result<Vec<icarus_models::song::Song>, sqlx::Error> {
+        let result = sqlx::query(
+            r#"
+            SELECT * FROM "song";
+            "#
+            )
+            .fetch_all(pool)
+            .await
+            .map_err(|e| {
+                eprintln!("Error querying data: {e:?}");
+            });
+
+        match result {
+            Ok(rows) => {
+                let mut songs: Vec<icarus_models::song::Song> = Vec::new();
+
+                for row in rows {
+
+                    let date_created_time: time::OffsetDateTime = row
+                        .try_get("date_created")
+                        .map_err(|_e| sqlx::Error::RowNotFound)
+                        .unwrap();
+
+                    let song = icarus_models::song::Song {
+                        id: row
+                            .try_get("id")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        title: row
+                            .try_get("title")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        artist: row
+                            .try_get("artist")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        album_artist: row
+                            .try_get("album_artist")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        album: row
+                            .try_get("album")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        genre: row
+                            .try_get("genre")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        year: row
+                            .try_get("year")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        track: row
+                            .try_get("track")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        disc: row
+                            .try_get("disc")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        track_count: row
+                            .try_get("track_count")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        disc_count: row
+                            .try_get("disc_count")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        duration: row
+                            .try_get("duration")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        audio_type: row
+                            .try_get("audio_type")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        filename: row
+                            .try_get("filename")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        directory: row
+                            .try_get("directory")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        date_created: date_created_time.to_string(),
+                        user_id: row
+                            .try_get("user_id")
+                            .map_err(|_e| sqlx::Error::RowNotFound)
+                            .unwrap(),
+                        data: Vec::new(),
+                    };
+
+                    songs.push(song);
+                }
+
+                Ok(songs)
+            }
+            Err(_err) => {
+                Err(sqlx::Error::RowNotFound)
+            }
+        }
+    }
+
     pub async fn delete_song(
         pool: &sqlx::PgPool,
         id: &uuid::Uuid,
@@ -1122,6 +1225,23 @@ pub mod endpoint {
             None => {
                 response.message = String::from("Invalid parameters");
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
+        }
+    }
+
+    pub async fn get_all_songs(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+        ) -> (axum::http::StatusCode, axum::Json<super::response::get_songs::Response>) {
+        let mut response = super::response::get_songs::Response::default();
+
+        match super::song_db::get_all_songs(&pool).await {
+            Ok(songs) => {
+                response.message = String::from(super::super::response::SUCCESSFUL);
+                response.data = songs;
+                (axum::http::StatusCode::OK, axum::Json(response))
+            }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
             }
         }
     }
