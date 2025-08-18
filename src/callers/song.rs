@@ -351,24 +351,25 @@ pub mod song_db {
         }
     }
 
-    pub async fn get_all_songs(pool: &sqlx::PgPool) -> Result<Vec<icarus_models::song::Song>, sqlx::Error> {
+    pub async fn get_all_songs(
+        pool: &sqlx::PgPool,
+    ) -> Result<Vec<icarus_models::song::Song>, sqlx::Error> {
         let result = sqlx::query(
             r#"
             SELECT * FROM "song";
-            "#
-            )
-            .fetch_all(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error querying data: {e:?}");
-            });
+            "#,
+        )
+        .fetch_all(pool)
+        .await
+        .map_err(|e| {
+            eprintln!("Error querying data: {e:?}");
+        });
 
         match result {
             Ok(rows) => {
                 let mut songs: Vec<icarus_models::song::Song> = Vec::new();
 
                 for row in rows {
-
                     let date_created_time: time::OffsetDateTime = row
                         .try_get("date_created")
                         .map_err(|_e| sqlx::Error::RowNotFound)
@@ -448,9 +449,7 @@ pub mod song_db {
 
                 Ok(songs)
             }
-            Err(_err) => {
-                Err(sqlx::Error::RowNotFound)
-            }
+            Err(_err) => Err(sqlx::Error::RowNotFound),
         }
     }
 
@@ -1229,8 +1228,12 @@ pub mod endpoint {
         }
     }
 
-    pub async fn get_all_songs(axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        ) -> (axum::http::StatusCode, axum::Json<super::response::get_songs::Response>) {
+    pub async fn get_all_songs(
+        axum::Extension(pool): axum::Extension<sqlx::PgPool>,
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::get_songs::Response>,
+    ) {
         let mut response = super::response::get_songs::Response::default();
 
         match super::song_db::get_all_songs(&pool).await {
