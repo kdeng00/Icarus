@@ -341,9 +341,23 @@ mod tests {
         )
     }
 
+    /*
+    pub fn test_user_id() -> uuid::Uuid {
+        uuid::Uuid::new_v4()
+    }
+    */
+    pub const TEST_USER_ID: uuid::Uuid = uuid::uuid!("cc938368-615a-4694-b2ca-6e122fa31c52");
+
     pub async fn test_token() -> Result<String, josekit::JoseError> {
         let key: String = icarus_envy::environment::get_secret_main_key().await;
         let (message, issuer, audience) = token_fields();
+
+        let token_resource = icarus_models::token::TokenResource {
+            message: message,
+            issuer: issuer,
+            audiences: vec![audience],
+            id: TEST_USER_ID,
+        };
 
         match icarus_models::token::create_token(&key, &message, &issuer, &audience) {
             Ok((access_token, _some_time)) => Ok(access_token),
@@ -607,9 +621,8 @@ mod tests {
                     let song_queue_id = resp.data[0];
                     assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                    let user_id = uuid::Uuid::new_v4();
+                    let user_id = TEST_USER_ID;
 
-                    // match super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await {
 
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
@@ -876,7 +889,7 @@ mod tests {
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
                 let song_queue_id = &resp.data[0];
-                let user_id = uuid::Uuid::new_v4();
+                let user_id = TEST_USER_ID;
                 println!("User Id: {user_id:?}");
 
                 match song_queue_link_req(&app, &song_queue_id, &user_id).await {
