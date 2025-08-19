@@ -104,7 +104,7 @@ pub mod request {
 pub mod response {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Default, Deserialize, Serialize)]
+    #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
     pub struct Response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
@@ -856,13 +856,23 @@ mod song_queue {
 
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
-    use utoipa::OpenApi;
-    use utoipa_swagger_ui::SwaggerUi;
 
     use std::io::Write;
 
     use crate::callers::song::song_queue;
 
+    #[utoipa::path(
+        post,
+        path = "/song/queue",
+        request_body(
+            content = Object,
+            description = "Multipart form data for uploading song",
+            content_type = "multipart/form-data"
+            ),
+        responses(
+            (status = 200, description = "Song queued", body = super::response::Response)
+        )
+    )]
     pub async fn queue_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,

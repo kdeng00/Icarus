@@ -1,7 +1,6 @@
 pub mod auth;
 pub mod callers;
 
-
 pub mod db {
 
     use sqlx::postgres::PgPoolOptions;
