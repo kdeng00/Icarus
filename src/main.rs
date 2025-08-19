@@ -2448,5 +2448,58 @@ mod tests {
 
             let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
         }
+
+        #[tokio::test]
+        async fn test_get_all_songs() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(crate::callers::endpoints::GETALLSONGS)
+                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let resp = super::get_resp_data::<
+                        crate::callers::song::response::get_songs::Response,
+                    >(response)
+                    .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let songs = &resp.data;
+                    assert_eq!(2, songs.len(), "Returned song count does not match. Returned song count {:?} song count {}", songs.len(), 2);
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
     }
 }
