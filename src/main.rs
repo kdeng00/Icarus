@@ -190,6 +190,7 @@ pub mod init {
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
+            .route(crate::callers::endpoints::GETALLSONGS, get(crate::callers::song::endpoint::get_all_songs))
     }
 
     pub async fn app() -> axum::Router {
