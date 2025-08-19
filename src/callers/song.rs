@@ -856,6 +856,9 @@ mod song_queue {
 
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
+    use utoipa::OpenApi;
+    use utoipa_swagger_ui::SwaggerUi;
+
     use std::io::Write;
 
     use crate::callers::song::song_queue;

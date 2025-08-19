@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod callers;
 
+
 pub mod db {
 
     use sqlx::postgres::PgPoolOptions;
@@ -28,6 +29,16 @@ pub mod db {
             .expect("Failed to run migrations");
     }
 }
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+    paths(crate::callers::song::endpoint::queue_song),
+    components(schemas(crate::callers::song::response::Response)),
+    tags(
+        (name = "queue song", description = "Start process to upload song by queueing the song")
+    )
+)]
+struct ApiDoc;
 
 #[tokio::main]
 async fn main() {
