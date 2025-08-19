@@ -889,14 +889,15 @@ dependencies = [
 
 [[package]]
 name = "icarus_models"
-version = "0.5.5"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.5#f43bcaa314694c25cea65dbfcfbabc8fc7bf395a"
+version = "0.5.6"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.6-58-13b030bbca-111#13b030bbcabeff9c7a7593929db508dee5db6914"
 dependencies = [
  "josekit",
  "rand 0.9.1",
  "serde",
  "serde_json",
  "time",
+ "utoipa",
  "uuid",
 ]
 
@@ -2576,6 +2577,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+ "uuid",
 ]
 
 [[package]]
