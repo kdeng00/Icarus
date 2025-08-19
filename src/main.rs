@@ -190,7 +190,10 @@ pub mod init {
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
-            .route(crate::callers::endpoints::GETALLSONGS, get(crate::callers::song::endpoint::get_all_songs))
+            .route(
+                crate::callers::endpoints::GETALLSONGS,
+                get(crate::callers::song::endpoint::get_all_songs),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -342,11 +345,6 @@ mod tests {
         )
     }
 
-    /*
-    pub fn test_user_id() -> uuid::Uuid {
-        uuid::Uuid::new_v4()
-    }
-    */
     pub const TEST_USER_ID: uuid::Uuid = uuid::uuid!("cc938368-615a-4694-b2ca-6e122fa31c52");
 
     pub async fn test_token() -> Result<String, josekit::JoseError> {
@@ -2492,7 +2490,13 @@ mod tests {
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
 
                     let songs = &resp.data;
-                    assert_eq!(2, songs.len(), "Returned song count does not match. Returned song count {:?} song count {}", songs.len(), 2);
+                    assert_eq!(
+                        2,
+                        songs.len(),
+                        "Returned song count does not match. Returned song count {:?} song count {}",
+                        songs.len(),
+                        2
+                    );
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");
