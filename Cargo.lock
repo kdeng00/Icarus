@@ -819,7 +819,7 @@ dependencies = [
 
 [[package]]
 name = "icarus"
-version = "0.1.101"
+version = "0.1.102"
 dependencies = [
  "axum",
  "axum-extra",
@@ -849,8 +849,8 @@ dependencies = [
 
 [[package]]
 name = "icarus_envy"
-version = "0.3.0"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.3.0-devel-d73fba9899-006#d73fba9899372b0655a90cb426645930135152da"
+version = "0.3.2"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.3.2#d84a8144aedf02e1b459d67c4023a7e0833f89fd"
 dependencies = [
  "const_format",
  "dotenvy",
@@ -859,15 +859,15 @@ dependencies = [
 [[package]]
 name = "icarus_meta"
 version = "0.3.0"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.3.0-devel-f4b71de969-680#f4b71de9692029a706b1ce82c39f6715c560158e"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.3.0#f87c049ab3139995230485b33038a0425f2e7430"
 dependencies = [
  "lofty",
 ]
 
 [[package]]
 name = "icarus_models"
-version = "0.5.2"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.2-devel-d3251f935e-111#d3251f935e76caa110727203d910ee0683a668a0"
+version = "0.5.5"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.5.5#f43bcaa314694c25cea65dbfcfbabc8fc7bf395a"
 dependencies = [
  "josekit",
  "rand 0.9.1",

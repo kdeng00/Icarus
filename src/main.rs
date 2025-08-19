@@ -190,6 +190,10 @@ pub mod init {
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
+            .route(
+                crate::callers::endpoints::GETALLSONGS,
+                get(crate::callers::song::endpoint::get_all_songs),
+            )
     }
 
     pub async fn app() -> axum::Router {
@@ -341,11 +345,20 @@ mod tests {
         )
     }
 
+    pub const TEST_USER_ID: uuid::Uuid = uuid::uuid!("cc938368-615a-4694-b2ca-6e122fa31c52");
+
     pub async fn test_token() -> Result<String, josekit::JoseError> {
         let key: String = icarus_envy::environment::get_secret_main_key().await;
         let (message, issuer, audience) = token_fields();
 
-        match icarus_models::token::create_token(&key, &message, &issuer, &audience) {
+        let token_resource = icarus_models::token::TokenResource {
+            message: message,
+            issuer: issuer,
+            audiences: vec![audience],
+            id: TEST_USER_ID,
+        };
+
+        match icarus_models::token::create_token(&key, &token_resource, time::Duration::hours(1)) {
             Ok((access_token, _some_time)) => Ok(access_token),
             Err(err) => Err(err),
         }
@@ -607,9 +620,7 @@ mod tests {
                     let song_queue_id = resp.data[0];
                     assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
-                    let user_id = uuid::Uuid::new_v4();
-
-                    // match super::get_resp_data::<crate::callers::song::response::link_user_id::Response>(response).await {
+                    let user_id = super::TEST_USER_ID;
 
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
@@ -876,7 +887,7 @@ mod tests {
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
                 let song_queue_id = &resp.data[0];
-                let user_id = uuid::Uuid::new_v4();
+                let user_id = TEST_USER_ID;
                 println!("User Id: {user_id:?}");
 
                 match song_queue_link_req(&app, &song_queue_id, &user_id).await {
@@ -2427,6 +2438,65 @@ mod tests {
                             assert!(false, "Error: {err:?}");
                         }
                     }
+                }
+                Err(err) => {
+                    assert!(false, "Error: {err:?}");
+                }
+            }
+
+            let _ = super::db_mgr::drop_database(&tm_pool, &db_name).await;
+        }
+
+        #[tokio::test]
+        async fn test_get_all_songs() {
+            let tm_pool = super::db_mgr::get_pool().await.unwrap();
+            let db_name = super::db_mgr::generate_db_name().await;
+
+            match super::db_mgr::create_database(&tm_pool, &db_name).await {
+                Ok(_) => {
+                    println!("Success");
+                }
+                Err(err) => {
+                    assert!(false, "Error: {:?}", err);
+                }
+            }
+
+            let pool = super::db_mgr::connect_to_db(&db_name).await.unwrap();
+            super::db_mgr::migrations(&pool).await;
+
+            let app = super::init::app(pool).await;
+
+            match app
+                .clone()
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(axum::http::Method::GET)
+                        .uri(crate::callers::endpoints::GETALLSONGS)
+                        .header(axum::http::header::CONTENT_TYPE, "application/json")
+                        .header(
+                            axum::http::header::AUTHORIZATION,
+                            super::bearer_auth().await,
+                        )
+                        .body(axum::body::Body::empty())
+                        .unwrap(),
+                )
+                .await
+            {
+                Ok(response) => {
+                    let resp = super::get_resp_data::<
+                        crate::callers::song::response::get_songs::Response,
+                    >(response)
+                    .await;
+                    assert_eq!(false, resp.data.is_empty(), "Should not be empty");
+
+                    let songs = &resp.data;
+                    assert_eq!(
+                        2,
+                        songs.len(),
+                        "Returned song count does not match. Returned song count {:?} song count {}",
+                        songs.len(),
+                        2
+                    );
                 }
                 Err(err) => {
                     assert!(false, "Error: {err:?}");
