@@ -117,9 +117,11 @@ pub mod request {
 pub mod response {
     use serde::{Deserialize, Serialize};
 
+    /// Song queue response
     #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
     pub struct Response {
         pub message: String,
+        /// Id of the queued song
         pub data: Vec<uuid::Uuid>,
     }
 
@@ -867,6 +869,7 @@ mod song_queue {
     }
 }
 
+/// Module for song related endpoints
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
 
@@ -875,6 +878,7 @@ pub mod endpoint {
     use crate::callers::song::song_queue;
 
 
+    /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
         post,
         path = "/song/queue",
