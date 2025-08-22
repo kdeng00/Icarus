@@ -29,15 +29,6 @@ pub mod db {
     }
 }
 
-#[derive(utoipa::OpenApi)]
-#[openapi(
-    paths(crate::callers::song::endpoint::queue_song),
-    components(schemas(crate::callers::song::response::Response)),
-    tags(
-        (name = "queue song", description = "Start process to upload song by queueing the song")
-    )
-)]
-struct ApiDoc;
 
 #[tokio::main]
 async fn main() {
@@ -57,12 +48,23 @@ async fn main() {
 pub mod init {
     use axum::routing::{delete, get, patch, post};
     use std::time::Duration;
+    use utoipa::OpenApi;
     use tower_http::timeout::TimeoutLayer;
 
     use axum::http::{
         HeaderValue, Method,
         header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     };
+
+    #[derive(utoipa::OpenApi)]
+    #[openapi(
+        paths(crate::callers::song::endpoint::queue_song),
+        components(schemas(crate::callers::song::response::Response)),
+        tags(
+            (name = "queue song", description = "Start process to upload song by queueing the song")
+        )
+    )]
+    struct ApiDoc;
 
     pub async fn routes() -> axum::Router {
         axum::Router::new()
@@ -221,6 +223,7 @@ pub mod init {
 
         routes()
             .await
+            .merge(utoipa_swagger_ui::SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
             .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)))

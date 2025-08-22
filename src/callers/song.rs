@@ -7,6 +7,19 @@ pub mod request {
         pub message: String,
     }
 
+    pub mod song_queue {
+        #[derive(utoipa::ToSchema)]
+        pub struct SongQueueRequest {
+            /// Filename
+            pub file: String,
+            #[schema(rename = "type")]
+            /// File type. Should be a file and not a value
+            pub file_type: String,
+            /// Raw data of the flac file
+            pub value: Vec<u8>,
+        }
+    }
+
     pub mod update_status {
         #[derive(Default, serde::Deserialize, serde::Serialize)]
         pub struct Request {
@@ -861,11 +874,12 @@ pub mod endpoint {
 
     use crate::callers::song::song_queue;
 
+
     #[utoipa::path(
         post,
         path = "/song/queue",
         request_body(
-            content = Object,
+            content = super::request::song_queue::SongQueueRequest,
             description = "Multipart form data for uploading song",
             content_type = "multipart/form-data"
             ),
