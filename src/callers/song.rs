@@ -877,7 +877,6 @@ pub mod endpoint {
 
     use crate::callers::song::song_queue;
 
-
     /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
         post,

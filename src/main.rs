@@ -29,7 +29,6 @@ pub mod db {
     }
 }
 
-
 #[tokio::main]
 async fn main() {
     // initialize tracing
@@ -48,8 +47,8 @@ async fn main() {
 pub mod init {
     use axum::routing::{delete, get, patch, post};
     use std::time::Duration;
-    use utoipa::OpenApi;
     use tower_http::timeout::TimeoutLayer;
+    use utoipa::OpenApi;
 
     use axum::http::{
         HeaderValue, Method,
@@ -223,7 +222,10 @@ pub mod init {
 
         routes()
             .await
-            .merge(utoipa_swagger_ui::SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+            .merge(
+                utoipa_swagger_ui::SwaggerUi::new("/swagger-ui")
+                    .url("/api-docs/openapi.json", ApiDoc::openapi()),
+            )
             .layer(axum::Extension(pool))
             .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
             .layer(TimeoutLayer::new(Duration::from_secs(300)))
