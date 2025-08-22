@@ -142,7 +142,7 @@ pub mod response {
             pub new_status: String,
         }
 
-        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<ChangedStatus>,
@@ -196,7 +196,7 @@ pub mod response {
             pub coverart: icarus_models::coverart::CoverArt,
         }
 
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<SongAndCoverArt>,
@@ -881,7 +881,7 @@ pub mod endpoint {
     /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue",
+        path = super::super::endpoints::QUEUESONG,
         request_body(
             content = super::request::song_queue::SongQueueRequest,
             description = "Multipart form data for uploading song",
@@ -941,8 +941,8 @@ pub mod endpoint {
 
     /// Endpoint to link a user id to a queued song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
+        patch,
+        path = super::super::endpoints::QUEUESONGLINKUSERID,
         request_body(
             content = super::request::link_user_id::Request,
             description = "User Id and queued song id",
@@ -984,8 +984,9 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to fetch the next queued song as long as it is available
     #[utoipa::path(
-        post,
+        get,
         path = super::super::endpoints::NEXTQUEUESONG,
         responses(
             (status = 200, description = "Queued song is present and available", body = super::response::fetch_queue_song::Response),
@@ -1014,17 +1015,14 @@ pub mod endpoint {
     }
 
     // TODO: Rename
+    /// Endpoint to download the queued song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        get,
+        path = super::super::endpoints::QUEUESONGDATA,
+        params(("id" = uuid::Uuid, Path, description = "Queued song Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued song linked", body = Vec<u8>),
+            (status = 400, description = "Linkage failed", body = Vec<u8>)
         )
     )]
     pub async fn download_flac(
@@ -1055,17 +1053,18 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to update the status of a queued song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
+        patch,
+        path = super::super::endpoints::QUEUESONG,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::update_status::Request,
+            description = "Update the status of a queued song",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Status has been updated", body = super::response::update_status::Response),
+            (status = 400, description = "Error updating status of queued song", body = super::response::update_status::Response)
         )
     )]
     pub async fn update_song_queue_status(
@@ -1120,17 +1119,20 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to update the queued song data
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
+        patch,
+        path = super::super::endpoints::QUEUESONGUPDATE,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
+            content = super::request::song_queue::SongQueueRequest,
+            description = "Multipart form data for uploading song",
+            content_type = "multipart/form-data"
             ),
+        params(("id" = uuid::Uuid, Path, description = "Queued song Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued song updated", body = super::response::update_song_queue::Response),
+            (status = 400, description = "Error updating queued song", body = super::response::update_song_queue::Response),
+            (status = 404, description = "Queued song not found", body = super::response::update_song_queue::Response)
         )
     )]
     pub async fn update_song_queue(
@@ -1179,17 +1181,19 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to create song
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
+        path = super::super::endpoints::QUEUEMETADATA,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::create_metadata::Request,
+            description = "Data needed to create the song and save it to the filesystem",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Song created", body = super::response::create_metadata::Response),
+            (status = 400, description = "Error", body = super::response::create_metadata::Response),
+            (status = 505, description = "Error creating song", body = super::response::create_metadata::Response)
         )
     )]
     pub async fn create_metadata(
@@ -1275,17 +1279,18 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to wipe the data from a queued song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
+        patch,
+        path = super::super::endpoints::QUEUESONGDATAWIPE,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::wipe_data_from_song_queue::Request,
+            description = "Pass the queued song Id to wipe the data",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued song data wiped", body = super::response::wipe_data_from_song_queue::Response),
+            (status = 404, description = "Queued song cannot be found", body = super::response::wipe_data_from_song_queue::Response)
         )
     )]
     pub async fn wipe_data_from_song_queue(
@@ -1318,19 +1323,17 @@ pub mod endpoint {
         }
     }
 
+    /*
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        get,
+        path = super::super::endpoints::GETSONGS,
+        params(super::request::get_songs::Params),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Songs found", body = super::response::get_songs::Response),
+            (status = 400, description = "Error getting songs", body = super::response::get_songs::Response)
         )
     )]
+        */
     pub async fn get_songs(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>,
@@ -1359,17 +1362,13 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to get all songs
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        get,
+        path = super::super::endpoints::GETALLSONGS,
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Getting all songs", body = super::response::get_songs::Response),
+            (status = 404, description = "Song not found", body = super::response::get_songs::Response)
         )
     )]
     pub async fn get_all_songs(
@@ -1393,17 +1392,14 @@ pub mod endpoint {
         }
     }
 
+    /// Ednpoint to stream song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        get,
+        path = super::super::endpoints::STREAMSONG,
+        params(("id" = uuid::Uuid, Path, description = "Song Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Stream song", body = Vec<u8>),
+            (status = 500, description = "Error streaming song", body = (u64, String))
         )
     )]
     pub async fn stream_song(
@@ -1453,17 +1449,15 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to download song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        get,
+        path = super::super::endpoints::DOWNLOADSONG,
+        params(("id" = uuid::Uuid, Path, description = "Song Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Download song", body = (u64, Vec<u8>)),
+            (status = 404, description = "Song not found", body = (u64, Vec<u8>)),
+            (status = 400, description = "Error downloading song", body = (u64, Vec<u8>))
         )
     )]
     pub async fn download_song(
@@ -1501,17 +1495,15 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to delete the song
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        delete,
+        path = super::super::endpoints::DELETESONG,
+        params(("id" = uuid::Uuid, Path, description = "Song Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Song deleted", body = super::response::delete_song::Response),
+            (status = 404, description = "Song not found", body = super::response::delete_song::Response),
+            (status = 500, description = "Error deleting song", body = super::response::delete_song::Response)
         )
     )]
     pub async fn delete_song(

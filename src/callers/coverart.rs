@@ -6,9 +6,21 @@ pub struct CoverArtQueue {
 }
 
 pub mod request {
+    pub mod queue {
+        #[derive(utoipa::ToSchema)]
+        pub struct Request {
+            /// Filename
+            pub file: String,
+            #[schema(rename = "type")]
+            /// File type. Should be a file and not a value
+            pub file_type: String,
+            /// Raw data of the cover art file
+            pub value: Vec<u8>,
+        }
+    }
 
     pub mod link {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub coverart_id: uuid::Uuid,
             pub song_queue_id: uuid::Uuid,
@@ -16,7 +28,7 @@ pub mod request {
     }
 
     pub mod fetch_coverart_no_data {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
             pub song_queue_id: Option<uuid::Uuid>,
@@ -24,7 +36,7 @@ pub mod request {
     }
 
     pub mod fetch_coverart_with_data {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
             pub song_queue_id: Option<uuid::Uuid>,
@@ -32,7 +44,7 @@ pub mod request {
     }
 
     pub mod create_coverart {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub song_id: uuid::Uuid,
             pub coverart_queue_id: uuid::Uuid,
@@ -40,14 +52,14 @@ pub mod request {
     }
 
     pub mod wipe_data_from_coverart_queue {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub coverart_queue_id: uuid::Uuid,
         }
     }
 
     pub mod get_coverart {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
         }
@@ -55,20 +67,20 @@ pub mod request {
 }
 
 pub mod response {
-    #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+    #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
     pub struct Response {
         pub message: String,
         pub data: Vec<uuid::Uuid>,
     }
 
     pub mod link {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Id {
             pub coverart_id: uuid::Uuid,
             pub song_queue_id: uuid::Uuid,
         }
 
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<Id>,
@@ -76,7 +88,7 @@ pub mod response {
     }
 
     pub mod fetch_coverart_no_data {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<super::super::CoverArtQueue>,
@@ -84,7 +96,7 @@ pub mod response {
     }
 
     pub mod fetch_coverart_with_data {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<Vec<u8>>,
@@ -92,7 +104,7 @@ pub mod response {
     }
 
     pub mod create_coverart {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::coverart::CoverArt>,
@@ -100,7 +112,7 @@ pub mod response {
     }
 
     pub mod wipe_data_from_coverart_queue {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -108,7 +120,7 @@ pub mod response {
     }
 
     pub mod get_coverart {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::coverart::CoverArt>,
@@ -465,17 +477,16 @@ pub mod endpoint {
 
     use axum::response::IntoResponse;
 
+    /// Endpoint to queue cover art
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
+        path = super::super::endpoints::QUEUECOVERART,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
+            content = super::request::queue::Request,
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Successful", body = super::response::Response),
+            (status = 400, description = "Error queueing cover art", body = super::response::Response)
         )
     )]
     pub async fn queue(
@@ -523,17 +534,18 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to link queued cover art
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
+        path = super::super::endpoints::QUEUECOVERARTLINK,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::link::Request,
+            description = "Linking queued cover art to queued song",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued cover art linked", body = super::response::link::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link::Response)
         )
     )]
     pub async fn link(
@@ -563,19 +575,17 @@ pub mod endpoint {
         }
     }
 
+    /*
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        path = super::super::endpoints::QUEUECOVERART,
+        params(super::request::fetch_coverart_no_data::Params),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued song linked", body = super::response::fetch_coverart_no_data::Response),
+            (status = 400, description = "Linkage failed", body = super::response::fetch_coverart_no_data::Response)
         )
     )]
+        */
     pub async fn fetch_coverart_no_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<
@@ -623,17 +633,14 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to fetch the queued cover art data
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
-            ),
+        path = super::super::endpoints::QUEUECOVERARTDATA,
+        params(("id" = uuid::Uuid, Path, description = "Queued cover art Id")),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued cover art data", body = Vec<u8>),
+            (status = 400, description = "Error fetching queued cover art data", body = Vec<u8>)
         )
     )]
     pub async fn fetch_coverart_with_data(
