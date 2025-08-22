@@ -55,10 +55,12 @@ pub mod init {
         header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     };
 
+    use crate::callers::song as song_caller;
+
     #[derive(utoipa::OpenApi)]
     #[openapi(
-        paths(crate::callers::song::endpoint::queue_song),
-        components(schemas(crate::callers::song::response::Response)),
+        paths(song_caller::endpoint::queue_song, song_caller::endpoint::link_user_id),
+        components(schemas(song_caller::response::Response, song_caller::response::link_user_id::Response)),
         tags(
             (name = "queue song", description = "Start process to upload song by queueing the song")
         )

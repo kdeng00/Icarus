@@ -207,6 +207,19 @@ pub mod metadata_queue {
 pub mod endpoint {
     use axum::{Json, http::StatusCode};
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn queue_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         Json(payload): Json<super::request::queue_metadata::Request>,
@@ -233,6 +246,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn fetch_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,

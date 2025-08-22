@@ -465,6 +465,19 @@ pub mod endpoint {
 
     use axum::response::IntoResponse;
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
@@ -510,6 +523,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn link(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::link::Request>,
@@ -537,6 +563,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn fetch_coverart_no_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<
@@ -584,6 +623,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn fetch_coverart_with_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -612,6 +664,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn create_coverart(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::create_coverart::Request>,
@@ -672,6 +737,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn wipe_data_from_coverart_queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::wipe_data_from_coverart_queue::Request>,
@@ -701,6 +779,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn get_coverart(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::get_coverart::Params>,
@@ -729,6 +820,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn download_coverart(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,

@@ -21,7 +21,7 @@ pub mod request {
     }
 
     pub mod update_status {
-        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub id: uuid::Uuid,
             pub status: String,
@@ -29,7 +29,7 @@ pub mod request {
     }
 
     pub mod create_metadata {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub title: String,
             pub artist: String,
@@ -92,14 +92,14 @@ pub mod request {
     }
 
     pub mod wipe_data_from_song_queue {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub song_queue_id: uuid::Uuid,
         }
     }
 
     pub mod link_user_id {
-        #[derive(Debug, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
             pub song_queue_id: uuid::Uuid,
             pub user_id: uuid::Uuid,
@@ -107,7 +107,7 @@ pub mod request {
     }
 
     pub mod get_songs {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
         }
@@ -128,7 +128,7 @@ pub mod response {
     pub mod fetch_queue_song {
         use serde::{Deserialize, Serialize};
 
-        #[derive(Default, Deserialize, Serialize)]
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<crate::callers::song::song_queue::SongQueue>,
@@ -136,7 +136,7 @@ pub mod response {
     }
 
     pub mod update_status {
-        #[derive(serde::Deserialize, serde::Serialize)]
+        #[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct ChangedStatus {
             pub old_status: String,
             pub new_status: String,
@@ -150,7 +150,7 @@ pub mod response {
     }
 
     pub mod update_song_queue {
-        #[derive(Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -158,7 +158,7 @@ pub mod response {
     }
 
     pub mod create_metadata {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::song::Song>,
@@ -166,7 +166,7 @@ pub mod response {
     }
 
     pub mod wipe_data_from_song_queue {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -174,7 +174,7 @@ pub mod response {
     }
 
     pub mod link_user_id {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -182,7 +182,7 @@ pub mod response {
     }
 
     pub mod get_songs {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<icarus_models::song::Song>,
@@ -190,7 +190,7 @@ pub mod response {
     }
 
     pub mod delete_song {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct SongAndCoverArt {
             pub song: icarus_models::song::Song,
             pub coverart: icarus_models::coverart::CoverArt,
@@ -576,7 +576,8 @@ mod song_queue {
         pub id: uuid::Uuid,
     }
 
-    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
+    // TODO: Move this somewhere else at some point
+    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
     pub struct SongQueue {
         pub id: uuid::Uuid,
         pub filename: String,
@@ -880,7 +881,7 @@ pub mod endpoint {
     /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
         post,
-        path = "/song/queue",
+        path = "/api/v2/song/queue",
         request_body(
             content = super::request::song_queue::SongQueueRequest,
             description = "Multipart form data for uploading song",
@@ -938,6 +939,20 @@ pub mod endpoint {
         (StatusCode::OK, Json(response))
     }
 
+    /// Endpoint to link a user id to a queued song
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn link_user_id(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::link_user_id::Request>,
@@ -969,6 +984,14 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = super::super::endpoints::NEXTQUEUESONG,
+        responses(
+            (status = 200, description = "Queued song is present and available", body = super::response::fetch_queue_song::Response),
+            (status = 400, description = "Linkage failed", body = super::response::fetch_queue_song::Response)
+        )
+    )]
     pub async fn fetch_queue_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
     ) -> (
@@ -991,6 +1014,19 @@ pub mod endpoint {
     }
 
     // TODO: Rename
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn download_flac(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -1019,6 +1055,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn update_song_queue_status(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::update_status::Request>,
@@ -1071,6 +1120,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn update_song_queue(
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
@@ -1117,6 +1179,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn create_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::create_metadata::Request>,
@@ -1200,6 +1275,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn wipe_data_from_song_queue(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::wipe_data_from_song_queue::Request>,
@@ -1230,6 +1318,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn get_songs(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>,
@@ -1258,6 +1359,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn get_all_songs(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
     ) -> (
@@ -1279,6 +1393,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn stream_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -1326,6 +1453,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn download_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
@@ -1361,6 +1501,19 @@ pub mod endpoint {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/v2/song/queue/link",
+        request_body(
+            content = super::request::link_user_id::Request,
+            description = "User Id and queued song id",
+            content_type = "application/json"
+            ),
+        responses(
+            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
+            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+        )
+    )]
     pub async fn delete_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
