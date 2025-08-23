@@ -1,10 +1,9 @@
 // TODO: Explicitly make this module target queueing a song's metadata
 pub mod request {
-
     pub mod queue_metadata {
         use serde::{Deserialize, Serialize};
 
-        #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow)]
+        #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow, utoipa::ToSchema)]
         pub struct Request {
             pub song_queue_id: uuid::Uuid,
             pub album: String,
@@ -43,7 +42,13 @@ pub mod request {
 
     pub mod fetch_metadata {
         #[derive(
-            Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, sqlx::Decode,
+            Debug,
+            Default,
+            serde::Deserialize,
+            serde::Serialize,
+            sqlx::FromRow,
+            sqlx::Decode,
+            utoipa::ToSchema,
         )]
         pub struct Params {
             pub id: Option<uuid::Uuid>,
@@ -53,11 +58,10 @@ pub mod request {
 }
 
 pub mod response {
-
     pub mod queue_metadata {
         use serde::{Deserialize, Serialize};
 
-        #[derive(Default, Deserialize, Serialize)]
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -67,7 +71,7 @@ pub mod response {
     pub mod fetch_metadata {
         use serde::{Deserialize, Serialize};
 
-        #[derive(Default, Deserialize, Serialize)]
+        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<crate::callers::metadata::metadata_queue::MetadataQueue>,
@@ -83,7 +87,7 @@ pub mod metadata_queue {
         pub id: uuid::Uuid,
     }
 
-    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow)]
+    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
     pub struct MetadataQueue {
         pub id: uuid::Uuid,
         pub metadata: serde_json::Value,
@@ -204,20 +208,22 @@ pub mod metadata_queue {
     }
 }
 
+/// Module for metadata related endpoints
 pub mod endpoint {
     use axum::{Json, http::StatusCode};
 
+    /// Endpoint to create queued metadata
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
+        path = super::super::endpoints::QUEUEMETADATA,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::queue_metadata::Request,
+            description = "Data required to create queued metadata",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued metadata created", body = super::response::queue_metadata::Response),
+            (status = 400, description = "Error creating queued metadata", body = super::response::queue_metadata::Response)
         )
     )]
     pub async fn queue_metadata(
@@ -234,7 +240,7 @@ pub mod endpoint {
                 response.message = if response.data.is_empty() {
                     String::from("Error")
                 } else {
-                    String::from("Success")
+                    String::from(super::super::response::SUCCESSFUL)
                 };
 
                 (StatusCode::OK, Json(response))
@@ -246,17 +252,17 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to get queued metadata
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
+        get,
+        path = super::super::endpoints::QUEUEMETADATA,
+        params(
+            ("id" = uuid::Uuid, Path, description = "Id of queued metadata"),
+            ("song_queue_id" = uuid::Uuid, Path, description = "Id of queued song")
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Queued metadata retrieved", body = super::response::fetch_metadata::Response),
+            (status = 400, description = "Error retrieving queued metadata", body = super::response::fetch_metadata::Response)
         )
     )]
     pub async fn fetch_metadata(

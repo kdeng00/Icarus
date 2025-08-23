@@ -1,5 +1,5 @@
 // TODO: Separate queue and coverart endpoints
-#[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 pub struct CoverArtQueue {
     pub id: uuid::Uuid,
     pub song_queue_id: uuid::Uuid,
@@ -575,17 +575,19 @@ pub mod endpoint {
         }
     }
 
-    /*
+    /// Endpoint to fetch cover art details
     #[utoipa::path(
-        post,
+        get,
         path = super::super::endpoints::QUEUECOVERART,
-        params(super::request::fetch_coverart_no_data::Params),
+        params(
+            ("id" = uuid::Uuid, Path, description = "Queued cover art Id"),
+            ("song_queue_id" = uuid::Uuid, Path, description = "Queued song Id")
+        ),
         responses(
             (status = 200, description = "Queued song linked", body = super::response::fetch_coverart_no_data::Response),
             (status = 400, description = "Linkage failed", body = super::response::fetch_coverart_no_data::Response)
         )
     )]
-        */
     pub async fn fetch_coverart_no_data(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<
@@ -635,7 +637,7 @@ pub mod endpoint {
 
     /// Endpoint to fetch the queued cover art data
     #[utoipa::path(
-        post,
+        get,
         path = super::super::endpoints::QUEUECOVERARTDATA,
         params(("id" = uuid::Uuid, Path, description = "Queued cover art Id")),
         responses(
@@ -671,17 +673,18 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to create cover art
     #[utoipa::path(
         post,
-        path = "/api/v2/song/queue/link",
+        path = super::super::endpoints::CREATECOVERART,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::create_coverart::Request,
+            description = "Data required to create cover art",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Cover art created", body = super::response::create_coverart::Response),
+            (status = 400, description = "Failure in creating cover art", body = super::response::create_coverart::Response)
         )
     )]
     pub async fn create_coverart(
@@ -744,17 +747,19 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to wipe data from the cover art queue
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
+        patch,
+        path = super::super::endpoints::QUEUECOVERARTDATAWIPE,
         request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
+            content = super::request::wipe_data_from_coverart_queue::Request,
+            description = "Data required to wipe the data from the cover art queue",
             content_type = "application/json"
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Data wiped from cover art queue", body = super::response::wipe_data_from_coverart_queue::Response),
+            (status = 400, description = "Error wiping the data", body = super::response::wipe_data_from_coverart_queue::Response),
+            (status = 404, description = "Cover art not found", body = super::response::wipe_data_from_coverart_queue::Response)
         )
     )]
     pub async fn wipe_data_from_coverart_queue(
@@ -786,17 +791,16 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to get cover art with criteria
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
+        get,
+        path = super::super::endpoints::GETCOVERART,
+        params(
+            ("id" = uuid::Uuid, Path, description = "Cover art Id")
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Cover art retrieved", body = super::response::get_coverart::Response),
+            (status = 400, description = "Error retrieving cover art", body = super::response::get_coverart::Response)
         )
     )]
     pub async fn get_coverart(
@@ -827,17 +831,16 @@ pub mod endpoint {
         }
     }
 
+    /// Endpoint to download cover art
     #[utoipa::path(
-        post,
-        path = "/api/v2/song/queue/link",
-        request_body(
-            content = super::request::link_user_id::Request,
-            description = "User Id and queued song id",
-            content_type = "application/json"
+        get,
+        path = super::super::endpoints::DOWNLOADCOVERART,
+        params(
+            ("id" = uuid::Uuid, Path, description = "Cover art Id")
             ),
         responses(
-            (status = 200, description = "Queued song linked", body = super::response::link_user_id::Response),
-            (status = 400, description = "Linkage failed", body = super::response::link_user_id::Response)
+            (status = 200, description = "Cover art downloading", body = Vec<u8>),
+            (status = 404, description = "Cover art not found", body = Vec<u8>)
         )
     )]
     pub async fn download_coverart(

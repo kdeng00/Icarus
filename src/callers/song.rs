@@ -1323,17 +1323,18 @@ pub mod endpoint {
         }
     }
 
-    /*
+    // Endpoint to get songs
     #[utoipa::path(
         get,
         path = super::super::endpoints::GETSONGS,
-        params(super::request::get_songs::Params),
+        params(
+            ("id" = uuid::Uuid, Path, description = "Id of song")
+            ),
         responses(
             (status = 200, description = "Songs found", body = super::response::get_songs::Response),
             (status = 400, description = "Error getting songs", body = super::response::get_songs::Response)
         )
     )]
-        */
     pub async fn get_songs(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::get_songs::Params>,

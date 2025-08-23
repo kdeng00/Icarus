@@ -55,14 +55,33 @@ pub mod init {
         header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     };
 
+    use crate::callers::coverart as coverart_caller;
+    use crate::callers::metadata as metadata_caller;
     use crate::callers::song as song_caller;
+    use coverart_caller::endpoint as coverart_endpoints;
+    use coverart_caller::response as coverart_responses;
+    use metadata_caller::endpoint as metadata_endpoints;
+    use metadata_caller::response as metadata_responses;
+    use song_caller::endpoint as song_endpoints;
+    use song_caller::response as song_responses;
 
     #[derive(utoipa::OpenApi)]
     #[openapi(
-        paths(song_caller::endpoint::queue_song, song_caller::endpoint::link_user_id),
-        components(schemas(song_caller::response::Response, song_caller::response::link_user_id::Response)),
+        paths(song_endpoints::queue_song, song_endpoints::link_user_id, song_endpoints::fetch_queue_song, song_endpoints::download_flac,
+            song_endpoints::update_song_queue_status, song_endpoints::update_song_queue, song_endpoints::create_metadata, song_endpoints::wipe_data_from_song_queue, song_endpoints::get_songs, song_endpoints::get_all_songs, song_endpoints::stream_song, song_endpoints::download_song,
+            song_endpoints::delete_song, coverart_endpoints::queue, coverart_endpoints::link, coverart_endpoints::fetch_coverart_no_data,
+            coverart_endpoints::fetch_coverart_with_data, coverart_endpoints::create_coverart, coverart_endpoints::wipe_data_from_coverart_queue,
+            coverart_endpoints::get_coverart, coverart_endpoints::download_coverart,
+            metadata_endpoints::queue_metadata, metadata_endpoints::fetch_metadata),
+        components(schemas(song_responses::Response, song_responses::link_user_id::Response, song_responses::fetch_queue_song::Response,
+                song_responses::update_status::Response, song_responses::update_song_queue::Response, song_responses::create_metadata::Response,
+                song_responses::wipe_data_from_song_queue::Response, song_responses::get_songs::Response, song_responses::delete_song::Response,
+                coverart_responses::Response, coverart_responses::link::Response, coverart_responses::fetch_coverart_no_data::Response,
+                coverart_responses::fetch_coverart_with_data::Response, coverart_responses::create_coverart::Response,
+                coverart_responses::wipe_data_from_coverart_queue::Response, coverart_responses::get_coverart::Response,
+                metadata_responses::queue_metadata::Response, metadata_responses::fetch_metadata::Response)),
         tags(
-            (name = "queue song", description = "Start process to upload song by queueing the song")
+            (name = "Icarus API", description = "Web API to manage music")
         )
     )]
     struct ApiDoc;
