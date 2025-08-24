@@ -220,7 +220,7 @@ pub mod endpoint {
             content = super::request::queue_metadata::Request,
             description = "Data required to create queued metadata",
             content_type = "application/json"
-            ),
+        ),
         responses(
             (status = 200, description = "Queued metadata created", body = super::response::queue_metadata::Response),
             (status = 400, description = "Error creating queued metadata", body = super::response::queue_metadata::Response)
