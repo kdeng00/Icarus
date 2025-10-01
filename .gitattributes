@@ -7,4 +7,3 @@
 *.cs linguist-vendored
 *.js linguist-vendored
 *.py linguist-vendored
-# ... etc for any other language files you want to ignore
