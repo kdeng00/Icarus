@@ -1,0 +1,9 @@
+# Override specific file types
+*.cs linguist-language=Rust
+*.sln linguist-documentation
+*.csproj linguist-documentation
+
+# Or vendor all non-Rust files
+*.cs linguist-vendored
+*.js linguist-vendored
+*.py linguist-vendored
