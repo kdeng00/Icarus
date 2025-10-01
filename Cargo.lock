@@ -872,8 +872,8 @@ dependencies = [
 
 [[package]]
 name = "icarus_envy"
-version = "0.3.2"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.3.2#d84a8144aedf02e1b459d67c4023a7e0833f89fd"
+version = "0.3.5"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_envy.git?tag=v0.3.5-main-86c5050c7b-006#86c5050c7bd5164bc6e773fc404195023f7f7aaa"
 dependencies = [
  "const_format",
  "dotenvy",
