@@ -1,0 +1,6 @@
+# Tell GitHub Linguist to ignore C# files for language detection
+*.cs linguist-vendored
+*.cs linguist-documentation
+
+# Explicitly identify Rust as the primary language
+*.rs linguist-language=Rust
