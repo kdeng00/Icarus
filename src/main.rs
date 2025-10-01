@@ -65,6 +65,43 @@ pub mod init {
     use song_caller::endpoint as song_endpoints;
     use song_caller::response as song_responses;
 
+    mod cors {
+        pub async fn configure_cors() -> tower_http::cors::CorsLayer {
+            let cors = tower_http::cors::CorsLayer::new()
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
+                ]) // Specify allowed methods:cite[2]
+                .allow_headers([
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::AUTHORIZATION,
+                ]) // Specify allowed headers:cite[2]
+                .allow_credentials(true) // If you need to send cookies or authentication headers:cite[2]
+                .max_age(std::time::Duration::from_secs(3600)); // Cache the preflight response for 1 hour:cite[2]
+
+            // Dynamically set the allowed origin based on the environment
+            match std::env::var(icarus_envy::keys::APP_ENV).as_deref() {
+                Ok("production") => {
+                    // In production, allow only your specific, trusted origins
+                    let allowed_origins_env = icarus_envy::environment::get_allowed_origins().await;
+                    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origins_env.split(",").map(|s| s.parse::<axum::http::HeaderValue>().unwrap()).collect();
+                    cors.allow_origin(allowed_origins)
+                }
+                _ => {
+                    // Development (default): Allow localhost origins
+                    cors.allow_origin(vec![
+                        "http://localhost:8001".parse().unwrap(),
+                        "http://127.0.0.1:8001".parse().unwrap(),
+                        "http://localhost:4200".parse().unwrap(),
+                        "http://127.0.0.1:4200".parse().unwrap(),
+                    ])
+                }
+            }
+        }
+    }
+
     #[derive(utoipa::OpenApi)]
     #[openapi(
         paths(song_endpoints::queue_song, song_endpoints::link_user_id, song_endpoints::fetch_queue_song, song_endpoints::download_flac,
@@ -226,6 +263,7 @@ pub mod init {
                 crate::callers::endpoints::GETALLSONGS,
                 get(crate::callers::song::endpoint::get_all_songs),
             )
+            .layer(cors::configure_cors().await)
     }
 
     pub async fn app() -> axum::Router {
