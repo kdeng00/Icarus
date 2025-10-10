@@ -92,6 +92,8 @@ pub mod init {
                 _ => {
                     // Development (default): Allow localhost origins
                     cors.allow_origin(vec![
+                        "http://localhost:3000".parse().unwrap(),
+                        "http://127.0.0.1:3000".parse().unwrap(),
                         "http://localhost:8001".parse().unwrap(),
                         "http://127.0.0.1:8001".parse().unwrap(),
                         "http://localhost:4200".parse().unwrap(),
