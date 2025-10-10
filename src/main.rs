@@ -45,15 +45,11 @@ async fn main() {
 }
 
 pub mod init {
-    use axum::routing::{delete, get, patch, post};
     use std::time::Duration;
+
+    use axum::routing::{delete, get, patch, post};
     use tower_http::timeout::TimeoutLayer;
     use utoipa::OpenApi;
-
-    use axum::http::{
-        HeaderValue, Method,
-        header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
-    };
 
     use crate::callers::coverart as coverart_caller;
     use crate::callers::metadata as metadata_caller;
@@ -64,6 +60,46 @@ pub mod init {
     use metadata_caller::response as metadata_responses;
     use song_caller::endpoint as song_endpoints;
     use song_caller::response as song_responses;
+
+    mod cors {
+        pub async fn configure_cors() -> tower_http::cors::CorsLayer {
+            let cors = tower_http::cors::CorsLayer::new()
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
+                ]) // Specify allowed methods:cite[2]
+                .allow_headers([
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::AUTHORIZATION,
+                ]) // Specify allowed headers:cite[2]
+                .allow_credentials(true) // If you need to send cookies or authentication headers:cite[2]
+                .max_age(std::time::Duration::from_secs(3600)); // Cache the preflight response for 1 hour:cite[2]
+
+            // Dynamically set the allowed origin based on the environment
+            match std::env::var(icarus_envy::keys::APP_ENV).as_deref() {
+                Ok("production") => {
+                    // In production, allow only your specific, trusted origins
+                    let allowed_origins_env = icarus_envy::environment::get_allowed_origins().await;
+                    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origins_env
+                        .split(",")
+                        .map(|s| s.parse::<axum::http::HeaderValue>().unwrap())
+                        .collect();
+                    cors.allow_origin(allowed_origins)
+                }
+                _ => {
+                    // Development (default): Allow localhost origins
+                    cors.allow_origin(vec![
+                        "http://localhost:8000".parse().unwrap(),
+                        "http://127.0.0.1:8000".parse().unwrap(),
+                        "http://localhost:4200".parse().unwrap(),
+                        "http://127.0.0.1:4200".parse().unwrap(),
+                    ])
+                }
+            }
+        }
+    }
 
     #[derive(utoipa::OpenApi)]
     #[openapi(
@@ -226,6 +262,7 @@ pub mod init {
                 crate::callers::endpoints::GETALLSONGS,
                 get(crate::callers::song::endpoint::get_all_songs),
             )
+            .layer(cors::configure_cors().await)
     }
 
     pub async fn app() -> axum::Router {
@@ -235,11 +272,7 @@ pub mod init {
         // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
-        let cors = tower_http::cors::CorsLayer::new()
-            .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-            .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-            .allow_credentials(true)
-            .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+        let cors = cors::configure_cors().await;
 
         routes()
             .await
@@ -265,7 +298,7 @@ fn get_address() -> String {
 
 // TODO: Move elsewhere
 fn get_port() -> String {
-    String::from("3000")
+    String::from("8000")
 }
 
 // TODO: Move elsewhere
