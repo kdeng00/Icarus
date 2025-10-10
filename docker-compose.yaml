@@ -10,7 +10,7 @@ services:
     ports:
       # Map host port 8000 to container port 3000 (adjust as needed)
       # Format: "HOST_PORT:CONTAINER_PORT"
-      - "8000:3000"
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
@@ -29,7 +29,7 @@ services:
     container_name: auth_api
     restart: unless-stopped
     ports:
-      - "8001:3000" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
+      - "8001:8001" # Map host port 8000 to container port 8000 (adjust container port based on your app's EXPOSE in Dockerfile)
     # environment:
       # Environment variables your API needs, e.g., database connection
       # Add other necessary environment variables
