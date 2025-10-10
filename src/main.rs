@@ -45,15 +45,11 @@ async fn main() {
 }
 
 pub mod init {
-    use axum::routing::{delete, get, patch, post};
     use std::time::Duration;
+
+    use axum::routing::{delete, get, patch, post};
     use tower_http::timeout::TimeoutLayer;
     use utoipa::OpenApi;
-
-    use axum::http::{
-        HeaderValue, Method,
-        header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
-    };
 
     use crate::callers::coverart as coverart_caller;
     use crate::callers::metadata as metadata_caller;
@@ -95,12 +91,8 @@ pub mod init {
                 _ => {
                     // Development (default): Allow localhost origins
                     cors.allow_origin(vec![
-                        "http://localhost:3000".parse().unwrap(),
-                        "http://127.0.0.1:3000".parse().unwrap(),
                         "http://localhost:8000".parse().unwrap(),
                         "http://127.0.0.1:8000".parse().unwrap(),
-                        "http://localhost:8001".parse().unwrap(),
-                        "http://127.0.0.1:8001".parse().unwrap(),
                         "http://localhost:4200".parse().unwrap(),
                         "http://127.0.0.1:4200".parse().unwrap(),
                     ])
@@ -281,13 +273,6 @@ pub mod init {
         crate::db::migrations(&pool).await;
 
         let cors = cors::configure_cors().await;
-        /*
-        let cors = tower_http::cors::CorsLayer::new()
-            .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-            .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-            .allow_credentials(true)
-            .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
-        */
 
         routes()
             .await
