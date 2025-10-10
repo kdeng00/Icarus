@@ -1,6 +1,3 @@
-// use std::collections::BTreeMap;
-// use std::sync::Arc;
-
 use axum::{
     Json,
     http::{Request, StatusCode},
@@ -10,9 +7,7 @@ use axum::{
 use axum_extra::extract::cookie::CookieJar;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
-// use serde_json::{json, Value};
 use thiserror::Error;
-// use time::OffsetDateTime;
 
 fn deserialize_i64_from_f64<'de, D>(deserializer: D) -> Result<i64, D::Error>
 where
@@ -95,7 +90,7 @@ pub async fn auth<B>(
         (StatusCode::UNAUTHORIZED, Json(json_error))
     })?;
 
-    let secret_key = icarus_envy::environment::get_secret_main_key().await;
+    let secret_key = icarus_envy::environment::get_secret_main_key().await.value;
 
     let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
     validation.set_audience(&["icarus"]); // Must match exactly what's in the token

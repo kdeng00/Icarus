@@ -10,7 +10,7 @@ pub mod db {
     }
 
     pub async fn create_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-        let database_url = icarus_envy::environment::get_db_url().await;
+        let database_url = icarus_envy::environment::get_db_url().await.value;
         println!("Database url: {database_url}");
 
         PgPoolOptions::new()
@@ -82,11 +82,19 @@ pub mod init {
                 Ok("production") => {
                     // In production, allow only your specific, trusted origins
                     let allowed_origins_env = icarus_envy::environment::get_allowed_origins().await;
-                    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origins_env
-                        .split(",")
-                        .map(|s| s.parse::<axum::http::HeaderValue>().unwrap())
-                        .collect();
-                    cors.allow_origin(allowed_origins)
+                    match icarus_envy::utility::delimitize(&allowed_origins_env) {
+                        Ok(alwd) => {
+                            let allowed_origins: Vec<axum::http::HeaderValue> = alwd
+                                .into_iter()
+                                .map(|a| a.parse::<axum::http::HeaderValue>().unwrap())
+                                .collect();
+                            cors.allow_origin(allowed_origins)
+                        }
+                        Err(err) => {
+                            eprintln!("Error getting allowed origins: Error: {err:?}");
+                            std::process::exit(-1);
+                        }
+                    }
                 }
                 _ => {
                     // Development (default): Allow localhost origins
