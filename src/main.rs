@@ -280,11 +280,14 @@ pub mod init {
         // TODO: Look into handling this. Seems redundant to run migrations multiple times
         crate::db::migrations(&pool).await;
 
+        let cors = cors::configure_cors().await;
+        /*
         let cors = tower_http::cors::CorsLayer::new()
             .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
             .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
             .allow_credentials(true)
             .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+        */
 
         routes()
             .await
@@ -310,7 +313,7 @@ fn get_address() -> String {
 
 // TODO: Move elsewhere
 fn get_port() -> String {
-    String::from("3000")
+    String::from("8000")
 }
 
 // TODO: Move elsewhere
