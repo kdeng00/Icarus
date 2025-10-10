@@ -82,12 +82,6 @@ pub mod init {
                 Ok("production") => {
                     // In production, allow only your specific, trusted origins
                     let allowed_origins_env = icarus_envy::environment::get_allowed_origins().await;
-                    /*
-                    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origins_env
-                        .split(",")
-                        .map(|s| s.parse::<axum::http::HeaderValue>().unwrap())
-                        .collect();
-                    */
                     match icarus_envy::utility::delimitize(&allowed_origins_env) {
                         Ok(alwd) => {
                             let allowed_origins: Vec<axum::http::HeaderValue> = alwd
