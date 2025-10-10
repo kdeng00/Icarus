@@ -90,7 +90,10 @@ pub mod init {
                     */
                     match icarus_envy::utility::delimitize(&allowed_origins_env) {
                         Ok(alwd) => {
-                            let allowed_origins: Vec<axum::http::HeaderValue> = alwd.into_iter().map(|a| a.parse::<axum::http::HeaderValue>().unwrap()).collect();
+                            let allowed_origins: Vec<axum::http::HeaderValue> = alwd
+                                .into_iter()
+                                .map(|a| a.parse::<axum::http::HeaderValue>().unwrap())
+                                .collect();
                             cors.allow_origin(allowed_origins)
                         }
                         Err(err) => {
