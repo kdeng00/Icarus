@@ -1230,71 +1230,28 @@ pub mod endpoint {
                     }
 
                     match song.save_to_filesystem() {
-                        Ok(_) => {
-                                match super::song_db::insert(&pool, &song).await {
-                                    Ok((date_created, id)) => {
-                                        song.id = id;
-                                        song.date_created = date_created;
-                                        response.message = String::from("Successful");
-                                        response.data.push(song);
+                        Ok(_) => match super::song_db::insert(&pool, &song).await {
+                            Ok((date_created, id)) => {
+                                song.id = id;
+                                song.date_created = date_created;
+                                response.message = String::from("Successful");
+                                response.data.push(song);
 
-                                        (axum::http::StatusCode::OK, axum::Json(response))
-                                    }
-                                    Err(err) => {
-                                        response.message =
-                                            format!("{:?} song {:?}", err.to_string(), song);
-                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                    }
-                                }
-                        }
+                                (axum::http::StatusCode::OK, axum::Json(response))
+                            }
+                            Err(err) => {
+                                response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        },
                         Err(err) => {
                             response.message = err.to_string();
-                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
-                        }
-                    }
-
-                    // let save_path = dir.join(&song.filename);
-
-                    /*
-                    match std::fs::File::create(&save_path) {
-                        Ok(mut file) => {
-                            file.write_all(&song.data).unwrap();
-
-                            match song.song_path() {
-                                Ok(_) => match super::song_db::insert(&pool, &song).await {
-                                    Ok((date_created, id)) => {
-                                        song.id = id;
-                                        song.date_created = date_created;
-                                        response.message = String::from("Successful");
-                                        response.data.push(song);
-
-                                        (axum::http::StatusCode::OK, axum::Json(response))
-                                    }
-                                    Err(err) => {
-                                        response.message =
-                                            format!("{:?} song {:?}", err.to_string(), song);
-                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                    }
-                                },
-                                Err(err) => {
-                                    response.message = err.to_string();
-                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                }
-                            }
-                        }
-                        Err(err) => {
-                            let song_path = song.song_path();
-                            response.message = format!(
-                                "{err:?} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}",
-                                song.directory, song.filename, save_path, song_path
-                            );
                             (
                                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                                 axum::Json(response),
                             )
                         }
                     }
-                    */
                 }
                 Err(err) => {
                     response.message = err.to_string();
