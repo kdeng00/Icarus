@@ -26,7 +26,7 @@ josekit = { version = "0.10.1" }
 utoipa = { version = "5.4.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 icarus_meta = { git = "ssh://git@git.kundeng.us/phoenix/icarus_meta.git", tag = "v0.3.0" }
-icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.5.6" }
+icarus_models = { git = "ssh://git@git.kundeng.us/phoenix/icarus_models.git", tag = "v0.6.6-65-eac7562b80-111" }
 icarus_envy = { git = "ssh://git@git.kundeng.us/phoenix/icarus_envy.git", tag = "v0.4.1-main-8f0d123db5-006" }
 
 [dev-dependencies]
