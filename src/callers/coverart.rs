@@ -473,8 +473,6 @@ pub mod cov_db {
 }
 
 pub mod endpoint {
-    use std::io::Write;
-
     use axum::response::IntoResponse;
 
     /// Endpoint to queue cover art
@@ -714,23 +712,31 @@ pub mod endpoint {
                         coverart.title = song.album.clone();
                         coverart.data = data;
 
-                        let mut file = std::fs::File::create(&save_path).unwrap();
-                        file.write_all(&coverart.data).unwrap();
+                        match coverart.save_to_filesystem() {
+                            Ok(_) => {
+                                match super::cov_db::create(&pool, &coverart, &song.id).await {
+                                    Ok(id) => {
+                                        coverart.song_id = song_id;
+                                        coverart.id = id;
+                                        println!("Cover Art created");
 
-                        match super::cov_db::create(&pool, &coverart, &song.id).await {
-                            Ok(id) => {
-                                // TODO: Populate song_id
-                                coverart.id = id;
-                                println!("Cover Art created");
+                                        response.message = String::from("Successful");
+                                        response.data.push(coverart);
 
-                                response.message = String::from("Successful");
-                                response.data.push(coverart);
-
-                                (axum::http::StatusCode::OK, axum::Json(response))
+                                        (axum::http::StatusCode::OK, axum::Json(response))
+                                    }
+                                    Err(err) => {
+                                        response.message = err.to_string();
+                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                    }
+                                }
                             }
                             Err(err) => {
                                 response.message = err.to_string();
-                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                )
                             }
                         }
                     }
@@ -848,7 +854,7 @@ pub mod endpoint {
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::cov_db::get_coverart(&pool, &id).await {
-            Ok(coverart) => match coverart.to_data() {
+            Ok(coverart) => match icarus_models::coverart::io::to_data(&coverart) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();

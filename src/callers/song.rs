@@ -1207,8 +1207,10 @@ pub mod endpoint {
 
         if payload.is_valid() {
             let mut song = payload.to_song();
-            song.filename =
-                song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
+            song.filename = icarus_models::song::generate_filename(
+                icarus_models::types::MusicTypes::FlacExtension,
+                true,
+            );
             song.directory = icarus_envy::environment::get_root_directory().await.value;
 
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
@@ -1227,40 +1229,23 @@ pub mod endpoint {
                         }
                     }
 
-                    let save_path = dir.join(&song.filename);
+                    match song.save_to_filesystem() {
+                        Ok(_) => match super::song_db::insert(&pool, &song).await {
+                            Ok((date_created, id)) => {
+                                song.id = id;
+                                song.date_created = date_created;
+                                response.message = String::from("Successful");
+                                response.data.push(song);
 
-                    match std::fs::File::create(&save_path) {
-                        Ok(mut file) => {
-                            file.write_all(&song.data).unwrap();
-
-                            match song.song_path() {
-                                Ok(_) => match super::song_db::insert(&pool, &song).await {
-                                    Ok((date_created, id)) => {
-                                        song.id = id;
-                                        song.date_created = date_created;
-                                        response.message = String::from("Successful");
-                                        response.data.push(song);
-
-                                        (axum::http::StatusCode::OK, axum::Json(response))
-                                    }
-                                    Err(err) => {
-                                        response.message =
-                                            format!("{:?} song {:?}", err.to_string(), song);
-                                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                    }
-                                },
-                                Err(err) => {
-                                    response.message = err.to_string();
-                                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                                }
+                                (axum::http::StatusCode::OK, axum::Json(response))
                             }
-                        }
+                            Err(err) => {
+                                response.message = format!("{:?} song {:?}", err.to_string(), song);
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        },
                         Err(err) => {
-                            let song_path = song.song_path();
-                            response.message = format!(
-                                "{err:?} Song directory: {} Filename: {} Save Path: {:?} Song Path: {:?}",
-                                song.directory, song.filename, save_path, song_path
-                            );
+                            response.message = err.to_string();
                             (
                                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                                 axum::Json(response),
@@ -1466,7 +1451,7 @@ pub mod endpoint {
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::song_db::get_song(&pool, &id).await {
-            Ok(song) => match song.to_data() {
+            Ok(song) => match icarus_models::song::io::to_data(&song) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();
