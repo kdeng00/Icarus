@@ -716,7 +716,7 @@ pub mod endpoint {
                             Ok(_) => {
                                 match super::cov_db::create(&pool, &coverart, &song.id).await {
                                     Ok(id) => {
-                                        // TODO: Populate song_id
+                                        coverart.song_id = song_id;
                                         coverart.id = id;
                                         println!("Cover Art created");
 
