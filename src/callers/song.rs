@@ -1207,8 +1207,10 @@ pub mod endpoint {
 
         if payload.is_valid() {
             let mut song = payload.to_song();
-            song.filename =
-                song.generate_filename(icarus_models::types::MusicTypes::FlacExtension, true);
+            song.filename = icarus_models::song::generate_filename(
+                icarus_models::types::MusicTypes::FlacExtension,
+                true,
+            );
             song.directory = icarus_envy::environment::get_root_directory().await.value;
 
             match song_queue::get_data(&pool, &payload.song_queue_id).await {
@@ -1466,7 +1468,7 @@ pub mod endpoint {
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::song_db::get_song(&pool, &id).await {
-            Ok(song) => match song.to_data() {
+            Ok(song) => match icarus_models::song::io::to_data(&song) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();

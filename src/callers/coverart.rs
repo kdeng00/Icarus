@@ -848,7 +848,7 @@ pub mod endpoint {
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
         match super::cov_db::get_coverart(&pool, &id).await {
-            Ok(coverart) => match coverart.to_data() {
+            Ok(coverart) => match icarus_models::coverart::io::to_data(&coverart) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();
