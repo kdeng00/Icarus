@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM rust:1.88 as builder
+FROM rust:1.90 as builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
