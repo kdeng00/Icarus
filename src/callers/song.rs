@@ -571,11 +571,6 @@ pub mod song_db {
 mod song_queue {
     use sqlx::Row;
 
-    #[derive(Debug, serde::Serialize, sqlx::FromRow)]
-    pub struct InsertedData {
-        pub id: uuid::Uuid,
-    }
-
     // TODO: Move this somewhere else at some point
     #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
     pub struct SongQueue {
