@@ -375,7 +375,7 @@ mod tests {
         }
 
         pub async fn get_database_name() -> Result<String, Box<dyn std::error::Error>> {
-            let database_url = icarus_envy::environment::get_db_url().await;
+            let database_url = icarus_envy::environment::get_db_url().await.value;
             let parsed_url = url::Url::parse(&database_url)?;
 
             if parsed_url.scheme() == "postgres" || parsed_url.scheme() == "postgresql" {
@@ -425,7 +425,7 @@ mod tests {
     pub const TEST_USER_ID: uuid::Uuid = uuid::uuid!("cc938368-615a-4694-b2ca-6e122fa31c52");
 
     pub async fn test_token() -> Result<String, josekit::JoseError> {
-        let key: String = icarus_envy::environment::get_secret_main_key().await;
+        let key: String = icarus_envy::environment::get_secret_main_key().await.value;
         let (message, issuer, audience) = token_fields();
 
         let token_resource = icarus_models::token::TokenResource {
@@ -2384,8 +2384,8 @@ mod tests {
                 ..Default::default()
             };
 
-            match song.to_data() {
-                Ok(song_data) => match coverart.to_data() {
+            match icarus_models::song::io::to_data(&song) {
+                Ok(song_data) => match icarus_models::coverart::io::to_data(&coverart) {
                     Ok(coverart_data) => Ok((song_data, coverart_data)),
                     Err(err) => Err(err),
                 },
