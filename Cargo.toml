@@ -21,7 +21,7 @@ sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-native-tls", 
 time = { version = "0.3.44", features = ["formatting", "macros", "parsing", "serde"]  }
 thiserror = "2.0.17"
 base64 = "0.22.1"
-jsonwebtoken = { version = "8.3.0" }
+jsonwebtoken = { version = "9.3.1" }
 josekit = { version = "0.10.3" }
 utoipa = { version = "5.4.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
