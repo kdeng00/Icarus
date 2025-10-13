@@ -69,7 +69,7 @@ jobs:
         ROOT_DIRECTORY: "/tmp"
         DATABASE_URL: "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}"
       run: |
-        cat .env.sample | head -1 > .env
+        cat .env.sample | head -6 > .env
         cargo test --verbose --
     
     - name: Run clippy
