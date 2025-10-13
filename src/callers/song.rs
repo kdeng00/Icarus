@@ -907,11 +907,6 @@ pub mod endpoint {
                 data.len()
             );
 
-            // TODO: Remove this
-            // Save the file to disk
-            let mut file = std::fs::File::create(&file_name).unwrap();
-            file.write_all(&data).unwrap();
-
             let raw_data: Vec<u8> = data.to_vec();
             let queue_repo = song_queue::insert(
                 &pool,
