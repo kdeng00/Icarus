@@ -869,8 +869,6 @@ mod song_queue {
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
 
-    use std::io::Write;
-
     use crate::callers::song::song_queue;
 
     /// Endpoint to queue a song. Starts the process and places the song in a queue
