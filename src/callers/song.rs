@@ -869,8 +869,6 @@ mod song_queue {
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
 
-    use std::io::Write;
-
     use crate::callers::song::song_queue;
 
     /// Endpoint to queue a song. Starts the process and places the song in a queue
@@ -906,11 +904,6 @@ pub mod endpoint {
                 content_type,
                 data.len()
             );
-
-            // TODO: Remove this
-            // Save the file to disk
-            let mut file = std::fs::File::create(&file_name).unwrap();
-            file.write_all(&data).unwrap();
 
             let raw_data: Vec<u8> = data.to_vec();
             let queue_repo = song_queue::insert(

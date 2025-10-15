@@ -2,6 +2,10 @@
 Web API for the Icarus project.
 
 
+### Requires
+`icarus_auth` +v0.6.0
+`songparser` +v0.4.1
+
 ## Getting Started
 Quickest way to get started is with docker. Make sure `icarus_auth` and `songparser` repositories 
 are located in the root of the parent directory. Check the respective repositories to ensure they
