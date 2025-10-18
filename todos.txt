@@ -1,0 +1,16 @@
+// TODO: Make a distinction between song and metadata queue in src/callers/metadata.rs
+// TODO: Separate directory and filename from path in coverart
+// TODO: Move SongQueue somewhere else
+// TODO: Rename the download_flac() function
+// TODO: Change date type of song from string to date
+// TODO: Separate song and song queue endpoints
+// TODO: Separate coverart and coverart queue endpoints
+// TODO: Identify better way of assigning content type of request involving and image
+// TODO: Improve content disposition for the coverart
+// TODO: Make the filename for creating a coverart more random
+// TODO: Address hard coding in downloading coverart
+// TODO: Change name of queue_metadata_payload_data() function
+// TODO: Put functions within a util module
+// TODO: Put the _req() functions in their own module within the tests
+// TODO: Move the code elsewhere that is found in src/main.rs
+// TODO: Remove TODO in src/auth.rs
