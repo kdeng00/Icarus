@@ -388,7 +388,7 @@ pub mod cov_db {
                     .try_get("song_id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                    ..Default::default()
+                ..Default::default()
             }),
             Err(_) => Err(sqlx::Error::RowNotFound),
         }
@@ -718,7 +718,9 @@ pub mod endpoint {
                         let filename = format!("{}-coverart.jpeg", &song.filename[..8]);
 
                         let mut coverart =
-                            icarus_models::coverart::init::init_coverart_dir_and_filename(&directory, &filename);
+                            icarus_models::coverart::init::init_coverart_dir_and_filename(
+                                &directory, &filename,
+                            );
                         coverart.title = song.album.clone();
                         coverart.data = data;
 

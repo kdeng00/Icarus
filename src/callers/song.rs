@@ -1498,12 +1498,13 @@ pub mod endpoint {
                     Ok(coverart) => {
                         // let coverart_path = std::path::Path::new(&coverart.path);
                         let coverart_path_str = match coverart.get_path() {
-                            Ok(path) => {
-                                path
-                            }
+                            Ok(path) => path,
                             Err(err) => {
                                 response.message = err.to_string();
-                                return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response));
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                );
                             }
                         };
                         let coverart_path = std::path::Path::new(&coverart_path_str);
@@ -1522,7 +1523,7 @@ pub mod endpoint {
                                                 Ok(deleted_coverart) => {
                                                     match std::fs::remove_file(song_path) {
                                                         Ok(_) => match std::fs::remove_file(
-                                                            &coverart_path
+                                                            &coverart_path,
                                                         ) {
                                                             Ok(_) => {
                                                                 response.message = String::from(super::super::response::SUCCESSFUL);
