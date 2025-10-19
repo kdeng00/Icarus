@@ -325,11 +325,12 @@ pub mod cov_db {
     ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            INSERT INTO "coverart" (title, path, song_id) VALUES($1, $2, $3) RETURNING id;
+            INSERT INTO "coverart" (title, directory, filename, song_id) VALUES($1, $2, $3, $4) RETURNING id;
             "#,
         )
         .bind(&coverart.title)
-        .bind(&coverart.path)
+        .bind(&coverart.directory)
+        .bind(&coverart.filename)
         .bind(song_id)
         .fetch_one(pool)
         .await
@@ -355,7 +356,7 @@ pub mod cov_db {
     ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, title, path, song_id FROM "coverart" WHERE id = $1;
+            SELECT id, title, directory, filename, song_id FROM "coverart" WHERE id = $1;
             "#,
         )
         .bind(id)
@@ -375,15 +376,19 @@ pub mod cov_db {
                     .try_get("title")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                path: row
-                    .try_get("path")
+                directory: row
+                    .try_get("directory")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                data: Vec::new(),
+                filename: row
+                    .try_get("filename")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
                 song_id: row
                     .try_get("song_id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
+                    ..Default::default()
             }),
             Err(_) => Err(sqlx::Error::RowNotFound),
         }
@@ -395,7 +400,7 @@ pub mod cov_db {
     ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, title, path, song_id FROM "coverart" WHERE song_id = $1;
+            SELECT id, title, directory, filename, song_id FROM "coverart" WHERE song_id = $1;
             "#,
         )
         .bind(song_id)
@@ -415,8 +420,12 @@ pub mod cov_db {
                     .try_get("title")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                path: row
-                    .try_get("path")
+                directory: row
+                    .try_get("directory")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                filename: row
+                    .try_get("filename")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 data: Vec::new(),
@@ -437,7 +446,7 @@ pub mod cov_db {
             r#"
             DELETE FROM "coverart"
             WHERE id = $1
-            RETURNING id, title, path, song_id
+            RETURNING id, title, directory, filename, song_id
             "#,
         )
         .bind(id)
@@ -457,8 +466,12 @@ pub mod cov_db {
                     .try_get("title")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
-                path: row
-                    .try_get("path")
+                directory: row
+                    .try_get("directory")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                filename: row
+                    .try_get("filename")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 song_id: row
@@ -701,14 +714,11 @@ pub mod endpoint {
                 match crate::callers::song::song_db::get_song(&pool, &song_id).await {
                     Ok(song) => {
                         let directory = icarus_envy::environment::get_root_directory().await.value;
-                        let dir = std::path::Path::new(&directory);
-
                         // TODO: Make this random and the file extension should not be hard coded
                         let filename = format!("{}-coverart.jpeg", &song.filename[..8]);
-                        let save_path = dir.join(&filename);
-                        let path = String::from(save_path.to_str().unwrap());
+
                         let mut coverart =
-                            icarus_models::coverart::init::init_coverart_only_path(path);
+                            icarus_models::coverart::init::init_coverart_dir_and_filename(&directory, &filename);
                         coverart.title = song.album.clone();
                         coverart.data = data;
 
