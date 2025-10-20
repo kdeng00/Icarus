@@ -81,11 +81,6 @@ pub mod request {
                     duration: self.duration,
                     audio_type: self.audio_type.clone(),
                     user_id: self.user_id,
-                    // TODO: Change the type of this in icarus_models lib
-                    // date_created: self.date_created,
-                    // filename: String::new(),
-                    // data: Vec::new(),
-                    // directory: String::new(),
                     ..Default::default()
                 }
             }
@@ -1559,17 +1554,6 @@ pub mod endpoint {
                                     )
                                 }
                             }
-                            // }
-                            /*
-                            Err(err) => {
-                                response.message = err.to_string();
-                                (
-                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                                    axum::Json(response),
-                                )
-                            }
-                            */
-                            // }
                         } else {
                             response.message =
                                 String::from("Could not locate coverart on the filesystem");

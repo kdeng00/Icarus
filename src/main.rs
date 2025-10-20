@@ -2414,8 +2414,6 @@ mod tests {
                 ..Default::default()
             };
 
-            // use std::io::Write;
-
             match song.save_to_filesystem() {
                 Ok(_) => match coverart.save_to_filesystem() {
                     Ok(_) => Ok(()),
@@ -2423,36 +2421,6 @@ mod tests {
                 },
                 Err(err) => Err(err),
             }
-            /*
-            match song.song_path() {
-                Ok(song_path) => {
-                    let song_p = std::path::Path::new(&song_path);
-                    match std::fs::File::create(song_p) {
-                        Ok(mut song_file) => match song_file.write_all(&song_data) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                return Err(err);
-                            }
-                        },
-                        Err(err) => {
-                            return Err(err);
-                        }
-                    }
-                }
-                Err(err) => {
-                    return Err(err);
-                }
-            }
-
-            let coverart_p = std::path::Path::new(&coverart.path);
-            match std::fs::File::create(coverart_p) {
-                Ok(mut coverart_file) => match coverart_file.write_all(&coverart_data) {
-                    Ok(_) => Ok(()),
-                    Err(err) => Err(err),
-                },
-                Err(err) => Err(err),
-            }
-            */
         }
 
         #[tokio::test]
