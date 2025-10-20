@@ -1523,7 +1523,7 @@ pub mod endpoint {
                                                 Ok(deleted_coverart) => {
                                                     match std::fs::remove_file(song_path) {
                                                         Ok(_) => match std::fs::remove_file(
-                                                            &coverart_path,
+                                                            coverart_path,
                                                         ) {
                                                             Ok(_) => {
                                                                 response.message = String::from(super::super::response::SUCCESSFUL);
