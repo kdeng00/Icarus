@@ -2171,14 +2171,13 @@ mod tests {
                 }
             }
 
-            pub async fn other_song_id() -> Result<(uuid::Uuid, String, String, String), uuid::Error>
-            {
+            pub async fn other_song_id()
+            -> Result<(uuid::Uuid, (String, String), (String, String)), uuid::Error> {
                 match uuid::Uuid::parse_str("94cf7940-34ff-489f-9124-d0ec90a55af4") {
                     Ok(id) => Ok((
                         id,
-                        String::from("tests/I/"),
-                        String::from("track02.flac"),
-                        String::from("tests/I/Coverart-2.jpg"),
+                        (String::from("tests/I/"), String::from("track02.flac")),
+                        (String::from("tests/I/"), String::from("Coverart-2.jpg")),
                     )),
                     Err(err) => Err(err),
                 }
@@ -2371,7 +2370,8 @@ mod tests {
         async fn get_test_data(
             song_directory: &String,
             song_filename: &String,
-            coverart_path: &String,
+            coverart_directory: &String,
+            coverart_filename: &String,
         ) -> Result<(Vec<u8>, Vec<u8>), std::io::Error> {
             let song = icarus_models::song::Song {
                 directory: song_directory.clone(),
@@ -2380,7 +2380,8 @@ mod tests {
             };
 
             let coverart = icarus_models::coverart::CoverArt {
-                path: coverart_path.clone(),
+                directory: coverart_directory.clone(),
+                filename: coverart_filename.clone(),
                 ..Default::default()
             };
 
@@ -2397,22 +2398,34 @@ mod tests {
             song_directory: &String,
             song_filename: &String,
             song_data: Vec<u8>,
-            coverart_path: &String,
+            coverart_directory: &String,
+            coverart_filename: &String,
             coverart_data: Vec<u8>,
         ) -> Result<(), std::io::Error> {
             let song = icarus_models::song::Song {
                 directory: song_directory.clone(),
                 filename: song_filename.clone(),
+                data: song_data,
                 ..Default::default()
             };
 
             let coverart = icarus_models::coverart::CoverArt {
-                path: coverart_path.clone(),
+                directory: coverart_directory.clone(),
+                filename: coverart_filename.clone(),
+                data: coverart_data,
                 ..Default::default()
             };
 
-            use std::io::Write;
+            // use std::io::Write;
 
+            match song.save_to_filesystem() {
+                Ok(_) => match coverart.save_to_filesystem() {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(err),
+                },
+                Err(err) => Err(err),
+            }
+            /*
             match song.song_path() {
                 Ok(song_path) => {
                     let song_p = std::path::Path::new(&song_path);
@@ -2441,6 +2454,7 @@ mod tests {
                 },
                 Err(err) => Err(err),
             }
+            */
         }
 
         #[tokio::test]
@@ -2462,12 +2476,16 @@ mod tests {
 
             let app = super::init::app(pool).await;
 
-            let (id, song_directory, song_filename, coverart_path) =
+            let (id, (song_directory, song_filename), (cover_directory, cover_filename)) =
                 test_data::other_song_id().await.unwrap();
-            let (song_data, coverart_data) =
-                get_test_data(&song_directory, &song_filename, &coverart_path)
-                    .await
-                    .unwrap();
+            let (song_data, coverart_data) = get_test_data(
+                &song_directory,
+                &song_filename,
+                &cover_directory,
+                &cover_filename,
+            )
+            .await
+            .unwrap();
 
             let uri =
                 super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
@@ -2505,7 +2523,8 @@ mod tests {
                         &song_directory,
                         &song_filename,
                         song_data,
-                        &coverart_path,
+                        &cover_directory,
+                        &cover_filename,
                         coverart_data,
                     )
                     .await
