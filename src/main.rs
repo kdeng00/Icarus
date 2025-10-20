@@ -1770,8 +1770,6 @@ mod tests {
                             song
                         );
 
-                        eprintln!("Song: {:?}", song);
-
                         match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
