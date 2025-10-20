@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS "song" (
 CREATE TABLE IF NOT EXISTS "coverart" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    -- TODO: Separate path later
     directory TEXT NOT NULL,
     filename TEXT NOT NULL,
     song_id UUID NOT NULL
