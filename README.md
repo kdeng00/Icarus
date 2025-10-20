@@ -3,8 +3,12 @@ Web API for the Icarus project.
 
 
 ### Requires
-`icarus_auth` +v0.6.0
-`songparser` +v0.4.1
+`icarus_auth` v0.6.1  
+`songparser` v0.4.2
+
+### Compatible with
+`icarus-dm` v0.8.2  
+
 
 ## Getting Started
 Quickest way to get started is with docker. Make sure `icarus_auth` and `songparser` repositories 

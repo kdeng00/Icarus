@@ -81,11 +81,7 @@ pub mod request {
                     duration: self.duration,
                     audio_type: self.audio_type.clone(),
                     user_id: self.user_id,
-                    // TODO: Change the type of this in icarus_models lib
-                    date_created: String::new(),
-                    filename: String::new(),
-                    data: Vec::new(),
-                    directory: String::new(),
+                    ..Default::default()
                 }
             }
         }
@@ -224,7 +220,7 @@ pub mod song_db {
     pub async fn insert(
         pool: &sqlx::PgPool,
         song: &icarus_models::song::Song,
-    ) -> Result<(String, uuid::Uuid), sqlx::Error> {
+    ) -> Result<(time::OffsetDateTime, uuid::Uuid), sqlx::Error> {
         let result = sqlx::query(
             r#"
             INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
@@ -262,7 +258,7 @@ pub mod song_db {
                     .try_get("date_created")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap();
-                let date_created = date_created_time.to_string();
+                let date_created = date_created_time;
 
                 Ok((date_created, id))
             }
@@ -354,7 +350,7 @@ pub mod song_db {
                         .try_get("directory")
                         .map_err(|_e| sqlx::Error::RowNotFound)
                         .unwrap(),
-                    date_created: date_created_time.to_string(),
+                    date_created: Some(date_created_time),
                     user_id: row
                         .try_get("user_id")
                         .map_err(|_e| sqlx::Error::RowNotFound)
@@ -451,7 +447,7 @@ pub mod song_db {
                             .try_get("directory")
                             .map_err(|_e| sqlx::Error::RowNotFound)
                             .unwrap(),
-                        date_created: date_created_time.to_string(),
+                        date_created: Some(date_created_time),
                         user_id: row
                             .try_get("user_id")
                             .map_err(|_e| sqlx::Error::RowNotFound)
@@ -555,7 +551,7 @@ pub mod song_db {
                         .try_get("directory")
                         .map_err(|_e| sqlx::Error::RowNotFound)
                         .unwrap(),
-                    date_created: date_created_time.to_string(),
+                    date_created: Some(date_created_time),
                     user_id: row
                         .try_get("user_id")
                         .map_err(|_e| sqlx::Error::RowNotFound)
@@ -1221,7 +1217,7 @@ pub mod endpoint {
                         Ok(_) => match super::song_db::insert(&pool, &song).await {
                             Ok((date_created, id)) => {
                                 song.id = id;
-                                song.date_created = date_created;
+                                song.date_created = Some(date_created);
                                 response.message = String::from("Successful");
                                 response.data.push(song);
 
@@ -1495,49 +1491,52 @@ pub mod endpoint {
                     .await
                 {
                     Ok(coverart) => {
-                        let coverart_path = std::path::Path::new(&coverart.path);
-                        if coverart_path.exists() {
-                            match song.song_path() {
-                                Ok(song_path) => {
-                                    match super::song_db::delete_song(&pool, &song.id).await {
-                                        Ok(deleted_song) => {
-                                            match super::super::coverart::cov_db::delete_coverart(
-                                                &pool,
-                                                &coverart.id,
-                                            )
-                                            .await
-                                            {
-                                                Ok(deleted_coverart) => {
-                                                    match std::fs::remove_file(song_path) {
-                                                        Ok(_) => match std::fs::remove_file(
-                                                            &coverart.path,
-                                                        ) {
-                                                            Ok(_) => {
-                                                                response.message = String::from(super::super::response::SUCCESSFUL);
-                                                                response.data.push(super::response::delete_song::SongAndCoverArt{ song: deleted_song, coverart: deleted_coverart });
-                                                                (
-                                                                    axum::http::StatusCode::OK,
-                                                                    axum::Json(response),
-                                                                )
-                                                            }
-                                                            Err(err) => {
-                                                                response.message = err.to_string();
-                                                                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
-                                                            }
-                                                        },
-                                                        Err(err) => {
-                                                            response.message = err.to_string();
-                                                            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
-                                                        }
-                                                    }
-                                                }
+                        let coverart_path_str = match coverart.get_path() {
+                            Ok(path) => path,
+                            Err(err) => {
+                                response.message = err.to_string();
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                );
+                            }
+                        };
+                        let coverart_path = std::path::Path::new(&coverart_path_str);
 
+                        if coverart_path.exists() {
+                            match super::song_db::delete_song(&pool, &song.id).await {
+                                Ok(deleted_song) => {
+                                    match super::super::coverart::cov_db::delete_coverart(
+                                        &pool,
+                                        &coverart.id,
+                                    )
+                                    .await
+                                    {
+                                        Ok(deleted_coverart) => {
+                                            match song.remove_from_filesystem() {
+                                                Ok(_) => match coverart.remove_from_filesystem() {
+                                                    Ok(_) => {
+                                                        response.message = String::from(
+                                                            super::super::response::SUCCESSFUL,
+                                                        );
+                                                        response.data.push(super::response::delete_song::SongAndCoverArt{ song: deleted_song, coverart: deleted_coverart });
+                                                        (
+                                                            axum::http::StatusCode::OK,
+                                                            axum::Json(response),
+                                                        )
+                                                    }
+                                                    Err(err) => {
+                                                        response.message = err.to_string();
+                                                        (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                                                    }
+                                                },
                                                 Err(err) => {
                                                     response.message = err.to_string();
                                                     (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
                                                 }
                                             }
                                         }
+
                                         Err(err) => {
                                             response.message = err.to_string();
                                             (
