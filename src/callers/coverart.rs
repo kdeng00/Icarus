@@ -513,7 +513,7 @@ mod helper {
             }
         }
 
-        return false;
+        false
     }
 }
 
@@ -563,10 +563,10 @@ pub mod endpoint {
 
                 if !super::helper::is_coverart_file_type_valid(&file_type) {
                     response.message = format!("CoverArt file type not supported: {file_type:?}");
-                    return (
+                    (
                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                         axum::Json(response),
-                    );
+                    )
                 } else {
                     println!(
                         "Received file '{}' (name = '{}', content-type = '{}', size = {}, file-type = {})",
