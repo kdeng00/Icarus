@@ -864,10 +864,12 @@ dependencies = [
 
 [[package]]
 name = "icarus_meta"
-version = "0.4.0"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.0#f372d059155691c0bac52594fa0d14867078e461"
+version = "0.4.1"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.1-main-5101f36aed-680#5101f36aed96e9c8475286ee6b9c993d65105779"
 dependencies = [
+ "imghdr",
  "lofty",
+ "rand 0.9.2",
 ]
 
 [[package]]
@@ -990,6 +992,12 @@ dependencies = [
  "icu_normalizer",
  "icu_properties",
 ]
+
+[[package]]
+name = "imghdr"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8b35f3ad95576ac81603375dfe47a0450b70a368aa34d2b6e5bb0a0d7f02428"
 
 [[package]]
 name = "indexmap"
