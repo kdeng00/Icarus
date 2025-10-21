@@ -864,8 +864,8 @@ dependencies = [
 
 [[package]]
 name = "icarus_meta"
-version = "0.4.1"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.1-main-5101f36aed-680#5101f36aed96e9c8475286ee6b9c993d65105779"
+version = "0.4.2"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.2-main-71374eb731-680#71374eb73180966d11a7298df06fdc6e999c3c78"
 dependencies = [
  "imghdr",
  "lofty",
