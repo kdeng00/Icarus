@@ -485,6 +485,24 @@ pub mod cov_db {
     }
 }
 
+mod helper {
+    pub fn is_coverart_file_type_valid(file_type: &String) -> bool {
+        let valid_file_types = vec![
+            String::from("png"),
+            String::from("jpg"),
+            String::from("jpeg"),
+        ];
+
+        for valid_file_type in valid_file_types {
+            if valid_file_type == *file_type {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 pub mod endpoint {
     use axum::response::IntoResponse;
 
@@ -516,24 +534,45 @@ pub mod endpoint {
                 let content_type = field.content_type().unwrap().to_string();
                 let data = field.bytes().await.unwrap();
                 let raw_data = data.to_vec();
+                let file_type =
+                    match icarus_meta::detection::coverart::file_type_from_data(&raw_data) {
+                        Ok(file_type) => file_type,
+                        Err(err) => {
+                            eprintln!("Error: {err:?}");
+                            response.message = err.to_string();
+                            return (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            );
+                        }
+                    };
 
-                println!(
-                    "Received file '{}' (name = '{}', content-type = '{}', size = {})",
-                    file_name,
-                    name,
-                    content_type,
-                    data.len()
-                );
+                if !super::helper::is_coverart_file_type_valid(&file_type) {
+                    response.message = format!("CoverArt file type not supported: {file_type:?}");
+                    return (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::Json(response),
+                    );
+                } else {
+                    println!(
+                        "Received file '{}' (name = '{}', content-type = '{}', size = {}, file-type = {})",
+                        file_name,
+                        name,
+                        content_type,
+                        data.len(),
+                        file_type
+                    );
 
-                match super::db::insert(&pool, &raw_data).await {
-                    Ok(id) => {
-                        response.message = String::from("Successful");
-                        response.data.push(id);
-                        (axum::http::StatusCode::OK, axum::Json(response))
-                    }
-                    Err(err) => {
-                        response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    match super::db::insert(&pool, &raw_data).await {
+                        Ok(id) => {
+                            response.message = String::from("Successful");
+                            response.data.push(id);
+                            (axum::http::StatusCode::OK, axum::Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                        }
                     }
                 }
             }
