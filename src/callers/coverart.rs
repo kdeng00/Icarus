@@ -2,6 +2,7 @@
 #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 pub struct CoverArtQueue {
     pub id: uuid::Uuid,
+    pub file_type: String,
     pub song_queue_id: uuid::Uuid,
 }
 
@@ -131,13 +132,18 @@ pub mod response {
 pub mod db {
     use sqlx::Row;
 
-    pub async fn insert(pool: &sqlx::PgPool, data: &Vec<u8>) -> Result<uuid::Uuid, sqlx::Error> {
+    pub async fn insert(
+        pool: &sqlx::PgPool,
+        data: &Vec<u8>,
+        file_type: &str,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            INSERT INTO "coverartQueue" (data) VALUES($1) RETURNING id;
+            INSERT INTO "coverartQueue" (data, file_type) VALUES($1, $2) RETURNING id;
             "#,
         )
         .bind(data)
+        .bind(file_type)
         .fetch_one(pool)
         .await
         .map_err(|e| {
@@ -183,7 +189,7 @@ pub mod db {
     ) -> Result<super::CoverArtQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, song_queue_id FROM "coverartQueue" WHERE id = $1;
+            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE id = $1;
             "#,
         )
         .bind(id)
@@ -197,6 +203,10 @@ pub mod db {
             Ok(row) => Ok(super::CoverArtQueue {
                 id: row
                     .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                file_type: row
+                    .try_get("file_type")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 song_queue_id: row
@@ -214,7 +224,7 @@ pub mod db {
     ) -> Result<super::CoverArtQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
+            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
             "#,
         )
         .bind(song_queue_id)
@@ -228,6 +238,10 @@ pub mod db {
             Ok(row) => Ok(super::CoverArtQueue {
                 id: row
                     .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                file_type: row
+                    .try_get("file_type")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 song_queue_id: row
@@ -563,7 +577,7 @@ pub mod endpoint {
                         file_type
                     );
 
-                    match super::db::insert(&pool, &raw_data).await {
+                    match super::db::insert(&pool, &raw_data, &file_type).await {
                         Ok(id) => {
                             response.message = String::from("Successful");
                             response.data.push(id);
