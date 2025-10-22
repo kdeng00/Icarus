@@ -764,7 +764,7 @@ pub mod endpoint {
         match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
                 let song_id = payload.song_id;
-                match crate::callers::song::song_db::get_song(&pool, &song_id).await {
+                match crate::repo::song::get_song(&pool, &song_id).await {
                     Ok(song) => {
                         let directory = icarus_envy::environment::get_root_directory().await.value;
                         // TODO: Make this random and the file extension should not be hard coded
