@@ -502,9 +502,9 @@ pub mod cov_db {
 mod helper {
     pub fn is_coverart_file_type_valid(file_type: &String) -> bool {
         let valid_file_types = vec![
-            String::from("png"),
-            String::from("jpg"),
-            String::from("jpeg"),
+            String::from(icarus_meta::detection::coverart::constants::JPEG_TYPE),
+            String::from(icarus_meta::detection::coverart::constants::JPG_TYPE),
+            String::from(icarus_meta::detection::coverart::constants::PNG_TYPE),
         ];
 
         for valid_file_type in valid_file_types {
