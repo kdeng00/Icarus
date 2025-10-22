@@ -2,6 +2,7 @@
 #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 pub struct CoverArtQueue {
     pub id: uuid::Uuid,
+    pub file_type: String,
     pub song_queue_id: uuid::Uuid,
 }
 
@@ -131,13 +132,18 @@ pub mod response {
 pub mod db {
     use sqlx::Row;
 
-    pub async fn insert(pool: &sqlx::PgPool, data: &Vec<u8>) -> Result<uuid::Uuid, sqlx::Error> {
+    pub async fn insert(
+        pool: &sqlx::PgPool,
+        data: &Vec<u8>,
+        file_type: &str,
+    ) -> Result<uuid::Uuid, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            INSERT INTO "coverartQueue" (data) VALUES($1) RETURNING id;
+            INSERT INTO "coverartQueue" (data, file_type) VALUES($1, $2) RETURNING id;
             "#,
         )
         .bind(data)
+        .bind(file_type)
         .fetch_one(pool)
         .await
         .map_err(|e| {
@@ -183,7 +189,7 @@ pub mod db {
     ) -> Result<super::CoverArtQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, song_queue_id FROM "coverartQueue" WHERE id = $1;
+            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE id = $1;
             "#,
         )
         .bind(id)
@@ -197,6 +203,10 @@ pub mod db {
             Ok(row) => Ok(super::CoverArtQueue {
                 id: row
                     .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                file_type: row
+                    .try_get("file_type")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 song_queue_id: row
@@ -214,7 +224,7 @@ pub mod db {
     ) -> Result<super::CoverArtQueue, sqlx::Error> {
         let result = sqlx::query(
             r#"
-            SELECT id, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
+            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
             "#,
         )
         .bind(song_queue_id)
@@ -228,6 +238,10 @@ pub mod db {
             Ok(row) => Ok(super::CoverArtQueue {
                 id: row
                     .try_get("id")
+                    .map_err(|_e| sqlx::Error::RowNotFound)
+                    .unwrap(),
+                file_type: row
+                    .try_get("file_type")
                     .map_err(|_e| sqlx::Error::RowNotFound)
                     .unwrap(),
                 song_queue_id: row
@@ -485,6 +499,24 @@ pub mod cov_db {
     }
 }
 
+mod helper {
+    pub fn is_coverart_file_type_valid(file_type: &String) -> bool {
+        let valid_file_types = vec![
+            String::from(icarus_meta::detection::coverart::constants::JPEG_TYPE),
+            String::from(icarus_meta::detection::coverart::constants::JPG_TYPE),
+            String::from(icarus_meta::detection::coverart::constants::PNG_TYPE),
+        ];
+
+        for valid_file_type in valid_file_types {
+            if valid_file_type == *file_type {
+                return true;
+            }
+        }
+
+        false
+    }
+}
+
 pub mod endpoint {
     use axum::response::IntoResponse;
 
@@ -516,24 +548,45 @@ pub mod endpoint {
                 let content_type = field.content_type().unwrap().to_string();
                 let data = field.bytes().await.unwrap();
                 let raw_data = data.to_vec();
+                let file_type =
+                    match icarus_meta::detection::coverart::file_type_from_data(&raw_data) {
+                        Ok(file_type) => file_type,
+                        Err(err) => {
+                            eprintln!("Error: {err:?}");
+                            response.message = err.to_string();
+                            return (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            );
+                        }
+                    };
 
-                println!(
-                    "Received file '{}' (name = '{}', content-type = '{}', size = {})",
-                    file_name,
-                    name,
-                    content_type,
-                    data.len()
-                );
+                if !super::helper::is_coverart_file_type_valid(&file_type.file_type) {
+                    response.message = format!("CoverArt file type not supported: {file_type:?}");
+                    (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::Json(response),
+                    )
+                } else {
+                    println!(
+                        "Received file '{}' (name = '{}', content-type = '{}', size = {}, file-type = {:?})",
+                        file_name,
+                        name,
+                        content_type,
+                        data.len(),
+                        file_type
+                    );
 
-                match super::db::insert(&pool, &raw_data).await {
-                    Ok(id) => {
-                        response.message = String::from("Successful");
-                        response.data.push(id);
-                        (axum::http::StatusCode::OK, axum::Json(response))
-                    }
-                    Err(err) => {
-                        response.message = err.to_string();
-                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    match super::db::insert(&pool, &raw_data, &file_type.file_type).await {
+                        Ok(id) => {
+                            response.message = String::from("Successful");
+                            response.data.push(id);
+                            (axum::http::StatusCode::OK, axum::Json(response))
+                        }
+                        Err(err) => {
+                            response.message = err.to_string();
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                        }
                     }
                 }
             }

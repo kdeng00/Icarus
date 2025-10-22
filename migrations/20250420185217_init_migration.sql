@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS "metadataQueue" (
 CREATE TABLE IF NOT EXISTS "coverartQueue" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     data BYTEA NULL,
+    file_type TEXT NOT NULL,
     song_queue_id UUID NULL
 );
 
