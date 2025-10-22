@@ -561,7 +561,7 @@ pub mod endpoint {
                         }
                     };
 
-                if !super::helper::is_coverart_file_type_valid(&file_type) {
+                if !super::helper::is_coverart_file_type_valid(&file_type.file_type) {
                     response.message = format!("CoverArt file type not supported: {file_type:?}");
                     (
                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -569,7 +569,7 @@ pub mod endpoint {
                     )
                 } else {
                     println!(
-                        "Received file '{}' (name = '{}', content-type = '{}', size = {}, file-type = {})",
+                        "Received file '{}' (name = '{}', content-type = '{}', size = {}, file-type = {:?})",
                         file_name,
                         name,
                         content_type,
@@ -577,7 +577,7 @@ pub mod endpoint {
                         file_type
                     );
 
-                    match super::db::insert(&pool, &raw_data, &file_type).await {
+                    match super::db::insert(&pool, &raw_data, &file_type.file_type).await {
                         Ok(id) => {
                             response.message = String::from("Successful");
                             response.data.push(id);
