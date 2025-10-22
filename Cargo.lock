@@ -876,7 +876,7 @@ dependencies = [
 [[package]]
 name = "icarus_meta"
 version = "0.4.3"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.3-48-8acf220fc4-680#8acf220fc4a646090cfb54eff78aaa2f172bf882"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_meta.git?tag=v0.4.3#c0607597f196eb71f8069f23c91359968ef639ad"
 dependencies = [
  "imghdr",
  "infer",
