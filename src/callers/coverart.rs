@@ -210,7 +210,8 @@ pub mod endpoint {
                         file_type
                     );
 
-                    match repo_queue::coverart::insert(&pool, &raw_data, &file_type.file_type).await {
+                    match repo_queue::coverart::insert(&pool, &raw_data, &file_type.file_type).await
+                    {
                         Ok(id) => {
                             response.message = String::from("Successful");
                             response.data.push(id);
@@ -310,8 +311,11 @@ pub mod endpoint {
             },
             _ => match params.song_queue_id {
                 Some(song_queue_id) => {
-                    match repo_queue::coverart::get_coverart_queue_with_song_queue_id(&pool, &song_queue_id)
-                        .await
+                    match repo_queue::coverart::get_coverart_queue_with_song_queue_id(
+                        &pool,
+                        &song_queue_id,
+                    )
+                    .await
                     {
                         Ok(cover_art_queue) => {
                             response.message = String::from("Successful");
@@ -477,17 +481,19 @@ pub mod endpoint {
         let coverart_queue_id = payload.coverart_queue_id;
 
         match repo_queue::coverart::get_coverart_queue_with_id(&pool, &coverart_queue_id).await {
-            Ok(coverart_queue) => match repo_queue::coverart::wipe_data(&pool, &coverart_queue.id).await {
-                Ok(id) => {
-                    response.message = String::from("Success");
-                    response.data.push(id);
-                    (axum::http::StatusCode::OK, axum::Json(response))
+            Ok(coverart_queue) => {
+                match repo_queue::coverart::wipe_data(&pool, &coverart_queue.id).await {
+                    Ok(id) => {
+                        response.message = String::from("Success");
+                        response.data.push(id);
+                        (axum::http::StatusCode::OK, axum::Json(response))
+                    }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
                 }
-                Err(err) => {
-                    response.message = err.to_string();
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                }
-            },
+            }
             Err(err) => {
                 response.message = err.to_string();
                 (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
