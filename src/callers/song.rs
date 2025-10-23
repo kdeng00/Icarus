@@ -202,7 +202,6 @@ pub mod response {
 
 // TODO: Might make a distinction between year and date in a song's tag at some point
 
-
 /// Module for song related endpoints
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};

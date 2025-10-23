@@ -253,10 +253,7 @@ pub async fn get_song_queue(
     }
 }
 
-pub async fn wipe_data(
-    pool: &sqlx::PgPool,
-    id: &uuid::Uuid,
-) -> Result<uuid::Uuid, sqlx::Error> {
+pub async fn wipe_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<uuid::Uuid, sqlx::Error> {
     let result = sqlx::query(
         r#"
         UPDATE "songQueue" SET data = NULL WHERE id = $1 RETURNING id;
