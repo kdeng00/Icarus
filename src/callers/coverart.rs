@@ -129,376 +129,6 @@ pub mod response {
     }
 }
 
-pub mod db {
-    use sqlx::Row;
-
-    pub async fn insert(
-        pool: &sqlx::PgPool,
-        data: &Vec<u8>,
-        file_type: &str,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO "coverartQueue" (data, file_type) VALUES($1, $2) RETURNING id;
-            "#,
-        )
-        .bind(data)
-        .bind(file_type)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e:?}");
-        });
-
-        match result {
-            Ok(row) => {
-                let id: uuid::Uuid = row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(id)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn update(
-        pool: &sqlx::PgPool,
-        coverart_id: &uuid::Uuid,
-        song_queue_id: &uuid::Uuid,
-    ) -> Result<i32, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "coverartQueue" SET song_queue_id = $1 WHERE id = $2;
-            "#,
-        )
-        .bind(song_queue_id)
-        .bind(coverart_id)
-        .execute(pool)
-        .await;
-
-        match result {
-            Ok(_) => Ok(0),
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart_queue_with_id(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<super::CoverArtQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(super::CoverArtQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                file_type: row
-                    .try_get("file_type")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                song_queue_id: row
-                    .try_get("song_queue_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart_queue_with_song_queue_id(
-        pool: &sqlx::PgPool,
-        song_queue_id: &uuid::Uuid,
-    ) -> Result<super::CoverArtQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
-            "#,
-        )
-        .bind(song_queue_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(super::CoverArtQueue {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                file_type: row
-                    .try_get("file_type")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                song_queue_id: row
-                    .try_get("song_queue_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart_queue_data_with_id(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT data FROM "coverartQueue" WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("data")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart_queue_data_with_song_queue_id(
-        pool: &sqlx::PgPool,
-        song_queue_id: &uuid::Uuid,
-    ) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT data FROM "coverartQueue" WHERE song_queue_id = $1;
-            "#,
-        )
-        .bind(song_queue_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("data")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn wipe_data(
-        pool: &sqlx::PgPool,
-        coverart_queue_id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "coverartQueue" SET data = NULL WHERE id = $1 RETURNING id;
-            "#,
-        )
-        .bind(coverart_queue_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating query: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("id")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-}
-
-pub mod cov_db {
-    use sqlx::Row;
-
-    pub async fn create(
-        pool: &sqlx::PgPool,
-        coverart: &icarus_models::coverart::CoverArt,
-        song_id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO "coverart" (title, directory, filename, song_id) VALUES($1, $2, $3, $4) RETURNING id;
-            "#,
-        )
-        .bind(&coverart.title)
-        .bind(&coverart.directory)
-        .bind(&coverart.filename)
-        .bind(song_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let id: uuid::Uuid = row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(id)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, title, directory, filename, song_id FROM "coverart" WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(icarus_models::coverart::CoverArt {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                title: row
-                    .try_get("title")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                directory: row
-                    .try_get("directory")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                song_id: row
-                    .try_get("song_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                ..Default::default()
-            }),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_coverart_with_song_id(
-        pool: &sqlx::PgPool,
-        song_id: &uuid::Uuid,
-    ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, title, directory, filename, song_id FROM "coverart" WHERE song_id = $1;
-            "#,
-        )
-        .bind(song_id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(icarus_models::coverart::CoverArt {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                title: row
-                    .try_get("title")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                directory: row
-                    .try_get("directory")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                data: Vec::new(),
-                song_id: row
-                    .try_get("song_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-            }),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn delete_coverart(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            DELETE FROM "coverart"
-            WHERE id = $1
-            RETURNING id, title, directory, filename, song_id
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error deleting data: {e:?}");
-        });
-
-        match result {
-            Ok(row) => Ok(icarus_models::coverart::CoverArt {
-                id: row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                title: row
-                    .try_get("title")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                directory: row
-                    .try_get("directory")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                filename: row
-                    .try_get("filename")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                song_id: row
-                    .try_get("song_id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap(),
-                data: Vec::new(),
-            }),
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-}
-
 mod helper {
     pub fn is_coverart_file_type_valid(file_type: &String) -> bool {
         let valid_file_types = vec![
@@ -519,6 +149,9 @@ mod helper {
 
 pub mod endpoint {
     use axum::response::IntoResponse;
+
+    use crate::repo;
+    use crate::repo::queue as repo_queue;
 
     /// Endpoint to queue cover art
     #[utoipa::path(
@@ -577,7 +210,7 @@ pub mod endpoint {
                         file_type
                     );
 
-                    match super::db::insert(&pool, &raw_data, &file_type.file_type).await {
+                    match repo_queue::coverart::insert(&pool, &raw_data, &file_type.file_type).await {
                         Ok(id) => {
                             response.message = String::from("Successful");
                             response.data.push(id);
@@ -623,7 +256,7 @@ pub mod endpoint {
         let id = payload.coverart_id;
         let song_id = payload.song_queue_id;
 
-        match super::db::update(&pool, &id, &song_id).await {
+        match repo_queue::coverart::update(&pool, &id, &song_id).await {
             Ok(_o) => {
                 response.data.push(super::response::link::Id {
                     song_queue_id: song_id,
@@ -664,7 +297,7 @@ pub mod endpoint {
         let mut response = super::response::fetch_coverart_no_data::Response::default();
 
         match params.id {
-            Some(id) => match super::db::get_coverart_queue_with_id(&pool, &id).await {
+            Some(id) => match repo_queue::coverart::get_coverart_queue_with_id(&pool, &id).await {
                 Ok(cover_art_queue) => {
                     response.message = String::from("Successful");
                     response.data.push(cover_art_queue);
@@ -677,7 +310,7 @@ pub mod endpoint {
             },
             _ => match params.song_queue_id {
                 Some(song_queue_id) => {
-                    match super::db::get_coverart_queue_with_song_queue_id(&pool, &song_queue_id)
+                    match repo_queue::coverart::get_coverart_queue_with_song_queue_id(&pool, &song_queue_id)
                         .await
                     {
                         Ok(cover_art_queue) => {
@@ -713,7 +346,7 @@ pub mod endpoint {
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
-        match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
+        match repo_queue::coverart::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
                 let bytes = axum::body::Bytes::from(data);
                 let mut response = bytes.into_response();
@@ -761,7 +394,7 @@ pub mod endpoint {
         let mut response = super::response::create_coverart::Response::default();
         let id = payload.coverart_queue_id;
 
-        match super::db::get_coverart_queue_data_with_id(&pool, &id).await {
+        match repo_queue::coverart::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
                 let song_id = payload.song_id;
                 match crate::repo::song::get_song(&pool, &song_id).await {
@@ -779,7 +412,7 @@ pub mod endpoint {
 
                         match coverart.save_to_filesystem() {
                             Ok(_) => {
-                                match super::cov_db::create(&pool, &coverart, &song.id).await {
+                                match repo::coverart::create(&pool, &coverart, &song.id).await {
                                     Ok(id) => {
                                         coverart.song_id = song_id;
                                         coverart.id = id;
@@ -843,8 +476,8 @@ pub mod endpoint {
         let mut response = super::response::wipe_data_from_coverart_queue::Response::default();
         let coverart_queue_id = payload.coverart_queue_id;
 
-        match super::db::get_coverart_queue_with_id(&pool, &coverart_queue_id).await {
-            Ok(coverart_queue) => match super::db::wipe_data(&pool, &coverart_queue.id).await {
+        match repo_queue::coverart::get_coverart_queue_with_id(&pool, &coverart_queue_id).await {
+            Ok(coverart_queue) => match repo_queue::coverart::wipe_data(&pool, &coverart_queue.id).await {
                 Ok(id) => {
                     response.message = String::from("Success");
                     response.data.push(id);
@@ -884,7 +517,7 @@ pub mod endpoint {
         let mut response = super::response::get_coverart::Response::default();
 
         match params.id {
-            Some(id) => match super::cov_db::get_coverart(&pool, &id).await {
+            Some(id) => match repo::coverart::get_coverart(&pool, &id).await {
                 Ok(coverart) => {
                     response.data.push(coverart);
                     response.message = String::from(super::super::response::SUCCESSFUL);
@@ -918,7 +551,7 @@ pub mod endpoint {
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
-        match super::cov_db::get_coverart(&pool, &id).await {
+        match repo::coverart::get_coverart(&pool, &id).await {
             Ok(coverart) => match icarus_models::coverart::io::to_data(&coverart) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);

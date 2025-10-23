@@ -830,7 +830,7 @@ pub mod endpoint {
 
         match repo::song::get_song(&pool, &id).await {
             Ok(song) => {
-                match super::super::coverart::cov_db::get_coverart_with_song_id(&pool, &song.id)
+                match repo::coverart::get_coverart_with_song_id(&pool, &song.id)
                     .await
                 {
                     Ok(coverart) => {
@@ -849,7 +849,7 @@ pub mod endpoint {
                         if coverart_path.exists() {
                             match repo::song::delete_song(&pool, &song.id).await {
                                 Ok(deleted_song) => {
-                                    match super::super::coverart::cov_db::delete_coverart(
+                                    match repo::coverart::delete_coverart(
                                         &pool,
                                         &coverart.id,
                                     )
