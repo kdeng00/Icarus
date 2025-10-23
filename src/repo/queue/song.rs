@@ -97,10 +97,12 @@ pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue
     .bind(status::PROCESSING)
     .bind(status::READY)
     .fetch_one(pool)
-    .await
+    .await;
+    /*
     .map_err(|e| {
         eprintln!("Error inserting: {e}");
     });
+        */
 
     match result {
         Ok(row) => {
