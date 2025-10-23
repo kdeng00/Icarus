@@ -67,8 +67,6 @@ pub async fn auth<B>(
     req: Request<axum::body::Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
-    println!("Cookie: {cookie_jar:?}");
-
     let token = cookie_jar
         .get("token")
         .map(|cookie| cookie.value().to_string())
@@ -76,10 +74,7 @@ pub async fn auth<B>(
             req.headers()
                 .get(axum::http::header::AUTHORIZATION)
                 .and_then(|auth_header| auth_header.to_str().ok())
-                .and_then(|auth_value| {
-                    println!("Auth value: {auth_value:?}");
-                    auth_value.strip_prefix("Bearer ").map(String::from)
-                })
+                .and_then(|auth_value| auth_value.strip_prefix("Bearer ").map(String::from))
         });
 
     let token = token.ok_or_else(|| {
@@ -94,9 +89,8 @@ pub async fn auth<B>(
 
     let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
     validation.set_audience(&["icarus"]); // Must match exactly what's in the token
-    let claims = decode::<UserClaims>(
+    let _claims = decode::<UserClaims>(
         &token,
-        // TODO: Replace with code to get secret from env
         &DecodingKey::from_secret(secret_key.as_ref()),
         &validation,
     )
@@ -109,8 +103,6 @@ pub async fn auth<B>(
         (StatusCode::UNAUTHORIZED, Json(json_error))
     })?
     .claims;
-
-    println!("Claims: {claims:?}");
 
     Ok(next.run(req).await)
 }
