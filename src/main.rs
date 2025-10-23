@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod callers;
+pub mod repo;
 
 pub mod db {
 

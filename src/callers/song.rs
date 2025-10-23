@@ -127,7 +127,7 @@ pub mod response {
         #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<crate::callers::song::song_queue::SongQueue>,
+            pub data: Vec<crate::repo::queue::song::SongQueue>,
         }
     }
 
@@ -202,320 +202,14 @@ pub mod response {
 
 // TODO: Might make a distinction between year and date in a song's tag at some point
 
-pub mod status {
-    pub const PENDING: &str = "pending";
-    pub const READY: &str = "ready";
-    pub const PROCESSING: &str = "processing";
-    pub const DONE: &str = "done";
-
-    pub async fn is_valid(status: &str) -> bool {
-        status == PENDING || status == PROCESSING || status == DONE || status == READY
-    }
-}
-
-mod song_queue {
-    use sqlx::Row;
-
-    // TODO: Move this somewhere else at some point
-    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
-    pub struct SongQueue {
-        pub id: uuid::Uuid,
-        pub filename: String,
-        pub status: String,
-        pub user_id: uuid::Uuid,
-    }
-
-    pub async fn insert(
-        pool: &sqlx::PgPool,
-        data: &Vec<u8>,
-        filename: &String,
-        status: &String,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO "songQueue" (data, filename, status) VALUES($1, $2, $3) RETURNING id;
-            "#,
-        )
-        .bind(data)
-        .bind(filename)
-        .bind(status)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let id: uuid::Uuid = row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(id)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn update(
-        pool: &sqlx::PgPool,
-        data: &Vec<u8>,
-        id: &uuid::Uuid,
-    ) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET data = $1 WHERE id = $2 RETURNING data;
-            "#,
-        )
-        .bind(data)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("data")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue"
-            SET status = $1
-            WHERE id = (
-                SELECT id FROM "songQueue"
-                WHERE status = $2
-                ORDER BY id
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-            )
-            RETURNING id, filename, status, user_id;
-            "#,
-        )
-        .bind(super::status::PROCESSING)
-        .bind(super::status::READY)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let user_id_result = row.try_get("user_id");
-                let song_queue = SongQueue {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    status: row
-                        .try_get("status")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    user_id: match user_id_result {
-                        Ok(id) => id,
-                        Err(_) => uuid::Uuid::nil(),
-                    },
-                };
-
-                Ok(song_queue)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_status_of_song_queue(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<String, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, status FROM "songQueue" WHERE id = $1
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error selecting: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("status")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn update_song_queue_status(
-        pool: &sqlx::PgPool,
-        status: &String,
-        id: &uuid::Uuid,
-    ) -> Result<String, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET status = $1 WHERE id = $2 RETURNING status;
-            "#,
-        )
-        .bind(status)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("status")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn link_user_id(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-        user_id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET user_id = $1 WHERE id = $2 RETURNING user_id;
-            "#,
-        )
-        .bind(user_id)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("user_id")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_song_queue(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<SongQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, filename, status, user_id FROM "songQueue" WHERE id = $1
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let user_id_result = row.try_get("user_id");
-                let song_queue = SongQueue {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    status: row
-                        .try_get("status")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    user_id: match user_id_result {
-                        Ok(id) => id,
-                        Err(_) => uuid::Uuid::nil(),
-                    },
-                };
-
-                Ok(song_queue)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn wipe_data(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET data = NULL WHERE id = $1 RETURNING id;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("id")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT data FROM "songQueue"
-            WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let data = row
-                    .try_get("data")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(data)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-}
 
 /// Module for song related endpoints
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
 
-    use crate::callers::song::song_queue;
+    // use crate::callers::song::song_queue;
     use crate::repo;
+    use crate::repo::queue as repo_queue;
 
     /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
@@ -552,11 +246,11 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = song_queue::insert(
+            let queue_repo = repo_queue::song::insert(
                 &pool,
                 &raw_data,
                 &file_name,
-                &super::status::PENDING.to_string(),
+                &repo::queue::song::status::PENDING.to_string(),
             )
             .await
             .unwrap();
@@ -596,9 +290,9 @@ pub mod endpoint {
     ) {
         let mut response = super::response::link_user_id::Response::default();
 
-        match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
+        match repo_queue::song::get_song_queue(&pool, &payload.song_queue_id).await {
             Ok(song_queue) => {
-                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await
+                match repo_queue::song::link_user_id(&pool, &song_queue.id, &payload.user_id).await
                 {
                     Ok(user_id) => {
                         response.message = String::from(crate::callers::response::SUCCESSFUL);
@@ -635,7 +329,7 @@ pub mod endpoint {
     ) {
         let mut response = super::response::fetch_queue_song::Response::default();
 
-        match song_queue::get_most_recent_and_update(&pool).await {
+        match repo_queue::song::get_most_recent_and_update(&pool).await {
             Ok(item) => {
                 response.message = String::from("Successful");
                 response.data.push(item);
@@ -665,7 +359,7 @@ pub mod endpoint {
     ) -> (StatusCode, axum::response::Response) {
         println!("Id: {id}");
 
-        match song_queue::get_data(&pool, &id).await {
+        match repo_queue::song::get_data(&pool, &id).await {
             Ok(data) => {
                 let by = axum::body::Bytes::from(data);
                 let mut response = by.into_response();
@@ -710,12 +404,12 @@ pub mod endpoint {
     ) {
         let mut response = super::response::update_status::Response::default();
 
-        if super::status::is_valid(&payload.status).await {
+        if repo::queue::song::status::is_valid(&payload.status).await {
             let id = payload.id;
             if !id.is_nil() {
-                match super::song_queue::get_status_of_song_queue(&pool, &id).await {
+                match repo::queue::song::get_status_of_song_queue(&pool, &id).await {
                     Ok(old) => {
-                        match super::song_queue::update_song_queue_status(
+                        match repo::queue::song::update_song_queue_status(
                             &pool,
                             &payload.status,
                             &id,
@@ -798,7 +492,7 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            match song_queue::update(&pool, &raw_data, &id).await {
+            match repo_queue::song::update(&pool, &raw_data, &id).await {
                 Ok(_) => {
                     response.message = String::from("Successful");
                     response.data.push(id);
@@ -847,7 +541,7 @@ pub mod endpoint {
             );
             song.directory = icarus_envy::environment::get_root_directory().await.value;
 
-            match song_queue::get_data(&pool, &payload.song_queue_id).await {
+            match repo_queue::song::get_data(&pool, &payload.song_queue_id).await {
                 Ok(data) => {
                     song.data = data;
                     let dir = std::path::Path::new(&song.directory);
@@ -922,8 +616,8 @@ pub mod endpoint {
         let mut response = super::response::wipe_data_from_song_queue::Response::default();
         let id = payload.song_queue_id;
 
-        match super::song_queue::get_song_queue(&pool, &id).await {
-            Ok(song_queue) => match super::song_queue::wipe_data(&pool, &song_queue.id).await {
+        match repo_queue::song::get_song_queue(&pool, &id).await {
+            Ok(song_queue) => match repo_queue::song::wipe_data(&pool, &song_queue.id).await {
                 Ok(wiped_id) => {
                     response.message = String::from("Success");
                     response.data.push(wiped_id);

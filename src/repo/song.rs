@@ -345,3 +345,4 @@ pub async fn delete_song(
         Err(_) => Err(sqlx::Error::RowNotFound),
     }
 }
+
