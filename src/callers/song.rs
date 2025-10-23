@@ -127,7 +127,7 @@ pub mod response {
         #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<crate::callers::song::song_queue::SongQueue>,
+            pub data: Vec<crate::repo::queue::song::SongQueue>,
         }
     }
 
@@ -202,670 +202,13 @@ pub mod response {
 
 // TODO: Might make a distinction between year and date in a song's tag at some point
 
-pub mod status {
-    pub const PENDING: &str = "pending";
-    pub const READY: &str = "ready";
-    pub const PROCESSING: &str = "processing";
-    pub const DONE: &str = "done";
-
-    pub async fn is_valid(status: &str) -> bool {
-        status == PENDING || status == PROCESSING || status == DONE || status == READY
-    }
-}
-
-pub mod song_db {
-    use sqlx::Row;
-
-    // TODO: Change first parameter of return value from string to a time type
-    pub async fn insert(
-        pool: &sqlx::PgPool,
-        song: &icarus_models::song::Song,
-    ) -> Result<(time::OffsetDateTime, uuid::Uuid), sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO "song" (title, artist, album_artist, album, genre, year, track, disc, track_count, disc_count, duration, audio_type, filename, directory, user_id) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING date_created, id;
-            "#
-            )
-            .bind(&song.title)
-            .bind(&song.artist)
-            .bind(&song.album_artist)
-            .bind(&song.album)
-            .bind(&song.genre)
-            .bind(song.year)
-            .bind(song.track)
-            .bind(song.disc)
-            .bind(song.track_count)
-            .bind(song.disc_count)
-            .bind(song.duration)
-            .bind(&song.audio_type)
-            .bind(&song.filename)
-            .bind(&song.directory)
-            .bind(song.user_id)
-            .fetch_one(pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Error inserting query: {e}");
-            });
-
-        match result {
-            Ok(row) => {
-                let id: uuid::Uuid = row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                let date_created_time: time::OffsetDateTime = row
-                    .try_get("date_created")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                let date_created = date_created_time;
-
-                Ok((date_created, id))
-            }
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_song(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<icarus_models::song::Song, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT * FROM "song" WHERE id = $1
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let date_created_time: time::OffsetDateTime = row
-                    .try_get("date_created")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-
-                Ok(icarus_models::song::Song {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    title: row
-                        .try_get("title")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    artist: row
-                        .try_get("artist")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    album_artist: row
-                        .try_get("album_artist")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    album: row
-                        .try_get("album")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    genre: row
-                        .try_get("genre")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    year: row
-                        .try_get("year")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    track: row
-                        .try_get("track")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    disc: row
-                        .try_get("disc")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    track_count: row
-                        .try_get("track_count")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    disc_count: row
-                        .try_get("disc_count")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    duration: row
-                        .try_get("duration")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    audio_type: row
-                        .try_get("audio_type")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    directory: row
-                        .try_get("directory")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    date_created: Some(date_created_time),
-                    user_id: row
-                        .try_get("user_id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    data: Vec::new(),
-                })
-            }
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_all_songs(
-        pool: &sqlx::PgPool,
-    ) -> Result<Vec<icarus_models::song::Song>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT * FROM "song";
-            "#,
-        )
-        .fetch_all(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e:?}");
-        });
-
-        match result {
-            Ok(rows) => {
-                let mut songs: Vec<icarus_models::song::Song> = Vec::new();
-
-                for row in rows {
-                    let date_created_time: time::OffsetDateTime = row
-                        .try_get("date_created")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap();
-
-                    let song = icarus_models::song::Song {
-                        id: row
-                            .try_get("id")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        title: row
-                            .try_get("title")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        artist: row
-                            .try_get("artist")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        album_artist: row
-                            .try_get("album_artist")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        album: row
-                            .try_get("album")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        genre: row
-                            .try_get("genre")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        year: row
-                            .try_get("year")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        track: row
-                            .try_get("track")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        disc: row
-                            .try_get("disc")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        track_count: row
-                            .try_get("track_count")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        disc_count: row
-                            .try_get("disc_count")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        duration: row
-                            .try_get("duration")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        audio_type: row
-                            .try_get("audio_type")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        filename: row
-                            .try_get("filename")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        directory: row
-                            .try_get("directory")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        date_created: Some(date_created_time),
-                        user_id: row
-                            .try_get("user_id")
-                            .map_err(|_e| sqlx::Error::RowNotFound)
-                            .unwrap(),
-                        data: Vec::new(),
-                    };
-
-                    songs.push(song);
-                }
-
-                Ok(songs)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn delete_song(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<icarus_models::song::Song, sqlx::Error> {
-        let result = sqlx::query(
-            // icarus_models::song::Song,
-            r#"
-            DELETE FROM "song"
-            WHERE id = $1
-            RETURNING id, title, artist, album, album_artist, genre, year, disc, track, track_count, disc_count, duration, audio_type, date_created, filename, directory, user_id
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error deleting data: {e:?}")
-        });
-
-        match result {
-            Ok(row) => {
-                let date_created_time: time::OffsetDateTime = row
-                    .try_get("date_created")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-
-                Ok(icarus_models::song::Song {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    title: row
-                        .try_get("title")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    artist: row
-                        .try_get("artist")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    album_artist: row
-                        .try_get("album_artist")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    album: row
-                        .try_get("album")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    genre: row
-                        .try_get("genre")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    year: row
-                        .try_get("year")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    track: row
-                        .try_get("track")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    disc: row
-                        .try_get("disc")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    track_count: row
-                        .try_get("track_count")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    disc_count: row
-                        .try_get("disc_count")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    duration: row
-                        .try_get("duration")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    audio_type: row
-                        .try_get("audio_type")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    directory: row
-                        .try_get("directory")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    date_created: Some(date_created_time),
-                    user_id: row
-                        .try_get("user_id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    data: Vec::new(),
-                })
-            }
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-}
-
-mod song_queue {
-    use sqlx::Row;
-
-    // TODO: Move this somewhere else at some point
-    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
-    pub struct SongQueue {
-        pub id: uuid::Uuid,
-        pub filename: String,
-        pub status: String,
-        pub user_id: uuid::Uuid,
-    }
-
-    pub async fn insert(
-        pool: &sqlx::PgPool,
-        data: &Vec<u8>,
-        filename: &String,
-        status: &String,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            INSERT INTO "songQueue" (data, filename, status) VALUES($1, $2, $3) RETURNING id;
-            "#,
-        )
-        .bind(data)
-        .bind(filename)
-        .bind(status)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let id: uuid::Uuid = row
-                    .try_get("id")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(id)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn update(
-        pool: &sqlx::PgPool,
-        data: &Vec<u8>,
-        id: &uuid::Uuid,
-    ) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET data = $1 WHERE id = $2 RETURNING data;
-            "#,
-        )
-        .bind(data)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("data")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue"
-            SET status = $1
-            WHERE id = (
-                SELECT id FROM "songQueue"
-                WHERE status = $2
-                ORDER BY id
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-            )
-            RETURNING id, filename, status, user_id;
-            "#,
-        )
-        .bind(super::status::PROCESSING)
-        .bind(super::status::READY)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let user_id_result = row.try_get("user_id");
-                let song_queue = SongQueue {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    status: row
-                        .try_get("status")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    user_id: match user_id_result {
-                        Ok(id) => id,
-                        Err(_) => uuid::Uuid::nil(),
-                    },
-                };
-
-                Ok(song_queue)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_status_of_song_queue(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<String, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, status FROM "songQueue" WHERE id = $1
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error selecting: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("status")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn update_song_queue_status(
-        pool: &sqlx::PgPool,
-        status: &String,
-        id: &uuid::Uuid,
-    ) -> Result<String, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET status = $1 WHERE id = $2 RETURNING status;
-            "#,
-        )
-        .bind(status)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("status")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn link_user_id(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-        user_id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET user_id = $1 WHERE id = $2 RETURNING user_id;
-            "#,
-        )
-        .bind(user_id)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("user_id")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_song_queue(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<SongQueue, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT id, filename, status, user_id FROM "songQueue" WHERE id = $1
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error querying data: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let user_id_result = row.try_get("user_id");
-                let song_queue = SongQueue {
-                    id: row
-                        .try_get("id")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    filename: row
-                        .try_get("filename")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    status: row
-                        .try_get("status")
-                        .map_err(|_e| sqlx::Error::RowNotFound)
-                        .unwrap(),
-                    user_id: match user_id_result {
-                        Ok(id) => id,
-                        Err(_) => uuid::Uuid::nil(),
-                    },
-                };
-
-                Ok(song_queue)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn wipe_data(
-        pool: &sqlx::PgPool,
-        id: &uuid::Uuid,
-    ) -> Result<uuid::Uuid, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            UPDATE "songQueue" SET data = NULL WHERE id = $1 RETURNING id;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error updating record: {e}");
-        });
-
-        match result {
-            Ok(row) => Ok(row
-                .try_get("id")
-                .map_err(|_e| sqlx::Error::RowNotFound)
-                .unwrap()),
-            Err(_) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-
-    pub async fn get_data(pool: &sqlx::PgPool, id: &uuid::Uuid) -> Result<Vec<u8>, sqlx::Error> {
-        let result = sqlx::query(
-            r#"
-            SELECT data FROM "songQueue"
-            WHERE id = $1;
-            "#,
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| {
-            eprintln!("Error inserting: {e}");
-        });
-
-        match result {
-            Ok(row) => {
-                let data = row
-                    .try_get("data")
-                    .map_err(|_e| sqlx::Error::RowNotFound)
-                    .unwrap();
-                Ok(data)
-            }
-            Err(_err) => Err(sqlx::Error::RowNotFound),
-        }
-    }
-}
-
 /// Module for song related endpoints
 pub mod endpoint {
     use axum::{Json, http::StatusCode, response::IntoResponse};
 
-    use crate::callers::song::song_queue;
+    // use crate::callers::song::song_queue;
+    use crate::repo;
+    use crate::repo::queue as repo_queue;
 
     /// Endpoint to queue a song. Starts the process and places the song in a queue
     #[utoipa::path(
@@ -902,11 +245,11 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = song_queue::insert(
+            let queue_repo = repo_queue::song::insert(
                 &pool,
                 &raw_data,
                 &file_name,
-                &super::status::PENDING.to_string(),
+                &repo::queue::song::status::PENDING.to_string(),
             )
             .await
             .unwrap();
@@ -946,9 +289,9 @@ pub mod endpoint {
     ) {
         let mut response = super::response::link_user_id::Response::default();
 
-        match super::song_queue::get_song_queue(&pool, &payload.song_queue_id).await {
+        match repo_queue::song::get_song_queue(&pool, &payload.song_queue_id).await {
             Ok(song_queue) => {
-                match super::song_queue::link_user_id(&pool, &song_queue.id, &payload.user_id).await
+                match repo_queue::song::link_user_id(&pool, &song_queue.id, &payload.user_id).await
                 {
                     Ok(user_id) => {
                         response.message = String::from(crate::callers::response::SUCCESSFUL);
@@ -985,7 +328,7 @@ pub mod endpoint {
     ) {
         let mut response = super::response::fetch_queue_song::Response::default();
 
-        match song_queue::get_most_recent_and_update(&pool).await {
+        match repo_queue::song::get_most_recent_and_update(&pool).await {
             Ok(item) => {
                 response.message = String::from("Successful");
                 response.data.push(item);
@@ -1015,7 +358,7 @@ pub mod endpoint {
     ) -> (StatusCode, axum::response::Response) {
         println!("Id: {id}");
 
-        match song_queue::get_data(&pool, &id).await {
+        match repo_queue::song::get_data(&pool, &id).await {
             Ok(data) => {
                 let by = axum::body::Bytes::from(data);
                 let mut response = by.into_response();
@@ -1060,12 +403,12 @@ pub mod endpoint {
     ) {
         let mut response = super::response::update_status::Response::default();
 
-        if super::status::is_valid(&payload.status).await {
+        if repo::queue::song::status::is_valid(&payload.status).await {
             let id = payload.id;
             if !id.is_nil() {
-                match super::song_queue::get_status_of_song_queue(&pool, &id).await {
+                match repo::queue::song::get_status_of_song_queue(&pool, &id).await {
                     Ok(old) => {
-                        match super::song_queue::update_song_queue_status(
+                        match repo::queue::song::update_song_queue_status(
                             &pool,
                             &payload.status,
                             &id,
@@ -1148,7 +491,7 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            match song_queue::update(&pool, &raw_data, &id).await {
+            match repo_queue::song::update(&pool, &raw_data, &id).await {
                 Ok(_) => {
                     response.message = String::from("Successful");
                     response.data.push(id);
@@ -1197,7 +540,7 @@ pub mod endpoint {
             );
             song.directory = icarus_envy::environment::get_root_directory().await.value;
 
-            match song_queue::get_data(&pool, &payload.song_queue_id).await {
+            match repo_queue::song::get_data(&pool, &payload.song_queue_id).await {
                 Ok(data) => {
                     song.data = data;
                     let dir = std::path::Path::new(&song.directory);
@@ -1214,7 +557,7 @@ pub mod endpoint {
                     }
 
                     match song.save_to_filesystem() {
-                        Ok(_) => match super::song_db::insert(&pool, &song).await {
+                        Ok(_) => match repo::song::insert(&pool, &song).await {
                             Ok((date_created, id)) => {
                                 song.id = id;
                                 song.date_created = Some(date_created);
@@ -1272,8 +615,8 @@ pub mod endpoint {
         let mut response = super::response::wipe_data_from_song_queue::Response::default();
         let id = payload.song_queue_id;
 
-        match super::song_queue::get_song_queue(&pool, &id).await {
-            Ok(song_queue) => match super::song_queue::wipe_data(&pool, &song_queue.id).await {
+        match repo_queue::song::get_song_queue(&pool, &id).await {
+            Ok(song_queue) => match repo_queue::song::wipe_data(&pool, &song_queue.id).await {
                 Ok(wiped_id) => {
                     response.message = String::from("Success");
                     response.data.push(wiped_id);
@@ -1314,7 +657,7 @@ pub mod endpoint {
         let mut response = super::response::get_songs::Response::default();
 
         match params.id {
-            Some(id) => match super::song_db::get_song(&pool, &id).await {
+            Some(id) => match repo::song::get_song(&pool, &id).await {
                 Ok(song) => {
                     response.message = String::from(super::super::response::SUCCESSFUL);
                     response.data.push(song);
@@ -1349,7 +692,7 @@ pub mod endpoint {
     ) {
         let mut response = super::response::get_songs::Response::default();
 
-        match super::song_db::get_all_songs(&pool).await {
+        match repo::song::get_all_songs(&pool).await {
             Ok(songs) => {
                 response.message = String::from(super::super::response::SUCCESSFUL);
                 response.data = songs;
@@ -1376,7 +719,7 @@ pub mod endpoint {
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> impl IntoResponse {
-        match super::song_db::get_song(&pool, &id).await {
+        match repo::song::get_song(&pool, &id).await {
             Ok(song) => {
                 let song_path = song.song_path().unwrap();
                 let path = std::path::Path::new(&song_path);
@@ -1434,7 +777,7 @@ pub mod endpoint {
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (axum::http::StatusCode, axum::response::Response) {
-        match super::song_db::get_song(&pool, &id).await {
+        match repo::song::get_song(&pool, &id).await {
             Ok(song) => match icarus_models::song::io::to_data(&song) {
                 Ok(data) => {
                     let bytes = axum::body::Bytes::from(data);
@@ -1485,11 +828,9 @@ pub mod endpoint {
     ) {
         let mut response = super::response::delete_song::Response::default();
 
-        match super::song_db::get_song(&pool, &id).await {
+        match repo::song::get_song(&pool, &id).await {
             Ok(song) => {
-                match super::super::coverart::cov_db::get_coverart_with_song_id(&pool, &song.id)
-                    .await
-                {
+                match repo::coverart::get_coverart_with_song_id(&pool, &song.id).await {
                     Ok(coverart) => {
                         let coverart_path_str = match coverart.get_path() {
                             Ok(path) => path,
@@ -1504,13 +845,9 @@ pub mod endpoint {
                         let coverart_path = std::path::Path::new(&coverart_path_str);
 
                         if coverart_path.exists() {
-                            match super::song_db::delete_song(&pool, &song.id).await {
+                            match repo::song::delete_song(&pool, &song.id).await {
                                 Ok(deleted_song) => {
-                                    match super::super::coverart::cov_db::delete_coverart(
-                                        &pool,
-                                        &coverart.id,
-                                    )
-                                    .await
+                                    match repo::coverart::delete_coverart(&pool, &coverart.id).await
                                     {
                                         Ok(deleted_coverart) => {
                                             match song.remove_from_filesystem() {

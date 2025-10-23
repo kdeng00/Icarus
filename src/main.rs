@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod callers;
+pub mod repo;
 
 pub mod db {
 
@@ -647,7 +648,7 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let payload = serde_json::json!({
             "id": &song_queue_id,
-            "status": crate::callers::song::status::READY
+            "status": crate::repo::queue::song::status::READY
         });
 
         let req = axum::http::Request::builder()
@@ -1029,8 +1030,8 @@ mod tests {
 
                 let _resp_coverart_queue_id = resp.data[0].id;
 
-                let old = crate::callers::song::status::PENDING;
-                let target_status = crate::callers::song::status::READY;
+                let old = crate::repo::queue::song::status::PENDING;
+                let target_status = crate::repo::queue::song::status::READY;
 
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
@@ -1262,8 +1263,8 @@ mod tests {
 
                 let _resp_coverart_queue_id = resp.data[0].id;
 
-                let old = crate::callers::song::status::PENDING;
-                let done = crate::callers::song::status::READY;
+                let old = crate::repo::queue::song::status::PENDING;
+                let done = crate::repo::queue::song::status::READY;
 
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
