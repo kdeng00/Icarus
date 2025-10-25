@@ -58,12 +58,12 @@ pub mod init {
     use crate::callers::song as song_caller;
     use coverart_caller::endpoint as coverart_endpoints;
     use coverart_caller::response as coverart_responses;
+    use coverart_queue_callers::endpoint as coverart_queue_endpoints;
+    use coverart_queue_callers::response as coverart_queue_responses;
     use metadata_caller::endpoint as metadata_endpoints;
     use metadata_caller::response as metadata_responses;
     use song_caller::endpoint as song_endpoints;
     use song_caller::response as song_responses;
-    use coverart_queue_callers::endpoint as coverart_queue_endpoints;
-    use coverart_queue_callers::response as coverart_queue_responses;
 
     mod cors {
         pub async fn configure_cors() -> tower_http::cors::CorsLayer {
@@ -199,9 +199,10 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERARTDATA,
-                get(crate::callers::queue::coverart::endpoint::fetch_coverart_with_data).route_layer(
-                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
-                ),
+                get(crate::callers::queue::coverart::endpoint::fetch_coverart_with_data)
+                    .route_layer(axum::middleware::from_fn(
+                        crate::auth::auth::<axum::body::Body>,
+                    )),
             )
             .route(
                 crate::callers::endpoints::QUEUECOVERART,

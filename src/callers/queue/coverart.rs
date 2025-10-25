@@ -51,7 +51,6 @@ pub mod request {
     }
 }
 
-
 pub mod response {
     pub mod queue {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
@@ -100,7 +99,6 @@ pub mod response {
     }
 }
 
-
 mod helper {
     pub fn is_coverart_file_type_valid(file_type: &String) -> bool {
         let valid_file_types = vec![
@@ -119,12 +117,10 @@ mod helper {
     }
 }
 
-
 pub mod endpoint {
     use axum::response::IntoResponse;
 
     use crate::repo::queue as repo;
-
 
     /// Endpoint to queue cover art
     #[utoipa::path(
@@ -183,8 +179,7 @@ pub mod endpoint {
                         file_type
                     );
 
-                    match repo::coverart::insert(&pool, &raw_data, &file_type.file_type).await
-                    {
+                    match repo::coverart::insert(&pool, &raw_data, &file_type.file_type).await {
                         Ok(id) => {
                             response.message = String::from("Successful");
                             response.data.push(id);
@@ -283,24 +278,22 @@ pub mod endpoint {
                 }
             },
             _ => match params.song_queue_id {
-                Some(song_queue_id) => {
-                    match repo::coverart::get_coverart_queue_with_song_queue_id(
-                        &pool,
-                        &song_queue_id,
-                    )
-                    .await
-                    {
-                        Ok(cover_art_queue) => {
-                            response.message = String::from("Successful");
-                            response.data.push(cover_art_queue);
-                            (axum::http::StatusCode::OK, axum::Json(response))
-                        }
-                        Err(err) => {
-                            response.message = err.to_string();
-                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
-                        }
+                Some(song_queue_id) => match repo::coverart::get_coverart_queue_with_song_queue_id(
+                    &pool,
+                    &song_queue_id,
+                )
+                .await
+                {
+                    Ok(cover_art_queue) => {
+                        response.message = String::from("Successful");
+                        response.data.push(cover_art_queue);
+                        (axum::http::StatusCode::OK, axum::Json(response))
                     }
-                }
+                    Err(err) => {
+                        response.message = err.to_string();
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    }
+                },
                 None => {
                     response.message = String::from("No valid id provided");
                     (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))

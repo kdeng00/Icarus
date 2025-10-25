@@ -33,13 +33,11 @@ pub mod response {
     }
 }
 
-
 pub mod endpoint {
     use axum::response::IntoResponse;
 
     use crate::repo;
     use crate::repo::queue as repo_queue;
-
 
     /// Endpoint to create cover art
     #[utoipa::path(
@@ -121,7 +119,6 @@ pub mod endpoint {
             }
         }
     }
-
 
     /// Endpoint to get cover art with criteria
     #[utoipa::path(
