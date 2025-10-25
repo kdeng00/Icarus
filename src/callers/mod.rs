@@ -1,5 +1,6 @@
 pub mod coverart;
 pub mod metadata;
+pub mod queue;
 pub mod song;
 
 pub mod endpoints {
