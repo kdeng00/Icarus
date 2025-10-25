@@ -54,7 +54,7 @@ pub async fn update(
 pub async fn get_coverart_queue_with_id(
     pool: &sqlx::PgPool,
     id: &uuid::Uuid,
-) -> Result<crate::callers::coverart::CoverArtQueue, sqlx::Error> {
+) -> Result<crate::callers::queue::coverart::CoverArtQueue, sqlx::Error> {
     let result = sqlx::query(
         r#"
         SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE id = $1;
@@ -68,7 +68,7 @@ pub async fn get_coverart_queue_with_id(
     });
 
     match result {
-        Ok(row) => Ok(crate::callers::coverart::CoverArtQueue {
+        Ok(row) => Ok(crate::callers::queue::coverart::CoverArtQueue {
             id: row
                 .try_get("id")
                 .map_err(|_e| sqlx::Error::RowNotFound)
@@ -89,7 +89,7 @@ pub async fn get_coverart_queue_with_id(
 pub async fn get_coverart_queue_with_song_queue_id(
     pool: &sqlx::PgPool,
     song_queue_id: &uuid::Uuid,
-) -> Result<crate::callers::coverart::CoverArtQueue, sqlx::Error> {
+) -> Result<crate::callers::queue::coverart::CoverArtQueue, sqlx::Error> {
     let result = sqlx::query(
         r#"
         SELECT id, file_type, song_queue_id FROM "coverartQueue" WHERE song_queue_id = $1;
@@ -103,7 +103,7 @@ pub async fn get_coverart_queue_with_song_queue_id(
     });
 
     match result {
-        Ok(row) => Ok(crate::callers::coverart::CoverArtQueue {
+        Ok(row) => Ok(crate::callers::queue::coverart::CoverArtQueue {
             id: row
                 .try_get("id")
                 .map_err(|_e| sqlx::Error::RowNotFound)
