@@ -747,11 +747,10 @@ mod tests {
         ) -> Result<axum::response::Response, std::convert::Infallible> {
             match super::upload_coverart_queue_req(&app).await {
                 Ok(response) => {
-                    let resp =
-                        super::get_resp_data::<crate::callers::coverart::response::Response>(
-                            response,
-                        )
-                        .await;
+                    let resp = super::get_resp_data::<
+                        crate::callers::queue::coverart::response::queue::Response,
+                    >(response)
+                    .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     let coverart_id = resp.data[0];
                     assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
@@ -765,7 +764,7 @@ mod tests {
                     {
                         Ok(response) => {
                             let resp = super::get_resp_data::<
-                                crate::callers::coverart::response::link::Response,
+                                crate::callers::queue::coverart::response::link::Response,
                             >(response)
                             .await;
                             assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1027,7 +1026,7 @@ mod tests {
         match sequence_flow::queue_song_and_coverart_flow(&app).await {
             Ok((resp_one, song_queue_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                    crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                 >(resp_one)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1260,7 +1259,7 @@ mod tests {
         match sequence_flow::queue_song_and_coverart_flow(&app).await {
             Ok((resp_one, song_queue_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                    crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                 >(resp_one)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1400,8 +1399,10 @@ mod tests {
         // Send request
         match upload_coverart_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::coverart::response::queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 let id = resp.data[0];
                 assert_eq!(false, id.is_nil(), "Should not be empty");
@@ -1435,8 +1436,10 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::coverart::response::queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 let song_queue_id = resp.data[0];
                 assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
@@ -1444,9 +1447,10 @@ mod tests {
                 // Send request
                 match upload_coverart_queue_req(&app).await {
                     Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::coverart::response::Response>(response)
-                                .await;
+                        let resp = get_resp_data::<
+                            crate::callers::queue::coverart::response::queue::Response,
+                        >(response)
+                        .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
@@ -1456,7 +1460,7 @@ mod tests {
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
-                                    crate::callers::coverart::response::link::Response,
+                                    crate::callers::queue::coverart::response::link::Response,
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1509,8 +1513,10 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::coverart::response::queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 let song_queue_id = resp.data[0];
                 assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
@@ -1518,7 +1524,7 @@ mod tests {
                 match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
-                            crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                            crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                         >(response)
                         .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1557,8 +1563,10 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::coverart::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::coverart::response::queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 let song_queue_id = resp.data[0];
                 assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
@@ -1566,9 +1574,10 @@ mod tests {
                 // Send request
                 match upload_coverart_queue_req(&app).await {
                     Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::coverart::response::Response>(response)
-                                .await;
+                        let resp = get_resp_data::<
+                            crate::callers::queue::coverart::response::queue::Response,
+                        >(response)
+                        .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
@@ -1578,7 +1587,7 @@ mod tests {
                         {
                             Ok(response) => {
                                 let resp = get_resp_data::<
-                                    crate::callers::coverart::response::link::Response,
+                                    crate::callers::queue::coverart::response::link::Response,
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1778,7 +1787,7 @@ mod tests {
                         match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
-                                                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                                                    crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                                                 >(response)
                                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1979,7 +1988,7 @@ mod tests {
                         match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
-                                    crate::callers::coverart::response::fetch_coverart_no_data::Response,
+                                    crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -2011,7 +2020,7 @@ mod tests {
                                 {
                                     Ok(response) => {
                                         let resp = get_resp_data::<
-                                            crate::callers::coverart::response::wipe_data_from_coverart_queue::Response,
+                                            crate::callers::queue::coverart::response::wipe_data_from_coverart_queue::Response,
                                         >(response)
                                         .await;
                                         assert_eq!(
