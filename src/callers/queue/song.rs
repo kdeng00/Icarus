@@ -1,5 +1,4 @@
 pub mod request {
-
     pub mod song_queue {
         #[derive(utoipa::ToSchema)]
         pub struct SongQueueRequest {
@@ -38,7 +37,6 @@ pub mod request {
 }
 
 pub mod response {
-
     pub mod song_queue {
         /// Song queue response
         #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]

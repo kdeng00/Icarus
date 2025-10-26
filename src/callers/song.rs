@@ -1,12 +1,4 @@
 pub mod request {
-    use serde::{Deserialize, Serialize};
-
-    // TODO: Might not be used
-    #[derive(Default, Deserialize, Serialize)]
-    pub struct Request {
-        pub message: String,
-    }
-
     pub mod create_metadata {
         #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
@@ -112,7 +104,6 @@ pub mod response {
 pub mod endpoint {
     use axum::{Json, response::IntoResponse};
 
-    // use crate::callers::song::song_queue;
     use crate::repo;
     use crate::repo::queue as repo_queue;
 
