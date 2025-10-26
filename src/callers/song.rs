@@ -7,8 +7,6 @@ pub mod request {
         pub message: String,
     }
 
-
-
     pub mod create_metadata {
         #[derive(Debug, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Request {
@@ -68,7 +66,6 @@ pub mod request {
         }
     }
 
-
     pub mod get_songs {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Params {
@@ -85,7 +82,6 @@ pub mod response {
             pub data: Vec<icarus_models::song::Song>,
         }
     }
-
 
     pub mod get_songs {
         #[derive(Debug, Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
@@ -119,7 +115,6 @@ pub mod endpoint {
     // use crate::callers::song::song_queue;
     use crate::repo;
     use crate::repo::queue as repo_queue;
-
 
     /// Endpoint to create song
     #[utoipa::path(
@@ -203,7 +198,6 @@ pub mod endpoint {
             (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
         }
     }
-
 
     // Endpoint to get songs
     #[utoipa::path(

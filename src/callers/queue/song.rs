@@ -37,17 +37,16 @@ pub mod request {
     }
 }
 
-
 pub mod response {
 
     pub mod song_queue {
-    /// Song queue response
-    #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
-    pub struct Response {
-        pub message: String,
-        /// Id of the queued song
-        pub data: Vec<uuid::Uuid>,
-    }
+        /// Song queue response
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
+        pub struct Response {
+            pub message: String,
+            /// Id of the queued song
+            pub data: Vec<uuid::Uuid>,
+        }
     }
 
     pub mod fetch_queue_song {
@@ -99,7 +98,6 @@ pub mod response {
     }
 }
 
-
 pub mod endpoint {
     use axum::response::IntoResponse;
 
@@ -121,7 +119,10 @@ pub mod endpoint {
     pub async fn queue_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         mut multipart: axum::extract::Multipart,
-    ) -> (axum::http::StatusCode, axum::Json<super::response::song_queue::Response>) {
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::song_queue::Response>,
+    ) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::song_queue::Response::default();
 
@@ -186,8 +187,7 @@ pub mod endpoint {
 
         match repo::song::get_song_queue(&pool, &payload.song_queue_id).await {
             Ok(song_queue) => {
-                match repo::song::link_user_id(&pool, &song_queue.id, &payload.user_id).await
-                {
+                match repo::song::link_user_id(&pool, &song_queue.id, &payload.user_id).await {
                     Ok(user_id) => {
                         response.message = String::from(crate::callers::response::SUCCESSFUL);
                         response.data.push(user_id);
@@ -271,7 +271,10 @@ pub mod endpoint {
 
                 (axum::http::StatusCode::OK, response)
             }
-            Err(_err) => (axum::http::StatusCode::BAD_REQUEST, axum::response::Response::default()),
+            Err(_err) => (
+                axum::http::StatusCode::BAD_REQUEST,
+                axum::response::Response::default(),
+            ),
         }
     }
 
@@ -303,12 +306,8 @@ pub mod endpoint {
             if !id.is_nil() {
                 match repo::song::get_status_of_song_queue(&pool, &id).await {
                     Ok(old) => {
-                        match repo::song::update_song_queue_status(
-                            &pool,
-                            &payload.status,
-                            &id,
-                        )
-                        .await
+                        match repo::song::update_song_queue_status(&pool, &payload.status, &id)
+                            .await
                         {
                             Ok(new) => {
                                 response.message = String::from("Successful");

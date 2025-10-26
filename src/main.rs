@@ -178,9 +178,10 @@ pub mod init {
             )
             .route(
                 crate::callers::queue::endpoints::QUEUESONGDATAWIPE,
-                patch(crate::callers::queue::song::endpoint::wipe_data_from_song_queue).route_layer(
-                    axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
-                ),
+                patch(crate::callers::queue::song::endpoint::wipe_data_from_song_queue)
+                    .route_layer(axum::middleware::from_fn(
+                        crate::auth::auth::<axum::body::Body>,
+                    )),
             )
             .route(
                 crate::callers::endpoints::QUEUEMETADATA,
