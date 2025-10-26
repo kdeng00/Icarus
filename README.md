@@ -3,11 +3,11 @@ Web API for the Icarus project.
 
 
 ### Requires
-`icarus_auth` +v0.6.5  
-`songparser` +v0.4.8
+`icarus_auth` v0.6.x  
+`songparser` v0.4.x
 
 ### Compatible with
-`icarus-dm` v0.8.4  
+`icarus-dm` v0.8.x  
 
 
 ## Getting Started
