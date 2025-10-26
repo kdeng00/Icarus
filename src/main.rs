@@ -475,7 +475,7 @@ mod tests {
         let body = MultipartBody::from(form);
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUESONG)
+            .uri(crate::callers::queue::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, content_type)
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
@@ -495,7 +495,7 @@ mod tests {
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::PATCH)
-            .uri(crate::callers::endpoints::QUEUESONGLINKUSERID)
+            .uri(crate::callers::queue::endpoints::QUEUESONGLINKUSERID)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
@@ -509,7 +509,7 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let fetch_req = axum::http::Request::builder()
             .method(axum::http::Method::GET)
-            .uri(crate::callers::endpoints::NEXTQUEUESONG)
+            .uri(crate::callers::queue::endpoints::NEXTQUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::empty())
@@ -538,7 +538,7 @@ mod tests {
         app: &axum::Router,
         id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
-        let raw_uri = String::from(crate::callers::endpoints::QUEUESONGDATA);
+        let raw_uri = String::from(crate::callers::queue::endpoints::QUEUESONGDATA);
         let end_index = raw_uri.len() - 4;
         let mut uri: String = (&raw_uri[..end_index]).to_string();
         uri += &id.to_string();
@@ -565,7 +565,7 @@ mod tests {
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUECOVERART)
+            .uri(crate::callers::queue::endpoints::QUEUECOVERART)
             .header(axum::http::header::CONTENT_TYPE, content_type)
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from_stream(body))
@@ -604,7 +604,7 @@ mod tests {
         });
         let req = axum::http::Request::builder()
             .method(axum::http::Method::PATCH)
-            .uri(crate::callers::endpoints::QUEUECOVERARTLINK)
+            .uri(crate::callers::queue::endpoints::QUEUECOVERARTLINK)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
@@ -661,7 +661,7 @@ mod tests {
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::PATCH)
-            .uri(crate::callers::endpoints::QUEUESONG)
+            .uri(crate::callers::queue::endpoints::QUEUESONG)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
@@ -676,7 +676,7 @@ mod tests {
     ) -> Result<axum::response::Response, std::convert::Infallible> {
         let uri = format!(
             "{}?id={}",
-            crate::callers::endpoints::QUEUECOVERART,
+            crate::callers::queue::endpoints::QUEUECOVERART,
             coverart_queue_id
         );
 
@@ -698,9 +698,10 @@ mod tests {
         ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match super::song_queue_req(&app).await {
                 Ok(response) => {
-                    let resp =
-                        super::get_resp_data::<crate::callers::song::response::Response>(response)
-                            .await;
+                    let resp = super::get_resp_data::<
+                        crate::callers::queue::song::response::song_queue::Response,
+                    >(response)
+                    .await;
                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
                     let song_queue_id = resp.data[0];
@@ -711,7 +712,7 @@ mod tests {
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
                             let resp = super::get_resp_data::<
-                                crate::callers::song::response::link_user_id::Response,
+                                crate::callers::queue::song::response::link_user_id::Response,
                             >(response)
                             .await;
                             assert_eq!(
@@ -723,7 +724,7 @@ mod tests {
                             match super::queue_metadata_req(&app, &song_queue_id).await {
                                 Ok(response) => {
                                     let resp = super::get_resp_data::<
-                                        crate::callers::song::response::Response,
+                                        crate::callers::queue::song::response::song_queue::Response,
                                     >(response)
                                     .await;
                                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -932,8 +933,10 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::song::response::song_queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
             }
@@ -966,8 +969,10 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::song::response::song_queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
@@ -978,7 +983,7 @@ mod tests {
                 match song_queue_link_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
-                            crate::callers::song::response::link_user_id::Response,
+                            crate::callers::queue::song::response::link_user_id::Response,
                         >(response)
                         .await;
                         let collected_user_id = &resp.data[0];
@@ -1043,7 +1048,7 @@ mod tests {
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
-                            crate::callers::song::response::update_status::Response,
+                            crate::callers::queue::song::response::update_status::Response,
                         >(response)
                         .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1058,7 +1063,7 @@ mod tests {
                         match fetch_queue_req(&app).await {
                             Ok(response) => {
                                 let resp = get_resp_data::<
-                                    crate::callers::song::response::fetch_queue_song::Response,
+                                    crate::callers::queue::song::response::fetch_queue_song::Response,
                                 >(response)
                                 .await;
                                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1103,8 +1108,10 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::song::response::song_queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
@@ -1118,19 +1125,32 @@ mod tests {
                             let temp_file =
                                 tempfile::tempdir().expect("Could not create test directory");
                             let test_dir = String::from(temp_file.path().to_str().unwrap());
-                            let new_file = format!("{}/new_file.flac", test_dir);
-
-                            let mut file = std::fs::File::create(&new_file).unwrap();
-                            file.write_all(&bytes).unwrap();
+                            let song = icarus_models::song::Song {
+                                directory: test_dir,
+                                filename: icarus_models::song::generate_filename(
+                                    icarus_models::types::MusicTypes::FlacExtension,
+                                    true,
+                                ),
+                                data: bytes.to_vec(),
+                                ..Default::default()
+                            };
+                            match song.save_to_filesystem() {
+                                Ok(_) => {}
+                                Err(err) => {
+                                    assert!(false, "Error: {err:?}")
+                                }
+                            }
+                            let songpath = song.song_path().unwrap();
 
                             let mut form = MultipartForm::default();
-                            let _ = form.add_file("flac", new_file);
+                            let _ = form.add_file("flac", &songpath);
 
                             // Create request
                             let content_type = form.content_type();
                             let body = MultipartBody::from(form);
 
-                            let raw_uri = String::from(crate::callers::endpoints::QUEUESONGUPDATE);
+                            let raw_uri =
+                                String::from(crate::callers::queue::endpoints::QUEUESONGUPDATE);
                             let end_index = raw_uri.len() - 5;
 
                             let uri = format!(
@@ -1157,7 +1177,7 @@ mod tests {
                             {
                                 Ok(response) => {
                                     let resp = get_resp_data::<
-                                        crate::callers::song::response::update_song_queue::Response,
+                                        crate::callers::queue::song::response::update_song_queue::Response,
                                     >(response)
                                     .await;
                                     assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1213,8 +1233,10 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::song::response::song_queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
                 let id = resp.data[0];
@@ -1276,7 +1298,7 @@ mod tests {
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
                         let resp = get_resp_data::<
-                            crate::callers::song::response::update_status::Response,
+                            crate::callers::queue::song::response::update_status::Response,
                         >(response)
                         .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
@@ -1320,16 +1342,19 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp =
-                    get_resp_data::<crate::callers::song::response::Response>(response).await;
+                let resp = get_resp_data::<
+                    crate::callers::queue::song::response::song_queue::Response,
+                >(response)
+                .await;
                 assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
 
                 match queue_metadata_req(&app, &resp.data[0]).await {
                     Ok(response) => {
-                        let resp =
-                            get_resp_data::<crate::callers::song::response::Response>(response)
-                                .await;
+                        let resp = get_resp_data::<
+                            crate::callers::queue::song::response::song_queue::Response,
+                        >(response)
+                        .await;
                         assert_eq!(false, resp.data.is_empty(), "Should not be empty");
                     }
                     Err(err) => {
@@ -1605,8 +1630,9 @@ mod tests {
                                     "Should not be empty"
                                 );
 
-                                let raw_uri =
-                                    String::from(crate::callers::endpoints::QUEUECOVERARTDATA);
+                                let raw_uri = String::from(
+                                    crate::callers::queue::endpoints::QUEUECOVERARTDATA,
+                                );
                                 let end_index = raw_uri.len() - 5;
                                 let uri = format!(
                                     "{}/{}",
@@ -1890,7 +1916,7 @@ mod tests {
                             .oneshot(
                                 axum::http::Request::builder()
                                     .method(axum::http::Method::PATCH)
-                                    .uri(crate::callers::endpoints::QUEUESONGDATAWIPE)
+                                    .uri(crate::callers::queue::endpoints::QUEUESONGDATAWIPE)
                                     .header(axum::http::header::CONTENT_TYPE, "application/json")
                                     .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
                                     .body(axum::body::Body::from(payload.to_string()))
@@ -1899,7 +1925,7 @@ mod tests {
                             .await
                         {
                             Ok(response) => {
-                                let resp = get_resp_data::<crate::callers::song::response::wipe_data_from_song_queue::Response>(response).await;
+                                let resp = get_resp_data::<crate::callers::queue::song::response::wipe_data_from_song_queue::Response>(response).await;
                                 assert_eq!(
                                     false,
                                     resp.data.is_empty(),
@@ -2008,7 +2034,7 @@ mod tests {
                                     .oneshot(
                                         axum::http::Request::builder()
                                             .method(axum::http::Method::PATCH)
-                                            .uri(crate::callers::endpoints::QUEUECOVERARTDATAWIPE)
+                                            .uri(crate::callers::queue::endpoints::QUEUECOVERARTDATAWIPE)
                                             .header(
                                                 axum::http::header::CONTENT_TYPE,
                                                 "application/json",
