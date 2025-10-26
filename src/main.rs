@@ -55,6 +55,7 @@ pub mod init {
     use crate::callers::coverart as coverart_caller;
     use crate::callers::metadata as metadata_caller;
     use crate::callers::queue::coverart as coverart_queue_callers;
+    use crate::callers::queue::song as song_queue_callers;
     use crate::callers::song as song_caller;
     use coverart_caller::endpoint as coverart_endpoints;
     use coverart_caller::response as coverart_responses;
@@ -64,6 +65,8 @@ pub mod init {
     use metadata_caller::response as metadata_responses;
     use song_caller::endpoint as song_endpoints;
     use song_caller::response as song_responses;
+    use song_queue_callers::endpoint as song_queue_endpoints;
+    use song_queue_callers::response as song_queue_responses;
 
     mod cors {
         pub async fn configure_cors() -> tower_http::cors::CorsLayer {
@@ -115,15 +118,15 @@ pub mod init {
 
     #[derive(utoipa::OpenApi)]
     #[openapi(
-        paths(song_endpoints::queue_song, song_endpoints::link_user_id, song_endpoints::fetch_queue_song, song_endpoints::download_queued_song,
-            song_endpoints::update_song_queue_status, song_endpoints::update_song_queue, song_endpoints::create_metadata, song_endpoints::wipe_data_from_song_queue, song_endpoints::get_songs, song_endpoints::get_all_songs, song_endpoints::stream_song, song_endpoints::download_song,
+        paths(song_queue_endpoints::queue_song, song_queue_endpoints::link_user_id, song_queue_endpoints::fetch_queue_song, song_queue_endpoints::download_queued_song,
+            song_queue_endpoints::update_song_queue_status, song_queue_endpoints::update_song_queue, song_endpoints::create_metadata, song_queue_endpoints::wipe_data_from_song_queue, song_endpoints::get_songs, song_endpoints::get_all_songs, song_endpoints::stream_song, song_endpoints::download_song,
             song_endpoints::delete_song, coverart_queue_endpoints::queue, coverart_queue_endpoints::link, coverart_queue_endpoints::fetch_coverart_no_data,
             coverart_queue_endpoints::fetch_coverart_with_data, coverart_endpoints::create_coverart, coverart_queue_endpoints::wipe_data_from_coverart_queue,
             coverart_endpoints::get_coverart, coverart_endpoints::download_coverart,
             metadata_endpoints::queue_metadata, metadata_endpoints::fetch_metadata),
-        components(schemas(song_responses::Response, song_responses::link_user_id::Response, song_responses::fetch_queue_song::Response,
-                song_responses::update_status::Response, song_responses::update_song_queue::Response, song_responses::create_metadata::Response,
-                song_responses::wipe_data_from_song_queue::Response, song_responses::get_songs::Response, song_responses::delete_song::Response,
+        components(schemas(song_queue_callers::response::song_queue::Response, song_queue_callers::response::link_user_id::Response, song_queue_callers::response::fetch_queue_song::Response,
+                song_queue_responses::update_status::Response, song_queue_callers::response::update_song_queue::Response, song_responses::create_metadata::Response,
+                song_queue_callers::response::wipe_data_from_song_queue::Response, song_responses::get_songs::Response, song_responses::delete_song::Response,
                 coverart_queue_responses::queue::Response, coverart_queue_responses::link::Response, coverart_queue_responses::fetch_coverart_no_data::Response,
                 coverart_queue_responses::fetch_coverart_with_data::Response, coverart_responses::create_coverart::Response,
                 coverart_queue_responses::wipe_data_from_coverart_queue::Response, coverart_responses::get_coverart::Response,
@@ -138,44 +141,44 @@ pub mod init {
         axum::Router::new()
             .route(crate::ROOT, get(crate::root))
             .route(
-                crate::callers::endpoints::QUEUESONG,
-                post(crate::callers::song::endpoint::queue_song).route_layer(
+                crate::callers::queue::endpoints::QUEUESONG,
+                post(crate::callers::queue::song::endpoint::queue_song).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUESONG,
-                patch(crate::callers::song::endpoint::update_song_queue_status).route_layer(
+                crate::callers::queue::endpoints::QUEUESONG,
+                patch(crate::callers::queue::song::endpoint::update_song_queue_status).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUESONGLINKUSERID,
-                patch(crate::callers::song::endpoint::link_user_id).route_layer(
+                crate::callers::queue::endpoints::QUEUESONGLINKUSERID,
+                patch(crate::callers::queue::song::endpoint::link_user_id).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUESONGDATA,
-                get(crate::callers::song::endpoint::download_queued_song).route_layer(
+                crate::callers::queue::endpoints::QUEUESONGDATA,
+                get(crate::callers::queue::song::endpoint::download_queued_song).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::NEXTQUEUESONG,
-                get(crate::callers::song::endpoint::fetch_queue_song).route_layer(
+                crate::callers::queue::endpoints::NEXTQUEUESONG,
+                get(crate::callers::queue::song::endpoint::fetch_queue_song).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUESONGUPDATE,
-                patch(crate::callers::song::endpoint::update_song_queue).route_layer(
+                crate::callers::queue::endpoints::QUEUESONGUPDATE,
+                patch(crate::callers::queue::song::endpoint::update_song_queue).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUESONGDATAWIPE,
-                patch(crate::callers::song::endpoint::wipe_data_from_song_queue).route_layer(
+                crate::callers::queue::endpoints::QUEUESONGDATAWIPE,
+                patch(crate::callers::queue::song::endpoint::wipe_data_from_song_queue).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
@@ -192,32 +195,32 @@ pub mod init {
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUECOVERART,
+                crate::callers::queue::endpoints::QUEUECOVERART,
                 post(crate::callers::queue::coverart::endpoint::queue).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUECOVERARTDATA,
+                crate::callers::queue::endpoints::QUEUECOVERARTDATA,
                 get(crate::callers::queue::coverart::endpoint::fetch_coverart_with_data)
                     .route_layer(axum::middleware::from_fn(
                         crate::auth::auth::<axum::body::Body>,
                     )),
             )
             .route(
-                crate::callers::endpoints::QUEUECOVERART,
+                crate::callers::queue::endpoints::QUEUECOVERART,
                 get(crate::callers::queue::coverart::endpoint::fetch_coverart_no_data).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUECOVERARTLINK,
+                crate::callers::queue::endpoints::QUEUECOVERARTLINK,
                 patch(crate::callers::queue::coverart::endpoint::link).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUECOVERARTDATAWIPE,
+                crate::callers::queue::endpoints::QUEUECOVERARTDATAWIPE,
                 patch(crate::callers::queue::coverart::endpoint::wipe_data_from_coverart_queue)
                     .route_layer(axum::middleware::from_fn(
                         crate::auth::auth::<axum::body::Body>,
