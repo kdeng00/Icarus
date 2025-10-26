@@ -125,7 +125,7 @@ pub mod endpoint {
     /// Endpoint to queue cover art
     #[utoipa::path(
         post,
-        path = super::super::super::endpoints::QUEUECOVERART,
+        path = super::super::endpoints::QUEUECOVERART,
         request_body(
             content = super::request::queue::Request,
             ),
@@ -203,7 +203,7 @@ pub mod endpoint {
     /// Endpoint to link queued cover art
     #[utoipa::path(
         post,
-        path = super::super::super::endpoints::QUEUECOVERARTLINK,
+        path = super::super::endpoints::QUEUECOVERARTLINK,
         request_body(
             content = super::request::link::Request,
             description = "Linking queued cover art to queued song",
@@ -244,7 +244,7 @@ pub mod endpoint {
     /// Endpoint to fetch cover art details
     #[utoipa::path(
         get,
-        path = super::super::super::endpoints::QUEUECOVERART,
+        path = super::super::endpoints::QUEUECOVERART,
         params(
             ("id" = uuid::Uuid, Path, description = "Queued cover art Id"),
             ("song_queue_id" = uuid::Uuid, Path, description = "Queued song Id")
@@ -305,7 +305,7 @@ pub mod endpoint {
     /// Endpoint to fetch the queued cover art data
     #[utoipa::path(
         get,
-        path = super::super::super::endpoints::QUEUECOVERARTDATA,
+        path = super::super::endpoints::QUEUECOVERARTDATA,
         params(("id" = uuid::Uuid, Path, description = "Queued cover art Id")),
         responses(
             (status = 200, description = "Queued cover art data", body = Vec<u8>),
@@ -343,7 +343,7 @@ pub mod endpoint {
     /// Endpoint to wipe data from the cover art queue
     #[utoipa::path(
         patch,
-        path = super::super::super::endpoints::QUEUECOVERARTDATAWIPE,
+        path = super::super::endpoints::QUEUECOVERARTDATAWIPE,
         request_body(
             content = super::request::wipe_data_from_coverart_queue::Request,
             description = "Data required to wipe the data from the cover art queue",
