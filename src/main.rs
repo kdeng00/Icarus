@@ -115,7 +115,7 @@ pub mod init {
 
     #[derive(utoipa::OpenApi)]
     #[openapi(
-        paths(song_endpoints::queue_song, song_endpoints::link_user_id, song_endpoints::fetch_queue_song, song_endpoints::download_flac,
+        paths(song_endpoints::queue_song, song_endpoints::link_user_id, song_endpoints::fetch_queue_song, song_endpoints::download_queued_song,
             song_endpoints::update_song_queue_status, song_endpoints::update_song_queue, song_endpoints::create_metadata, song_endpoints::wipe_data_from_song_queue, song_endpoints::get_songs, song_endpoints::get_all_songs, song_endpoints::stream_song, song_endpoints::download_song,
             song_endpoints::delete_song, coverart_queue_endpoints::queue, coverart_queue_endpoints::link, coverart_queue_endpoints::fetch_coverart_no_data,
             coverart_queue_endpoints::fetch_coverart_with_data, coverart_endpoints::create_coverart, coverart_queue_endpoints::wipe_data_from_coverart_queue,
@@ -157,7 +157,7 @@ pub mod init {
             )
             .route(
                 crate::callers::endpoints::QUEUESONGDATA,
-                get(crate::callers::song::endpoint::download_flac).route_layer(
+                get(crate::callers::song::endpoint::download_queued_song).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
