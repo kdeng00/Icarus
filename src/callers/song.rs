@@ -352,7 +352,7 @@ pub mod endpoint {
             (status = 400, description = "Linkage failed", body = Vec<u8>)
         )
     )]
-    pub async fn download_flac(
+    pub async fn download_queued_song(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Path(id): axum::extract::Path<uuid::Uuid>,
     ) -> (StatusCode, axum::response::Response) {
