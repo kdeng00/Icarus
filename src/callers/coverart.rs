@@ -179,17 +179,50 @@ pub mod endpoint {
         match repo::coverart::get_coverart(&pool, &id).await {
             Ok(coverart) => match icarus_models::coverart::io::to_data(&coverart) {
                 Ok(data) => {
+                    let (file_type, img_type) =
+                        match icarus_meta::detection::coverart::file_type_from_data(&data) {
+                            Ok(file_type) => {
+                                if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::JPEG_TYPE
+                                {
+                                    (
+                                        file_type,
+                                        icarus_models::types::CoverArtTypes::JpegExtension,
+                                    )
+                                } else if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::JPG_TYPE
+                                {
+                                    (file_type, icarus_models::types::CoverArtTypes::JpgExtension)
+                                } else if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::PNG_TYPE
+                                {
+                                    (file_type, icarus_models::types::CoverArtTypes::PngExtension)
+                                } else {
+                                    return (
+                                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                        axum::response::Response::default(),
+                                    );
+                                }
+                            }
+                            Err(err) => {
+                                eprintln!("Error: {err:?}");
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::response::Response::default(),
+                                );
+                            }
+                        };
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();
                     let headers = response.headers_mut();
-                    // TODO: Address hard coding
+                    let filename = icarus_models::coverart::generate_filename(img_type, true);
                     headers.insert(
                         axum::http::header::CONTENT_TYPE,
-                        "audio/jpg".parse().unwrap(),
+                        file_type.mime.parse().unwrap(),
                     );
                     headers.insert(
                         axum::http::header::CONTENT_DISPOSITION,
-                        format!("attachment; filename=\"{id}.jpg\"")
+                        format!("attachment; filename=\"{filename}\"")
                             .parse()
                             .unwrap(),
                     );
