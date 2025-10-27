@@ -179,21 +179,23 @@ pub mod endpoint {
         match repo::coverart::get_coverart(&pool, &id).await {
             Ok(coverart) => match icarus_models::coverart::io::to_data(&coverart) {
                 Ok(data) => {
-                    let file_type = match icarus_meta::detection::coverart::file_type_from_data(&data) {
-                        Ok(file_type) => {
-                            file_type
-                        }
-                        Err(err) => {
-                            eprintln!("Error: {err:?}");
-                            return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::Response::default());
-                        }
-                    };
+                    let file_type =
+                        match icarus_meta::detection::coverart::file_type_from_data(&data) {
+                            Ok(file_type) => file_type,
+                            Err(err) => {
+                                eprintln!("Error: {err:?}");
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::response::Response::default(),
+                                );
+                            }
+                        };
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();
                     let headers = response.headers_mut();
                     headers.insert(
                         axum::http::header::CONTENT_TYPE,
-                        file_type.mime.parse().unwrap()
+                        file_type.mime.parse().unwrap(),
                     );
                     headers.insert(
                         axum::http::header::CONTENT_DISPOSITION,
