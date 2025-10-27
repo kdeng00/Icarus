@@ -182,14 +182,26 @@ pub mod endpoint {
                     let (file_type, img_type) =
                         match icarus_meta::detection::coverart::file_type_from_data(&data) {
                             Ok(file_type) => {
-                                if file_type.file_type == icarus_meta::detection::coverart::constants::JPEG_TYPE {
-                                    (file_type, icarus_models::types::CoverArtTypes::JpegExtension)
-                                } else if file_type.file_type == icarus_meta::detection::coverart::constants::JPG_TYPE {
+                                if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::JPEG_TYPE
+                                {
+                                    (
+                                        file_type,
+                                        icarus_models::types::CoverArtTypes::JpegExtension,
+                                    )
+                                } else if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::JPG_TYPE
+                                {
                                     (file_type, icarus_models::types::CoverArtTypes::JpgExtension)
-                                } else if file_type.file_type == icarus_meta::detection::coverart::constants::PNG_TYPE {
+                                } else if file_type.file_type
+                                    == icarus_meta::detection::coverart::constants::PNG_TYPE
+                                {
                                     (file_type, icarus_models::types::CoverArtTypes::PngExtension)
                                 } else {
-                                    return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::response::Response::default());
+                                    return (
+                                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                        axum::response::Response::default(),
+                                    );
                                 }
                             }
                             Err(err) => {
