@@ -1,11 +1,8 @@
 pub mod coverart;
-pub mod metadata;
 pub mod queue;
 pub mod song;
 
 pub mod endpoints {
-    pub const QUEUEMETADATA: &str = "/api/v2/song/metadata/queue";
-
     pub const CREATESONG: &str = "/api/v2/song";
     pub const GETSONGS: &str = "/api/v2/song";
     pub const GETALLSONGS: &str = "/api/v2/song/all";

@@ -1,9 +1,6 @@
-// TODO: Explicitly make this module target queueing a song's metadata
 pub mod request {
     pub mod queue_metadata {
-        use serde::{Deserialize, Serialize};
-
-        #[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow, utoipa::ToSchema)]
+        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
         pub struct Request {
             pub song_queue_id: uuid::Uuid,
             pub album: String,
@@ -59,9 +56,7 @@ pub mod request {
 
 pub mod response {
     pub mod queue_metadata {
-        use serde::{Deserialize, Serialize};
-
-        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<uuid::Uuid>,
@@ -69,9 +64,7 @@ pub mod response {
     }
 
     pub mod fetch_metadata {
-        use serde::{Deserialize, Serialize};
-
-        #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
+        #[derive(Default, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
             pub data: Vec<crate::repo::queue::metadata::MetadataQueue>,
@@ -81,8 +74,6 @@ pub mod response {
 
 /// Module for metadata related endpoints
 pub mod endpoint {
-    use axum::{Json, http::StatusCode};
-
     use crate::repo::queue as repo_queue;
 
     /// Endpoint to create queued metadata
@@ -101,8 +92,8 @@ pub mod endpoint {
     )]
     pub async fn queue_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
-        Json(payload): Json<super::request::queue_metadata::Request>,
-    ) -> (StatusCode, Json<super::response::queue_metadata::Response>) {
+        axum::Json(payload): axum::Json<super::request::queue_metadata::Request>,
+    ) -> (axum::http::StatusCode, axum::Json<super::response::queue_metadata::Response>) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::queue_metadata::Response::default();
         let meta = payload.to_json_value().await;
@@ -113,14 +104,14 @@ pub mod endpoint {
                 response.message = if response.data.is_empty() {
                     String::from("Error")
                 } else {
-                    String::from(super::super::response::SUCCESSFUL)
+                    String::from(super::super::super::response::SUCCESSFUL)
                 };
 
-                (StatusCode::OK, Json(response))
+                (axum::http::StatusCode::OK, axum::Json(response))
             }
             Err(err) => {
                 response.message = err.to_string();
-                (StatusCode::BAD_REQUEST, Json(response))
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
             }
         }
     }
@@ -141,7 +132,7 @@ pub mod endpoint {
     pub async fn fetch_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,
-    ) -> (StatusCode, Json<super::response::fetch_metadata::Response>) {
+    ) -> (axum::http::StatusCode, axum::Json<super::response::fetch_metadata::Response>) {
         let mut response = super::response::fetch_metadata::Response::default();
 
         match params.id {
@@ -152,11 +143,11 @@ pub mod endpoint {
                     Ok(item) => {
                         response.message = String::from("Successful");
                         response.data.push(item);
-                        (StatusCode::OK, Json(response))
+                        (axum::http::StatusCode::OK, axum::Json(response))
                     }
                     Err(err) => {
                         response.message = err.to_string();
-                        (StatusCode::BAD_REQUEST, Json(response))
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                     }
                 }
             }
@@ -168,17 +159,17 @@ pub mod endpoint {
                         Ok(item) => {
                             response.message = String::from("Successful");
                             response.data.push(item);
-                            (StatusCode::OK, Json(response))
+                            (axum::http::StatusCode::OK, axum::Json(response))
                         }
                         Err(err) => {
                             response.message = err.to_string();
-                            (StatusCode::BAD_REQUEST, Json(response))
+                            (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                         }
                     }
                 }
                 None => {
                     println!("What is going on?");
-                    (StatusCode::BAD_REQUEST, Json(response))
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }
             },
         }
