@@ -521,7 +521,11 @@ mod tests {
         app: &axum::Router,
         id: &uuid::Uuid,
     ) -> Result<axum::response::Response, std::convert::Infallible> {
-        let uri = format!("{}?id={}", crate::callers::endpoints::QUEUEMETADATA, id);
+        let uri = format!(
+            "{}?id={}",
+            crate::callers::queue::endpoints::QUEUEMETADATA,
+            id
+        );
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::GET)
@@ -583,7 +587,7 @@ mod tests {
 
         let req = axum::http::Request::builder()
             .method(axum::http::Method::POST)
-            .uri(crate::callers::endpoints::QUEUEMETADATA)
+            .uri(crate::callers::queue::endpoints::QUEUEMETADATA)
             .header(axum::http::header::CONTENT_TYPE, "application/json")
             .header(axum::http::header::AUTHORIZATION, bearer_auth().await)
             .body(axum::body::Body::from(payload.to_string()))
@@ -796,7 +800,7 @@ mod tests {
             match queue_song_flow(&app).await {
                 Ok((song_response, user_id)) => {
                     let resp = super::get_resp_data::<
-                        crate::callers::metadata::response::fetch_metadata::Response,
+                        crate::callers::queue::metadata::response::fetch_metadata::Response,
                     >(song_response)
                     .await;
                     assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
@@ -1393,7 +1397,7 @@ mod tests {
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, _user_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::metadata::response::fetch_metadata::Response,
+                    crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
@@ -1724,7 +1728,7 @@ mod tests {
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::metadata::response::fetch_metadata::Response,
+                    crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
@@ -1787,7 +1791,7 @@ mod tests {
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::metadata::response::fetch_metadata::Response,
+                    crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
@@ -1880,7 +1884,7 @@ mod tests {
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::metadata::response::fetch_metadata::Response,
+                    crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
@@ -1986,7 +1990,7 @@ mod tests {
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
                 let resp = get_resp_data::<
-                    crate::callers::metadata::response::fetch_metadata::Response,
+                    crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
                 assert_eq!(false, resp.data.is_empty(), "Data should not be empty");
