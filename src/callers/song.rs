@@ -107,10 +107,11 @@ pub mod endpoint {
     use crate::repo;
     use crate::repo::queue as repo_queue;
 
+    // TODO: Change the name of this endpoint. Including the function name and path
     /// Endpoint to create song
     #[utoipa::path(
         post,
-        path = super::super::endpoints::QUEUEMETADATA,
+        path = super::super::queue::endpoints::QUEUEMETADATA,
         request_body(
             content = super::request::create_metadata::Request,
             description = "Data needed to create the song and save it to the filesystem",
