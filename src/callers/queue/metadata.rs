@@ -1,6 +1,8 @@
 pub mod request {
     pub mod queue_metadata {
-        #[derive(Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
+        #[derive(
+            Debug, Default, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema,
+        )]
         pub struct Request {
             pub song_queue_id: uuid::Uuid,
             pub album: String,
@@ -93,7 +95,10 @@ pub mod endpoint {
     pub async fn queue_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::Json(payload): axum::Json<super::request::queue_metadata::Request>,
-    ) -> (axum::http::StatusCode, axum::Json<super::response::queue_metadata::Response>) {
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::queue_metadata::Response>,
+    ) {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::queue_metadata::Response::default();
         let meta = payload.to_json_value().await;
@@ -132,7 +137,10 @@ pub mod endpoint {
     pub async fn fetch_metadata(
         axum::Extension(pool): axum::Extension<sqlx::PgPool>,
         axum::extract::Query(params): axum::extract::Query<super::request::fetch_metadata::Params>,
-    ) -> (axum::http::StatusCode, axum::Json<super::response::fetch_metadata::Response>) {
+    ) -> (
+        axum::http::StatusCode,
+        axum::Json<super::response::fetch_metadata::Response>,
+    ) {
         let mut response = super::response::fetch_metadata::Response::default();
 
         match params.id {

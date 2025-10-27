@@ -53,8 +53,8 @@ pub mod init {
     use utoipa::OpenApi;
 
     use crate::callers::coverart as coverart_caller;
-    use crate::callers::queue::metadata as metadata_queue_caller;
     use crate::callers::queue::coverart as coverart_queue_callers;
+    use crate::callers::queue::metadata as metadata_queue_caller;
     use crate::callers::queue::song as song_queue_callers;
     use crate::callers::song as song_caller;
     use coverart_caller::endpoint as coverart_endpoints;
