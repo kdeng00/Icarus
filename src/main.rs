@@ -53,7 +53,7 @@ pub mod init {
     use utoipa::OpenApi;
 
     use crate::callers::coverart as coverart_caller;
-    use crate::callers::metadata as metadata_caller;
+    use crate::callers::queue::metadata as metadata_caller;
     use crate::callers::queue::coverart as coverart_queue_callers;
     use crate::callers::queue::song as song_queue_callers;
     use crate::callers::song as song_caller;
@@ -184,14 +184,14 @@ pub mod init {
                     )),
             )
             .route(
-                crate::callers::endpoints::QUEUEMETADATA,
-                post(crate::callers::metadata::endpoint::queue_metadata).route_layer(
+                crate::callers::queue::endpoints::QUEUEMETADATA,
+                post(crate::callers::queue::metadata::endpoint::queue_metadata).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
             .route(
-                crate::callers::endpoints::QUEUEMETADATA,
-                get(crate::callers::metadata::endpoint::fetch_metadata).route_layer(
+                crate::callers::queue::endpoints::QUEUEMETADATA,
+                get(crate::callers::queue::metadata::endpoint::fetch_metadata).route_layer(
                     axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
                 ),
             )
