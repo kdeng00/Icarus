@@ -431,18 +431,18 @@ pub mod endpoint {
                         }
                     } else {
                         response.message = String::from("Invalid song type");
-                        return (
+                        (
                             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                             axum::Json(response),
-                        );
+                        )
                     }
                 }
                 Err(err) => {
                     response.message = err.to_string();
-                    return (
+                    (
                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                         axum::Json(response),
-                    );
+                    )
                 }
             }
         } else {
