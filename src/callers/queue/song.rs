@@ -411,15 +411,28 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            match repo::song::update(&pool, &raw_data, &id).await {
-                Ok(_) => {
-                    response.message = String::from("Successful");
-                    response.data.push(id);
-                    (axum::http::StatusCode::OK, axum::Json(response))
+            match super::is_song_valid(&raw_data).await {
+                Ok(valid) => {
+                    if valid {
+                        match repo::song::update(&pool, &raw_data, &id).await {
+                            Ok(_) => {
+                                response.message = String::from(super::super::super::response::SUCCESSFUL);
+                                response.data.push(id);
+                                (axum::http::StatusCode::OK, axum::Json(response))
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                            }
+                        }
+                    } else {
+                        response.message = String::from("Invalid song type");
+                        return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                    }
                 }
                 Err(err) => {
                     response.message = err.to_string();
-                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                    return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response));
                 }
             }
         } else {
