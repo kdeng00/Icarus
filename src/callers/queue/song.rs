@@ -96,6 +96,21 @@ pub mod response {
     }
 }
 
+pub async fn is_song_valid(data: &[u8]) -> Result<bool, std::io::Error> {
+    match icarus_meta::detection::song::file_type_from_data(data) {
+        Ok(file_type) => {
+            if file_type.file_type == icarus_meta::detection::song::constants::FLAC_TYPE {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        }
+        Err(err) => {
+            Err(err)
+        }
+    }
+}
+
 pub mod endpoint {
     use axum::response::IntoResponse;
 
@@ -139,22 +154,35 @@ pub mod endpoint {
             );
 
             let raw_data: Vec<u8> = data.to_vec();
-            let queue_repo = repo::song::insert(
-                &pool,
-                &raw_data,
-                &file_name,
-                &crate::repo::queue::song::status::PENDING.to_string(),
-            )
-            .await
-            .unwrap();
-            results.push(queue_repo);
+            match super::is_song_valid(&raw_data).await {
+                Ok(valid) => {
+                    if valid {
+                        let queue_repo = repo::song::insert(
+                            &pool,
+                            &raw_data,
+                            &file_name,
+                            &crate::repo::queue::song::status::PENDING.to_string(),
+                        )
+                        .await
+                        .unwrap();
+                        results.push(queue_repo);
+                    } else {
+                        response.message = String::from("Invalid song type");
+                        return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                    }
+                }
+                Err(err) => {
+                    response.message = err.to_string();
+                    return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response));
+                }
+            }
         }
 
         response.data = results;
         response.message = if response.data.is_empty() {
             String::from("Error")
         } else {
-            String::from("Success")
+            String::from(super::super::super::response::SUCCESSFUL)
         };
 
         (axum::http::StatusCode::OK, axum::Json(response))
