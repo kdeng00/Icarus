@@ -262,7 +262,6 @@ pub mod endpoint {
         }
     }
 
-    // TODO: Rename
     /// Endpoint to download the queued song
     #[utoipa::path(
         get,
