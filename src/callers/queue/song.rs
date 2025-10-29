@@ -105,9 +105,7 @@ pub async fn is_song_valid(data: &[u8]) -> Result<bool, std::io::Error> {
                 Ok(false)
             }
         }
-        Err(err) => {
-            Err(err)
-        }
+        Err(err) => Err(err),
     }
 }
 
@@ -168,12 +166,18 @@ pub mod endpoint {
                         results.push(queue_repo);
                     } else {
                         response.message = String::from("Invalid song type");
-                        return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                        return (
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            axum::Json(response),
+                        );
                     }
                 }
                 Err(err) => {
                     response.message = err.to_string();
-                    return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response));
+                    return (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::Json(response),
+                    );
                 }
             }
         }
@@ -415,7 +419,8 @@ pub mod endpoint {
                     if valid {
                         match repo::song::update(&pool, &raw_data, &id).await {
                             Ok(_) => {
-                                response.message = String::from(super::super::super::response::SUCCESSFUL);
+                                response.message =
+                                    String::from(super::super::super::response::SUCCESSFUL);
                                 response.data.push(id);
                                 (axum::http::StatusCode::OK, axum::Json(response))
                             }
@@ -426,12 +431,18 @@ pub mod endpoint {
                         }
                     } else {
                         response.message = String::from("Invalid song type");
-                        return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response))
+                        return (
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            axum::Json(response),
+                        );
                     }
                 }
                 Err(err) => {
                     response.message = err.to_string();
-                    return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, axum::Json(response));
+                    return (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::Json(response),
+                    );
                 }
             }
         } else {
