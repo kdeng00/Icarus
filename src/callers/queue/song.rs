@@ -157,15 +157,22 @@ pub mod endpoint {
             match super::is_song_valid(&raw_data).await {
                 Ok(valid) => {
                     if valid {
-                        let queue_repo = repo::song::insert(
+                        match repo::song::insert(
                             &pool,
                             &raw_data,
                             &file_name,
                             &crate::repo::queue::song::status::PENDING.to_string(),
                         )
-                        .await
-                        .unwrap();
-                        results.push(queue_repo);
+                        .await {
+                            Ok(queued_song) => {
+                                results.push(queued_song);
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                return (axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response));
+                            }
+                        }
                     } else {
                         response.message = String::from("Invalid song type");
                         return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
