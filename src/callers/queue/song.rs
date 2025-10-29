@@ -163,14 +163,17 @@ pub mod endpoint {
                             &file_name,
                             &crate::repo::queue::song::status::PENDING.to_string(),
                         )
-                        .await {
+                        .await
+                        {
                             Ok(queued_song) => {
                                 results.push(queued_song);
                             }
                             Err(err) => {
                                 response.message = err.to_string();
-                                return (axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                                axum::Json(response));
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                );
                             }
                         }
                     } else {
