@@ -124,7 +124,9 @@ pub mod endpoint {
             content_type = "multipart/form-data"
             ),
         responses(
-            (status = 200, description = "Song queued", body = super::response::song_queue::Response)
+            (status = 201, description = "Song queued", body = super::response::song_queue::Response),
+            (status = 400, description = "Invalid request passed", body = super::response::song_queue::Response),
+            (status = 500, description = "Error queueing song", body = super::response::song_queue::Response)
         )
     )]
     pub async fn queue_song(
@@ -155,15 +157,25 @@ pub mod endpoint {
             match super::is_song_valid(&raw_data).await {
                 Ok(valid) => {
                     if valid {
-                        let queue_repo = repo::song::insert(
+                        match repo::song::insert(
                             &pool,
                             &raw_data,
                             &file_name,
                             &crate::repo::queue::song::status::PENDING.to_string(),
                         )
                         .await
-                        .unwrap();
-                        results.push(queue_repo);
+                        {
+                            Ok(queued_song) => {
+                                results.push(queued_song);
+                            }
+                            Err(err) => {
+                                response.message = err.to_string();
+                                return (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                );
+                            }
+                        }
                     } else {
                         response.message = String::from("Invalid song type");
                         return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
@@ -186,7 +198,7 @@ pub mod endpoint {
             String::from(super::super::super::response::SUCCESSFUL)
         };
 
-        (axum::http::StatusCode::OK, axum::Json(response))
+        (axum::http::StatusCode::CREATED, axum::Json(response))
     }
 
     /// Endpoint to link a user id to a queued song
@@ -379,7 +391,8 @@ pub mod endpoint {
         responses(
             (status = 200, description = "Queued song updated", body = super::response::update_song_queue::Response),
             (status = 400, description = "Error updating queued song", body = super::response::update_song_queue::Response),
-            (status = 404, description = "Queued song not found", body = super::response::update_song_queue::Response)
+            (status = 404, description = "Queued song not found", body = super::response::update_song_queue::Response),
+            (status = 500, description = "Error updating queued song", body = super::response::update_song_queue::Response)
         )
     )]
     pub async fn update_song_queue(
