@@ -124,7 +124,9 @@ pub mod endpoint {
             content_type = "multipart/form-data"
             ),
         responses(
-            (status = 200, description = "Song queued", body = super::response::song_queue::Response)
+            (status = 200, description = "Song queued", body = super::response::song_queue::Response),
+            (status = 400, description = "Invalid request passed", body = super::response::song_queue::Response),
+            (status = 500, description = "Error queueing song", body = super::response::song_queue::Response)
         )
     )]
     pub async fn queue_song(
@@ -379,7 +381,8 @@ pub mod endpoint {
         responses(
             (status = 200, description = "Queued song updated", body = super::response::update_song_queue::Response),
             (status = 400, description = "Error updating queued song", body = super::response::update_song_queue::Response),
-            (status = 404, description = "Queued song not found", body = super::response::update_song_queue::Response)
+            (status = 404, description = "Queued song not found", body = super::response::update_song_queue::Response),
+            (status = 500, description = "Error updating queued song", body = super::response::update_song_queue::Response)
         )
     )]
     pub async fn update_song_queue(
