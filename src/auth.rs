@@ -7,8 +7,8 @@ use axum::{
 use axum_extra::extract::cookie::CookieJar;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
+// TODO: Put this in icarus_models
 fn deserialize_i64_from_f64<'de, D>(deserializer: D) -> Result<i64, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -27,7 +27,8 @@ where
     Ok(rounded as i64)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+// TODO: Put this in icarus_models
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UserClaims {
     pub iss: String,
     pub aud: String, // Audience
@@ -40,20 +41,6 @@ pub struct UserClaims {
     // pub gty: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<Vec<String>>, // Optional roles
-}
-
-#[derive(Error, Debug)]
-pub enum JwtError {
-    #[error("Token creation failed")]
-    TokenCreation,
-    #[error("Token verification failed")]
-    TokenVerification,
-    #[error("Invalid token")]
-    InvalidToken,
-    #[error("Token expired")]
-    ExpiredToken,
-    #[error("Invalid key")]
-    InvalidKey,
 }
 
 #[derive(Debug, Serialize)]
