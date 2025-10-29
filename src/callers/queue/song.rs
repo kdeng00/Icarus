@@ -166,10 +166,7 @@ pub mod endpoint {
                         results.push(queue_repo);
                     } else {
                         response.message = String::from("Invalid song type");
-                        return (
-                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                            axum::Json(response),
-                        );
+                        return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
                     }
                 }
                 Err(err) => {
@@ -426,15 +423,15 @@ pub mod endpoint {
                             }
                             Err(err) => {
                                 response.message = err.to_string();
-                                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+                                (
+                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                    axum::Json(response),
+                                )
                             }
                         }
                     } else {
                         response.message = String::from("Invalid song type");
-                        (
-                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                            axum::Json(response),
-                        )
+                        (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                     }
                 }
                 Err(err) => {
