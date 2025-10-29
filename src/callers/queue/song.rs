@@ -124,7 +124,7 @@ pub mod endpoint {
             content_type = "multipart/form-data"
             ),
         responses(
-            (status = 200, description = "Song queued", body = super::response::song_queue::Response),
+            (status = 201, description = "Song queued", body = super::response::song_queue::Response),
             (status = 400, description = "Invalid request passed", body = super::response::song_queue::Response),
             (status = 500, description = "Error queueing song", body = super::response::song_queue::Response)
         )
@@ -188,7 +188,7 @@ pub mod endpoint {
             String::from(super::super::super::response::SUCCESSFUL)
         };
 
-        (axum::http::StatusCode::OK, axum::Json(response))
+        (axum::http::StatusCode::CREATED, axum::Json(response))
     }
 
     /// Endpoint to link a user id to a queued song
