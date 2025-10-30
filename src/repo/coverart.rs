@@ -68,7 +68,7 @@ pub async fn get_coverart(
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             file_type: row
-                .try_get("file_typ")
+                .try_get("file_type")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             song_id: row
@@ -116,7 +116,7 @@ pub async fn get_coverart_with_song_id(
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             file_type: row
-                .try_get("file_typ")
+                .try_get("file_type")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             data: Vec::new(),
@@ -167,7 +167,7 @@ pub async fn delete_coverart(
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             file_type: row
-                .try_get("file_typ")
+                .try_get("file_type")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             song_id: row
