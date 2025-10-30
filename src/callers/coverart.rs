@@ -77,6 +77,7 @@ pub mod endpoint {
                                 &directory, &filename,
                             );
                         coverart.title = song.album.clone();
+                        coverart.file_type = icarus_meta::detection::coverart::file_type_from_data(&data).unwrap().file_type;
                         coverart.data = data;
 
                         match coverart.save_to_filesystem() {

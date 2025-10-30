@@ -7,12 +7,13 @@ pub async fn create(
 ) -> Result<uuid::Uuid, sqlx::Error> {
     let result = sqlx::query(
         r#"
-        INSERT INTO "coverart" (title, directory, filename, song_id) VALUES($1, $2, $3, $4) RETURNING id;
+        INSERT INTO "coverart" (title, directory, filename, file_type, song_id) VALUES($1, $2, $3, $4, $5) RETURNING id;
         "#,
     )
     .bind(&coverart.title)
     .bind(&coverart.directory)
     .bind(&coverart.filename)
+    .bind(&coverart.file_type)
     .bind(song_id)
     .fetch_one(pool)
     .await
@@ -38,7 +39,7 @@ pub async fn get_coverart(
 ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
     let result = sqlx::query(
         r#"
-        SELECT id, title, directory, filename, song_id FROM "coverart" WHERE id = $1;
+        SELECT id, title, directory, filename, file_type, song_id FROM "coverart" WHERE id = $1;
         "#,
     )
     .bind(id)
@@ -66,6 +67,10 @@ pub async fn get_coverart(
                 .try_get("filename")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
+            file_type: row
+                .try_get("file_typ")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
             song_id: row
                 .try_get("song_id")
                 .map_err(|_e| sqlx::Error::RowNotFound)
@@ -82,7 +87,7 @@ pub async fn get_coverart_with_song_id(
 ) -> Result<icarus_models::coverart::CoverArt, sqlx::Error> {
     let result = sqlx::query(
         r#"
-        SELECT id, title, directory, filename, song_id FROM "coverart" WHERE song_id = $1;
+        SELECT id, title, directory, filename, file_type, song_id FROM "coverart" WHERE song_id = $1;
         "#,
     )
     .bind(song_id)
@@ -110,6 +115,10 @@ pub async fn get_coverart_with_song_id(
                 .try_get("filename")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
+            file_type: row
+                .try_get("file_typ")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
             data: Vec::new(),
             song_id: row
                 .try_get("song_id")
@@ -129,7 +138,7 @@ pub async fn delete_coverart(
         r#"
         DELETE FROM "coverart"
         WHERE id = $1
-        RETURNING id, title, directory, filename, song_id
+        RETURNING id, title, directory, filename, file_type, song_id
         "#,
     )
     .bind(id)
@@ -155,6 +164,10 @@ pub async fn delete_coverart(
                 .unwrap(),
             filename: row
                 .try_get("filename")
+                .map_err(|_e| sqlx::Error::RowNotFound)
+                .unwrap(),
+            file_type: row
+                .try_get("file_typ")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             song_id: row
