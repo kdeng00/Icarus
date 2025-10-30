@@ -964,7 +964,7 @@ dependencies = [
 
 [[package]]
 name = "icarus"
-version = "0.3.12"
+version = "0.3.13"
 dependencies = [
  "axum",
  "axum-extra",
@@ -1016,8 +1016,8 @@ dependencies = [
 
 [[package]]
 name = "icarus_models"
-version = "0.8.3"
-source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.8.3#0a27b8ccb1ac40361df8d3131f567f37f06cdc08"
+version = "0.9.2"
+source = "git+ssh://git@git.kundeng.us/phoenix/icarus_models.git?tag=v0.9.2#05525618514409101c1d6474dafb201386d14a30"
 dependencies = [
  "josekit",
  "rand 0.9.2",

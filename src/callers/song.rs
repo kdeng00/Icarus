@@ -135,9 +135,10 @@ pub mod endpoint {
         if payload.is_valid() {
             let mut song = payload.to_song();
             song.filename = icarus_models::song::generate_filename(
-                icarus_models::types::MusicTypes::FlacExtension,
+                icarus_models::types::MusicType::FlacExtension,
                 true,
-            );
+            )
+            .unwrap();
             song.directory = icarus_envy::environment::get_root_directory().await.value;
 
             match repo_queue::song::get_data(&pool, &payload.song_queue_id).await {

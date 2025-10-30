@@ -575,7 +575,6 @@ mod tests {
             .body(axum::body::Body::from_stream(body))
             .unwrap();
 
-        // Send request
         app.clone().oneshot(req).await
     }
 
@@ -1132,9 +1131,10 @@ mod tests {
                             let song = icarus_models::song::Song {
                                 directory: test_dir,
                                 filename: icarus_models::song::generate_filename(
-                                    icarus_models::types::MusicTypes::FlacExtension,
+                                    icarus_models::types::MusicType::FlacExtension,
                                     true,
-                                ),
+                                )
+                                .unwrap(),
                                 data: bytes.to_vec(),
                                 ..Default::default()
                             };
