@@ -56,5 +56,6 @@ CREATE TABLE IF NOT EXISTS "coverart" (
     title TEXT NOT NULL,
     directory TEXT NOT NULL,
     filename TEXT NOT NULL,
+    file_type TEXT NOT NULL,
     song_id UUID NOT NULL
 );
