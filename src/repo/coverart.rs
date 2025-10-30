@@ -124,7 +124,6 @@ pub async fn get_coverart_with_song_id(
                 .try_get("song_id")
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
-            ..Default::default()
         }),
         Err(_) => Err(sqlx::Error::RowNotFound),
     }
@@ -175,7 +174,6 @@ pub async fn delete_coverart(
                 .map_err(|_e| sqlx::Error::RowNotFound)
                 .unwrap(),
             data: Vec::new(),
-            ..Default::default()
         }),
         Err(_err) => Err(sqlx::Error::RowNotFound),
     }
