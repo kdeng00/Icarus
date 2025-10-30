@@ -185,18 +185,15 @@ pub mod endpoint {
                                 if file_type.file_type
                                     == icarus_meta::detection::coverart::constants::JPEG_TYPE
                                 {
-                                    (
-                                        file_type,
-                                        icarus_models::types::CoverArtTypes::JpegExtension,
-                                    )
+                                    (file_type, icarus_models::types::CoverArtType::JpegExtension)
                                 } else if file_type.file_type
                                     == icarus_meta::detection::coverart::constants::JPG_TYPE
                                 {
-                                    (file_type, icarus_models::types::CoverArtTypes::JpgExtension)
+                                    (file_type, icarus_models::types::CoverArtType::JpgExtension)
                                 } else if file_type.file_type
                                     == icarus_meta::detection::coverart::constants::PNG_TYPE
                                 {
-                                    (file_type, icarus_models::types::CoverArtTypes::PngExtension)
+                                    (file_type, icarus_models::types::CoverArtType::PngExtension)
                                 } else {
                                     return (
                                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -215,7 +212,8 @@ pub mod endpoint {
                     let bytes = axum::body::Bytes::from(data);
                     let mut response = bytes.into_response();
                     let headers = response.headers_mut();
-                    let filename = icarus_models::coverart::generate_filename(img_type, true);
+                    let filename =
+                        icarus_models::coverart::generate_filename(img_type, true).unwrap();
                     headers.insert(
                         axum::http::header::CONTENT_TYPE,
                         file_type.mime.parse().unwrap(),
