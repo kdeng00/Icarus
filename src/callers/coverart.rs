@@ -69,28 +69,30 @@ pub mod endpoint {
                 match crate::repo::song::get_song(&pool, &song_id).await {
                     Ok(song) => {
                         let directory = icarus_envy::environment::get_root_directory().await.value;
-                        let file_type = icarus_meta::detection::coverart::file_type_from_data(&data).unwrap();
+                        let file_type =
+                            icarus_meta::detection::coverart::file_type_from_data(&data).unwrap();
                         let coverart_type = if file_type.file_type
-                                    == icarus_meta::detection::coverart::constants::JPEG_TYPE
-                                {
-                                    icarus_models::types::CoverArtType::JpegExtension
-                                } else if file_type.file_type
-                                    == icarus_meta::detection::coverart::constants::JPG_TYPE
-                                {
-                                    icarus_models::types::CoverArtType::JpgExtension
-                                } else if file_type.file_type
-                                    == icarus_meta::detection::coverart::constants::PNG_TYPE
-                                {
-                                    icarus_models::types::CoverArtType::PngExtension
-                                } else {
-                                    response.message = String::from("Invalid CoverArt type");
-                                    return (
-                                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                                        axum::Json(response)
-                                    );
-                                };
-                        // TODO: Make this random and the file extension should not be hard coded
-                        let filename = icarus_models::coverart::generate_filename(coverart_type, true).unwrap();
+                            == icarus_meta::detection::coverart::constants::JPEG_TYPE
+                        {
+                            icarus_models::types::CoverArtType::JpegExtension
+                        } else if file_type.file_type
+                            == icarus_meta::detection::coverart::constants::JPG_TYPE
+                        {
+                            icarus_models::types::CoverArtType::JpgExtension
+                        } else if file_type.file_type
+                            == icarus_meta::detection::coverart::constants::PNG_TYPE
+                        {
+                            icarus_models::types::CoverArtType::PngExtension
+                        } else {
+                            response.message = String::from("Invalid CoverArt type");
+                            return (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            );
+                        };
+                        let filename =
+                            icarus_models::coverart::generate_filename(coverart_type, true)
+                                .unwrap();
 
                         let mut coverart =
                             icarus_models::coverart::init::init_coverart_dir_and_filename(
