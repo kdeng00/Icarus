@@ -328,9 +328,28 @@ pub mod endpoint {
                     file_type.mime.parse().unwrap(),
                 );
                 // TODO: Make the conent disposition more dynamic
+                let coverart_type = if file_type.file_type
+                    == icarus_meta::detection::coverart::constants::JPEG_TYPE
+                {
+                    icarus_models::types::CoverArtType::JpegExtension
+                } else if file_type.file_type
+                    == icarus_meta::detection::coverart::constants::JPG_TYPE
+                {
+                    icarus_models::types::CoverArtType::JpgExtension
+                } else if file_type.file_type
+                    == icarus_meta::detection::coverart::constants::PNG_TYPE
+                {
+                    icarus_models::types::CoverArtType::PngExtension
+                } else {
+                    return (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        axum::response::Response::default()
+                    );
+                };
+                let filename = icarus_models::coverart::generate_filename(coverart_type, true).unwrap();
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
-                    format!("attachment; filename=\"{id}.jpg\"")
+                    format!("attachment; filename=\"{filename}\"")
                         .parse()
                         .unwrap(),
                 );
