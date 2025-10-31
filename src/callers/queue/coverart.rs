@@ -318,12 +318,15 @@ pub mod endpoint {
     ) -> (axum::http::StatusCode, axum::response::Response) {
         match repo::coverart::get_coverart_queue_data_with_id(&pool, &id).await {
             Ok(data) => {
-                let file_type = icarus_meta::detection::coverart::file_type_from_data(&data).unwrap();
+                let file_type =
+                    icarus_meta::detection::coverart::file_type_from_data(&data).unwrap();
                 let bytes = axum::body::Bytes::from(data);
                 let mut response = bytes.into_response();
                 let headers = response.headers_mut();
-                // TODO: Address this hard coding for the coverart content type
-                headers.insert(axum::http::header::CONTENT_TYPE, file_type.mime.parse().unwrap());
+                headers.insert(
+                    axum::http::header::CONTENT_TYPE,
+                    file_type.mime.parse().unwrap(),
+                );
                 // TODO: Make the conent disposition more dynamic
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
