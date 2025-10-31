@@ -327,7 +327,7 @@ pub mod endpoint {
                     axum::http::header::CONTENT_TYPE,
                     file_type.mime.parse().unwrap(),
                 );
-                // TODO: Make the conent disposition more dynamic
+
                 let coverart_type = if file_type.file_type
                     == icarus_meta::detection::coverart::constants::JPEG_TYPE
                 {
@@ -343,10 +343,11 @@ pub mod endpoint {
                 } else {
                     return (
                         axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                        axum::response::Response::default()
+                        axum::response::Response::default(),
                     );
                 };
-                let filename = icarus_models::coverart::generate_filename(coverart_type, true).unwrap();
+                let filename =
+                    icarus_models::coverart::generate_filename(coverart_type, true).unwrap();
                 headers.insert(
                     axum::http::header::CONTENT_DISPOSITION,
                     format!("attachment; filename=\"{filename}\"")
