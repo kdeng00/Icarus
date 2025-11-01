@@ -337,7 +337,6 @@ mod tests {
 
     use crate::db;
 
-
     mod db_mgr {
         use std::str::FromStr;
 
@@ -872,7 +871,6 @@ mod tests {
             }
         }
     }
-
 
     // TODO: Change the name of the function to be more expressive and put into it's own module
     pub mod payload_data {
@@ -2319,7 +2317,8 @@ mod tests {
             let (id, _, _, _) = test_data::song_id().await.unwrap();
 
             let uri =
-                super::util::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
+                super::util::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id)
+                    .await;
 
             match app
                 .clone()
@@ -2377,9 +2376,11 @@ mod tests {
 
             let id = test_data::coverart_id().await.unwrap();
 
-            let uri =
-                super::util::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id)
-                    .await;
+            let uri = super::util::format_url_with_value(
+                crate::callers::endpoints::DOWNLOADCOVERART,
+                &id,
+            )
+            .await;
 
             match app
                 .clone()
@@ -2505,7 +2506,8 @@ mod tests {
             .unwrap();
 
             let uri =
-                super::util::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
+                super::util::format_url_with_value(crate::callers::endpoints::DELETESONG, &id)
+                    .await;
 
             match app
                 .clone()
