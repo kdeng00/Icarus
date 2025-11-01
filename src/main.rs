@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod callers;
+pub mod config;
 pub mod repo;
 
 pub mod db {
@@ -41,7 +42,9 @@ async fn main() {
     // build our application with a route
     let app = init::app().await;
 
-    let listener = tokio::net::TcpListener::bind(get_full()).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(config::host::get_full())
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -139,7 +142,7 @@ pub mod init {
 
     pub async fn routes() -> axum::Router {
         axum::Router::new()
-            .route(crate::ROOT, get(crate::root))
+            .route(crate::callers::endpoints::ROOT, get(crate::callers::root))
             .route(
                 crate::callers::queue::endpoints::QUEUESONG,
                 post(crate::callers::queue::song::endpoint::queue_song).route_layer(
@@ -302,28 +305,6 @@ pub mod init {
             .layer(TimeoutLayer::new(Duration::from_secs(300)))
             .layer(cors)
     }
-}
-
-// TODO: Move elsewhere
-fn get_full() -> String {
-    get_address() + ":" + &get_port()
-}
-// TODO: Move elsewhere
-fn get_address() -> String {
-    String::from("0.0.0.0")
-}
-
-// TODO: Move elsewhere
-fn get_port() -> String {
-    String::from("8000")
-}
-
-// TODO: Move elsewhere
-pub const ROOT: &str = "/";
-// TODO: Move elsewhere
-// basic handler that responds with a static string
-pub async fn root() -> &'static str {
-    "Hello, World!"
 }
 
 #[cfg(test)]
