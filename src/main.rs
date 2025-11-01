@@ -1,6 +1,6 @@
 pub mod auth;
-pub mod config;
 pub mod callers;
+pub mod config;
 pub mod repo;
 
 pub mod db {
@@ -42,7 +42,9 @@ async fn main() {
     // build our application with a route
     let app = init::app().await;
 
-    let listener = tokio::net::TcpListener::bind(config::host::get_full()).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(config::host::get_full())
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
@@ -304,8 +306,6 @@ pub mod init {
             .layer(cors)
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {

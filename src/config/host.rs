@@ -1,4 +1,3 @@
-
 /// Full hosting address that the application will be broadcasting
 pub fn get_full() -> String {
     format!("{ADDRESS}:{PORT}")
