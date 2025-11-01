@@ -4,4 +4,4 @@ pub fn get_full() -> String {
 }
 
 pub const ADDRESS: &str = "0.0.0.0";
-pub const PORT: &str = "8080";
+pub const PORT: &str = "8000";
