@@ -3,6 +3,8 @@ pub mod queue;
 pub mod song;
 
 pub mod endpoints {
+    pub const ROOT: &str = "/";
+
     pub const CREATESONG: &str = "/api/v2/song";
     pub const GETSONGS: &str = "/api/v2/song";
     pub const GETALLSONGS: &str = "/api/v2/song/all";
@@ -16,4 +18,9 @@ pub mod endpoints {
 
 pub mod response {
     pub const SUCCESSFUL: &str = "SUCCESSFUL";
+}
+
+/// Basic handler that responds with a static string
+pub async fn root() -> &'static str {
+    "Hello, World!"
 }
