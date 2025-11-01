@@ -328,15 +328,15 @@ pub async fn root() -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use crate::db;
-
     use std::io::Write;
-    use std::usize;
 
     use common_multipart_rfc7578::client::multipart::{
         Body as MultipartBody, Form as MultipartForm,
     };
     use tower::ServiceExt;
+
+    use crate::db;
+
 
     mod db_mgr {
         use std::str::FromStr;
@@ -420,6 +420,29 @@ mod tests {
                 .layer(tower_http::timeout::TimeoutLayer::new(
                     std::time::Duration::from_secs(300),
                 ))
+        }
+    }
+
+    mod util {
+        use std::usize;
+
+        pub async fn resp_to_bytes(
+            response: axum::response::Response,
+        ) -> Result<axum::body::Bytes, axum::Error> {
+            axum::body::to_bytes(response.into_body(), usize::MAX).await
+        }
+
+        pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
+        where
+            Data: for<'a> serde::Deserialize<'a>,
+        {
+            let body = resp_to_bytes(response).await.unwrap();
+            serde_json::from_slice(&body).unwrap()
+        }
+
+        pub async fn format_url_with_value(endpoint: &str, value: &uuid::Uuid) -> String {
+            let last = endpoint.len() - 5;
+            format!("{}/{value}", &endpoint[0..last])
         }
     }
 
@@ -701,7 +724,7 @@ mod tests {
         ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match super::song_queue_req(&app).await {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::queue::song::response::song_queue::Response,
                     >(response)
                     .await;
@@ -714,7 +737,7 @@ mod tests {
 
                     match super::song_queue_link_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
-                            let resp = super::get_resp_data::<
+                            let resp = super::util::get_resp_data::<
                                 crate::callers::queue::song::response::link_user_id::Response,
                             >(response)
                             .await;
@@ -726,7 +749,7 @@ mod tests {
 
                             match super::queue_metadata_req(&app, &song_queue_id).await {
                                 Ok(response) => {
-                                    let resp = super::get_resp_data::<
+                                    let resp = super::util::get_resp_data::<
                                         crate::callers::queue::song::response::song_queue::Response,
                                     >(response)
                                     .await;
@@ -755,7 +778,7 @@ mod tests {
         ) -> Result<axum::response::Response, std::convert::Infallible> {
             match super::upload_coverart_queue_req(&app).await {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::queue::coverart::response::queue::Response,
                     >(response)
                     .await;
@@ -771,7 +794,7 @@ mod tests {
                     .await
                     {
                         Ok(response) => {
-                            let resp = super::get_resp_data::<
+                            let resp = super::util::get_resp_data::<
                                 crate::callers::queue::coverart::response::link::Response,
                             >(response)
                             .await;
@@ -798,7 +821,7 @@ mod tests {
         ) -> Result<(axum::response::Response, uuid::Uuid), std::convert::Infallible> {
             match queue_song_flow(&app).await {
                 Ok((song_response, user_id)) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::queue::metadata::response::fetch_metadata::Response,
                     >(song_response)
                     .await;
@@ -807,7 +830,7 @@ mod tests {
 
                     match super::create_song_req(&app, &song_queue_id, &user_id).await {
                         Ok(response) => {
-                            let resp = super::get_resp_data::<
+                            let resp = super::util::get_resp_data::<
                                 crate::callers::song::response::create_metadata::Response,
                             >(response)
                             .await;
@@ -850,26 +873,6 @@ mod tests {
         }
     }
 
-    // TODO: Put this in a util module
-    pub async fn resp_to_bytes(
-        response: axum::response::Response,
-    ) -> Result<axum::body::Bytes, axum::Error> {
-        axum::body::to_bytes(response.into_body(), usize::MAX).await
-    }
-
-    // TODO: Put this in a util module
-    pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
-    where
-        Data: for<'a> serde::Deserialize<'a>,
-    {
-        let body = resp_to_bytes(response).await.unwrap();
-        serde_json::from_slice(&body).unwrap()
-    }
-
-    pub async fn format_url_with_value(endpoint: &str, value: &uuid::Uuid) -> String {
-        let last = endpoint.len() - 5;
-        format!("{}/{value}", &endpoint[0..last])
-    }
 
     // TODO: Change the name of the function to be more expressive and put into it's own module
     pub mod payload_data {
@@ -936,7 +939,7 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::song::response::song_queue::Response,
                 >(response)
                 .await;
@@ -972,7 +975,7 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::song::response::song_queue::Response,
                 >(response)
                 .await;
@@ -985,7 +988,7 @@ mod tests {
 
                 match song_queue_link_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::song::response::link_user_id::Response,
                         >(response)
                         .await;
@@ -1037,7 +1040,7 @@ mod tests {
 
         match sequence_flow::queue_song_and_coverart_flow(&app).await {
             Ok((resp_one, song_queue_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                 >(resp_one)
                 .await;
@@ -1050,7 +1053,7 @@ mod tests {
 
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::song::response::update_status::Response,
                         >(response)
                         .await;
@@ -1065,7 +1068,7 @@ mod tests {
 
                         match fetch_queue_req(&app).await {
                             Ok(response) => {
-                                let resp = get_resp_data::<
+                                let resp = util::get_resp_data::<
                                     crate::callers::queue::song::response::fetch_queue_song::Response,
                                 >(response)
                                 .await;
@@ -1111,7 +1114,7 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::song::response::song_queue::Response,
                 >(response)
                 .await;
@@ -1121,7 +1124,7 @@ mod tests {
                 let id = &resp.data[0];
 
                 match fetch_queue_data_req(&app, &id).await {
-                    Ok(response) => match resp_to_bytes(response).await {
+                    Ok(response) => match util::resp_to_bytes(response).await {
                         Ok(bytes) => {
                             assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
 
@@ -1180,7 +1183,7 @@ mod tests {
                                 .await
                             {
                                 Ok(response) => {
-                                    let resp = get_resp_data::<
+                                    let resp = util::get_resp_data::<
                                         crate::callers::queue::song::response::update_song_queue::Response,
                                     >(response)
                                     .await;
@@ -1237,7 +1240,7 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::song::response::song_queue::Response,
                 >(response)
                 .await;
@@ -1246,7 +1249,7 @@ mod tests {
                 let id = resp.data[0];
 
                 match fetch_queue_data_req(&app, &id).await {
-                    Ok(response) => match resp_to_bytes(response).await {
+                    Ok(response) => match util::resp_to_bytes(response).await {
                         Ok(bytes) => {
                             assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
                         }
@@ -1288,7 +1291,7 @@ mod tests {
 
         match sequence_flow::queue_song_and_coverart_flow(&app).await {
             Ok((resp_one, song_queue_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                 >(resp_one)
                 .await;
@@ -1301,7 +1304,7 @@ mod tests {
 
                 match update_song_queue_status_req(&app, &song_queue_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::song::response::update_status::Response,
                         >(response)
                         .await;
@@ -1346,7 +1349,7 @@ mod tests {
         // Send request
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::song::response::song_queue::Response,
                 >(response)
                 .await;
@@ -1355,7 +1358,7 @@ mod tests {
 
                 match queue_metadata_req(&app, &resp.data[0]).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::song::response::song_queue::Response,
                         >(response)
                         .await;
@@ -1396,7 +1399,7 @@ mod tests {
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, _user_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
@@ -1432,7 +1435,7 @@ mod tests {
         // Send request
         match upload_coverart_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
                 >(response)
                 .await;
@@ -1469,7 +1472,7 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
                 >(response)
                 .await;
@@ -1480,7 +1483,7 @@ mod tests {
                 // Send request
                 match upload_coverart_queue_req(&app).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::coverart::response::queue::Response,
                         >(response)
                         .await;
@@ -1492,7 +1495,7 @@ mod tests {
                             .await
                         {
                             Ok(response) => {
-                                let resp = get_resp_data::<
+                                let resp = util::get_resp_data::<
                                     crate::callers::queue::coverart::response::link::Response,
                                 >(response)
                                 .await;
@@ -1546,7 +1549,7 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
                 >(response)
                 .await;
@@ -1556,7 +1559,7 @@ mod tests {
 
                 match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                         >(response)
                         .await;
@@ -1596,7 +1599,7 @@ mod tests {
 
         match song_queue_req(&app).await {
             Ok(response) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
                 >(response)
                 .await;
@@ -1607,7 +1610,7 @@ mod tests {
                 // Send request
                 match upload_coverart_queue_req(&app).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::queue::coverart::response::queue::Response,
                         >(response)
                         .await;
@@ -1619,7 +1622,7 @@ mod tests {
                             .await
                         {
                             Ok(response) => {
-                                let resp = get_resp_data::<
+                                let resp = util::get_resp_data::<
                                     crate::callers::queue::coverart::response::link::Response,
                                 >(response)
                                 .await;
@@ -1661,7 +1664,7 @@ mod tests {
                                     )
                                     .await
                                 {
-                                    Ok(response) => match resp_to_bytes(response).await {
+                                    Ok(response) => match util::resp_to_bytes(response).await {
                                         Ok(bytes) => {
                                             assert_eq!(
                                                 false,
@@ -1727,7 +1730,7 @@ mod tests {
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
@@ -1736,7 +1739,7 @@ mod tests {
 
                 match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
                         >(response)
                         .await;
@@ -1790,7 +1793,7 @@ mod tests {
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
@@ -1799,7 +1802,7 @@ mod tests {
 
                 match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
                         >(response)
                         .await;
@@ -1820,7 +1823,7 @@ mod tests {
 
                         match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                             Ok(response) => {
-                                let resp = get_resp_data::<
+                                let resp = util::get_resp_data::<
                                                     crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                                                 >(response)
                                                 .await;
@@ -1831,7 +1834,7 @@ mod tests {
                                     .await
                                 {
                                     Ok(response) => {
-                                        let resp = get_resp_data::<
+                                        let resp = util::get_resp_data::<
                                                             crate::callers::coverart::response::create_coverart::Response,
                                                         >(response)
                                                         .await;
@@ -1883,7 +1886,7 @@ mod tests {
         // Send request
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
@@ -1892,7 +1895,7 @@ mod tests {
 
                 match create_song_req(&app, &song_q_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
                         >(response)
                         .await;
@@ -1929,7 +1932,7 @@ mod tests {
                             .await
                         {
                             Ok(response) => {
-                                let resp = get_resp_data::<crate::callers::queue::song::response::wipe_data_from_song_queue::Response>(response).await;
+                                let resp = util::get_resp_data::<crate::callers::queue::song::response::wipe_data_from_song_queue::Response>(response).await;
                                 assert_eq!(
                                     false,
                                     resp.data.is_empty(),
@@ -1989,7 +1992,7 @@ mod tests {
 
         match sequence_flow::queue_song_flow(&app).await {
             Ok((response, user_id)) => {
-                let resp = get_resp_data::<
+                let resp = util::get_resp_data::<
                     crate::callers::queue::metadata::response::fetch_metadata::Response,
                 >(response)
                 .await;
@@ -1998,7 +2001,7 @@ mod tests {
 
                 match create_song_req(&app, &song_queue_id, &user_id).await {
                     Ok(response) => {
-                        let resp = get_resp_data::<
+                        let resp = util::get_resp_data::<
                             crate::callers::song::response::create_metadata::Response,
                         >(response)
                         .await;
@@ -2021,7 +2024,7 @@ mod tests {
 
                         match sequence_flow::queue_coverart_flow(&app, &song_queue_id).await {
                             Ok(response) => {
-                                let resp = get_resp_data::<
+                                let resp = util::get_resp_data::<
                                     crate::callers::queue::coverart::response::fetch_coverart_no_data::Response,
                                 >(response)
                                 .await;
@@ -2053,7 +2056,7 @@ mod tests {
                                     .await
                                 {
                                     Ok(response) => {
-                                        let resp = get_resp_data::<
+                                        let resp = util::get_resp_data::<
                                             crate::callers::queue::coverart::response::wipe_data_from_coverart_queue::Response,
                                         >(response)
                                         .await;
@@ -2130,7 +2133,7 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::song::response::get_songs::Response,
                     >(response)
                     .await;
@@ -2187,7 +2190,7 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::coverart::response::get_coverart::Response,
                     >(response)
                     .await;
@@ -2316,7 +2319,7 @@ mod tests {
             let (id, _, _, _) = test_data::song_id().await.unwrap();
 
             let uri =
-                super::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
+                super::util::format_url_with_value(crate::callers::endpoints::DOWNLOADSONG, &id).await;
 
             match app
                 .clone()
@@ -2375,7 +2378,7 @@ mod tests {
             let id = test_data::coverart_id().await.unwrap();
 
             let uri =
-                super::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id)
+                super::util::format_url_with_value(crate::callers::endpoints::DOWNLOADCOVERART, &id)
                     .await;
 
             match app
@@ -2502,7 +2505,7 @@ mod tests {
             .unwrap();
 
             let uri =
-                super::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
+                super::util::format_url_with_value(crate::callers::endpoints::DELETESONG, &id).await;
 
             match app
                 .clone()
@@ -2520,7 +2523,7 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::song::response::delete_song::Response,
                     >(response)
                     .await;
@@ -2593,7 +2596,7 @@ mod tests {
                 .await
             {
                 Ok(response) => {
-                    let resp = super::get_resp_data::<
+                    let resp = super::util::get_resp_data::<
                         crate::callers::song::response::get_songs::Response,
                     >(response)
                     .await;
