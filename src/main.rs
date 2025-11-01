@@ -423,12 +423,10 @@ mod tests {
     }
 
     mod util {
-        use std::usize;
-
         pub async fn resp_to_bytes(
             response: axum::response::Response,
         ) -> Result<axum::body::Bytes, axum::Error> {
-            axum::body::to_bytes(response.into_body(), usize::MAX).await
+            axum::body::to_bytes(response.into_body(), std::usize::MAX).await
         }
 
         pub async fn get_resp_data<Data>(response: axum::response::Response) -> Data
