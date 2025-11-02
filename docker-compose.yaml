@@ -66,7 +66,7 @@ services:
   # PostgreSQL Database Service
   # --- icarus web api db ---
   main_db:
-    image: postgres:17.5-alpine # Use an official Postgres image (Alpine variant is smaller)
+    image: postgres:18.0-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
@@ -92,7 +92,7 @@ services:
 
   # --- icarus web auth api db ---
   auth_db:
-    image: postgres:17.5-alpine # Use an official Postgres image (Alpine variant is smaller)
+    image: postgres:18.0-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
