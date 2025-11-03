@@ -497,10 +497,8 @@ mod tests {
             song_queue_id: &uuid::Uuid,
             user_id: &uuid::Uuid,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-            let payload = serde_json::json!({
-                "song_queue_id": song_queue_id,
-                "user_id": user_id
-            });
+            let payload =
+                super::payload_data::link_user_to_queued_song(song_queue_id, user_id).await;
 
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::PATCH)
@@ -633,11 +631,11 @@ mod tests {
             coverart_id: &uuid::Uuid,
             song_queue_id: &uuid::Uuid,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-            let payload = serde_json::json!(
-            {
-                    "song_queue_id": song_queue_id,
-                    "coverart_id" : coverart_id,
-            });
+            let payload = super::payload_data::link_queued_coverart_to_queued_song(
+                song_queue_id,
+                coverart_id,
+            )
+            .await;
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::PATCH)
                 .uri(crate::callers::queue::endpoints::QUEUECOVERARTLINK)
@@ -657,10 +655,8 @@ mod tests {
             song_id: &uuid::Uuid,
             coverart_id: &uuid::Uuid,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-            let payload = serde_json::json!({
-                "song_id": song_id,
-                "coverart_queue_id": coverart_id
-            });
+            let payload = super::payload_data::create_coverart(song_id, coverart_id).await;
+
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::POST)
                 .uri(crate::callers::endpoints::CREATECOVERART)
@@ -699,10 +695,8 @@ mod tests {
             app: &axum::Router,
             song_queue_id: &uuid::Uuid,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-            let payload = serde_json::json!({
-                "id": &song_queue_id,
-                "status": crate::repo::queue::song::status::READY
-            });
+            let payload =
+                super::payload_data::update_song_queue_status_to_ready(song_queue_id).await;
 
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::PATCH)
@@ -940,6 +934,45 @@ mod tests {
                 "audio_type": "flac",
                 "user_id": user_id,
                 "song_queue_id": song_queue_id
+            })
+        }
+
+        pub async fn link_user_to_queued_song(
+            song_queue_id: &uuid::Uuid,
+            user_id: &uuid::Uuid,
+        ) -> serde_json::Value {
+            serde_json::json!({
+                "song_queue_id": song_queue_id,
+                "user_id": user_id
+            })
+        }
+
+        pub async fn link_queued_coverart_to_queued_song(
+            song_queue_id: &uuid::Uuid,
+            coverart_queue_id: &uuid::Uuid,
+        ) -> serde_json::Value {
+            serde_json::json!({
+                "song_queue_id": song_queue_id,
+                "coverart_id": coverart_queue_id
+            })
+        }
+
+        pub async fn create_coverart(
+            song_id: &uuid::Uuid,
+            coverart_queue_id: &uuid::Uuid,
+        ) -> serde_json::Value {
+            serde_json::json!({
+                "song_id": song_id,
+                "coverart_queue_id": coverart_queue_id
+            })
+        }
+
+        pub async fn update_song_queue_status_to_ready(
+            song_queue_id: &uuid::Uuid,
+        ) -> serde_json::Value {
+            serde_json::json!({
+                "id": song_queue_id,
+                "status": crate::repo::queue::song::status::READY
             })
         }
     }
