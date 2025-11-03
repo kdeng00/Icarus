@@ -612,7 +612,7 @@ mod tests {
             app: &axum::Router,
             song_queue_id: &uuid::Uuid,
         ) -> Result<axum::response::Response, std::convert::Infallible> {
-            let payload = super::payload_data::queue_metadata_payload_data(&song_queue_id).await;
+            let payload = super::payload_data::queue_metadata(&song_queue_id).await;
 
             let req = axum::http::Request::builder()
                 .method(axum::http::Method::POST)
@@ -902,9 +902,8 @@ mod tests {
         }
     }
 
-    // TODO: Change the name of the function to be more expressive and put into it's own module
     pub mod payload_data {
-        pub async fn queue_metadata_payload_data(song_queue_id: &uuid::Uuid) -> serde_json::Value {
+        pub async fn queue_metadata(song_queue_id: &uuid::Uuid) -> serde_json::Value {
             serde_json::json!(
             {
                     "song_queue_id": song_queue_id,
