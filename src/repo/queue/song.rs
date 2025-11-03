@@ -11,13 +11,15 @@ pub mod status {
     }
 }
 
-// TODO: Move this somewhere else at some point
-#[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
-pub struct SongQueue {
-    pub id: uuid::Uuid,
-    pub filename: String,
-    pub status: String,
-    pub user_id: uuid::Uuid,
+pub mod dbtype {
+    /// Maps to the songQueue table. Does not contain the data field
+    #[derive(Debug, serde::Deserialize, serde::Serialize, sqlx::FromRow, utoipa::ToSchema)]
+    pub struct SongQueue {
+        pub id: uuid::Uuid,
+        pub filename: String,
+        pub status: String,
+        pub user_id: uuid::Uuid,
+    }
 }
 
 pub async fn insert(
@@ -79,7 +81,7 @@ pub async fn update(
     }
 }
 
-pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue, sqlx::Error> {
+pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<dbtype::SongQueue, sqlx::Error> {
     let result = sqlx::query(
         r#"
         UPDATE "songQueue"
@@ -102,7 +104,7 @@ pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<SongQueue
     match result {
         Ok(row) => {
             let user_id_result = row.try_get("user_id");
-            let song_queue = SongQueue {
+            let song_queue = dbtype::SongQueue {
                 id: row
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)
@@ -209,7 +211,7 @@ pub async fn link_user_id(
 pub async fn get_song_queue(
     pool: &sqlx::PgPool,
     id: &uuid::Uuid,
-) -> Result<SongQueue, sqlx::Error> {
+) -> Result<dbtype::SongQueue, sqlx::Error> {
     let result = sqlx::query(
         r#"
         SELECT id, filename, status, user_id FROM "songQueue" WHERE id = $1
@@ -225,7 +227,7 @@ pub async fn get_song_queue(
     match result {
         Ok(row) => {
             let user_id_result = row.try_get("user_id");
-            let song_queue = SongQueue {
+            let song_queue = dbtype::SongQueue {
                 id: row
                     .try_get("id")
                     .map_err(|_e| sqlx::Error::RowNotFound)

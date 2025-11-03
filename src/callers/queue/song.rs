@@ -53,7 +53,7 @@ pub mod response {
         #[derive(Default, Deserialize, Serialize, utoipa::ToSchema)]
         pub struct Response {
             pub message: String,
-            pub data: Vec<crate::repo::queue::song::SongQueue>,
+            pub data: Vec<crate::repo::queue::song::dbtype::SongQueue>,
         }
     }
 
