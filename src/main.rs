@@ -1579,7 +1579,7 @@ mod tests {
 
         let app = init::app(pool).await;
 
-        match song_queue_req(&app).await {
+        match request::song_queue_req(&app).await {
             Ok(response) => {
                 let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
@@ -1629,7 +1629,7 @@ mod tests {
 
         let app = init::app(pool).await;
 
-        match song_queue_req(&app).await {
+        match request::song_queue_req(&app).await {
             Ok(response) => {
                 let resp = util::get_resp_data::<
                     crate::callers::queue::coverart::response::queue::Response,
@@ -1640,7 +1640,7 @@ mod tests {
                 assert_eq!(false, song_queue_id.is_nil(), "Should not be empty");
 
                 // Send request
-                match upload_coverart_queue_req(&app).await {
+                match request::upload_coverart_queue_req(&app).await {
                     Ok(response) => {
                         let resp = util::get_resp_data::<
                             crate::callers::queue::coverart::response::queue::Response,
@@ -1650,8 +1650,12 @@ mod tests {
                         let coverart_id = resp.data[0];
                         assert_eq!(false, coverart_id.is_nil(), "Should not be empty");
 
-                        match coverart_queue_song_queue_link_req(&app, &coverart_id, &song_queue_id)
-                            .await
+                        match request::coverart_queue_song_queue_link_req(
+                            &app,
+                            &coverart_id,
+                            &song_queue_id,
+                        )
+                        .await
                         {
                             Ok(response) => {
                                 let resp = util::get_resp_data::<
