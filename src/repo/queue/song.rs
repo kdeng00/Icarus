@@ -81,7 +81,9 @@ pub async fn update(
     }
 }
 
-pub async fn get_most_recent_and_update(pool: &sqlx::PgPool) -> Result<dbtype::SongQueue, sqlx::Error> {
+pub async fn get_most_recent_and_update(
+    pool: &sqlx::PgPool,
+) -> Result<dbtype::SongQueue, sqlx::Error> {
     let result = sqlx::query(
         r#"
         UPDATE "songQueue"
