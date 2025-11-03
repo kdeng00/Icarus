@@ -1276,7 +1276,7 @@ mod tests {
                 assert_eq!(false, resp.data[0].is_nil(), "Should not be empty");
                 let id = resp.data[0];
 
-                match request:: fetch_queue_data_req(&app, &id).await {
+                match request::fetch_queue_data_req(&app, &id).await {
                     Ok(response) => match util::resp_to_bytes(response).await {
                         Ok(bytes) => {
                             assert_eq!(false, bytes.is_empty(), "Queued data should not be empty");
