@@ -130,10 +130,9 @@ pub async fn routes() -> axum::Router {
         )
         .route(
             crate::callers::queue::endpoints::QUEUESONGDATAWIPE,
-            patch(crate::callers::queue::song::endpoint::wipe_data_from_song_queue)
-                .route_layer(axum::middleware::from_fn(
-                    crate::auth::auth::<axum::body::Body>,
-                )),
+            patch(crate::callers::queue::song::endpoint::wipe_data_from_song_queue).route_layer(
+                axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+            ),
         )
         .route(
             crate::callers::queue::endpoints::QUEUEMETADATA,
@@ -155,10 +154,9 @@ pub async fn routes() -> axum::Router {
         )
         .route(
             crate::callers::queue::endpoints::QUEUECOVERARTDATA,
-            get(crate::callers::queue::coverart::endpoint::fetch_coverart_with_data)
-                .route_layer(axum::middleware::from_fn(
-                    crate::auth::auth::<axum::body::Body>,
-                )),
+            get(crate::callers::queue::coverart::endpoint::fetch_coverart_with_data).route_layer(
+                axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
+            ),
         )
         .route(
             crate::callers::queue::endpoints::QUEUECOVERART,
@@ -193,9 +191,9 @@ pub async fn routes() -> axum::Router {
         )
         .route(
             crate::callers::endpoints::GETSONGS,
-            get(crate::callers::song::endpoint::get_songs).route_layer(
-                axum::middleware::from_fn(crate::auth::auth::<axum::body::Body>),
-            ),
+            get(crate::callers::song::endpoint::get_songs).route_layer(axum::middleware::from_fn(
+                crate::auth::auth::<axum::body::Body>,
+            )),
         )
         .route(
             crate::callers::endpoints::GETCOVERART,

@@ -1,9 +1,8 @@
 pub mod auth;
-pub mod db;
 pub mod callers;
 pub mod config;
+pub mod db;
 pub mod repo;
-
 
 #[tokio::main]
 async fn main() {
