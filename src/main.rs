@@ -107,7 +107,7 @@ mod tests {
 
     mod init {
         pub async fn app(pool: sqlx::PgPool) -> axum::Router {
-            crate::init::routes()
+            crate::config::init::routes()
                 .await
                 .layer(axum::Extension(pool))
                 .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
