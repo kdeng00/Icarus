@@ -139,66 +139,76 @@ pub mod endpoint {
         let mut results: Vec<uuid::Uuid> = Vec::new();
         let mut response = super::response::song_queue::Response::default();
 
-        while let Some(field) = multipart.next_field().await.unwrap() {
-            let name = field.name().unwrap().to_string();
-            let file_name = field.file_name().unwrap().to_string();
-            let content_type = field.content_type().unwrap().to_string();
-            let data = field.bytes().await.unwrap();
+        match multipart.next_field().await {
+            Ok(multipart_field) => {
+                if let Some(field) = multipart_field {
+                    let name = field.name().unwrap().to_string();
+                    let file_name = field.file_name().unwrap().to_string();
+                    let content_type = field.content_type().unwrap().to_string();
+                    let data = field.bytes().await.unwrap();
 
-            println!(
-                "Received file '{}' (name = '{}', content-type = '{}', size = {})",
-                file_name,
-                name,
-                content_type,
-                data.len()
-            );
+                    println!(
+                        "Received file '{}' (name = '{}', content-type = '{}', size = {})",
+                        file_name,
+                        name,
+                        content_type,
+                        data.len()
+                    );
 
-            let raw_data: Vec<u8> = data.to_vec();
-            match super::is_song_valid(&raw_data).await {
-                Ok(valid) => {
-                    if valid {
-                        match repo::song::insert(
-                            &pool,
-                            &raw_data,
-                            &file_name,
-                            &crate::repo::queue::song::status::PENDING.to_string(),
-                        )
-                        .await
-                        {
-                            Ok(queued_song) => {
-                                results.push(queued_song);
-                            }
-                            Err(err) => {
-                                response.message = err.to_string();
-                                return (
-                                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                                    axum::Json(response),
-                                );
+                    let raw_data: Vec<u8> = data.to_vec();
+                    match super::is_song_valid(&raw_data).await {
+                        Ok(valid) => {
+                            if valid {
+                                match repo::song::insert(
+                                    &pool,
+                                    &raw_data,
+                                    &file_name,
+                                    &crate::repo::queue::song::status::PENDING.to_string(),
+                                )
+                                .await
+                                {
+                                    Ok(queued_song) => {
+                                        results.push(queued_song);
+                                    }
+                                    Err(err) => {
+                                        response.message = err.to_string();
+                                        return (
+                                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                            axum::Json(response),
+                                        );
+                                    }
+                                }
+                            } else {
+                                response.message = String::from("Invalid song type");
+                                return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
                             }
                         }
-                    } else {
-                        response.message = String::from("Invalid song type");
-                        return (axum::http::StatusCode::BAD_REQUEST, axum::Json(response));
+                        Err(err) => {
+                            response.message = err.to_string();
+                            return (
+                                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                                axum::Json(response),
+                            );
+                        }
                     }
-                }
-                Err(err) => {
-                    response.message = err.to_string();
-                    return (
-                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                        axum::Json(response),
-                    );
+
+                    response.data = results;
+                    response.message = if response.data.is_empty() {
+                        String::from("Error")
+                    } else {
+                        String::from(super::super::super::response::SUCCESSFUL)
+                    };
+                    (axum::http::StatusCode::CREATED, axum::Json(response))
+                } else {
+                    response.message = String::from("No field found in multipart");
+                    (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
                 }
             }
+            Err(err) => {
+                response.message = err.to_string();
+                (axum::http::StatusCode::BAD_REQUEST, axum::Json(response))
+            }
         }
-
-        response.data = results;
-        response.message = if response.data.is_empty() {
-            String::from("Error")
-        } else {
-            String::from(super::super::super::response::SUCCESSFUL)
-        };
-
-        (axum::http::StatusCode::CREATED, axum::Json(response))
     }
 
     /// Endpoint to link a user id to a queued song
