@@ -6,9 +6,10 @@ use axum::{
 };
 use axum_extra::extract::cookie::CookieJar;
 use jsonwebtoken::{DecodingKey, Validation, decode};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 // TODO: Put this in icarus_models
+/*
 fn deserialize_i64_from_f64<'de, D>(deserializer: D) -> Result<i64, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -26,8 +27,10 @@ where
     }
     Ok(rounded as i64)
 }
+*/
 
 // TODO: Put this in icarus_models
+/*
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UserClaims {
     pub iss: String,
@@ -42,6 +45,7 @@ pub struct UserClaims {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<Vec<String>>, // Optional roles
 }
+*/
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
@@ -76,7 +80,7 @@ pub async fn auth<B>(
 
     let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
     validation.set_audience(&["icarus"]); // Must match exactly what's in the token
-    let _claims = decode::<UserClaims>(
+    let _claims = decode::<icarus_models::token::UserClaims>(
         &token,
         &DecodingKey::from_secret(secret_key.as_ref()),
         &validation,
