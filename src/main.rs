@@ -9,8 +9,8 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let pool = db::create_pool().await.expect("Failed to create pool");
-    db::migrations(&pool).await;
+    // let pool = db::create_pool().await.expect("Failed to create pool");
+    // db::migrations(&pool).await;
 
     // build our application with a route
     let app = config::init::app().await;
