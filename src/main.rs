@@ -9,16 +9,16 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let pool = db::create_pool().await.expect("Failed to create pool");
-    db::migrations(&pool).await;
-
-    // build our application with a route
-    let app = config::init::app().await;
-
-    let listener = tokio::net::TcpListener::bind(config::host::get_full())
-        .await
-        .unwrap();
-    axum::serve(listener, app).await.unwrap();
+    match tokio::net::TcpListener::bind(config::host::get_full()).await {
+        Ok(listener) => {
+            // build our application with routes
+            let app = config::init::app().await;
+            axum::serve(listener, app).await.unwrap();
+        }
+        Err(err) => {
+            eprintln!("Error: {err:?}")
+        }
+    }
 }
 
 #[cfg(test)]
