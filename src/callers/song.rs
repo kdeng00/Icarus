@@ -251,9 +251,14 @@ pub mod endpoint {
 
         match repo::song::get_all_songs(&pool).await {
             Ok(songs) => {
-                response.message = String::from(super::super::response::SUCCESSFUL);
-                response.data = songs;
-                (axum::http::StatusCode::OK, axum::Json(response))
+                if songs.is_empty() {
+                    response.message = String::from("No songs available");
+                    (axum::http::StatusCode::NO_CONTENT, axum::Json(response))
+                } else {
+                    response.message = String::from(super::super::response::SUCCESSFUL);
+                    response.data = songs;
+                    (axum::http::StatusCode::OK, axum::Json(response))
+                }
             }
             Err(err) => {
                 response.message = err.to_string();
