@@ -253,7 +253,7 @@ pub mod endpoint {
             Ok(songs) => {
                 if songs.is_empty() {
                     response.message = String::from("No songs available");
-                    (axum::http::StatusCode::NO_CONTENT, axum::Json(response))
+                    (axum::http::StatusCode::NOT_FOUND, axum::Json(response))
                 } else {
                     response.message = String::from(super::super::response::SUCCESSFUL);
                     response.data = songs;
