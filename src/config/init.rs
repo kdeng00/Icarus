@@ -249,6 +249,9 @@ pub async fn app() -> axum::Router {
         )
         .layer(axum::Extension(pool))
         .layer(axum::extract::DefaultBodyLimit::max(1024 * 1024 * 1024))
-        .layer(TimeoutLayer::new(Duration::from_secs(300)))
+        .layer(TimeoutLayer::with_status_code(
+            axum::http::StatusCode::OK,
+            Duration::from_secs(300),
+        ))
         .layer(cors)
 }

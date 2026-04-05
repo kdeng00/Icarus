@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:18.0
+        image: postgres:18.3-alpine
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -27,10 +27,10 @@ jobs:
     steps:
     - uses: actions/checkout@v5
     
-    - name: Install Rust 1.90.0
+    - name: Install Rust 1.94
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.90.0
+        toolchain: 1.94
         components: clippy, rustfmt
         override: true
     
