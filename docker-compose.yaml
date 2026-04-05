@@ -9,7 +9,6 @@ services:
     container_name: icarus # Optional: Give the container a specific name
     ports:
       # Map host port 8000 to container port 3000 (adjust as needed)
-      # Format: "HOST_PORT:CONTAINER_PORT"
       - "8000:8000"
     env_file:
       - .env
@@ -66,7 +65,7 @@ services:
   # PostgreSQL Database Service
   # --- icarus web api db ---
   main_db:
-    image: postgres:18.0-alpine # Use an official Postgres image (Alpine variant is smaller)
+    image: postgres:18.3-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
@@ -92,7 +91,7 @@ services:
 
   # --- icarus web auth api db ---
   auth_db:
-    image: postgres:18.0-alpine # Use an official Postgres image (Alpine variant is smaller)
+    image: postgres:18.3-alpine # Use an official Postgres image (Alpine variant is smaller)
     container_name: icarus_auth_db # Optional: Give the container a specific name
     environment:
       # These MUST match the user, password, and database name in the DATABASE_URL above
