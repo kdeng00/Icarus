@@ -2,7 +2,7 @@
 name = "icarus"
 version = "0.3.28"
 edition = "2024"
-rust-version = "1.90"
+rust-version = "1.94"
 
 [dependencies]
 axum = { version = "0.8.6", features = ["multipart"] }
