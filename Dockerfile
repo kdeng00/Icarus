@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM rust:1.94 as builder
+FROM rust:1.95 as builder
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -45,7 +45,7 @@ RUN --mount=type=ssh \
 
 # Stage 2: Create the final, smaller runtime image
 # Use a minimal base image like debian-slim or even distroless for security/size
-FROM ubuntu:24.04
+FROM debian:trixie-slim
 
 # Install runtime dependencies if needed (e.g., SSL certificates)
 RUN apt-get update && apt-get install -y ca-certificates libssl-dev libssl3 && rm -rf /var/lib/apt/lists/*

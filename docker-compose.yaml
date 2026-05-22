@@ -74,7 +74,7 @@ services:
       POSTGRES_DB: ${POSTGRES_MAIN_DB:-icarus_db}
     volumes:
       # Persist database data using a named volume
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports:
       # Optional: Expose port 5432 ONLY if you need to connect directly from your host machine (e.g., for debugging)
       - "5432:5432"
@@ -100,7 +100,7 @@ services:
       POSTGRES_DB: ${POSTGRES_AUTH_DB:-icarus_auth_db}
     volumes:
       # Persist database data using a named volume
-      - postgres_data_auth:/var/lib/postgresql/data
+      - postgres_data_auth:/var/lib/postgresql
     ports: 
       # Optional: Expose port 5432 ONLY if you need to connect directly from your host machine (e.g., for debugging)
       - "5433:5432"
